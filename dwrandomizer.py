@@ -20,7 +20,7 @@ def randomize(args):
   print("Randomizing %s using random seed %d..." % (args.filename, args.seed))
   random.seed(args.seed)
   flags = ""
-  prg = "PRG?"
+  prg = "PRG_"
 
   input_file = open(args.filename, 'rb')
   rom_data = bytearray(input_file.read())
@@ -82,7 +82,7 @@ def randomize(args):
     mp_reqs = update_mp_reqs(mp_reqs)
     rom_data[slice(*mp_req_addr)] = mp_reqs
 
-  outputfilename = "Dragon Warrior.%s.%s.%d.nes" % (prg, flags, args.seed)
+  outputfilename = "Dragon Warrior.%d.%s.%s.nes" % (args.seed, flats, prg)
   print("Writing output file %s..." % outputfilename)
   outputfile = open(outputfilename, 'wb')
   outputfile.write(rom_data)

@@ -36,8 +36,10 @@ Cave locations are randomized so that the cave entrance can lead to an
 unexpected dungeon. Charlock dungeon is left intact, as is the swamp cave
 entrance on the Rimuldar side to ensure you can get there.
 
-### Lowering MP requirements (not the default)
+### Lowering MP requirements
 
 MP requirements for spells are adjusted to be the same as those in the remakes.
 
 
+
+  -- Created by mcgrew

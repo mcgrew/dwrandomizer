@@ -23,7 +23,7 @@ around Tantegel, but you could see a Ghost.
 ### Boosting XP/Gold drops
 
 Enemies will now give you more XP and Gold, more inline with the remake versions
-of the game.
+of the game. XP and gold drops are limited to 255 due to memory limitations.
 
 ### Shuffling town locations
 
@@ -40,6 +40,29 @@ entrance on the Rimuldar side to ensure you can get there.
 
 MP requirements for spells are adjusted to be the same as those in the remakes.
 
+### Outside
+Outside doesn't always return you to where you'd expect it to, though it is 
+predictable. It's not a bug, it's a feature. Kappa
 
 
-  -- Created by mcgrew
+### Command line arguments:
+
+#### positional arguments:
+  filename              The rom file to use for input
+
+#### optional arguments:
+  -h, --help            show this help message and exit
+  -r, --remake          Do not set enemy HP, XP/Gold drops and MP use up to
+                        that of the remake. This will make grind times much
+                        longer.
+  -c, --chests          Do not randomize chest contents.
+  -f, --force           Skip checksums and force randomization. This may
+                        produce an invalid ROM if the incorrect file is used.
+  -e, --enemies         Do not randomize enemy zones.
+  -p, --patterns        Do not randomize enemy attack patterns.
+  -s SEED, --seed SEED  Specify a seed to be used for randomization.
+  -t, --towns           Do not randomize towns.
+
+
+
+##  -- Created by mcgrew

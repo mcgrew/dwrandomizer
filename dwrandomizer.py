@@ -162,11 +162,14 @@ def randomize_attack_patterns(enemy_stats):
       # we'll start simple. No healmore/hurtmore/fire breath unless the enemy 
       # index > 20
       if i <= 20:
+        # heal, sleep, stopspell, hurt
         new_patterns.append((random.randint(0,11) << 4) | random.randint(0,3))
       elif i < 30:
-        new_patterns.append((random.randint(0,15) << 4) | random.randint(0,11))
+        # healmore, heal, sleep, stopspell, fire breath, hurtmore
+        new_patterns.append((random.randint(0,15) << 4) | random.randint(4,11))
       else:
-        new_patterns.append((random.randint(0,15) << 4) | random.randint(0,15))
+        # healmore, sleep, stopspell, strong fire breath, fire breath, hurtmore
+        new_patterns.append((random.randint(4,15) << 4) | random.randint(4,15))
     else:
       new_patterns.append(0)
   new_patterns.append(87) #Dragonlord form 1
@@ -192,9 +195,11 @@ def shuffle_towns(warp_data):
            warp_data[210:213]]
   random.shuffle(towns)
   random.shuffle(caves)
-  #make sure the rimuldar cave doesn't end up in garinham or tantegel
-  while (caves[5][0] == 24 or caves[6][0] == 24): 
-    random.shuffle(caves)
+  # if rimuldar is in the normal spot...
+	if (towns[3][0] == 11):
+		#make sure the rimuldar cave doesn't end up in garinham or tantegel
+		while (24 in (caves[3][0], caves[5][0], caves[6][0]): 
+			random.shuffle(caves)
   warp_data[153:156] = towns[0]
   warp_data[159:162] = towns[1]
   warp_data[162:165] = towns[2]
@@ -321,4 +326,3 @@ remake_gold=(  3,  5,  7,  9, 17, 21, 26, 22, 20, 31, 21, 43, 51,
 if __name__ == "__main__":
   main()
 
-# Remember to thank Zombero for the fighter's ring fix if you use it.

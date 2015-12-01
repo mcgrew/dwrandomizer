@@ -10,8 +10,8 @@ zones_addr = (0xf55f, 0xf5c3)
 chest_addr = (0x5ddd, 0x5e59)
 mp_req_addr = (0x1d63, 0x1d6d)
 enemy_stats_addr = (0x5e5b, 0x60db)
-prg0sum = '6a50ce57097332393e0e8751924fd56456ef083c'
-prg1sum = '1ecc63aaac50a9612eaa8b69143858c3e48dd0ae'
+prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c']
+prg1sums = ['1ecc63aaac50a9612eaa8b69143858c3e48dd0ae']
 
 def randomize(args):
 
@@ -89,9 +89,9 @@ def randomize(args):
 
 def verify_checksum(rom_data):
   digest = hashlib.sha1(rom_data).hexdigest()
-  if digest == prg0sum:
+  if digest in prg0sum:
     return 0
-  elif digest == prg1sum:
+  elif digest in prg1sum:
     return 1
   return False
 

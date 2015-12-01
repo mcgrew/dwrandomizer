@@ -109,7 +109,7 @@ def shuffle_chests(chest_data):
   for i in range(len(contents)):
     # change all gold (and erdrick's tablet) to large gold stash
     if (contents[i] >= 18 and contents[i] <= 20):
-      contents[i] == 21
+      contents[i] = 21
     # 50/50 chance to have a chest with gwaelin's love (lol)
     if contents[i] >= 23:
       contents[i] = 11 + (random.randint(0,1) * 10)

@@ -82,16 +82,16 @@ def randomize(args):
     mp_reqs = update_mp_reqs(mp_reqs)
     rom_data[slice(*mp_req_addr)] = mp_reqs
 
-  outputfilename = "Dragon Warrior.%d.%s.%s.nes" % (args.seed, flats, prg)
+  outputfilename = "Dragon Warrior.%d.%s.%s.nes" % (args.seed, flags, prg)
   print("Writing output file %s..." % outputfilename)
   outputfile = open(outputfilename, 'wb')
   outputfile.write(rom_data)
 
 def verify_checksum(rom_data):
   digest = hashlib.sha1(rom_data).hexdigest()
-  if digest in prg0sum:
+  if digest in prg0sums:
     return 0
-  elif digest in prg1sum:
+  elif digest in prg1sums:
     return 1
   return False
 
@@ -159,8 +159,6 @@ def randomize_attack_patterns(enemy_stats):
   new_patterns = list()
   for i in range(38):
     if random.randint(0,1): # 50/50 chance
-      # we'll start simple. No healmore/hurtmore/fire breath unless the enemy 
-      # index > 20
       if i <= 20:
         # heal, sleep, stopspell, hurt
         new_patterns.append((random.randint(0,11) << 4) | random.randint(0,3))
@@ -196,10 +194,10 @@ def shuffle_towns(warp_data):
   random.shuffle(towns)
   random.shuffle(caves)
   # if rimuldar is in the normal spot...
-	if (towns[3][0] == 11):
-		#make sure the rimuldar cave doesn't end up in garinham or tantegel
-		while (24 in (caves[3][0], caves[5][0], caves[6][0]): 
-			random.shuffle(caves)
+  if (towns[3][0] == 11):
+    #make sure the rimuldar cave doesn't end up in garinham or tantegel
+    while (24 in (caves[3][0], caves[5][0], caves[6][0])): 
+      random.shuffle(caves)
   warp_data[153:156] = towns[0]
   warp_data[159:162] = towns[1]
   warp_data[162:165] = towns[2]
@@ -227,24 +225,31 @@ def randomize_zones(zone_info):
   rtype: bytearray
   return: The newly randomized zone info
   """
-  # zones 0-13
+  # zones 0-13 (overworld)
   new_zones = list()
   for i in range(14):
     for j in range(5):
-      new_zones.append(random.randint(i * 2, (max(2,round(i*2.5)))))
+      enemy = random.randint(round(i * 1.5), (max(2,round(i*2.5))))
+      while enemy == 24: # don't add golem
+        enemy = random.randint(round(i * 1.5), (max(2,round(i*2.5))))
+      new_zones.append(enemy)
 
-  i = 9 #zone 14
-  for j in range(5):
-    new_zones.append(random.randint(18, 23))
+  #zone 14 - garin's grave?
+  for j in range(5): 
+    new_zones.append(random.randint(7, 17))
 
-  # zone 15-18
-  for i in range(15, 19):
+  #zone 15 - lower garin's grave
+  for j in range(5): 
+    new_zones.append(random.randint(15, 23))
+
+  # zone 16-18 - Charlock
+  for i in range(16, 19):
     for j in range(5):
-      new_zones.append(random.randint(14 + i, 37))
+      new_zones.append(random.randint(13 + i, 37))
 
-  # zone 19
+  # zone 19 rimuldar tunnel
   for j in range(5):
-    new_zones.append(random.randint(4, 11))
+    new_zones.append(random.randint(3, 11))
   return bytearray(new_zones)
 
 def update_drops(enemy_stats):

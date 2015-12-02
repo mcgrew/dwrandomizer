@@ -32,7 +32,7 @@ def randomize(args):
   rom_data = bytearray(input_file.read())
 
   if args.force:
-    print("Verifying checksums...")
+    print("Verifying checksum...")
     result = verify_checksum(rom_data)
     if result is False:
       print("Checksum does not match any known ROM, aborting.")
@@ -43,7 +43,7 @@ def randomize(args):
       prg = "PRG%d" % result
       
   else:
-    print("Skipping checksums...")
+    print("Skipping checksum...")
 
   print("Fixing functionality of the fighter's ring (+2 atk)...")
   rom_data = fix_fighters_ring(rom_data)
@@ -202,11 +202,12 @@ def shuffle_towns(warp_data):
            warp_data[210:213]]
   random.shuffle(towns)
   random.shuffle(caves)
-  # if rimuldar is in the normal spot...
-  if (towns[3][0] == 11):
-    #make sure the rimuldar cave doesn't end up in garinham or tantegel
-    while (24 in (caves[3][0], caves[5][0], caves[6][0])): 
-      random.shuffle(caves)
+  # make sure the rimuldar cave isn't inaccessible
+  # this could happen if it ends up in southern shrine position or
+  # behind a locked door when rimuldar is in it's normal location.
+  while (caves[3][0] == 24 or
+          (towns[3][0] == 11 and 24 in (caves[5][0], caves[6][0]))):
+    random.shuffle(caves)
   warp_data[153:156] = towns[0]
   warp_data[159:162] = towns[1]
   warp_data[162:165] = towns[2]

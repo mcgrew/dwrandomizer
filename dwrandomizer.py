@@ -45,6 +45,9 @@ def randomize(args):
   else:
     print("Skipping checksums...")
 
+  print("Fixing functionality of the fighter's ring (+2 atk)...")
+  rom_data = fix_fighters_ring(rom_data)
+
   enemy_stats = rom_data[slice(*enemy_stats_addr)]
   warp_data = rom_data[slice(*warps_addr)]
   chest_data = rom_data[slice(*chest_addr)]
@@ -300,6 +303,23 @@ def update_enemy_hp(enemy_stats):
   enemy_stats[2::16] = bytearray(remake_hp)
   return enemy_stats
 
+def fix_fighters_ring(rom_data):
+  """
+  Adds functionality for the fighter's ring (+2 to attack)
+  :Parameters:
+    rom_data : bytearray
+      The entire ROM data
+
+  rtype: bytearray
+  return: The patched ROM data
+  """
+  print(len(rom_data))
+  rom_data[0xf10c:0xf110] = bytearray(ring_patch[0])
+  rom_data[0xff64:0xff76] = bytearray(ring_patch[1])
+  print(len(rom_data))
+  return rom_data
+
+
 def main():
   parser = argparse.ArgumentParser(prog="DWRandomizer")
   parser.add_argument("-r","--remake", action="store_false",
@@ -333,6 +353,11 @@ remake_xp = (  1,  2,  3,  4,  8, 12, 16, 14, 15, 18, 12, 25, 28,
 remake_gold=(  3,  5,  7,  9, 17, 21, 26, 22, 20, 31, 21, 43, 51, 
               49, 61, 63,  7, 76, 81, 96,111,106,111,121, 11,255,
              151,136,149,186,161,170,186,166,151,149,153,144,  0,  0)
+
+# this data is to patch in funcionality for the fighter's ring. +2 atk.
+ring_patch = ((0x20, 0x54, 0xff, 0xea), #rom address 0xf10c 
+              (0x85, 0xcd, 0xa5, 0xcf, 0x29, 0x20, 0xf0, 0x07, 0xa5, 
+               0xcc, 0x18, 0x69, 0x02, 0x85, 0xcc, 0xa5, 0xcf, 0x60)) #rom address 0xff64
 
 if __name__ == "__main__":
   main()

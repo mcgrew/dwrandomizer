@@ -165,9 +165,13 @@ def randomize_attack_patterns(enemy_stats):
   rtype: bytearray
   return: The new randomized enemy stats.
   """
-  new_patterns = list()
+  new_patterns = list() # attack patterns
+  new_ss_resist = enemy_stats[4::16] #stopspell resistance
   for i in range(38):
     if random.randint(0,1): # 50/50 chance
+      resist = random.randint(0,round(i/5))
+      new_ss_resist[i] |= 0xf
+      new_ss_resist[i] &= (0xf0 | resist)
       if i <= 20:
         # heal, sleep, stopspell, hurt
         new_patterns.append((random.randint(0,11) << 4) | random.randint(0,3))
@@ -179,9 +183,11 @@ def randomize_attack_patterns(enemy_stats):
         new_patterns.append((random.randint(4,15) << 4) | random.randint(4,15))
     else:
       new_patterns.append(0)
+      new_ss_resist[i] |= 0xf
   new_patterns.append(87) #Dragonlord form 1
   new_patterns.append(14) #Dragonlord form 2
   enemy_stats[3::16] = bytearray(new_patterns)
+  enemy_stats[4::16] = bytearray(new_ss_resist)
   return enemy_stats
 
 def shuffle_towns(warp_data):

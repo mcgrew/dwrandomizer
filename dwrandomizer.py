@@ -241,13 +241,17 @@ def randomize_zones(zone_info):
   rtype: bytearray
   return: The newly randomized zone info
   """
-  # zones 0-13 (overworld)
   new_zones = list()
-  for i in range(14):
+  #zone 0
+  for j in range(5): 
+    new_zones.append(int(random.randint(0, 4)/2))
+
+  # zones 1-13 (overworld)
+  for i in range(1, 14):
     for j in range(5):
-      enemy = random.randint(round(i * 1.5), (max(2,round(i*2.5))))
+      enemy = random.randint(max(0, i * 2 - 2)), (max(2,round(i*2.5))))
       while enemy == 24: # don't add golem
-        enemy = random.randint(round(i * 1.5), (max(2,round(i*2.5))))
+        enemy = random.randint(i * 2 - 2, round(i*2.5))
       new_zones.append(enemy)
 
   #zone 14 - garin's grave?
@@ -261,7 +265,7 @@ def randomize_zones(zone_info):
   # zone 16-18 - Charlock
   for i in range(16, 19):
     for j in range(5):
-      new_zones.append(random.randint(13 + i, 37))
+      new_zones.append(random.randint(13+i, 21+i))
 
   # zone 19 rimuldar tunnel
   for j in range(5):

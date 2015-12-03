@@ -168,22 +168,22 @@ def randomize_attack_patterns(enemy_stats):
   new_patterns = list() # attack patterns
   new_ss_resist = enemy_stats[4::16] #stopspell resistance
   for i in range(38):
+    new_ss_resist[i] |= 0xf
     if random.randint(0,1): # 50/50 chance
       resist = random.randint(0,round(i/5))
-      new_ss_resist[i] |= 0xf
       new_ss_resist[i] &= (0xf0 | resist)
       if i <= 20:
         # heal, sleep, stopspell, hurt
         new_patterns.append((random.randint(0,11) << 4) | random.randint(0,3))
       elif i < 30:
         # healmore, heal, sleep, stopspell, fire breath, hurtmore
-        new_patterns.append((random.randint(0,15) << 4) | random.randint(4,11))
+        new_patterns.append((random.randint(0,15) << 4) | random.randint(4, 11))
       else:
         # healmore, sleep, stopspell, strong fire breath, fire breath, hurtmore
-        new_patterns.append((random.randint(4,15) << 4) | random.randint(4,15))
+        new_patterns.append((random.choice((0, 1, 3)) << 6) | 
+            (random.randint(0, 3) << 4) | random.randint(4, 15))
     else:
       new_patterns.append(0)
-      new_ss_resist[i] |= 0xf
   new_patterns.append(87) #Dragonlord form 1
   new_patterns.append(14) #Dragonlord form 2
   enemy_stats[3::16] = bytearray(new_patterns)
@@ -320,10 +320,8 @@ def fix_fighters_ring(rom_data):
   rtype: bytearray
   return: The patched ROM data
   """
-  print(len(rom_data))
   rom_data[0xf10c:0xf110] = bytearray(ring_patch[0])
   rom_data[0xff64:0xff76] = bytearray(ring_patch[1])
-  print(len(rom_data))
   return rom_data
 
 

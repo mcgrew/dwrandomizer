@@ -63,6 +63,13 @@ predictable. It's not a bug, it's a feature. Kappa
   -s SEED, --seed SEED  Specify a seed to be used for randomization.
   -t, --towns           Do not randomize towns.
 
+## Special Thanks
+
+Special thanks to Ryan8bit for his 
+[Formula Guide](http://www.gamefaqs.com/nes/563408-dragon-warrior/faqs/61640), 
+as this may not have been possible without it.  Thanks to Zombero on Twitch 
+for providing the Fighter's Ring patch and Zurkei on Twitch for helping me get 
+the Window binary working.
 
 
-##  -- Created by mcgrew
+###  -- Created by mcgrew

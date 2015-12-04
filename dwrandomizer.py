@@ -249,7 +249,7 @@ def randomize_zones(zone_info):
   # zones 1-13 (overworld)
   for i in range(1, 14):
     for j in range(5):
-      enemy = random.randint(max(0, i * 2 - 2)), (max(2,round(i*2.5))))
+      enemy = random.randint(max(0, i * 2 - 2)), (max(2,round(i*2.5)))
       while enemy == 24: # don't add golem
         enemy = random.randint(i * 2 - 2, round(i*2.5))
       new_zones.append(enemy)

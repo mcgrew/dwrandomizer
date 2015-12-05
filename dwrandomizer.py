@@ -219,8 +219,8 @@ def shuffle_towns(warp_data):
   # make sure the rimuldar cave isn't inaccessible
   # this could happen if it ends up in southern shrine position or
   # behind a locked door when rimuldar is in it's normal location.
-  while (caves[3][0] == 24 or
-          (towns[3][0] == 11 and 24 in (caves[5][0], caves[6][0]))):
+  while (caves[3][0] == 21 or
+          (towns[3][0] == 11 and 21 in (caves[5][0], caves[6][0]))):
     random.shuffle(caves)
   warp_data[153:156] = towns[0]
   warp_data[159:162] = towns[1]
@@ -236,6 +236,9 @@ def shuffle_towns(warp_data):
   warp_data[192:195] = caves[4]
   warp_data[204:207] = caves[5]
   warp_data[210:213] = caves[6]
+  # randomly swap swamp cave exit with southern shrine
+  if (random.randint(0,1)):
+    warp_data[168:171],warp_data[174:177] = warp_data[174:177],warp_data[168:171]
   return warp_data
 
 def randomize_zones(zone_info):

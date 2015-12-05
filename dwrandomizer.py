@@ -10,6 +10,7 @@ zones_addr = (0xf55f, 0xf5c3)
 chest_addr = (0x5ddd, 0x5e59)
 mp_req_addr = (0x1d63, 0x1d6d)
 enemy_stats_addr = (0x5e5b, 0x60db)
+weapon_shop_inv_addr = (0x19a7, 0x19cc)
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes
             '49974889619f1d8c39b6c20fa208c62a0a73ecce', #Dragon Warrior (U) (PRG0) [b1][o1].nes
@@ -53,6 +54,7 @@ def randomize(args):
   chest_data = rom_data[slice(*chest_addr)]
   enemy_zones = rom_data[slice(*zones_addr)]
   mp_reqs = rom_data[slice(*mp_req_addr)]
+  weapon_shop_inv = rom_data[slice(*weapon_shop_inv_addr)]
 
   if args.chests:
     print("Shuffling chest contents...")
@@ -77,6 +79,12 @@ def randomize(args):
     flags += "p"
     enemy_stats = randomize_attack_patterns(enemy_stats)
     rom_data[slice(*enemy_stats_addr)] = enemy_stats
+
+  if args.shops:
+    print("Randomizing weapon shops...")
+    flags += "w"
+    weapon_shop_inv = randomize_shops(weapon_shop_inv)
+    rom_data[slice(*weapon_shop_inv_addr)] = weapon_shop_inv
 
   if args.remake:
     print("Increasing XP/Gold drops to remake levels...")
@@ -272,6 +280,43 @@ def randomize_zones(zone_info):
     new_zones.append(random.randint(3, 11))
   return bytearray(new_zones)
 
+def randomize_shops(weapon_shop_inv):
+  """
+  Randomizes the items available in each weapon shop
+  :Parameters:
+    weapon_shop_inv : bytearray
+      The weapon shop data from the ROM
+
+  rtype: bytearray
+  return: The new weapon shop inventory
+  """
+  weapons = (0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 14, 15, 16)
+  new_shop_inv = []
+  # add 5 items to each shop
+  for i in range(6):
+    this_shop = []
+    while(len(this_shop) < 5):
+      new_item = random.choice(weapons)
+      if not new_item in this_shop:
+        this_shop.append(new_item)
+    new_shop_inv.append(this_shop)
+
+  # add an extra item to one shop since we have 31 slots.
+  six_item_shop = random.randint(0, 5)
+  new_item = random.choice(weapons)
+  while not new_item in new_shop_inv[six_item_shop]:
+    new_item = random.choice(weapons)
+  new_shop_inv[six_item_shop].append(new_item)
+  
+  # create the bytearray to insert into the rom. Shops are separated by an 
+  # 0xfd byte
+  returnvalue = []
+  for shop in new_shop_inv:
+    shop.sort()
+    returnvalue += shop + [0xfd]
+
+  return bytearray(returnvalue)
+
 def update_drops(enemy_stats):
   """
   Raises enemy XP and gold drops to those of the remakes.
@@ -350,6 +395,8 @@ def main():
       help="Specify a seed to be used for randomization.")
   parser.add_argument("-t","--towns", action="store_false", 
       help="Do not randomize towns.")
+  parser.add_argument("-w","--shops", action="store_false", 
+      help="Do not randomize weapon shops.")
   parser.add_argument("filename", help="The rom file to use for input")
   args = parser.parse_args()
   randomize(args)

@@ -311,6 +311,9 @@ def update_enemy_hp(enemy_stats):
   rtype: bytearray
   return: The new enemy stats.
   """
+  # randomize Dragonlord's HP somewhat 
+  remake_hp[-2] = round(remake_hp[-2] * random.uniform(0.9,1.1)) # 90 -110
+  remake_hp[-1] = round(remake_hp[-1] * random.uniform(0.9,1.1)) # 135 - 165
   enemy_stats[2::16] = bytearray(remake_hp)
   return enemy_stats
 
@@ -351,18 +354,18 @@ def main():
   args = parser.parse_args()
   randomize(args)
 
-remake_mp = (3, 2, 2, 2, 2, 6, 8, 2, 8, 5)
+remake_mp = [3, 2, 2, 2, 2, 6, 8, 2, 8, 5]
 #dragonlord hp should be 204 and 350, but we want him beatable at lv 18
-remake_hp = (  2,  3,  5,  7, 12, 13, 13, 22, 26, 43, 16, 24, 28, 
+remake_hp = [  2,  3,  5,  7, 12, 13, 13, 22, 26, 43, 16, 24, 28, 
               18, 33, 39,  3, 48, 37, 35, 44, 37, 40, 40,153,110, 
-              47, 48, 38, 70, 72, 74, 65, 67, 98,135, 99,106,100,165)
-remake_xp = (  1,  2,  3,  4,  8, 12, 16, 14, 15, 18, 12, 25, 28, 
+              47, 48, 38, 70, 72, 74, 65, 67, 98,135, 99,106,100,150]
+remake_xp = [  1,  2,  3,  4,  8, 12, 16, 14, 15, 18, 12, 25, 28, 
               31, 40, 42,255, 47, 52, 58, 58, 64, 70, 72,255,  6, 
-              78, 83, 90,120,135,105,120,130,180,155,172,255,  0,  0)
+              78, 83, 90,120,135,105,120,130,180,155,172,255,  0,  0]
 # These are +1 for proper values in the ROM
-remake_gold=(  3,  5,  7,  9, 17, 21, 26, 22, 20, 31, 21, 43, 51, 
+remake_gold=[  3,  5,  7,  9, 17, 21, 26, 22, 20, 31, 21, 43, 51, 
               49, 61, 63,  7, 76, 81, 96,111,106,111,121, 11,255,
-             151,136,149,186,161,170,186,166,151,149,153,144,  0,  0)
+             151,136,149,186,161,170,186,166,151,149,153,144,  0,  0]
 
 # this data is to patch in funcionality for the fighter's ring. +2 atk.
 ring_patch = ((0x20, 0x54, 0xff, 0xea), #rom address 0xf10c 

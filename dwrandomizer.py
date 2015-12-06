@@ -107,7 +107,7 @@ def randomize(args):
     rom_data[slice(*mp_req_addr)] = mp_reqs
 
   if args.repel:
-    print("Randomizing weapon shops...")
+    print("Moving REPEL to level 8...")
     flags += "w"
     player_stats = move_repel(player_stats)
     rom_data[slice(*player_stats_addr)] = player_stats

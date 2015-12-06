@@ -5,12 +5,16 @@ import random
 import sys
 import hashlib
 
+#Addresses for various data. Offsets include iNES header.
 warps_addr = (0xf3d8, 0xf50b)
 zones_addr = (0xf55f, 0xf5c3)
 chest_addr = (0x5ddd, 0x5e59)
 mp_req_addr = (0x1d63, 0x1d6d)
 enemy_stats_addr = (0x5e5b, 0x60db)
+player_stats_addr = (0x60dd, 0x6190)
 weapon_shop_inv_addr = (0x19a7, 0x19cc)
+
+#sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes
             '49974889619f1d8c39b6c20fa208c62a0a73ecce', #Dragon Warrior (U) (PRG0) [b1][o1].nes
@@ -48,6 +52,8 @@ def randomize(args):
 
   print("Fixing functionality of the fighter's ring (+2 atk)...")
   rom_data = fix_fighters_ring(rom_data)
+  print("Buffing HEAL slightly...")
+  rom_data[0xdbce] = 15
 
   enemy_stats = rom_data[slice(*enemy_stats_addr)]
   warp_data = rom_data[slice(*warps_addr)]
@@ -55,6 +61,7 @@ def randomize(args):
   enemy_zones = rom_data[slice(*zones_addr)]
   mp_reqs = rom_data[slice(*mp_req_addr)]
   weapon_shop_inv = rom_data[slice(*weapon_shop_inv_addr)]
+  player_stats = rom_data[slice(*player_stats_addr)]
 
   if args.chests:
     print("Shuffling chest contents...")
@@ -99,6 +106,12 @@ def randomize(args):
     mp_reqs = update_mp_reqs(mp_reqs)
     rom_data[slice(*mp_req_addr)] = mp_reqs
 
+  if args.repel:
+    print("Randomizing weapon shops...")
+    flags += "w"
+    player_stats = move_repel(player_stats)
+    rom_data[slice(*player_stats_addr)] = player_stats
+
   outputfilename = "DWRandomizer.%d.%s.%s.nes" % (args.seed, flags, prg)
   print("Writing output file %s..." % outputfilename)
   outputfile = open(outputfilename, 'wb')
@@ -142,6 +155,8 @@ def shuffle_chests(chest_data):
         if contents[i] == item:
           # this could probably be cleaner...
           j = non_charlock_chest()
+          while contents[j] in (13, 15, 16):
+            j = non_charlock_chest()
           contents[j], contents[i] = contents[i], contents[j]
 
   # make sure staff of rain guy doesn't have the stones (potentially unwinnable)
@@ -177,11 +192,6 @@ def non_charlock_chest():
   # avoid 11-16 and chest 24 (they are in charlock)
   chest = chest + 6 if (chest > 10) else chest
   chest = chest + 1 if (chest > 23) else chest
-  while contents[chest] in (13, 15, 16):
-    chest = random.randint(0, 23)
-    # avoid 11-16 and chest 24 (they are in charlock)
-    chest = chest + 6 if (chest > 10) else chest
-    chest = chest + 1 if (chest > 23) else chest
   return chest
 
 def randomize_attack_patterns(enemy_stats):
@@ -402,6 +412,20 @@ def fix_fighters_ring(rom_data):
   rom_data[0xff64:0xff76] = bytearray(ring_patch[1])
   return rom_data
 
+def move_repel(player_stats):
+  """
+  Moves the repel spell to level 8
+
+  :Parameters:
+    player_stats : bytearray
+      The player statistics
+
+  rtype: bytearray
+  return: The player stats with repel moved.
+  """
+  for i in range(47, 90, 6):
+    player_stats[i] |= 0x80
+  return player_stats
 
 def main():
   parser = argparse.ArgumentParser(prog="DWRandomizer")
@@ -415,6 +439,8 @@ def main():
            " ROM if the incorrect file is used.")
   parser.add_argument("-e","--enemies", action="store_false", 
       help="Do not randomize enemy zones.")
+  parser.add_argument("-l","--repel", action="store_false", 
+      help="Do not move repel to level 8.")
   parser.add_argument("-p","--patterns", action="store_false", 
       help="Do not randomize enemy attack patterns.")
   parser.add_argument("-s","--seed", type=int, 

@@ -360,8 +360,7 @@ def update_enemy_hp(enemy_stats):
   return: The new enemy stats.
   """
   # randomize Dragonlord's HP somewhat 
-  remake_hp[-2] = round(remake_hp[-2] * random.uniform(0.9,1.1)) # 90 -110
-  remake_hp[-1] = round(remake_hp[-1] * random.uniform(0.9,1.1)) # 135 - 165
+  remake_hp[-1] -= random.randint(0, 15) # 150 - 165
   enemy_stats[2::16] = bytearray(remake_hp)
   return enemy_stats
 
@@ -408,7 +407,7 @@ remake_mp = [3, 2, 2, 2, 2, 6, 8, 2, 8, 5]
 #dragonlord hp should be 204 and 350, but we want him beatable at lv 18
 remake_hp = [  2,  3,  5,  7, 12, 13, 13, 22, 26, 43, 16, 24, 28, 
               18, 33, 39,  3, 48, 37, 35, 44, 37, 40, 40,153,110, 
-              47, 48, 38, 70, 72, 74, 65, 67, 98,135, 99,106,100,150]
+              47, 48, 38, 70, 72, 74, 65, 67, 98,135, 99,106,100,165]
 remake_xp = [  1,  2,  3,  4,  8, 12, 16, 14, 15, 18, 12, 25, 28, 
               31, 40, 42,255, 47, 52, 58, 58, 64, 70, 72,255,  6, 
               78, 83, 90,120,135,105,120,130,180,155,172,255,  0,  0]

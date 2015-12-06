@@ -99,7 +99,7 @@ def randomize(args):
     mp_reqs = update_mp_reqs(mp_reqs)
     rom_data[slice(*mp_req_addr)] = mp_reqs
 
-  outputfilename = "Dragon Warrior.%d.%s.%s.nes" % (args.seed, flags, prg)
+  outputfilename = "DWRandomizer.%d.%s.%s.nes" % (args.seed, flags, prg)
   print("Writing output file %s..." % outputfilename)
   outputfile = open(outputfilename, 'wb')
   outputfile.write(rom_data)

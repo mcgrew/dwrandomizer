@@ -135,32 +135,54 @@ def shuffle_chests(chest_data):
 
   # make sure required quest items aren't in Charlock
   charlock_chests = contents[11:17] + [contents[24]]
+  charlock_chest_indices = (11, 12, 13, 14, 15, 16, 24)
   for item in (13, 15, 16):
     if (item in charlock_chests):
-      for i in (11, 12, 13, 14, 15, 16, 24):
+      for i in charlock_chest_indices:
         if contents[i] == item:
-          # this could probably be a lot cleaner...
-          j = random.randint(0, 23)
-          # avoid 11-16 and chest 24 (they are in charlock)
-          j = j + 6 if (j > 10) else j
-          j = j + 1 if (j > 23) else j
-          while contents[j] in (13, 15, 16):
-            j = random.randint(0, 23)
-            # avoid 11-16 and chest 24 (they are in charlock)
-            j = j + 6 if (j > 10) else j
-            j = j + 1 if (j > 23) else j
+          # this could probably be cleaner...
+          j = non_charlock_chest()
           contents[j], contents[i] = contents[i], contents[j]
+
+  # make sure staff of rain guy doesn't have the stones (potentially unwinnable)
+  if (contents[19] == 15):
+    j = non_charlock_chest()
+    #                  don't remove the key from the throne room
+    while (j == 19 or (j in (4, 5, 6) and contents[j] == 3)):
+      j = non_charlock_chest()
+    contents[19],contents[j] = contents[j],contents[19]
 
   # make sure there's a key to get out of the throne room
   if not (3 in contents[4:7]):
     for i in range(len(contents)):
       if contents[i] == 3:
         j = random.randint(4, 6)
+        # if key is in charlock and chest[j] contains a quest item, try again
+        while (i in charlock_chest_indices and (contents[j] in (13, 15, 16))):
+          j = random.randint(4, 6)
         contents[j], contents[i] = contents[i], contents[j]
         break
   
   chest_data[3::4] = bytearray(contents)
   return chest_data
+
+def non_charlock_chest():
+  """
+  Gives a random index of a chest that is not in Charlock
+
+  rtype: int
+  return: A chest index that is not in Charlock.
+  """
+  chest = random.randint(0, 23)
+  # avoid 11-16 and chest 24 (they are in charlock)
+  chest = chest + 6 if (chest > 10) else chest
+  chest = chest + 1 if (chest > 23) else chest
+  while contents[chest] in (13, 15, 16):
+    chest = random.randint(0, 23)
+    # avoid 11-16 and chest 24 (they are in charlock)
+    chest = chest + 6 if (chest > 10) else chest
+    chest = chest + 1 if (chest > 23) else chest
+  return chest
 
 def randomize_attack_patterns(enemy_stats):
   """

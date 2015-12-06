@@ -5,6 +5,7 @@ import random
 import sys
 import hashlib
 
+VERSION = "0.9.2"
 #Addresses for various data. Offsets include iNES header.
 warps_addr = (0xf3d8, 0xf50b)
 zones_addr = (0xf55f, 0xf5c3)
@@ -428,7 +429,9 @@ def move_repel(player_stats):
   return player_stats
 
 def main():
-  parser = argparse.ArgumentParser(prog="DWRandomizer")
+  
+  parser = argparse.ArgumentParser(prog="DWRandomizer",
+      description="A randomizer for Dragon Warrior for NES")
   parser.add_argument("-r","--remake", action="store_false",
       help="Do not set enemy HP, XP/Gold drops and MP use up to that of the "
            "remake. This will make grind times much longer.")
@@ -449,6 +452,7 @@ def main():
       help="Do not randomize towns.")
   parser.add_argument("-w","--shops", action="store_false", 
       help="Do not randomize weapon shops.")
+#  parser.add_argument('--version', action='version', version='%(prog) %s'%VERSION)
   parser.add_argument("filename", help="The rom file to use for input")
   args = parser.parse_args()
   randomize(args)

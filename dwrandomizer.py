@@ -307,7 +307,7 @@ def randomize_shops(weapon_shop_inv):
   # add an extra item to one shop since we have 31 slots.
   six_item_shop = random.randint(0, 5)
   new_item = random.choice(weapons)
-  while not new_item in new_shop_inv[six_item_shop]:
+  while new_item in new_shop_inv[six_item_shop]:
     new_item = random.choice(weapons)
   new_shop_inv[six_item_shop].append(new_item)
   

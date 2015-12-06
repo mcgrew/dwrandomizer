@@ -210,8 +210,10 @@ def randomize_attack_patterns(enemy_stats):
         new_patterns.append((random.randint(0,15) << 4) | random.randint(4, 11))
       else:
         # healmore, sleep, stopspell, strong fire breath, fire breath, hurtmore
+        #we'll be nice and not give Axe Knight Dragonlord's breath.
+        slot2 = random.randint(4, 11) if i == 33 else random.randint(4, 15)
         new_patterns.append((random.choice((0, 1, 3)) << 6) | 
-            (random.randint(0, 3) << 4) | random.randint(4, 15))
+            (random.randint(0, 3) << 4) | slot2)
     else:
       new_patterns.append(0)
   new_patterns.append(87) #Dragonlord form 1

@@ -40,12 +40,44 @@ entrance on the Rimuldar side to ensure you can get there.
 
 MP requirements for spells are adjusted to be the same as those in the remakes.
 
+### Randomized Weapon Shops
+
+Weapon shop inventory will now be random. Every shop will have 5-6 random items.
+
+### Buffed HEAL
+
+The HEAL spell will now have a range from 10-25 instead of 10-17.
+
+### Earlier REPEL
+
+REPEL will now be learned at level 8 instead of 15.
+
 ### Outside
-Outside doesn't always return you to where you'd expect it to, though it is 
+OUTSIDE doesn't always send you to where you'd expect it to, though it is 
 predictable. It's not a bug, it's a feature. Kappa
 
+## Usage:
 
-### Command line arguments:
+### Windows
+
+If you have a ROM from the GoodNES set, you can just drag and drop the ROM file
+onto the exe. This will generate a new ROM in the same directory as the exe. If
+This doesn't work, you will need to run the application from a command prompt.
+The command would is:
+  
+  dwrandomizer C:\path\to\dragon_warrior_rom.nes
+
+See below for other command line options.
+
+### Linux & Mac OS
+
+Run the python script from the command line: 
+
+  python dwrandomizer.py /path/to/dragon_warrior_rom.nes
+
+See below for other command line options.
+
+## Command line arguments:
 
 #### positional arguments:
   filename              The rom file to use for input
@@ -59,9 +91,11 @@ predictable. It's not a bug, it's a feature. Kappa
   -f, --force           Skip checksums and force randomization. This may
                         produce an invalid ROM if the incorrect file is used.
   -e, --enemies         Do not randomize enemy zones.
+  -l, --repel           Do not move repel to level 8.
   -p, --patterns        Do not randomize enemy attack patterns.
   -s SEED, --seed SEED  Specify a seed to be used for randomization.
   -t, --towns           Do not randomize towns.
+  -w, --shops           Do not randomize weapon shops.
 
 ## Special Thanks
 

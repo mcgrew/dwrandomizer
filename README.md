@@ -58,6 +58,12 @@ predictable. It's not a bug, it's a feature. Kappa
 
 ## Usage:
 
+Remember that if you are running this using Python instead of the exe, Python
+2.x will not produce an identical file as Python 3.x. Even though this will run
+on both Python 2.7 and 3.x, The random number generator is different between the
+2 versions. **Remember this if you are using this for a race.** The exe is built
+with Python 3.x, so it is recommended that you to use the 3.x version of Python.
+
 ### Windows
 
 If you have a ROM from the GoodNES set, you can just drag and drop the ROM file

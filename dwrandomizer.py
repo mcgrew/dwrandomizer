@@ -5,7 +5,7 @@ import random
 import sys
 import hashlib
 
-VERSION = "0.9.2"
+VERSION = "0.9.2-2015.12.07"
 #Addresses for various data. Offsets include iNES header.
 warps_addr = (0xf3d8, 0xf50b)
 zones_addr = (0xf55f, 0xf5c3)
@@ -13,7 +13,7 @@ chest_addr = (0x5ddd, 0x5e59)
 mp_req_addr = (0x1d63, 0x1d6d)
 enemy_stats_addr = (0x5e5b, 0x60db)
 player_stats_addr = (0x60dd, 0x6190)
-weapon_shop_inv_addr = (0x19a7, 0x19cc)
+weapon_shop_inv_addr = (0x19a1, 0x19cc)
 
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
@@ -333,7 +333,7 @@ def randomize_shops(weapon_shop_inv):
   weapons = (0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 14, 15, 16)
   new_shop_inv = []
   # add 5 items to each shop
-  for i in range(6):
+  for i in range(7):
     this_shop = []
     while(len(this_shop) < 5):
       new_item = random.choice(weapons)
@@ -341,8 +341,8 @@ def randomize_shops(weapon_shop_inv):
         this_shop.append(new_item)
     new_shop_inv.append(this_shop)
 
-  # add an extra item to one shop since we have 31 slots.
-  six_item_shop = random.randint(0, 5)
+  # add an extra item to one shop since we have 36 slots.
+  six_item_shop = random.randint(0, 6)
   new_item = random.choice(weapons)
   while new_item in new_shop_inv[six_item_shop]:
     new_item = random.choice(weapons)

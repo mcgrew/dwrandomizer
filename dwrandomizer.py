@@ -117,6 +117,8 @@ def randomize(args):
   print("Writing output file %s..." % outputfilename)
   outputfile = open(outputfilename, 'wb')
   outputfile.write(rom_data)
+  digest = hashlib.sha1(rom_data).hexdigest()
+  print ("New ROM Checksum: %s" % digest)
 
 def verify_checksum(rom_data):
   digest = hashlib.sha1(rom_data).hexdigest()

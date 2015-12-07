@@ -311,7 +311,7 @@ def randomize_zones(zone_info):
   # zone 16-18 - Charlock
   for i in range(16, 19):
     for j in range(5):
-      new_zones.append(random.randint(13+i, 21+i))
+      new_zones.append(random.randint(13+i, min(37,21+i)))
 
   # zone 19 rimuldar tunnel
   for j in range(5):

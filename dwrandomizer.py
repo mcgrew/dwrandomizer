@@ -275,7 +275,7 @@ def shuffle_towns(warp_data):
   warp_data[210:213] = caves[6]
   # randomly swap swamp cave exit with southern shrine
   if (random.randint(0,1)):
-		warp_data[174:177],warp_data[189:192] = warp_data[189:192],warp_data[174:177]
+    warp_data[174:177],warp_data[189:192] = warp_data[189:192],warp_data[174:177]
   return warp_data
 
 def randomize_zones(zone_info):

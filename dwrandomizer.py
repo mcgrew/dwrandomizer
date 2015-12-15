@@ -15,6 +15,13 @@ enemy_stats_addr = (0x5e5b, 0x60db)
 player_stats_addr = (0x60dd, 0x6190)
 weapon_shop_inv_addr = (0x19a1, 0x19cc)
 
+flute_loc = [7,  9,   6]
+token_loc = [1, 83, 113]
+armor_loc = [3, 18,  12]
+flute_addr= (0xe11e, 0xe124, 0xe12a)
+token_addr= (0xe15d, 0xe163, 0xe169)
+armor_addr= (0xe173, 0x3179, 0xe17f)
+
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes
@@ -94,6 +101,11 @@ def randomize(args):
     weapon_shop_inv = randomize_shops(weapon_shop_inv)
     rom_data[slice(*weapon_shop_inv_addr)] = weapon_shop_inv
 
+  if args.searchitems:
+    print("Shuffling searchable item locations...")
+    flags += "i"
+    rom_data = shuffle_searchables(rom_data)
+
   if args.remake:
     print("Increasing XP/Gold drops to remake levels...")
     flags += "r"
@@ -143,24 +155,40 @@ def shuffle_chests(chest_data):
     # change all gold (and erdrick's tablet) to large gold stash
     if (contents[i] >= 18 and contents[i] <= 20):
       contents[i] = 21
-    # 50/50 chance to have a chest with gwaelin's love (lol)
-    if contents[i] >= 23:
-      contents[i] = 11 + (random.randint(0,1) * 10)
+    # 50/50 chance to have erdrick's token in a chest
+    if contents[i] == 23:
+      if random.randint(0,1):
+        token_loc[0] = 0 # remove the token from the swamp
+        contents[i] = 10 # put it in a chest
+      else:
+        contents[i] = 21
 
   random.shuffle(contents)
 
   # make sure required quest items aren't in Charlock
   charlock_chests = contents[11:17] + [contents[24]]
   charlock_chest_indices = (11, 12, 13, 14, 15, 16, 24)
-  for item in (13, 15, 16):
+  quest_items = (10, 13, 15, 16)
+  for item in quest_items:
     if (item in charlock_chests):
       for i in charlock_chest_indices:
         if contents[i] == item:
           # this could probably be cleaner...
           j = non_charlock_chest()
-          while contents[j] in (13, 15, 16):
+          while contents[j] in quest_items:
             j = non_charlock_chest()
           contents[j], contents[i] = contents[i], contents[j]
+
+  # make sure there's a key to get out of the throne room
+  if not (3 in contents[4:7]):
+    for i in range(len(contents)):
+      if contents[i] == 3:
+        j = random.randint(4, 6)
+        # if key is in charlock and chest[j] contains a quest item, try again
+        while (i in charlock_chest_indices and (contents[j] in quest_items)):
+          j = random.randint(4, 6)
+        contents[j], contents[i] = contents[i], contents[j]
+        break
 
   # make sure staff of rain guy doesn't have the stones (potentially unwinnable)
   if (contents[19] == 15):
@@ -170,16 +198,6 @@ def shuffle_chests(chest_data):
       j = non_charlock_chest()
     contents[19],contents[j] = contents[j],contents[19]
 
-  # make sure there's a key to get out of the throne room
-  if not (3 in contents[4:7]):
-    for i in range(len(contents)):
-      if contents[i] == 3:
-        j = random.randint(4, 6)
-        # if key is in charlock and chest[j] contains a quest item, try again
-        while (i in charlock_chest_indices and (contents[j] in (13, 15, 16))):
-          j = random.randint(4, 6)
-        contents[j], contents[i] = contents[i], contents[j]
-        break
   
   chest_data[3::4] = bytearray(contents)
   return chest_data
@@ -357,6 +375,30 @@ def randomize_shops(weapon_shop_inv):
 
   return bytearray(returnvalue)
 
+def shuffle_searchables(rom_data):
+  """
+  Shuffles the 3 searchable items in the game. (E.Armor, F.Flute, E.Token)
+
+  :Parameters:
+    rom_data : bytearray
+      The entire ROM data
+
+  rtype: bytearray
+  return: The patched ROM data
+  """
+  searchables = [flute_loc, token_loc, armor_loc]
+  random.shuffle(searchables)
+  rom_data[flute_addr[0]] = searchables[0][0]
+  rom_data[flute_addr[1]] = searchables[0][1]
+  rom_data[flute_addr[2]] = searchables[0][2]
+  rom_data[token_addr[0]] = searchables[0][0]
+  rom_data[token_addr[1]] = searchables[0][1]
+  rom_data[token_addr[2]] = searchables[0][2]
+  rom_data[armor_addr[0]] = searchables[0][0]
+  rom_data[armor_addr[1]] = searchables[0][1]
+  rom_data[armor_addr[2]] = searchables[0][2]
+  return rom_data
+
 def update_drops(enemy_stats):
   """
   Raises enemy XP and gold drops to those of the remakes.
@@ -444,6 +486,9 @@ def main():
            " ROM if the incorrect file is used.")
   parser.add_argument("-e","--enemies", action="store_false", 
       help="Do not randomize enemy zones.")
+  parser.add_argument("-i","--searchitemss", action="store_false", 
+      help="Do not randomize the locations of searchable items (Fairy Flute, "
+           "Erdrick's Armor, Erdrick's Token).")
   parser.add_argument("-l","--repel", action="store_false", 
       help="Do not move repel to level 8.")
   parser.add_argument("-p","--patterns", action="store_false", 

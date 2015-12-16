@@ -20,7 +20,7 @@ token_loc = [1, 83, 113]
 armor_loc = [3, 18,  12]
 flute_addr= (0xe11e, 0xe124, 0xe12a)
 token_addr= (0xe15d, 0xe163, 0xe169)
-armor_addr= (0xe173, 0x3179, 0xe17f)
+armor_addr= (0xe173, 0xe179, 0xe17f)
 
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
@@ -399,12 +399,12 @@ def shuffle_searchables(rom_data):
   rom_data[flute_addr[0]] = searchables[0][0]
   rom_data[flute_addr[1]] = searchables[0][1]
   rom_data[flute_addr[2]] = searchables[0][2]
-  rom_data[token_addr[0]] = searchables[0][0]
-  rom_data[token_addr[1]] = searchables[0][1]
-  rom_data[token_addr[2]] = searchables[0][2]
-  rom_data[armor_addr[0]] = searchables[0][0]
-  rom_data[armor_addr[1]] = searchables[0][1]
-  rom_data[armor_addr[2]] = searchables[0][2]
+  rom_data[token_addr[0]] = searchables[1][0]
+  rom_data[token_addr[1]] = searchables[1][1]
+  rom_data[token_addr[2]] = searchables[1][2]
+  rom_data[armor_addr[0]] = searchables[2][0]
+  rom_data[armor_addr[1]] = searchables[2][1]
+  rom_data[armor_addr[2]] = searchables[2][2]
   return rom_data
 
 def randomize_growth(player_stat_data):

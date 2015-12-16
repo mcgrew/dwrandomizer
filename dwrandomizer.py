@@ -12,7 +12,7 @@ zones_addr = (0xf55f, 0xf5c3)
 chest_addr = (0x5ddd, 0x5e59)
 mp_req_addr = (0x1d63, 0x1d6d)
 enemy_stats_addr = (0x5e5b, 0x60db)
-player_stats_addr = (0x60dd, 0x6190)
+player_stats_addr = (0x60dd, 0x6191)
 weapon_shop_inv_addr = (0x19a1, 0x19cc)
 
 flute_loc = [7,  9,   6]
@@ -105,6 +105,11 @@ def randomize(args):
     print("Shuffling searchable item locations...")
     flags += "i"
     rom_data = shuffle_searchables(rom_data)
+
+  if args.growth:
+    print("Randomizing player stat growth...")
+    flags += "g"
+    rom_data[slice(*player_stats_addr)] = randomize_growth(player_stats)
 
   if args.remake:
     print("Increasing XP/Gold drops to remake levels...")
@@ -399,6 +404,32 @@ def shuffle_searchables(rom_data):
   rom_data[armor_addr[2]] = searchables[0][2]
   return rom_data
 
+def randomize_growth(player_stat_data):
+  player_str = list(player_stat_data[0:180:6])
+  player_agi = list(player_stat_data[1:180:6])
+  player_hp  = list(player_stat_data[2:180:6])
+  player_mp  = list(player_stat_data[3:180:6])
+
+  for i in range(len(player_str)):
+    player_str[i] = round(player_str[i] * random.uniform(0.8, 1.2))
+  for i in range(len(player_agi)):
+    player_agi[i] = round(player_agi[i] * random.uniform(0.8, 1.2))
+  for i in range(len(player_hp)):
+    player_hp[i] = round(player_hp[i] * random.uniform(0.8, 1.2))
+  for i in range(len(player_mp)):
+    player_mp[i] = round(player_mp[i] * random.uniform(0.8, 1.2))
+
+  player_str.sort()
+  player_agi.sort()
+  player_hp.sort()
+  player_mp.sort()
+
+  player_stat_data[0:180:6] = player_str
+  player_stat_data[1:180:6] = player_agi
+  player_stat_data[2:180:6] = player_hp
+  player_stat_data[3:180:6] = player_mp
+  return player_stat_data
+
 def update_drops(enemy_stats):
   """
   Raises enemy XP and gold drops to those of the remakes.
@@ -486,9 +517,11 @@ def main():
            " ROM if the incorrect file is used.")
   parser.add_argument("-e","--enemies", action="store_false", 
       help="Do not randomize enemy zones.")
-  parser.add_argument("-i","--searchitemss", action="store_false", 
+  parser.add_argument("-i","--searchitems", action="store_false", 
       help="Do not randomize the locations of searchable items (Fairy Flute, "
            "Erdrick's Armor, Erdrick's Token).")
+  parser.add_argument("-g","--growth", action="store_false", 
+      help="Do not randomize player stat growth.")
   parser.add_argument("-l","--repel", action="store_false", 
       help="Do not move repel to level 8.")
   parser.add_argument("-p","--patterns", action="store_false", 

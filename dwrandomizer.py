@@ -63,6 +63,9 @@ def randomize(args):
   print("Buffing HEAL slightly...")
   rom_data[0xdbce] = 15
 
+  print("Fixing Northern Shrine...")
+  rom_data[0xd77] == rom_data[0xd81] == 0x66
+
   enemy_stats = rom_data[slice(*enemy_stats_addr)]
   warp_data = rom_data[slice(*warps_addr)]
   chest_data = rom_data[slice(*chest_addr)]
@@ -196,12 +199,12 @@ def shuffle_chests(chest_data):
         break
 
   # make sure staff of rain guy doesn't have the stones (potentially unwinnable)
-  if (contents[19] == 15):
-    j = non_charlock_chest()
-    #                  don't remove the key from the throne room
-    while (j == 19 or (j in (4, 5, 6) and contents[j] == 3)):
-      j = non_charlock_chest()
-    contents[19],contents[j] = contents[j],contents[19]
+#  if (contents[19] == 15):
+#    j = non_charlock_chest()
+#    #                  don't remove the key from the throne room
+#    while (j == 19 or (j in (4, 5, 6) and contents[j] == 3)):
+#      j = non_charlock_chest()
+#    contents[19],contents[j] = contents[j],contents[19]
 
   
   chest_data[3::4] = bytearray(contents)

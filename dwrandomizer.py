@@ -15,11 +15,11 @@ enemy_stats_addr = (0x5e5b, 0x60db)
 player_stats_addr = (0x60dd, 0x6191)
 weapon_shop_inv_addr = (0x19a1, 0x19cc)
 
-flute_loc = [7,  9,   6]
 token_loc = [1, 83, 113]
+flute_loc = [7,  9,   6]
 armor_loc = [3, 18,  12]
-flute_addr= (0xe11e, 0xe124, 0xe12a)
-token_addr= (0xe15d, 0xe163, 0xe169)
+token_addr= (0xe11e, 0xe124, 0xe12a)
+flute_addr= (0xe15d, 0xe163, 0xe169)
 armor_addr= (0xe173, 0xe179, 0xe17f)
 
 #sha1sums of various roms
@@ -394,14 +394,14 @@ def shuffle_searchables(rom_data):
   rtype: bytearray
   return: The patched ROM data
   """
-  searchables = [flute_loc, token_loc, armor_loc]
+  searchables = [token_loc, flute_loc, armor_loc]
   random.shuffle(searchables)
-  rom_data[flute_addr[0]] = searchables[0][0]
-  rom_data[flute_addr[1]] = searchables[0][1]
-  rom_data[flute_addr[2]] = searchables[0][2]
-  rom_data[token_addr[0]] = searchables[1][0]
-  rom_data[token_addr[1]] = searchables[1][1]
-  rom_data[token_addr[2]] = searchables[1][2]
+  rom_data[token_addr[0]] = searchables[0][0]
+  rom_data[token_addr[1]] = searchables[0][1]
+  rom_data[token_addr[2]] = searchables[0][2]
+  rom_data[flute_addr[0]] = searchables[1][0]
+  rom_data[flute_addr[1]] = searchables[1][1]
+  rom_data[flute_addr[2]] = searchables[1][2]
   rom_data[armor_addr[0]] = searchables[2][0]
   rom_data[armor_addr[1]] = searchables[2][1]
   rom_data[armor_addr[2]] = searchables[2][2]

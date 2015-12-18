@@ -64,7 +64,7 @@ def randomize(args):
   rom_data[0xdbce] = 15
 
   print("Fixing Northern Shrine...")
-  rom_data[0xd77] == rom_data[0xd81] == 0x66
+  rom_data[0xd77] = rom_data[0xd81] = 0x66
 
   enemy_stats = rom_data[slice(*enemy_stats_addr)]
   warp_data = rom_data[slice(*warps_addr)]

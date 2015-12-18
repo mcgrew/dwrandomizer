@@ -5,7 +5,7 @@ import random
 import sys
 import hashlib
 
-VERSION = "0.9.5"
+VERSION = "0.9.4"
 #Addresses for various data. Offsets include iNES header.
 warps_addr = (0xf3d8, 0xf50b)
 zones_addr = (0xf55f, 0xf5c3)

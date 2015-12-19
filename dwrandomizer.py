@@ -26,7 +26,11 @@ class Rom:
   zones_slice = slice(0xf55f, 0xf5c3)
   mp_req_slice = slice(0x1d63, 0x1d6d) #mp requirements for each spell
   player_stats_slice = slice(0x60dd, 0x6191)
+  player_mp_slice = slice(0x60e0, 0x6191, 6)
+  player_spell_mask_slice_1 = slice(0x60e2, 0x6191, 6)
+  player_spell_mask_slice_2 = slice(0x60e1, 0x6191, 6)
   weapon_shop_inv_slice = slice(0x19a1, 0x19cc)
+  new_spell_slice = slice(0xeaf9, 0xeb1f, 4)
 
   token_slice = slice(0xe11e, 0xe12b, 6)
   flute_slice = slice(0xe15d, 0xe16a, 6)
@@ -293,6 +297,35 @@ class Rom:
     player_stat_data[3:180:6] = player_mp
     self.rom_data[self.player_stats_slice] = player_stat_data 
 
+  def randomize_spell_learning(self):
+    self.move_repel() # in case this hasn't been called yet.
+    levels = self.rom_data[self.new_spell_slice]
+    player_mp = self.rom_data[self.player_mp_slice]
+    new_masks = []
+    # choose the levels for new spells
+    for i in range(len(levels)):
+      levels[i] = levels[i] + random.randint(-2, 2)
+    #adjust the spell masks to fit the new levels
+    for i in range(30):
+      mask = 0
+      for j in range(len(levels)):
+        if levels[j] <= i+1:
+          mask |= 1 << j
+      new_masks.append(mask)
+      if mask: # give the player at least 3 mp if they have a spell to use.
+        player_mp[i] = max(3, player_mp[i])
+    mask1 = []
+    mask2 = []
+    # split the masks for use in the rom
+    for mask in new_masks:
+      mask1.append(mask & 0xff)
+      mask2.append(mask >> 8)
+
+    self.rom_data[self.player_mp_slice] = player_mp
+    self.rom_data[self.new_spell_slice] = levels
+    self.rom_data[self.player_spell_mask_slice_1] = mask1
+    self.rom_data[self.player_spell_mask_slice_2] = mask2
+
   def update_drops(self):
     """
     Raises enemy XP and gold drops to those of the remakes.
@@ -348,6 +381,7 @@ class Rom:
     player_stats = self.rom_data[self.player_stats_slice]
     for i in range(47, 90, 6):
       player_stats[i] |= 0x80
+    self.rom_data[0xeb15] = 8
     self.rom_data[self.player_stats_slice] = player_stats
 
   def buff_heal(self):
@@ -386,6 +420,8 @@ def main():
       help="Do not randomize player stat growth.")
   parser.add_argument("-l","--repel", action="store_false", 
       help="Do not move repel to level 8.")
+  parser.add_argument("-m","--spells", action="store_false", 
+      help="Do not randomize the level spells are learned.")
   parser.add_argument("-p","--patterns", action="store_false", 
       help="Do not randomize enemy attack patterns.")
   parser.add_argument("-s","--seed", type=int, 
@@ -475,13 +511,17 @@ def randomize(args):
     print("Setting enemy HP to approximate remake levels...")
     rom.update_enemy_hp()
     print("Lowering MP requirements to remake levels...")
-    flags += "m"
     rom.update_mp_reqs()
 
   if args.repel:
     print("Moving REPEL to level 8...")
     flags += "l"
     rom.move_repel()
+
+  if args.spells:
+    print("Randomizing level spells are learned...")
+    flags += "m"
+    rom.randomize_spell_learning()
 
   output_filename = "DWRandomizer.%d.%s.%s.nes" % (args.seed, flags, prg)
   print("Writing output file %s..." % output_filename)

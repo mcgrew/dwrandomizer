@@ -44,6 +44,24 @@ MP requirements for spells are adjusted to be the same as those in the remakes.
 
 Weapon shop inventory will now be random. Every shop will have 5-6 random items.
 
+### Shuffled "Searched for" items
+
+The Fairy Flute, Erdrick's Armor, and Erdrick's Token will now be shuffled, so
+for example the token could be in Kol instead of the flute, and the armor in the
+swamp. In addition, Erdrick's Token could now be in a random chest instead of on
+the ground.
+
+### Randomized Player Attributes
+
+Your character's Strength, Agility, HP and MP can now vary up to 20% from the 
+original version.
+
+### Randomized Spell Learning
+
+Spells learning is now randomized. Spells will still be learned within 2 levels
+of the original. For instance, in Dragon Warrior, RADIANT is normally learned at
+level 9. It will now be learned somewhere between level 7 and level 11.
+
 ### Buffed HEAL
 
 The HEAL spell will now have a range from 10-25 instead of 10-17.
@@ -86,22 +104,22 @@ See below for other command line options.
 ## Command line arguments:
 
 #### positional arguments:
-  filename              The rom file to use for input
+    filename              The rom file to use for input
 
 #### optional arguments:
-  -h, --help            show this help message and exit
-  -r, --remake          Do not set enemy HP, XP/Gold drops and MP use up to
-                        that of the remake. This will make grind times much
-                        longer.
-  -c, --chests          Do not randomize chest contents.
-  -f, --force           Skip checksums and force randomization. This may
-                        produce an invalid ROM if the incorrect file is used.
-  -e, --enemies         Do not randomize enemy zones.
-  -l, --repel           Do not move repel to level 8.
-  -p, --patterns        Do not randomize enemy attack patterns.
-  -s SEED, --seed SEED  Specify a seed to be used for randomization.
-  -t, --towns           Do not randomize towns.
-  -w, --shops           Do not randomize weapon shops.
+    -h, --help            show this help message and exit
+    -r, --remake          Do not set enemy HP, XP/Gold drops and MP use up to
+                          that of the remake. This will make grind times much
+                          longer.
+    -c, --chests          Do not randomize chest contents.
+    -f, --force           Skip checksums and force randomization. This may
+                          produce an invalid ROM if the incorrect file is used.
+    -e, --enemies         Do not randomize enemy zones.
+    -l, --repel           Do not move repel to level 8.
+    -p, --patterns        Do not randomize enemy attack patterns.
+    -s SEED, --seed SEED  Specify a seed to be used for randomization.
+    -t, --towns           Do not randomize towns.
+    -w, --shops           Do not randomize weapon shops.
 
 ## Special Thanks
 

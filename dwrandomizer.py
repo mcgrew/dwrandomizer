@@ -108,7 +108,7 @@ class Rom:
 #          j = self.non_charlock_chest()
 #        contents[19],contents[j] = contents[j],contents[19]
 
-      self.rom_data[self.chest_content_slice] = bytearray(contents)
+    self.rom_data[self.chest_content_slice] = bytearray(contents)
 
   def non_charlock_chest(self):
     """
@@ -387,7 +387,7 @@ class Rom:
   def buff_heal(self):
     self.rom_data[0xdbce] = 15
 
-  def fix_northern_shrine( self):
+  def patch_northern_shrine(self):
     """
     Removes the 2 blocks from around the shrine guardian so you can walk around 
     him.
@@ -467,7 +467,7 @@ def randomize(args):
   rom.buff_heal()
 
   print("Fixing Northern Shrine...")
-  rom.fix_northern_shrine()
+  rom.patch_northern_shrine()
 
   if args.chests:
     print("Shuffling chest contents...")

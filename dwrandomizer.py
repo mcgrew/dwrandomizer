@@ -469,6 +469,11 @@ def randomize(args):
   print("Fixing Northern Shrine...")
   rom.patch_northern_shrine()
 
+  if args.searchitems:
+    print("Shuffling searchable item locations...")
+    flags += "i"
+    rom.shuffle_searchables()
+
   if args.chests:
     print("Shuffling chest contents...")
     flags += "c"
@@ -493,11 +498,6 @@ def randomize(args):
     print("Randomizing weapon shops...")
     flags += "w"
     rom.randomize_shops()
-
-  if args.searchitems:
-    print("Shuffling searchable item locations...")
-    flags += "i"
-    rom.shuffle_searchables()
 
   if args.growth:
     print("Randomizing player stat growth...")

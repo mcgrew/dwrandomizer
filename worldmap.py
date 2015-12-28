@@ -49,27 +49,27 @@ class WorldMap:
     self.data = None
     self.pointers = None
 
-  def generate(self, start_alive=0.45, birth_limit=3, death_limit=3, 
-               starvation_limit=12, iterations=100): 
-    """
-    Generates a new map for use in the Dragon Warrior ROM.
+#  def generate(self, start_alive=0.45, birth_limit=3, death_limit=3, 
+#               starvation_limit=12, iterations=100): 
+#    """
+#    Generates a new map for use in the Dragon Warrior ROM.
+#
+#    rtype: array
+#    return: The newly generated map
+#    """
+#    self.grid = []
+#    for i in range(self.map_height):
+#      self.grid.append([])
+#      for j in range(self.map_width):
+#        if random.random() < start_alive:
+#          self.grid[i].append(0)
+#        else:
+#          self.grid[i].append(4)
+#    self.refine(self.iterations, birth_limit, death_limit, starvation_limit, 
+#                iterations)
+#    return self.grid
 
-    rtype: array
-    return: The newly generated map
-    """
-    self.grid = []
-    for i in range(self.map_height):
-      self.grid.append([])
-      for j in range(self.map_width):
-        if random.random() < start_alive:
-          self.grid[i].append(0)
-        else:
-          self.grid[i].append(4)
-    self.refine(self.iterations, birth_limit, death_limit, starvation_limit, 
-                iterations)
-    return self.grid
-
-  def generate2(self):
+  def generate(self):
     """
     Potential alternate implementation for map generation.
 
@@ -85,7 +85,7 @@ class WorldMap:
     for tile in tiles:
       for i in range(16):
         points = []
-        size = 10240
+        size = 384
         points.append((random.randint(0,self.map_width-1), 
                       random.randint(0,self.map_height-1)))
         while size > 0:
@@ -93,31 +93,38 @@ class WorldMap:
           new_points = []
           for point in points:
             self.grid[point[0]][point[1]] = tile
-            if directions & 8 and point[0] > 0: #up
+            if (directions & 8 and point[0] > 0 
+                and self.grid[point[0]-1][point[1]] != tile): #up
               new_points.append((point[0]-1, point[1]))
-            if directions & 4 and point[0] < self.map_height-1: #down
+            if (directions & 4 and point[0] < self.map_height-1
+                and self.grid[point[0]+1][point[1]] != tile): #down
               new_points.append((point[0]+1, point[1]))
-            if directions & 2 and point[1] > 0: #left
+            if (directions & 2 and point[1] > 0
+                and self.grid[point[0]][point[1]-1] != tile): #left
               new_points.append((point[0], point[1]-1))
-            if directions & 1 and point[1] < self.map_width-1: #right
+            if (directions & 1 and point[1] < self.map_width-1
+                and self.grid[point[0]][point[1]+1] != tile): #right
               new_points.append((point[0], point[1]+1))
             size -= 1
           if (len(new_points)):
             points = new_points
 
     # smooth out the map a bit so it compresses better
-    for row in self.grid:
+    for i in range(len(self.grid)):
+      row = self.grid[i]
       for j in range(self.map_width-2):
         if (row[j] != row[j+1] and row[j] == row[j+2]):
           row[j+1] = row[j]
         # add in some bridges
         if (row[j+1] == WATER and WATER not in (row[j], row[j+2]) 
-             and MOUNTAIN not in (row[j], row[j+2])):
+             and MOUNTAIN not in (row[j], row[j+2])
+             and (i <= 1 or self.grid[i-1][j+1] in (MOUNTAIN, WATER))
+             and (i >= self.map_width-1 or self.grid[i+1][j+1] in (MOUNTAIN, WATER))):
           row[j+1] = BRIDGE
         if (j < self.map_width-3 and row[j+1] == WATER and row[j+1] == WATER 
              and WATER not in (row[j], row[j+3]) 
              and MOUNTAIN not in (row[j], row[j+3])):
-          row[j+1] = row[j+2] = BRIDGE
+          row[j+1] = row[j+2] = row[j]
     return self.grid
 
   def refine(self, birth_limit=3, death_limit=3, starvation_limit=12, 
@@ -305,11 +312,12 @@ if __name__ == "__main__":
   world_map = WorldMap()
 #  world_map.from_rom("/home/mcgrew/vbox_shared/Dragon Warrior (U) (PRG0) [!].nes")
 #  world_map.generate(birth_limit=3, death_limit=4, iterations=100)
-  world_map.generate2()
-#  print(world_map.to_html())
+  world_map.generate()
   encoded = world_map.encode()
-  print(hex(len(encoded) - 240))
-  f = open('test1.html', 'w')
+  # 0x8f6 is the maximum size for an encoded map that will fit in the ROM.
+  while len(encoded) > 0x8f6 + 240:
+    encoded = world_map.encode()
+  f = open('test.html', 'w')
   f.write(world_map.to_html())
   f.close()
 

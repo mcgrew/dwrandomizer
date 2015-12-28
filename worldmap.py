@@ -48,6 +48,10 @@ class WorldMap:
     self.grid = None
     self.data = None
     self.pointers = None
+    self.cave_warps = []
+    self.town_warps = []
+    self.tantegel_warp = None
+    self.charlock_warp = None
 
 #  def generate(self, start_alive=0.45, birth_limit=3, death_limit=3, 
 #               starvation_limit=12, iterations=100): 
@@ -69,6 +73,45 @@ class WorldMap:
 #                iterations)
 #    return self.grid
 
+#  def refine(self, birth_limit=3, death_limit=3, starvation_limit=12, 
+#             iterations=100):
+#    """
+#    Performs one step in the refinement operation.
+#
+#    :Parameters:
+#
+#    rtype: 
+#    return: 
+#    """
+#    for i in range(iterations):
+#      new_map = []
+#      for i in range(self.map_width):
+#        new_map.append([])
+#        for j in range(self.map_height):
+#          count = 0
+#          for k in range(-1, 2):
+#            for l in range(-1, 2):
+#              cellX,cellY = i+k, j+l
+#              if cellX == 0 and cellY == 0:
+#                continue
+#              if cellX < 0 or cellX >= self.map_width or cellY < 0 or cellY >= self.map_height:
+#                continue
+#              if self.grid[cellX][cellY] == 0:
+#                if 0 in (cellX, cellY): # directly above or below
+#                  count += 2
+#                else:
+#                  count += 1
+#          if count > self.starvation_limit:
+#            new_map[i].append(4)
+#          if count > self.birth_limit:
+#            new_map[i].append(0)
+#          elif count < self.death_limit:
+#            new_map[i].append(4)
+#          else:
+#            new_map[i].append(self.grid[i][j])
+#    self.grid = new_map
+#    return self.grid
+#
   def generate(self):
     """
     Potential alternate implementation for map generation.
@@ -85,7 +128,8 @@ class WorldMap:
     for tile in tiles:
       for i in range(16):
         points = []
-        size = 384
+        size = round((self.map_width * self.map_height) / 20)
+        size = random.randint(round(size/4), size)
         points.append((random.randint(0,self.map_width-1), 
                       random.randint(0,self.map_height-1)))
         while size > 0:
@@ -125,46 +169,56 @@ class WorldMap:
              and WATER not in (row[j], row[j+3]) 
              and MOUNTAIN not in (row[j], row[j+3])):
           row[j+1] = row[j+2] = row[j]
+    self.placelandmarks()
     return self.grid
 
-  def refine(self, birth_limit=3, death_limit=3, starvation_limit=12, 
-             iterations=100):
-    """
-    Performs one step in the refinement operation.
+  def placelandmarks(self):
+    x, y = self.random_land()
+    self.add_warp(1, x, y, CASTLE)
+    self.grid[y][x] = CASTLE #tantegel
+    x, y = self.random_land(6, 118, 3, 116)
+    self.place_charlock(x-3, y)
+    for i in range(6):
+      x, y = self.random_land()
+      self.grid[y][x] = TOWN
+    for i in range(6):
+      x, y = self.random_land()
+      self.grid[y][x] = CAVE
 
-    :Parameters:
+  def place_charlock(self, x, y):
+    self.add_warp(1, x, y, CASTLE)
+    self.grid[y][x] = CASTLE #charlock
+    for i in range(-3, 4):
+      for j in range(-3, 4):
+        if abs(i) >= 3 or abs(j) >= 3:
+          if not (i > 0 and j == 0):
+            self.grid[y+j][x+i] = BLOCK
+        elif abs(i) >= 2 or abs(j) >= 2:
+          self.grid[y+j][x+i] = WATER
+        elif not (i==0 and j==0):
+          self.grid[y+j][x+i] = SWAMP
+    self.grid[y][x+2] = BRIDGE #temporary
 
-    rtype: 
-    return: 
-    """
-    for i in range(iterations):
-      new_map = []
-      for i in range(self.map_width):
-        new_map.append([])
-        for j in range(self.map_height):
-          count = 0
-          for k in range(-1, 2):
-            for l in range(-1, 2):
-              cellX,cellY = i+k, j+l
-              if cellX == 0 and cellY == 0:
-                continue
-              if cellX < 0 or cellX >= self.map_width or cellY < 0 or cellY >= self.map_height:
-                continue
-              if self.grid[cellX][cellY] == 0:
-                if 0 in (cellX, cellY): # directly above or below
-                  count += 2
-                else:
-                  count += 1
-          if count > self.starvation_limit:
-            new_map[i].append(4)
-          if count > self.birth_limit:
-            new_map[i].append(0)
-          elif count < self.death_limit:
-            new_map[i].append(4)
-          else:
-            new_map[i].append(self.grid[i][j])
-    self.grid = new_map
-    return self.grid
+  def random_land(self, minx=1, maxx=118, miny=1, maxy=118):
+    x, y = random.randint(minx, maxx), random.randint(miny, maxy)
+    while ((self.grid[y][x-1] in (WATER, MOUNTAIN)) and
+           (self.grid[y][x+1] in (WATER, MOUNTAIN)) and
+           (self.grid[y-1][x] in (WATER, MOUNTAIN)) and
+           (self.grid[y+1][x] in (WATER, MOUNTAIN))):
+      x, y = random.randint(minx, maxx), random.randint(miny, maxy)
+    return x, y
+
+  def add_warp(self, m, x, y, type_):
+    if type_ == CASTLE:
+      if not self.charlock_warp:
+        self.charlock_warp = (m, x, y)
+      else:
+        self.tantegel_warp = (m, x, y)
+    elif type_ == TOWN:
+      self.town_warps.append((m, x, y))
+    elif type_ == CAVE:
+      self.cave_warps.append((m, x, y))
+    
 
   def encode(self):
     """
@@ -297,7 +351,7 @@ class WorldMap:
            ".castle { background: no-repeat center center url(data:image/gif;base64,R0lGODlhEAAQAKEDAAAAAEBg+Ly8vP///yH+EUNyZWF0ZWQgd2l0aCBHSU1QACwAAAAAEAAQAAACQIRvM8is24A6MFU5gRA0yyN4l8aR0IaE0GOooPrEXom2tB1vMCsEgVLSKHyL3o+jExKFQBIyxhwgUTsn9ZqMaAsAOw==); } "
            ".bridge { background: no-repeat center center url(data:image/gif;base64,R0lGODlhEAAQAKEDAAAAAEBg+Ly8vP///yH+EUNyZWF0ZWQgd2l0aCBHSU1QACwAAAAAEAAQAAACPYwDqXmnCAGShskb811rbgGGIAeIZqicqlCu7ki2YjLUdp2g+ADwPs7y9YbC3e9mI95ivSOj4WjyoFTEoAAAOw==); } "
            ".stairs { background: no-repeat center center url(data:image/gif;base64,R0lGODlhEAAQAKEEAAAAAH9/f7y8vJjoACH+EUNyZWF0ZWQgd2l0aCBHSU1QACwAAAAAEAAQAAACPZwHcZdr7WCYIVFqK9i8e+SFmxEIpsgNkymgW1WacRuq7Fzb8s2O6w6kwXjBEkAnmCkFJGKSp8JcpBOXqAAAOw==); } "
-           "</style><body><table border='0' cellpadding='0' cellspacing='0'>")
+           "</style><body><table border='0' cellpadding='0' cellspacing='0' width='%d'>" % (16 * self.map_width))
     for row in self.grid:
       html += "<tr>"
       for tile in row:
@@ -316,8 +370,10 @@ if __name__ == "__main__":
   encoded = world_map.encode()
   # 0x8f6 is the maximum size for an encoded map that will fit in the ROM.
   while len(encoded) > 0x8f6 + 240:
+    print("World Map too large (%d/2534 bytes), retrying... " % len(encoded))
+    world_map.generate()
     encoded = world_map.encode()
-  f = open('test.html', 'w')
+  f = open('map.html', 'w')
   f.write(world_map.to_html())
   f.close()
 

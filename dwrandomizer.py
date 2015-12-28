@@ -123,7 +123,7 @@ class Rom:
     chest = chest + 1 if (chest > 23) else chest
     return chest
 
-  def randomize_attack_patterns(self):
+  def randomize_attack_patterns(self, ultra=False):
     """
     Randomizes attack patterns of enemies (whether or not they use spells/fire 
     breath).
@@ -135,18 +135,21 @@ class Rom:
       if random.randint(0,1): # 50/50 chance
         resist = random.randint(0,round(i/5))
         new_ss_resist[i] &= (0xf0 | resist)
-        if i <= 20:
-          # heal, sleep, stopspell, hurt
-          new_patterns.append((random.randint(0,11) << 4) | random.randint(0,3))
-        elif i < 30:
-          # healmore, heal, sleep, stopspell, fire breath, hurtmore
-          new_patterns.append((random.randint(0,15) << 4) | random.randint(4, 11))
+        if ultra:
+            new_patterns.append((random.randint(0,255)))
         else:
-          # healmore, sleep, stopspell, strong fire breath, fire breath, hurtmore
-          #we'll be nice and not give Axe Knight Dragonlord's breath.
-          slot2 = random.randint(4, 11) if i == 33 else random.randint(4, 15)
-          new_patterns.append((random.choice((0, 1, 3)) << 6) | 
-              (random.randint(0, 3) << 4) | slot2)
+          if i <= 20:
+            # heal, sleep, stopspell, hurt
+            new_patterns.append((random.randint(0,11) << 4) | random.randint(0,3))
+          elif i < 30:
+            # healmore, heal, sleep, stopspell, fire breath, hurtmore
+            new_patterns.append((random.randint(0,15) << 4) | random.randint(4, 11))
+          else:
+            # healmore, sleep, stopspell, strong fire breath, fire breath, hurtmore
+            #we'll be nice and not give Axe Knight Dragonlord's breath.
+            slot2 = random.randint(4, 11) if i == 33 else random.randint(4, 15)
+            new_patterns.append((random.choice((0, 1, 3)) << 6) | 
+                (random.randint(0, 3) << 4) | slot2)
       else:
         new_patterns.append(0)
     new_patterns.append(87) #Dragonlord form 1
@@ -170,7 +173,8 @@ class Rom:
     # this could happen if it ends up in southern shrine position or
     # behind a locked door when rimuldar is in it's normal location.
     while (caves[3][0] == 21 or
-            (towns[3][0] == 11 and 21 in (caves[5][0], caves[6][0]))):
+          (towns[3][0] == 11 and 21 in (caves[5][0], caves[6][0])) or
+          (towns[3][0] ==  9 and caves[6][0] == 21)):
       random.shuffle(caves)
     warp_data[153:156] = towns[0]
     warp_data[159:162] = towns[1]
@@ -191,39 +195,46 @@ class Rom:
       warp_data[174:177],warp_data[189:192] = warp_data[189:192],warp_data[174:177]
     self.rom_data[self.warps_slice] = warp_data
 
-  def randomize_zones(self):
+  def randomize_zones(self, ultra=False):
     """
     Randomizes which enemies are present in each zone.
     """
     new_zones = list()
-    #zone 0
-    for j in range(5): 
-      new_zones.append(int(random.randint(0, 4)/2))
+    if ultra:
+      #zone 0-1
+      for i in range(0,10):
+        new_zones.append(random.randint(0, 6))
+      for i in range(0,90):
+        new_zones.append(random.randint(0, 37))
+    else:
+      #zones 2-19 
+      for j in range(5): 
+        new_zones.append(int(random.randint(0, 6)/2))
 
-    # zones 1-13 (overworld)
-    for i in range(1, 14):
+      # zones 1-13 (Overworld)
+      for i in range(1, 14):
+        for j in range(5):
+          enemy = random.randint(i * 2 - 2, min(37,round(i*3)))
+          while enemy == 24: # don't add golem
+            enemy = random.randint(i * 2 - 2, min(37,round(i*3)))
+          new_zones.append(enemy)
+
+      #zone 14 - Garin's Grave?
+      for j in range(5): 
+        new_zones.append(random.randint(7, 17))
+
+      #zone 15 - Lower Garin's Grave
+      for j in range(5): 
+        new_zones.append(random.randint(15, 23))
+
+      # zone 16-18 - Charlock
+      for i in range(16, 19):
+        for j in range(5):
+          new_zones.append(random.randint(13+i, 37))
+
+      # zone 19 - Rimuldar Tunnel
       for j in range(5):
-        enemy = random.randint(max(0, i * 2 - 2), (max(2,round(i*2.5))))
-        while enemy == 24: # don't add golem
-          enemy = random.randint(i * 2 - 2, round(i*2.5))
-        new_zones.append(enemy)
-
-    #zone 14 - garin's grave?
-    for j in range(5): 
-      new_zones.append(random.randint(7, 17))
-
-    #zone 15 - lower garin's grave
-    for j in range(5): 
-      new_zones.append(random.randint(15, 23))
-
-    # zone 16-18 - Charlock
-    for i in range(16, 19):
-      for j in range(5):
-        new_zones.append(random.randint(13+i, 37))
-
-    # zone 19 rimuldar tunnel
-    for j in range(5):
-      new_zones.append(random.randint(3, 11))
+        new_zones.append(random.randint(3, 11))
     self.rom_data[self.zones_slice] = new_zones
 
   def randomize_shops(self):
@@ -269,7 +280,7 @@ class Rom:
     self.rom_data[self.flute_slice] = searchables[1]
     self.rom_data[self.armor_slice] = searchables[2]
 
-  def randomize_growth(self):
+  def randomize_growth(self, ultra=False):
     player_stat_data = self.rom_data[self.player_stats_slice]
     
     player_str = list(player_stat_data[0:180:6])
@@ -277,14 +288,24 @@ class Rom:
     player_hp  = list(player_stat_data[2:180:6])
     player_mp  = list(player_stat_data[3:180:6])
 
-    for i in range(len(player_str)):
-      player_str[i] = round(player_str[i] * random.uniform(0.8, 1.2))
-    for i in range(len(player_agi)):
-      player_agi[i] = round(player_agi[i] * random.uniform(0.8, 1.2))
-    for i in range(len(player_hp)):
-      player_hp[i] = round(player_hp[i] * random.uniform(0.8, 1.2))
-    for i in range(len(player_mp)):
-      player_mp[i] = round(player_mp[i] * random.uniform(0.8, 1.2))
+    if ultra:
+      for i in range(len(player_str)):
+        player_str[i] = round(player_str[i] * random.uniform(0.8, 1.2))
+      for i in range(len(player_agi)):
+        player_agi[i] = round(player_agi[i] * random.uniform(0.8, 1.2))
+      for i in range(len(player_hp)):
+        player_hp[i] = round(player_hp[i] * random.uniform(0.8, 1.2))
+      for i in range(len(player_mp)):
+        player_mp[i] = round(player_mp[i] * random.uniform(0.8, 1.2))
+    else:
+      for i in range(len(player_str)):
+        player_str[i] = random.randint(4,200)
+      for i in range(len(player_agi)):
+        player_agi[i] = random.randint(4,200)
+      for i in range(len(player_hp)):
+        player_hp[i] = random.randint(10,255)
+      for i in range(len(player_mp)):
+        player_mp[i] = random.randint(0,255)
 
     player_str.sort()
     player_agi.sort()
@@ -297,14 +318,18 @@ class Rom:
     player_stat_data[3:180:6] = player_mp
     self.rom_data[self.player_stats_slice] = player_stat_data 
 
-  def randomize_spell_learning(self):
+  def randomize_spell_learning(self, ultra=False):
     self.move_repel() # in case this hasn't been called yet.
     levels = self.rom_data[self.new_spell_slice]
     player_mp = self.rom_data[self.player_mp_slice]
     new_masks = []
     # choose the levels for new spells
-    for i in range(len(levels)):
-      levels[i] = levels[i] + random.randint(-2, 2)
+    if ultra:
+      for i in range(len(levels)):
+        levels[i] = random.randint(0, 20)
+    else:
+      for i in range(len(levels)):
+        levels[i] = levels[i] + random.randint(-2, 2)
     #adjust the spell masks to fit the new levels
     for i in range(30):
       mask = 0
@@ -342,12 +367,15 @@ class Rom:
     enemy_stats[7::16] = bytearray(remake_gold)
     self.rom_data[self.enemy_stats_slice] = enemy_stats 
 
-  def update_mp_reqs(self):
+  def update_mp_reqs(self, ultra=False):
     """
     Lowers the MP requirements of spells to that of the remake
     """
     #magic required for each spell, in order
     remake_mp = [3, 2, 2, 2, 2, 6, 8, 2, 8, 5]
+    if ultra:
+      for i in range(10):
+        remake_mp[i] = random.randint(1, 8)
     self.rom_data[self.mp_req_slice] = remake_mp
 
   def update_enemy_hp(self):
@@ -411,26 +439,36 @@ def main():
   parser.add_argument("-f","--force", action="store_false", 
       help="Skip checksums and force randomization. This may produce an invalid"
            " ROM if the incorrect file is used.")
-  parser.add_argument("-e","--enemies", action="store_false", 
-      help="Do not randomize enemy zones.")
   parser.add_argument("-i","--searchitems", action="store_false", 
       help="Do not randomize the locations of searchable items (Fairy Flute, "
            "Erdrick's Armor, Erdrick's Token).")
   parser.add_argument("-g","--growth", action="store_false", 
       help="Do not randomize player stat growth.")
+  parser.add_argument("-G","--ultra-growth", action="store_true", 
+      help="Enable ultra randomization of player stat growth.")
   parser.add_argument("-l","--repel", action="store_false", 
       help="Do not move repel to level 8.")
   parser.add_argument("-m","--spells", action="store_false", 
       help="Do not randomize the level spells are learned.")
+  parser.add_argument("-M","--ultra-spells", action="store_true", 
+      help="Enable ultra randomization of the level spells are learned.")
   parser.add_argument("-p","--patterns", action="store_false", 
       help="Do not randomize enemy attack patterns.")
+  parser.add_argument("-P","--ultra-patterns", action="store_true", 
+      help="Enable ultra randomization of enemy attack patterns.")
   parser.add_argument("-s","--seed", type=int, 
       help="Specify a seed to be used for randomization.")
   parser.add_argument("-t","--towns", action="store_false", 
       help="Do not randomize towns.")
   parser.add_argument("-w","--shops", action="store_false", 
       help="Do not randomize weapon shops.")
+  parser.add_argument("-U","--ultra", action="store_true", 
+      help="Enable all '--ultra' options.")
 #  parser.add_argument('--version', action='version', version='%(prog) %s'%VERSION)
+  parser.add_argument("-z","--zones", action="store_false", 
+      help="Do not randomize enemy zones.")
+  parser.add_argument("-Z","--ultra-zones", action="store_true", 
+      help="Enable ultra randomization of enemy zones.")
   parser.add_argument("filename", help="The rom file to use for input")
   args = parser.parse_args()
   randomize(args)
@@ -442,7 +480,7 @@ def randomize(args):
   print("Randomizing %s using random seed %d..." % (args.filename, args.seed))
   random.seed(args.seed)
   flags = ""
-  prg = "PRG_"
+  prg = ""
 
   rom = Rom(args.filename)
 
@@ -455,7 +493,7 @@ def randomize(args):
       sys.exit(-1)
     else:
       print("Processing Dragon Warrior PRG%d ROM..." % result)
-      prg = "PRG%d" % result
+      prg = "PRG%d." % result
       
   else:
     print("Skipping checksum...")
@@ -484,15 +522,25 @@ def randomize(args):
     flags += "t"
     rom.shuffle_towns()
 
-  if args.enemies:
-    print("Randomizing enemy zones...")
-    flags += "e"
-    rom.randomize_zones()
+  if args.zones:
+    if args.ultra or args.ultra_zones:
+      print("Ultra randomizing enemy zones...")
+      flags += "Z"
+      rom.randomize_zones(True)
+    else:
+      print("Randomizing enemy zones...")
+      flags += "z"
+      rom.randomize_zones()
 
   if args.patterns:
-    print("Randomizing enemy attack patterns...")
-    flags += "p"
-    rom.randomize_attack_patterns()
+    if args.ultra or args.ultra_patterns:
+      print("Ultra randomizing enemy attack patterns...")
+      flags += "P"
+      rom.randomize_attack_patterns(True)
+    else:
+      print("Randomizing enemy attack patterns...")
+      flags += "p"
+      rom.randomize_attack_patterns()
 
   if args.shops:
     print("Randomizing weapon shops...")
@@ -500,9 +548,14 @@ def randomize(args):
     rom.randomize_shops()
 
   if args.growth:
-    print("Randomizing player stat growth...")
-    flags += "g"
-    rom.randomize_growth()
+    if args.ultra or args.ultra_growth:
+      print("Ultra randomizing player stat growth...")
+      flags += "G"
+      rom.randomize_growth(True)
+    else:
+      print("Randomizing player stat growth...")
+      flags += "g"
+      rom.randomize_growth()
 
   if args.remake:
     print("Increasing XP/Gold drops to remake levels...")
@@ -519,11 +572,16 @@ def randomize(args):
     rom.move_repel()
 
   if args.spells:
-    print("Randomizing level spells are learned...")
-    flags += "m"
-    rom.randomize_spell_learning()
+    if args.ultra or args.ultra_spells:
+      print("Ultra randomizing level spells are learned...")
+      flags += "M"
+      rom.randomize_spell_learning(True)
+    else:
+      print("Randomizing level spells are learned...")
+      flags += "m"
+      rom.randomize_spell_learning()
 
-  output_filename = "DWRandomizer.%d.%s.%s.nes" % (args.seed, flags, prg)
+  output_filename = "DWRando.%s.%d.%snes" % (flags, args.seed, prg)
   print("Writing output file %s..." % output_filename)
   rom.write(output_filename)
   print ("New ROM Checksum: %s" % rom.sha1())

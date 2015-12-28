@@ -114,12 +114,12 @@ See below for other command line options.
     -c, --chests          Do not randomize chest contents.
     -f, --force           Skip checksums and force randomization. This may
                           produce an invalid ROM if the incorrect file is used.
-    -e, --enemies         Do not randomize enemy zones.
     -l, --repel           Do not move repel to level 8.
     -p, --patterns        Do not randomize enemy attack patterns.
     -s SEED, --seed SEED  Specify a seed to be used for randomization.
     -t, --towns           Do not randomize towns.
     -w, --shops           Do not randomize weapon shops.
+    -z, --zones           Do not randomize enemy zones.
 
 ## Special Thanks
 

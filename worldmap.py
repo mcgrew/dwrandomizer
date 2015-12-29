@@ -1,6 +1,7 @@
 #!/bin/env python3
 
 import random
+import argparse
 
 ########################################################
 # Tiles:
@@ -48,8 +49,8 @@ class WorldMap:
     self.grid = None
     self.data = None
     self.pointers = None
-    self.cave_warps = []
-    self.town_warps = []
+    self.cave_warps = [[None, None] * 6]
+    self.town_warps = [[None, None] * 8]
     self.tantegel_warp = None
     self.charlock_warp = None
 
@@ -170,20 +171,39 @@ class WorldMap:
              and MOUNTAIN not in (row[j], row[j+3])):
           row[j+1] = row[j+2] = row[j]
     self.placelandmarks()
+    self.encode()
     return self.grid
 
   def placelandmarks(self):
-    x, y = self.random_land()
+    self.tantegel_warp[0] = None
+    self.charlock_warp[0] = None
+    for i in range(6):
+      self.town_warps[i][0] = None
+    for i in range(6):
+      self.cave_warps[i][0] = None
+
+    # keep tantegel in regular zone 0 for now
+    x, y = self.random_land(30, 58, 30, 44)
     self.add_warp(1, x, y, CASTLE)
     self.grid[y][x] = CASTLE #tantegel
+
+    # make sure there's a town near tantegel
+    x, y = self.random_land(x-10, x+10, y-10, y+10)
+    self.add_warp(1, x, y, TOWN)
+    self.grid[y][x] = TOWN
+
+    for i in range(5):
+      x, y = self.random_land()
+      self.add_warp(1, x, y, TOWN)
+      self.grid[y][x] = TOWN
+
+    for i in range(6):
+      x, y = self.random_land()
+      self.add_warp(1, x, y, CAVE)
+      self.grid[y][x] = CAVE
+
     x, y = self.random_land(6, 118, 3, 116)
     self.place_charlock(x-3, y)
-    for i in range(6):
-      x, y = self.random_land()
-      self.grid[y][x] = TOWN
-    for i in range(6):
-      x, y = self.random_land()
-      self.grid[y][x] = CAVE
 
   def place_charlock(self, x, y):
     self.add_warp(1, x, y, CASTLE)
@@ -210,14 +230,20 @@ class WorldMap:
 
   def add_warp(self, m, x, y, type_):
     if type_ == CASTLE:
-      if not self.charlock_warp:
-        self.charlock_warp = (m, x, y)
+      if not self.tantegel_warp[0]:
+        self.tantegel_warp[0] = [m, x, y]
       else:
-        self.tantegel_warp = (m, x, y)
+        self.charlock_warp[0] = [m, x, y]
     elif type_ == TOWN:
-      self.town_warps.append((m, x, y))
+      for i in range(0,6):
+        if self.town_warps[i][0] is None:
+          self.town_warps[i][0] = [m, x, y]
+          break
     elif type_ == CAVE:
-      self.cave_warps.append((m, x, y))
+      for i in range(0,6):
+        if self.cave_warps[i][0] is None:
+          self.cave_warps[i][0] = [m, x, y]
+          break
     
 
   def encode(self):
@@ -257,7 +283,8 @@ class WorldMap:
         last_tile = None
         count = 0
           
-    return self.optimize(bytearray(map_data), bytearray(pointer_data))
+    self.encoded = self.optimize(bytearray(map_data), bytearray(pointer_data))
+    return self.encoded
 
 
   def decode(self, map_data):
@@ -320,11 +347,34 @@ class WorldMap:
 
   def from_rom(self, rom_file):
     f = open(rom_file, 'rb')
-
-    f.read(0x1d6d)
-    world_map_data = f.read(0x8f6 + 240) # tiles + pointer data
+    self.from_rom_data(f.read()) 
     f.close()
-    self.decode(world_map_data)
+
+
+  def from_rom_data(self, rom_data):
+    self.encoded = rom_data[0x1d6d:0x2753]
+    self.tantegel_warp = [rom_data[0xf3e4:0xf3e7],rom_data[0xf47d:0xf480]]  
+    self.charlock_warp = [rom_data[0xf3ea:0xf3ed],rom_data[0xf483:0xf486]]  
+    self.town_warps = []
+    self.cave_warps = []
+    self.town_warps.append([rom_data[0xf3d8:0xf3db],rom_data[0xf471:0xf474]])  
+    self.town_warps.append([rom_data[0xf3de:0xf3e1],rom_data[0xf477:0xf47a]])  
+    self.town_warps.append([rom_data[0xf3e1:0xf3e4],rom_data[0xf47a:0xf47d]])  
+    self.town_warps.append([rom_data[0xf3f3:0xf3f6],rom_data[0xf48c:0xf48f]])  
+    self.town_warps.append([rom_data[0xf3f6:0xf3f9],rom_data[0xf48f:0xf492]])  
+    self.town_warps.append([rom_data[0xf3f9:0xf3fc],rom_data[0xf492:0xf495]])  
+
+    self.cave_warps.append([rom_data[0xf3db:0xf3de],rom_data[0xf474:0xf477]])  
+    self.cave_warps.append([rom_data[0xf3e7:0xf3ea],rom_data[0xf480:0xf483]])  
+    self.cave_warps.append([rom_data[0xf3f0:0xf3f3],rom_data[0xf489:0xf492]])  
+    self.cave_warps.append([rom_data[0xf3fc:0xf3ff],rom_data[0xf495:0xf498]])  
+    self.cave_warps.append([rom_data[0xf3ff:0xf402],rom_data[0xf498:0xf49b]])  
+    # swamp cave south
+    self.cave_warps.append([rom_data[0xf3ed:0xf3f0],rom_data[0xf486:0xf489]])  
+    self.cave_warps.append([rom_data[0xf40b:0xf40e],rom_data[0xf4a4:0xf4a7]])  
+    self.cave_warps.append([rom_data[0xf411:0xf414],rom_data[0xf4aa:0xf4ad]])  
+
+    self.decode(self.encoded)
     
     
   def to_html(self):
@@ -363,16 +413,24 @@ class WorldMap:
 
 if __name__ == "__main__":
 
+  parser = argparse.ArgumentParser(prog="DWRandomizer",
+      description="A randomizer for Dragon Warrior for NES")
+  parser.add_argument("--test", action="store_true",
+      help="Generate and export a test map"
+           "remake. This will make grind times much longer.")
+  parser.add_argument("filename", nargs='?',
+                       help="The rom file to use for input")
+  args = parser.parse_args()
+
   world_map = WorldMap()
-#  world_map.from_rom("/home/mcgrew/vbox_shared/Dragon Warrior (U) (PRG0) [!].nes")
-#  world_map.generate(birth_limit=3, death_limit=4, iterations=100)
-  world_map.generate()
-  encoded = world_map.encode()
-  # 0x8f6 is the maximum size for an encoded map that will fit in the ROM.
-  while len(encoded) > 0x8f6 + 240:
-    print("World Map too large (%d/2534 bytes), retrying... " % len(encoded))
+  if args.test:
     world_map.generate()
-    encoded = world_map.encode()
+  # 0x8f6 is the maximum size for an encoded map that will fit in the ROM.
+    while len(world_map.encoded) > 0x8f6 + 240:
+      print("World Map too large (%d/2534 bytes), retrying... " % len(encoded))
+      world_map.generate()
+  elif args.filename:
+    world_map.from_rom(args.filename)
   f = open('map.html', 'w')
   f.write(world_map.to_html())
   f.close()

@@ -4,6 +4,7 @@ import argparse
 import random
 import sys
 import hashlib
+from worldmap import WorldMap
 
 VERSION = "0.9.4"
 #sha1sums of various roms
@@ -39,6 +40,8 @@ class Rom:
   def __init__(self, filename):
     input_file = open(filename, 'rb')
     self.rom_data = bytearray(input_file.read())
+    self.owmap = WorldMap()
+    self.owmap.from_rom_data(self.rom_data)
     input_file.close()
 
   def sha1(self):
@@ -422,6 +425,57 @@ class Rom:
     """
     self.rom_data[0xd77] = self.rom_data[0xd81] = 0x66
 
+  def commit(self):
+    # commit map
+    self.rom_data[0x1d6d:0x2753] = self.owmap.encoded 
+
+    # commit castles
+    print(self.rom_data[0xf3e4:0xf3e7])
+    self.rom_data[0xf3e4:0xf3e7] = self.owmap.tantegel_warp[0]
+    print(self.owmap.tantegel_warp[0])
+    self.rom_data[0xf47d:0xf480] = self.owmap.tantegel_warp[1]
+    self.rom_data[0xf3ea:0xf3ed] = self.owmap.charlock_warp[0]
+    self.rom_data[0xf483:0xf486] = self.owmap.charlock_warp[1]
+
+    # commit towns
+    warps = self.owmap.town_warps
+    self.rom_data[0xf3d8:0xf3db] = warps[0][0]
+    self.rom_data[0xf3de:0xf3e1] = warps[1][0]
+    self.rom_data[0xf3e1:0xf3e4] = warps[2][0]
+    self.rom_data[0xf3f3:0xf3f6] = warps[3][0]
+    self.rom_data[0xf3f6:0xf3f9] = warps[4][0]
+    self.rom_data[0xf3f9:0xf3fc] = warps[5][0]
+
+    self.rom_data[0xf471:0xf474] = warps[0][1]
+    self.rom_data[0xf477:0xf47a] = warps[1][1] 
+    self.rom_data[0xf47a:0xf47d] = warps[2][1]
+    self.rom_data[0xf48c:0xf48f] = warps[3][1]
+    self.rom_data[0xf48f:0xf492] = warps[4][1]
+    self.rom_data[0xf492:0xf495] = warps[5][1]
+
+    # commit caves
+    warps = self.owmap.cave_warps
+    print(len(self.rom_data))
+    self.rom_data[0xf3db:0xf3de] = warps[0][0]
+    print(len(self.rom_data))
+    self.rom_data[0xf3e7:0xf3ea] = warps[1][0]
+    self.rom_data[0xf3f0:0xf3f3] = warps[2][0]
+    self.rom_data[0xf3fc:0xf3ff] = warps[3][0]
+    self.rom_data[0xf3ff:0xf402] = warps[4][0]
+    self.rom_data[0xf3ed:0xf3f0] = warps[5][0] # swamp cave south
+    self.rom_data[0xf40b:0xf40e] = warps[6][0]
+    self.rom_data[0xf411:0xf414] = warps[7][0]
+
+    self.rom_data[0xf474:0xf477] = warps[0][1]
+    self.rom_data[0xf480:0xf483] = warps[1][1]
+    self.rom_data[0xf489:0xf492] = warps[2][1]
+    self.rom_data[0xf495:0xf498] = warps[3][1]
+    self.rom_data[0xf498:0xf49b] = warps[4][1]
+    self.rom_data[0xf486:0xf489] = warps[5][1] # swamp cave south
+    self.rom_data[0xf4a4:0xf4a7] = warps[6][1]
+    self.rom_data[0xf4aa:0xf4ad] = warps[7][1]
+
+
   def write(self, output_filename):
     outputfile = open(output_filename, 'wb')
     outputfile.write(self.rom_data)
@@ -452,6 +506,8 @@ def main():
       help="Do not randomize the level spells are learned.")
   parser.add_argument("-M","--ultra-spells", action="store_true", 
       help="Enable ultra randomization of the level spells are learned.")
+  parser.add_argument("-a", "--map", action="store_true", 
+      help=argparse.SUPPRESS) #"Generate a new world map. VERY EXPERIMENTAL!")
   parser.add_argument("-p","--patterns", action="store_false", 
       help="Do not randomize enemy attack patterns.")
   parser.add_argument("-P","--ultra-patterns", action="store_true", 
@@ -580,6 +636,16 @@ def randomize(args):
       print("Randomizing level spells are learned...")
       flags += "m"
       rom.randomize_spell_learning()
+
+  if args.map:
+    print("Generating new overworld map (experimental)...")
+    flags += "a"
+    rom.owmap.from_rom_data(rom.rom_data)
+    rom.owmap.generate()
+    while len(rom.owmap.encoded) > 2534:
+      print("World Map too large (%d/2534 bytes), retrying... " % len(rom.owmap.encoded))
+      rom.owmap.generate()
+    rom.commit()
 
   output_filename = "DWRando.%s.%d.%snes" % (flags, args.seed, prg)
   print("Writing output file %s..." % output_filename)

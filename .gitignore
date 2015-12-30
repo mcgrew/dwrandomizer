@@ -1,3 +1,5 @@
-Dragon Warrior.*
+*.nes
+*.zip
+map.html
 dist
 __pycache__

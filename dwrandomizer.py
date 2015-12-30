@@ -20,18 +20,14 @@ prg1sums = ['1ecc63aaac50a9612eaa8b69143858c3e48dd0ae'] #Dragon Warrior (U) (PRG
 class Rom:
   # Slices for various data. Offsets include iNES header.
   chest_content_slice = slice(0x5de0, 0x5e59, 4)
-  enemy_patterns_slice = slice(0x5e5e, 0x60db, 16)
-  enemy_ss_resist_slice = slice(0x5e5f, 0x60db, 16)
   enemy_stats_slice = slice(0x5e5b, 0x60db)
   warps_slice = slice(0xf3d8, 0xf50b)
   zones_slice = slice(0xf55f, 0xf5c3)
   mp_req_slice = slice(0x1d63, 0x1d6d) #mp requirements for each spell
   player_stats_slice = slice(0x60dd, 0x6191)
-  player_mp_slice = slice(0x60e0, 0x6191, 6)
-  player_spell_mask_slice_1 = slice(0x60e2, 0x6191, 6)
-  player_spell_mask_slice_2 = slice(0x60e1, 0x6191, 6)
   weapon_shop_inv_slice = slice(0x19a1, 0x19cc)
   new_spell_slice = slice(0xeaf9, 0xeb1f, 4)
+  chests_slice = slice(0x5ddd, 0x5e59)
 
   token_slice = slice(0xe11e, 0xe12b, 6)
   flute_slice = slice(0xe15d, 0xe16a, 6)
@@ -43,6 +39,16 @@ class Rom:
     self.owmap = WorldMap()
     self.owmap.from_rom_data(self.rom_data)
     input_file.close()
+    self.enemy_stats = self.rom_data[self.enemy_stats_slice]
+    self.mp_reqs = self.rom_data[self.mp_req_slice]
+    self.zones = self.rom_data[self.zones_slice]
+    self.shop_inventory = self.rom_data[self.weapon_shop_inv_slice]
+    self.token_loc = self.rom_data[self.token_slice]
+    self.flute_loc = self.rom_data[self.flute_slice]
+    self.armor_loc = self.rom_data[self.armor_slice]
+    self.player_stats = self.rom_data[self.player_stats_slice]
+    self.new_spell_levels = self.rom_data[self.new_spell_slice]
+    self.chests = self.rom_data[self.chests_slice]
 
   def sha1(self):
     """
@@ -63,55 +69,54 @@ class Rom:
     Shuffles the contents of all chests in the game. Checks are used to ensure no
     quest items are located in Charlock chests.
     """
-    contents = [int(x) for x in self.rom_data[self.chest_content_slice]]
-    for i in range(len(contents)):
+    chest_contents = self.chests[3::4]
+    for i in range(len(chest_contents)):
       # change all gold (and erdrick's tablet) to large gold stash
-      if (contents[i] >= 18 and contents[i] <= 20):
-        contents[i] = 21
+      if (chest_contents[i] >= 18 and chest_contents[i] <= 20):
+        chest_contents[i] = 21
       # 50/50 chance to have erdrick's token in a chest
-      if contents[i] == 23:
+      if chest_contents[i] == 23:
         if random.randint(0,1):
           self.rom_data[self.token_slice.start] = 0 # remove token from swamp
-          contents[i] = 10 # put it in a chest
+          chest_contents[i] = 10 # put it in a chest
         else:
-          contents[i] = 21
+          chest_contents[i] = 21
 
-    random.shuffle(contents)
+    random.shuffle(chest_contents)
 
     # make sure required quest items aren't in Charlock
-    charlock_chests = contents[11:17] + [contents[24]]
+    charlock_chests = chest_contents[11:17] + chest_contents[24:25]
     charlock_chest_indices = (11, 12, 13, 14, 15, 16, 24)
     quest_items = (10, 13, 15, 16)
     for item in quest_items:
       if (item in charlock_chests):
         for i in charlock_chest_indices:
-          if contents[i] == item:
+          if chest_contents[i] == item:
             # this could probably be cleaner...
             j = self.non_charlock_chest()
-            while contents[j] in quest_items:
+            while chest_contents[j] in quest_items:
               j = self.non_charlock_chest()
-            contents[j], contents[i] = contents[i], contents[j]
+            chest_contents[j], chest_contents[i] = chest_contents[i], chest_contents[j]
 
     # make sure there's a key to in the throne room
-    if not (3 in contents[4:7]):
-      for i in range(len(contents)):
-        if contents[i] == 3:
+    if not (3 in chest_contents[4:7]):
+      for i in range(len(chest_contents)):
+        if chest_contents[i] == 3:
           j = random.randint(4, 6)
           # if key is in charlock and chest[j] contains a quest item, try again
-          while (i in charlock_chest_indices and (contents[j] in quest_items)):
+          while (i in charlock_chest_indices and (chest_contents[j] in quest_items)):
             j = random.randint(4, 6)
-          contents[j], contents[i] = contents[i], contents[j]
+          chest_contents[j], chest_contents[i] = chest_contents[i], chest_contents[j]
           break
 
         # make sure staff of rain guy doesn't have the stones (potentially unwinnable)
-#      if (contents[19] == 15):
+#      if (chest_contents[19] == 15):
 #        j = self.non_charlock_chest()
 #        #                  don't remove the key from the throne room
-#        while (j == 19 or (j in (4, 5, 6) and contents[j] == 3)):
+#        while (j == 19 or (j in (4, 5, 6) and chest_contents[j] == 3)):
 #          j = self.non_charlock_chest()
-#        contents[19],contents[j] = contents[j],contents[19]
-
-    self.rom_data[self.chest_content_slice] = bytearray(contents)
+#        chest_contents[19],chest_contents[j] = chest_contents[j],chest_contents[19]
+    self.chests[3::4] = chest_contents
 
   def non_charlock_chest(self):
     """
@@ -131,8 +136,8 @@ class Rom:
     Randomizes attack patterns of enemies (whether or not they use spells/fire 
     breath).
     """
-    new_patterns = list() # attack patterns
-    new_ss_resist = self.rom_data[self.enemy_ss_resist_slice] 
+    new_patterns = [] # attack patterns
+    new_ss_resist = self.enemy_stats[4::16] 
     for i in range(38):
       new_ss_resist[i] |= 0xf
       if random.randint(0,1): # 50/50 chance
@@ -157,46 +162,48 @@ class Rom:
         new_patterns.append(0)
     new_patterns.append(87) #Dragonlord form 1
     new_patterns.append(14) #Dragonlord form 2
-    self.rom_data[self.enemy_patterns_slice] = bytearray(new_patterns)
-    self.rom_data[self.enemy_ss_resist_slice] = bytearray(new_ss_resist)
+    self.enemy_stats[3::16] = bytearray(new_patterns)
+    self.enemy_stats[4::16] = bytearray(new_ss_resist)
 
   def shuffle_towns(self):
     """
     Shuffles the locations of towns on the map.
     """
-    warp_data = self.rom_data[self.warps_slice]
-    towns = [warp_data[153:156], warp_data[159:162], warp_data[162:165],
-             warp_data[180:183], warp_data[183:186], warp_data[186:189]]
-    caves = [warp_data[156:159], warp_data[168:171], warp_data[177:180],
-             warp_data[189:192], warp_data[192:195], warp_data[204:207],
-             warp_data[210:213]]
-    random.shuffle(towns)
-    random.shuffle(caves)
-    # make sure the rimuldar cave isn't inaccessible
-    # this could happen if it ends up in southern shrine position or
-    # behind a locked door when rimuldar is in it's normal location.
-    while (caves[3][0] == 21 or
-          (towns[3][0] == 11 and 21 in (caves[5][0], caves[6][0])) or
-          (towns[3][0] ==  9 and caves[6][0] == 21)):
-      random.shuffle(caves)
-    warp_data[153:156] = towns[0]
-    warp_data[159:162] = towns[1]
-    warp_data[162:165] = towns[2]
-    warp_data[180:183] = towns[3]
-    warp_data[183:186] = towns[4]
-    warp_data[186:189] = towns[5]
+    self.owmap.shuffle_warps()
 
-    warp_data[156:159] = caves[0]
-    warp_data[168:171] = caves[1]
-    warp_data[177:180] = caves[2]
-    warp_data[189:192] = caves[3]
-    warp_data[192:195] = caves[4]
-    warp_data[204:207] = caves[5]
-    warp_data[210:213] = caves[6]
-    # randomly swap swamp cave exit with southern shrine
-    if (random.randint(0,1)):
-      warp_data[174:177],warp_data[189:192] = warp_data[189:192],warp_data[174:177]
-    self.rom_data[self.warps_slice] = warp_data
+#    warp_data = self.rom_data[self.warps_slice]
+#    towns = [warp_data[153:156], warp_data[159:162], warp_data[162:165],
+#             warp_data[180:183], warp_data[183:186], warp_data[186:189]]
+#    caves = [warp_data[156:159], warp_data[168:171], warp_data[177:180],
+#             warp_data[189:192], warp_data[192:195], warp_data[204:207],
+#             warp_data[210:213]]
+#    random.shuffle(towns)
+#    random.shuffle(caves)
+#    # make sure the rimuldar cave isn't inaccessible
+#    # this could happen if it ends up in southern shrine position or
+#    # behind a locked door when rimuldar is in it's normal location.
+#    while (caves[3][0] == 21 or
+#          (towns[3][0] == 11 and 21 in (caves[5][0], caves[6][0])) or
+#          (towns[3][0] ==  9 and caves[6][0] == 21)):
+#      random.shuffle(caves)
+#    warp_data[153:156] = towns[0]
+#    warp_data[159:162] = towns[1]
+#    warp_data[162:165] = towns[2]
+#    warp_data[180:183] = towns[3]
+#    warp_data[183:186] = towns[4]
+#    warp_data[186:189] = towns[5]
+#
+#    warp_data[156:159] = caves[0]
+#    warp_data[168:171] = caves[1]
+#    warp_data[177:180] = caves[2]
+#    warp_data[189:192] = caves[3]
+#    warp_data[192:195] = caves[4]
+#    warp_data[204:207] = caves[5]
+#    warp_data[210:213] = caves[6]
+#    # randomly swap swamp cave exit with southern shrine
+#    if (random.randint(0,1)):
+#      warp_data[174:177],warp_data[189:192] = warp_data[189:192],warp_data[174:177]
+#    self.rom_data[self.warps_slice] = warp_data
 
   def randomize_zones(self, ultra=False):
     """
@@ -238,7 +245,7 @@ class Rom:
       # zone 19 - Rimuldar Tunnel
       for j in range(5):
         new_zones.append(random.randint(3, 11))
-    self.rom_data[self.zones_slice] = new_zones
+    self.zones = new_zones
 
   def randomize_shops(self):
     """
@@ -264,12 +271,11 @@ class Rom:
     
     # create the bytearray to insert into the rom. Shops are separated by an 
     # 0xfd byte
-    new_shop_bytes = []
+    self.shop_inventory = []
     for shop in new_shop_inv:
       shop.sort()
-      new_shop_bytes += shop + [0xfd]
+      self.shop_inventory += shop + [0xfd]
 
-    self.rom_data[self.weapon_shop_inv_slice] = new_shop_bytes
 
   def shuffle_searchables(self):
     """
@@ -279,17 +285,16 @@ class Rom:
                    self.rom_data[self.flute_slice],
                    self.rom_data[self.armor_slice]]
     random.shuffle(searchables)
-    self.rom_data[self.token_slice] = searchables[0]
-    self.rom_data[self.flute_slice] = searchables[1]
-    self.rom_data[self.armor_slice] = searchables[2]
+    self.token_loc = searchables[0]
+    self.flute_loc = searchables[1]
+    self.armor_loc = searchables[2]
 
   def randomize_growth(self, ultra=False):
-    player_stat_data = self.rom_data[self.player_stats_slice]
     
-    player_str = list(player_stat_data[0:180:6])
-    player_agi = list(player_stat_data[1:180:6])
-    player_hp  = list(player_stat_data[2:180:6])
-    player_mp  = list(player_stat_data[3:180:6])
+    player_str = list(self.player_stats[0:180:6])
+    player_agi = list(self.player_stats[1:180:6])
+    player_hp  = list(self.player_stats[2:180:6])
+    player_mp  = list(self.player_stats[3:180:6])
 
     if ultra:
       for i in range(len(player_str)):
@@ -315,29 +320,27 @@ class Rom:
     player_hp.sort()
     player_mp.sort()
 
-    player_stat_data[0:180:6] = player_str
-    player_stat_data[1:180:6] = player_agi
-    player_stat_data[2:180:6] = player_hp
-    player_stat_data[3:180:6] = player_mp
-    self.rom_data[self.player_stats_slice] = player_stat_data 
+    self.player_stats[0:180:6] = player_str
+    self.player_stats[1:180:6] = player_agi
+    self.player_stats[2:180:6] = player_hp
+    self.player_stats[3:180:6] = player_mp
 
   def randomize_spell_learning(self, ultra=False):
     self.move_repel() # in case this hasn't been called yet.
-    levels = self.rom_data[self.new_spell_slice]
-    player_mp = self.rom_data[self.player_mp_slice]
+    player_mp = self.player_stats[3::6]
     new_masks = []
     # choose the levels for new spells
     if ultra:
-      for i in range(len(levels)):
-        levels[i] = random.randint(0, 20)
+      for i in range(len(self.new_spell_levels)):
+        self.new_spell_levels[i] = random.randint(0, 20)
     else:
-      for i in range(len(levels)):
-        levels[i] = levels[i] + random.randint(-2, 2)
+      for i in range(len(self.new_spell_levels)):
+        self.new_spell_levels[i] += random.randint(-2, 2)
     #adjust the spell masks to fit the new levels
     for i in range(30):
       mask = 0
-      for j in range(len(levels)):
-        if levels[j] <= i+1:
+      for j in range(len(self.new_spell_levels)):
+        if self.new_spell_levels[j] <= i+1:
           mask |= 1 << j
       new_masks.append(mask)
       if mask: # give the player at least 3 mp if they have a spell to use.
@@ -349,10 +352,9 @@ class Rom:
       mask1.append(mask & 0xff)
       mask2.append(mask >> 8)
 
-    self.rom_data[self.player_mp_slice] = player_mp
-    self.rom_data[self.new_spell_slice] = levels
-    self.rom_data[self.player_spell_mask_slice_1] = mask1
-    self.rom_data[self.player_spell_mask_slice_2] = mask2
+    self.player_stats[3::6] = player_mp
+    self.player_stats[5::6] = mask1
+    self.player_stats[4::6] = mask2
 
   def update_drops(self):
     """
@@ -365,35 +367,30 @@ class Rom:
     remake_gold=[  3,  5,  7,  9, 17, 21, 26, 22, 20, 31, 21, 43, 51, 
                   49, 61, 63,  7, 76, 81, 96,111,106,111,121, 11,255,
                  151,136,149,186,161,170,186,166,151,149,153,144,  0,  0]
-    enemy_stats = self.rom_data[self.enemy_stats_slice]
-    enemy_stats[6::16] = bytearray(remake_xp)
-    enemy_stats[7::16] = bytearray(remake_gold)
-    self.rom_data[self.enemy_stats_slice] = enemy_stats 
+    self.enemy_stats[6::16] = bytearray(remake_xp)
+    self.enemy_stats[7::16] = bytearray(remake_gold)
 
   def update_mp_reqs(self, ultra=False):
     """
     Lowers the MP requirements of spells to that of the remake
     """
     #magic required for each spell, in order
-    remake_mp = [3, 2, 2, 2, 2, 6, 8, 2, 8, 5]
-    if ultra:
-      for i in range(10):
-        remake_mp[i] = random.randint(1, 8)
-    self.rom_data[self.mp_req_slice] = remake_mp
+    self.mp_reqs = [3, 2, 2, 2, 2, 6, 8, 2, 8, 5]
+#    if ultra:
+#      for i in range(10):
+#        self.mp_reqs[i] = random.randint(1, 8)
 
   def update_enemy_hp(self):
     """
     Updates HP of enemies to that of the remake, where possible.
     """
     #dragonlord hp should be 204 and 350, but we want him beatable at lv 18
-    enemy_stats = self.rom_data[self.enemy_stats_slice]
     remake_hp = [  2,  3,  5,  7, 12, 13, 13, 22, 26, 43, 16, 24, 28, 
                   18, 33, 39,  3, 48, 37, 35, 44, 37, 40, 40,153,110, 
                   47, 48, 38, 70, 72, 74, 65, 67, 98,135, 99,106,100,165]
     # randomize Dragonlord's second form HP somewhat 
     remake_hp[-1] -= random.randint(0, 15) # 150 - 165
-    enemy_stats[2::16] = bytearray(remake_hp)
-    self.rom_data[self.enemy_stats_slice] = enemy_stats 
+    self.enemy_stats[2::16] = bytearray(remake_hp)
 
   def fix_fighters_ring(self):
     """
@@ -409,11 +406,9 @@ class Rom:
     """
     Moves the repel spell to level 8
     """
-    player_stats = self.rom_data[self.player_stats_slice]
     for i in range(47, 90, 6):
-      player_stats[i] |= 0x80
+      self.player_stats[i] |= 0x80
     self.rom_data[0xeb15] = 8
-    self.rom_data[self.player_stats_slice] = player_stats
 
   def buff_heal(self):
     self.rom_data[0xdbce] = 15
@@ -427,54 +422,17 @@ class Rom:
 
   def commit(self):
     # commit map
-    self.rom_data[0x1d6d:0x2753] = self.owmap.encoded 
-
-    # commit castles
-    print(self.rom_data[0xf3e4:0xf3e7])
-    self.rom_data[0xf3e4:0xf3e7] = self.owmap.tantegel_warp[0]
-    print(self.owmap.tantegel_warp[0])
-    self.rom_data[0xf47d:0xf480] = self.owmap.tantegel_warp[1]
-    self.rom_data[0xf3ea:0xf3ed] = self.owmap.charlock_warp[0]
-    self.rom_data[0xf483:0xf486] = self.owmap.charlock_warp[1]
-
-    # commit towns
-    warps = self.owmap.town_warps
-    self.rom_data[0xf3d8:0xf3db] = warps[0][0]
-    self.rom_data[0xf3de:0xf3e1] = warps[1][0]
-    self.rom_data[0xf3e1:0xf3e4] = warps[2][0]
-    self.rom_data[0xf3f3:0xf3f6] = warps[3][0]
-    self.rom_data[0xf3f6:0xf3f9] = warps[4][0]
-    self.rom_data[0xf3f9:0xf3fc] = warps[5][0]
-
-    self.rom_data[0xf471:0xf474] = warps[0][1]
-    self.rom_data[0xf477:0xf47a] = warps[1][1] 
-    self.rom_data[0xf47a:0xf47d] = warps[2][1]
-    self.rom_data[0xf48c:0xf48f] = warps[3][1]
-    self.rom_data[0xf48f:0xf492] = warps[4][1]
-    self.rom_data[0xf492:0xf495] = warps[5][1]
-
-    # commit caves
-    warps = self.owmap.cave_warps
-    print(len(self.rom_data))
-    self.rom_data[0xf3db:0xf3de] = warps[0][0]
-    print(len(self.rom_data))
-    self.rom_data[0xf3e7:0xf3ea] = warps[1][0]
-    self.rom_data[0xf3f0:0xf3f3] = warps[2][0]
-    self.rom_data[0xf3fc:0xf3ff] = warps[3][0]
-    self.rom_data[0xf3ff:0xf402] = warps[4][0]
-    self.rom_data[0xf3ed:0xf3f0] = warps[5][0] # swamp cave south
-    self.rom_data[0xf40b:0xf40e] = warps[6][0]
-    self.rom_data[0xf411:0xf414] = warps[7][0]
-
-    self.rom_data[0xf474:0xf477] = warps[0][1]
-    self.rom_data[0xf480:0xf483] = warps[1][1]
-    self.rom_data[0xf489:0xf492] = warps[2][1]
-    self.rom_data[0xf495:0xf498] = warps[3][1]
-    self.rom_data[0xf498:0xf49b] = warps[4][1]
-    self.rom_data[0xf486:0xf489] = warps[5][1] # swamp cave south
-    self.rom_data[0xf4a4:0xf4a7] = warps[6][1]
-    self.rom_data[0xf4aa:0xf4ad] = warps[7][1]
-
+    self.owmap.commit()
+    self.rom_data[self.enemy_stats_slice] = self.enemy_stats 
+    self.rom_data[self.mp_req_slice] = self.mp_reqs
+    self.rom_data[self.zones_slice] = self.zones
+    self.rom_data[self.weapon_shop_inv_slice] = self.shop_inventory
+    self.rom_data[self.token_slice] = self.token_loc
+    self.rom_data[self.flute_slice] = self.flute_loc
+    self.rom_data[self.armor_slice] = self.armor_loc
+    self.rom_data[self.player_stats_slice] = self.player_stats
+    self.rom_data[self.new_spell_slice] = self.new_spell_levels
+    self.rom_data[self.chests_slice] = self.chests
 
   def write(self, output_filename):
     outputfile = open(output_filename, 'wb')
@@ -531,14 +489,14 @@ def main():
 
 def randomize(args):
 
+  rom = Rom(args.filename)
+
   if not args.seed:
     args.seed = random.randint(0, sys.maxsize)
   print("Randomizing %s using random seed %d..." % (args.filename, args.seed))
   random.seed(args.seed)
   flags = ""
   prg = ""
-
-  rom = Rom(args.filename)
 
   if args.force:
     print("Verifying checksum...")
@@ -640,13 +598,13 @@ def randomize(args):
   if args.map:
     print("Generating new overworld map (experimental)...")
     flags += "a"
-    rom.owmap.from_rom_data(rom.rom_data)
     rom.owmap.generate()
     while len(rom.owmap.encoded) > 2534:
-      print("World Map too large (%d/2534 bytes), retrying... " % len(rom.owmap.encoded))
+      print(("Generated map is too large after encoding (%d/2534 bytes), "
+             "regenerating... ") % len(rom.owmap.encoded))
       rom.owmap.generate()
-    rom.commit()
 
+  rom.commit()
   output_filename = "DWRando.%s.%d.%snes" % (flags, args.seed, prg)
   print("Writing output file %s..." % output_filename)
   rom.write(output_filename)

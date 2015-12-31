@@ -2,6 +2,7 @@
 
 import random
 import argparse
+import pathfinding
 
 ########################################################
 # Tiles:
@@ -36,6 +37,7 @@ CAVE    =9
 CASTLE  =10
 BRIDGE  =11
 STAIRS  =12
+IMPASSABLE = (WATER, MOUNTAIN, BLOCK)
 
 
 
@@ -67,65 +69,6 @@ class WorldMap:
     self.golem = None
     self.chests = None
 
-#  def generate(self, start_alive=0.45, birth_limit=3, death_limit=3, 
-#               starvation_limit=12, iterations=100): 
-#    """
-#    Generates a new map for use in the Dragon Warrior ROM.
-#
-#    rtype: array
-#    return: The newly generated map
-#    """
-#    self.grid = []
-#    for i in range(self.map_height):
-#      self.grid.append([])
-#      for j in range(self.map_width):
-#        if random.random() < start_alive:
-#          self.grid[i].append(0)
-#        else:
-#          self.grid[i].append(4)
-#    self.refine(self.iterations, birth_limit, death_limit, starvation_limit, 
-#                iterations)
-#    return self.grid
-
-#  def refine(self, birth_limit=3, death_limit=3, starvation_limit=12, 
-#             iterations=100):
-#    """
-#    Performs one step in the refinement operation.
-#
-#    :Parameters:
-#
-#    rtype: 
-#    return: 
-#    """
-#    for i in range(iterations):
-#      new_map = []
-#      for i in range(self.map_width):
-#        new_map.append([])
-#        for j in range(self.map_height):
-#          count = 0
-#          for k in range(-1, 2):
-#            for l in range(-1, 2):
-#              cellX,cellY = i+k, j+l
-#              if cellX == 0 and cellY == 0:
-#                continue
-#              if cellX < 0 or cellX >= self.map_width or cellY < 0 or cellY >= self.map_height:
-#                continue
-#              if self.grid[cellX][cellY] == 0:
-#                if 0 in (cellX, cellY): # directly above or below
-#                  count += 2
-#                else:
-#                  count += 1
-#          if count > self.starvation_limit:
-#            new_map[i].append(4)
-#          if count > self.birth_limit:
-#            new_map[i].append(0)
-#          elif count < self.death_limit:
-#            new_map[i].append(4)
-#          else:
-#            new_map[i].append(self.grid[i][j])
-#    self.grid = new_map
-#    return self.grid
-#
   def generate(self):
     """
     Potential alternate implementation for map generation.
@@ -176,19 +119,19 @@ class WorldMap:
         # add in some bridges
         if (row[j+1] == WATER and WATER not in (row[j], row[j+2]) 
              and MOUNTAIN not in (row[j], row[j+2])
-             and (i <= 1 or self.grid[i-1][j+1] in (MOUNTAIN, WATER))
-             and (i >= self.map_width-1 or self.grid[i+1][j+1] in (MOUNTAIN, WATER))):
+             and (i < 1 or self.grid[i-1][j+1] in IMPASSABLE)
+             and (i >= self.map_width-1 or self.grid[i+1][j+1] in IMPASSABLE)):
           row[j+1] = BRIDGE
         if (j < self.map_width-3 and row[j+1] == WATER and row[j+1] == WATER 
              and WATER not in (row[j], row[j+3]) 
              and MOUNTAIN not in (row[j], row[j+3])):
           row[j+1] = row[j+2] = row[j]
-    self.placelandmarks()
+    self.place_landmarks()
     self.encode()
     self.generated = True
     return self.grid
 
-  def placelandmarks(self):
+  def place_landmarks(self):
     self.warps_from[self.tantegel_warp] = None
     self.warps_from[self.charlock_warp] = None
     for i in range(6):
@@ -198,26 +141,37 @@ class WorldMap:
 
     # keep tantegel in regular zone 0 for now
     x, y = self.random_land(30, 58, 30, 44)
+    tantegel = (x, y)
     self.add_warp(1, x, y, CASTLE)
     self.grid[y][x] = CASTLE #tantegel
 
+    grid = MapGrid(self.grid)
+    
+    # place Charlock
+    x, y = self.accessible_land(grid, *tantegel, 6, 118, 3, 116)
+    charlock = (x-3, y)
+    self.place_charlock(x-3, y)
+
     # make sure there's a town near tantegel
-    x, y = self.random_land(x-10, x+10, y-10, y+10)
+    x, y = charlock
+    while (abs(x - charlock[0]) < 4 and abs(y - charlock[1]) < 4):
+      x, y = self.accessible_land(grid, *tantegel, x-10, x+10, y-10, y+10)
     self.add_warp(1, x, y, TOWN)
     self.grid[y][x] = TOWN
 
     for i in range(5):
-      x, y = self.random_land()
+      x, y = charlock
+      while (abs(x - charlock[0]) < 4 and abs(y - charlock[1]) < 4):
+        x, y = self.accessible_land(grid, *tantegel)
       self.add_warp(1, x, y, TOWN)
       self.grid[y][x] = TOWN
 
     for i in range(6):
-      x, y = self.random_land()
+      x, y = charlock
+      while (abs(x - charlock[0]) < 4 and abs(y - charlock[1]) < 4):
+        x, y = self.accessible_land(grid, *tantegel)
       self.add_warp(1, x, y, CAVE)
       self.grid[y][x] = CAVE
-
-    x, y = self.random_land(6, 118, 3, 116)
-    self.place_charlock(x-3, y)
 
   def place_charlock(self, x, y):
     self.add_warp(1, x, y, CASTLE)
@@ -233,12 +187,20 @@ class WorldMap:
           self.grid[y+j][x+i] = SWAMP
     self.grid[y][x+2] = BRIDGE #temporary
 
+  def accessible_land(self, grid, fromx, fromy, minx=1, maxx=118, miny=1, maxy=118):
+    came_from = {}
+    x = y = 0
+    while not (x, y) in came_from.keys():
+#      x, y = self.random_land(minx, maxx, miny, maxy)
+      x, y = random.randint(minx, maxx), random.randint(miny, maxy)
+      came_from, cost_so_far = pathfinding.a_star_search(
+                                     grid, (fromx, fromy), (x, y))
+    return x, y
+    
+
   def random_land(self, minx=1, maxx=118, miny=1, maxy=118):
     x, y = random.randint(minx, maxx), random.randint(miny, maxy)
-    while ((self.grid[y][x-1] in (WATER, MOUNTAIN)) and
-           (self.grid[y][x+1] in (WATER, MOUNTAIN)) and
-           (self.grid[y-1][x] in (WATER, MOUNTAIN)) and
-           (self.grid[y+1][x] in (WATER, MOUNTAIN))):
+    while self.grid[y][x] not in (GRASS, DESERT, HILL, TREES, SWAMP):
       x, y = random.randint(minx, maxx), random.randint(miny, maxy)
     return x, y
 
@@ -247,13 +209,13 @@ class WorldMap:
       if not self.warps_from[self.tantegel_warp]:
         self.warps_from[self.tantegel_warp] = [m, x, y]
         # update the return point
-        if self.grid[y+1][x] not in (MOUNTAIN, WATER):
+        if self.grid[y+1][x] not in IMPASSABLE:
           self.return_point = [m, x, y+1]
-        elif self.grid[y-1][x] not in (MOUNTAIN, WATER):
+        elif self.grid[y-1][x] not in IMPASSABLE:
           self.return_point = [m, x, y-1]
-        elif self.grid[y][x-1] not in (MOUNTAIN, WATER):
+        elif self.grid[y][x-1] not in IMPASSABLE:
           self.return_point = [m, x-1, y]
-        elif self.grid[y][x+1] not in (MOUNTAIN, WATER):
+        elif self.grid[y][x+1] not in IMPASSABLE:
           self.return_point = [m, x+1, y]
       else:
         self.warps_from[self.charlock_warp] = [m, x, y]
@@ -353,7 +315,7 @@ class WorldMap:
 
   def optimize(self, encoded_map, pointers):
     """
-    Optimizes the map by removing unneeded bytes
+    Optimizes the map by removing unneeded bytes. Not yet implemented.
 
     :Parameters:
       encoded_map : bytearray
@@ -490,6 +452,19 @@ class WorldMap:
     html += "</table></body></html>"
     return html
 
+class MapGrid(pathfinding.SquareGrid):
+
+  def __init__(self, grid):
+    pathfinding.SquareGrid.__init__(self, len(grid[0]), len(grid))
+    self.grid = grid
+
+  def passable(self, id):
+    x, y = id
+    return self.grid[y][x] not in IMPASSABLE
+
+  def cost(self, *args):
+    return 1
+
 if __name__ == "__main__":
 
   parser = argparse.ArgumentParser(prog="DWRandomizer",
@@ -497,19 +472,18 @@ if __name__ == "__main__":
   parser.add_argument("--test", action="store_true",
       help="Generate and export a test map.")
            
-  parser.add_argument("filename", nargs='?',
-                       help="The rom file to use for input")
+  parser.add_argument("filename", help="The rom file to use for input")
   args = parser.parse_args()
 
   world_map = WorldMap()
+  world_map.from_rom(args.filename)
   if args.test:
     world_map.generate()
   # 0x8f6 is the maximum size for an encoded map that will fit in the ROM.
     while len(world_map.encoded) > 0x8f6 + 240:
-      print("World Map too large (%d/2534 bytes), retrying... " % len(encoded))
+      print("World Map too large (%d/2534 bytes), retrying... " % 
+            len(world_map.encoded))
       world_map.generate()
-  elif args.filename:
-    world_map.from_rom(args.filename)
   f = open('map.html', 'w')
   f.write(world_map.to_html())
   f.close()

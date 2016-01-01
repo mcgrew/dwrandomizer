@@ -53,6 +53,8 @@ class WorldMap:
   axe_knight_slice = slice(0xcd64, 0xcd76, 6)
   green_dragon_slice = slice(0xcd7b, 0xcd8d, 6)
   golem_slice = slice(0xcd98, 0xcdaa, 6)
+  rainbow_drop_slice = slice(0xde9e, 0xdeab, 6)
+  rainbow_bridge_slice = slice(0x2c4e, 0x2c5b, 6)
   tiles = ("grass", "desert", "hill", "mountain", "water", "block", 
            "trees", "swamp", "town", "cave",  "castle", "bridge", "stairs")
 
@@ -110,7 +112,7 @@ class WorldMap:
           if (len(new_points)):
             points = new_points
 
-    # smooth out the map a bit so it compresses better
+    # smooth out the map a bit for better compression
     for i in range(len(self.grid)):
       row = self.grid[i]
       for j in range(self.map_width-2):
@@ -185,7 +187,7 @@ class WorldMap:
           self.grid[y+j][x+i] = WATER
         elif not (i==0 and j==0):
           self.grid[y+j][x+i] = SWAMP
-    self.grid[y][x+2] = BRIDGE #temporary
+    self.rainbow_bridge = [1, x+2, y]
 
   def accessible_land(self, grid, fromx, fromy, minx=1, maxx=118, miny=1, maxy=118):
     came_from = {}
@@ -360,10 +362,12 @@ class WorldMap:
     self.green_dragon = self.rom_data[self.green_dragon_slice]
     self.golem = self.rom_data[self.golem_slice]
 
+    self.rainbow_bridge = self.rom_data[self.rainbow_bridge_slice]
+
   def read_warps(self):
     self.warps_from = []
     self.warps_to = []
-    start = 0xf3db
+    start = 0xf3d8
     for i in range(51):
       self.warps_from.append(self.rom_data[start:start+3])
       start += 3
@@ -398,7 +402,7 @@ class WorldMap:
       return
     self.rom_data[0x1d6d:0x2753] = self.encoded
     # update with the new warps
-    warp_start = 0xf3db
+    warp_start = 0xf3d8
     for i in range(51):
       self.rom_data[warp_start:warp_start+3] = self.warps_from[i]
       warp_start += 3
@@ -417,6 +421,12 @@ class WorldMap:
       self.rom_data[self.green_dragon_slice] = self.green_dragon
     if self.golem:
       self.rom_data[self.golem_slice] = self.golem
+
+    if self.rainbow_bridge:
+      rainbow = self.rainbow_bridge
+      self.rom_data[self.rainbow_bridge_slice] = rainbow
+      rainbow[1] += 1
+      self.rom_data[self.rainbow_drop_slice] = rainbow
     
   def to_html(self):
     """

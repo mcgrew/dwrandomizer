@@ -6,7 +6,7 @@ import sys
 import hashlib
 from worldmap import WorldMap
 
-VERSION = "0.9.4"
+VERSION = "0.9.7"
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes
@@ -36,19 +36,8 @@ class Rom:
   def __init__(self, filename):
     input_file = open(filename, 'rb')
     self.rom_data = bytearray(input_file.read())
-    self.owmap = WorldMap()
-    self.owmap.from_rom_data(self.rom_data)
     input_file.close()
-    self.enemy_stats = self.rom_data[self.enemy_stats_slice]
-    self.mp_reqs = self.rom_data[self.mp_req_slice]
-    self.zones = self.rom_data[self.zones_slice]
-    self.shop_inventory = self.rom_data[self.weapon_shop_inv_slice]
-    self.token_loc = self.rom_data[self.token_slice]
-    self.flute_loc = self.rom_data[self.flute_slice]
-    self.armor_loc = self.rom_data[self.armor_slice]
-    self.player_stats = self.rom_data[self.player_stats_slice]
-    self.new_spell_levels = self.rom_data[self.new_spell_slice]
-    self.chests = self.rom_data[self.chests_slice]
+    self.revert()
 
   def sha1(self):
     """
@@ -420,6 +409,19 @@ class Rom:
     """
     self.rom_data[0xd77] = self.rom_data[0xd81] = 0x66
 
+  def revert(self):
+    self.owmap = WorldMap(self.rom_data)
+    self.enemy_stats = self.rom_data[self.enemy_stats_slice]
+    self.mp_reqs = self.rom_data[self.mp_req_slice]
+    self.zones = self.rom_data[self.zones_slice]
+    self.shop_inventory = self.rom_data[self.weapon_shop_inv_slice]
+    self.token_loc = self.rom_data[self.token_slice]
+    self.flute_loc = self.rom_data[self.flute_slice]
+    self.armor_loc = self.rom_data[self.armor_slice]
+    self.player_stats = self.rom_data[self.player_stats_slice]
+    self.new_spell_levels = self.rom_data[self.new_spell_slice]
+    self.chests = self.rom_data[self.chests_slice]
+
   def commit(self):
     # commit map
     self.owmap.commit()
@@ -521,6 +523,15 @@ def randomize(args):
   print("Fixing Northern Shrine...")
   rom.patch_northern_shrine()
 
+  if args.map:
+    print("Generating new overworld map (experimental)...")
+    flags += "a"
+    rom.owmap.generate()
+    while len(rom.owmap.encoded) > 2534:
+      print(("Generated map is too large after encoding (%d/2534 bytes), "
+             "regenerating... ") % len(rom.owmap.encoded))
+      rom.owmap.generate()
+
   if args.searchitems:
     print("Shuffling searchable item locations...")
     flags += "i"
@@ -594,15 +605,6 @@ def randomize(args):
       print("Randomizing level spells are learned...")
       flags += "m"
       rom.randomize_spell_learning()
-
-  if args.map:
-    print("Generating new overworld map (experimental)...")
-    flags += "a"
-    rom.owmap.generate()
-    while len(rom.owmap.encoded) > 2534:
-      print(("Generated map is too large after encoding (%d/2534 bytes), "
-             "regenerating... ") % len(rom.owmap.encoded))
-      rom.owmap.generate()
 
   rom.commit()
   output_filename = "DWRando.%s.%d.%snes" % (flags, args.seed, prg)

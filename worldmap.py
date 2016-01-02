@@ -45,7 +45,7 @@ class WorldMap:
   encoded_size = 0x8f6
   map_width = 120
   map_height = 120
-  cave_warps = (1, 5, 8, 12, 13, 17, 19, 7)
+  cave_warps = (1, 5, 8, 12, 13, 7, 17, 19)
   town_warps = (0, 2, 3, 9, 10, 11)
   tantegel_warp = 4
   charlock_warp = 6
@@ -58,7 +58,8 @@ class WorldMap:
   tiles = ("grass", "desert", "hill", "mountain", "water", "block", 
            "trees", "swamp", "town", "cave",  "castle", "bridge", "stairs")
 
-  def __init__(self): 
+  def __init__(self, rom_data=None): 
+    self.rom_data = rom_data
     self.grid = None
     self.rom_data = None
     self.warps_from = []
@@ -70,6 +71,7 @@ class WorldMap:
     self.green_dragon = None
     self.golem = None
     self.chests = None
+    self.revert()
 
   def generate(self):
     """
@@ -138,8 +140,10 @@ class WorldMap:
     self.warps_from[self.charlock_warp] = None
     for i in range(6):
       self.warps_from[self.town_warps[i]] = None
-    for i in range(6):
-      self.warps_from[self.cave_warps[i]] = None
+    for i in range(8):
+      # clear the caves on the overworld
+      if self.warps_from[self.cave_warps[i]][0] == 1:
+        self.warps_from[self.cave_warps[i]] = None
 
     # keep tantegel in regular zone 0 for now
     x, y = self.random_land(30, 58, 30, 44)
@@ -227,7 +231,7 @@ class WorldMap:
           self.warps_from[self.town_warps[i]] = [m, x, y]
           break
     elif type_ == CAVE:
-      for i in range(0,6):
+      for i in range(0,8):
         if self.warps_from[self.cave_warps[i]] is None:
           self.warps_from[self.cave_warps[i]] = [m, x, y]
           break
@@ -339,7 +343,7 @@ class WorldMap:
     f.close()
 
 
-  def from_rom_data(self, rom_data):
+  def revert(self):
     """
     Creates a map from existing rom data.
 
@@ -347,7 +351,6 @@ class WorldMap:
       rom_data : bytearray
         The ROM data to be parsed
     """
-    self.rom_data = rom_data
     self.encoded = rom_data[0x1d6d:0x2753]
     self.decode(self.encoded)
     self.read_warps()
@@ -377,13 +380,13 @@ class WorldMap:
     
   def shuffle_warps(self):
     cave_end = 8 if self.generated else 7 
-    caves = []
-    towns = []
-    for i in range(cave_end):
-      caves.append(self.warps_from[self.cave_warps[i]])
+    caves = [self.warps_from[x] for x in self.cave_warps]
+    towns = [self.warps_from[x] for x in self.town_warps]
+#    for i in range(cave_end):
+#      caves.append(self.warps_from[self.cave_warps[i]])
     random.shuffle(caves)
-    for i in range(6):
-      towns.append(self.warps_from[self.town_warps[i]])
+#    for i in range(6):
+#      towns.append(self.warps_from[self.town_warps[i]])
     random.shuffle(towns)
     while not self.generated and (caves[3][0] == 21 or
           (towns[3][0] == 11 and 21 in (caves[5][0], caves[6][0])) or
@@ -491,8 +494,8 @@ if __name__ == "__main__":
     world_map.generate()
   # 0x8f6 is the maximum size for an encoded map that will fit in the ROM.
     while len(world_map.encoded) > 0x8f6 + 240:
-      print("World Map too large (%d/2534 bytes), retrying... " % 
-            len(world_map.encoded))
+      print(("Generated map is too large after encoding (%d/2534 bytes), "
+             "regenerating... ") % len(world_map.encoded))
       world_map.generate()
   f = open('map.html', 'w')
   f.write(world_map.to_html())

@@ -287,6 +287,15 @@ class Rom:
 
     if ultra:
       for i in range(len(player_str)):
+        player_str[i] = random.randint(4,155)
+      for i in range(len(player_agi)):
+        player_agi[i] = random.randint(4,145)
+      for i in range(len(player_hp)):
+        player_hp[i] = random.randint(10,230)
+      for i in range(len(player_mp)):
+        player_mp[i] = random.randint(0,220)
+    else:
+      for i in range(len(player_str)):
         player_str[i] = round(player_str[i] * random.uniform(0.8, 1.2))
       for i in range(len(player_agi)):
         player_agi[i] = round(player_agi[i] * random.uniform(0.8, 1.2))
@@ -294,15 +303,6 @@ class Rom:
         player_hp[i] = round(player_hp[i] * random.uniform(0.8, 1.2))
       for i in range(len(player_mp)):
         player_mp[i] = round(player_mp[i] * random.uniform(0.8, 1.2))
-    else:
-      for i in range(len(player_str)):
-        player_str[i] = random.randint(4,200)
-      for i in range(len(player_agi)):
-        player_agi[i] = random.randint(4,200)
-      for i in range(len(player_hp)):
-        player_hp[i] = random.randint(10,255)
-      for i in range(len(player_mp)):
-        player_mp[i] = random.randint(0,255)
 
     player_str.sort()
     player_agi.sort()
@@ -332,8 +332,8 @@ class Rom:
         if self.new_spell_levels[j] <= i+1:
           mask |= 1 << j
       new_masks.append(mask)
-      if mask: # give the player at least 3 mp if they have a spell to use.
-        player_mp[i] = max(3, player_mp[i])
+      if mask: # give the player at least 6 mp if they have a spell to use.
+        player_mp[i] = max(6, player_mp[i])
     mask1 = []
     mask2 = []
     # split the masks for use in the rom

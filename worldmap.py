@@ -45,7 +45,7 @@ class WorldMap:
   encoded_size = 0x8f6
   map_width = 120
   map_height = 120
-  cave_warps = (1, 5, 8, 12, 13, 7, 17, 19)
+  cave_warps = (1, 5, 8, 12, 13, 17, 19, 7)
   town_warps = (0, 2, 3, 9, 10, 11)
   tantegel_warp = 4
   charlock_warp = 6
@@ -61,7 +61,6 @@ class WorldMap:
   def __init__(self, rom_data=None): 
     self.rom_data = rom_data
     self.grid = None
-    self.rom_data = None
     self.warps_from = []
     self.warps_to   = []
     self.return_point = None
@@ -337,11 +336,11 @@ class WorldMap:
     encoded_map += bytearray([0xff] * (self.encoded_size - len(encoded_map)))
     return encoded_map + pointers
 
-  def from_rom(self, rom_file):
-    f = open(rom_file, 'rb')
-    self.from_rom_data(f.read()) 
-    f.close()
-
+#  def from_rom(self, rom_file):
+#    f = open(rom_file, 'rb')
+#    self.from_rom_data(f.read()) 
+#    f.close()
+#
 
   def revert(self):
     """
@@ -351,7 +350,7 @@ class WorldMap:
       rom_data : bytearray
         The ROM data to be parsed
     """
-    self.encoded = rom_data[0x1d6d:0x2753]
+    self.encoded = self.rom_data[0x1d6d:0x2753]
     self.decode(self.encoded)
     self.read_warps()
 
@@ -488,8 +487,12 @@ if __name__ == "__main__":
   parser.add_argument("filename", help="The rom file to use for input")
   args = parser.parse_args()
 
-  world_map = WorldMap()
-  world_map.from_rom(args.filename)
+  
+#  world_map.from_rom(args.filename)
+  f = open(args.filename, 'rb')
+  rom_data = f.read()
+  f.close()
+  world_map = WorldMap(rom_data)
   if args.test:
     world_map.generate()
   # 0x8f6 is the maximum size for an encoded map that will fit in the ROM.

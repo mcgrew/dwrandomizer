@@ -316,8 +316,6 @@ class Rom:
 
   def randomize_spell_learning(self, ultra=False):
     self.move_repel() # in case this hasn't been called yet.
-    player_mp = self.player_stats[3::6]
-    new_masks = []
     # choose the levels for new spells
     if ultra:
       for i in range(len(self.new_spell_levels)):
@@ -325,6 +323,11 @@ class Rom:
     else:
       for i in range(len(self.new_spell_levels)):
         self.new_spell_levels[i] += random.randint(-2, 2)
+    self.update_spell_masks()
+
+  def update_spell_masks(self):
+    new_masks = []
+    player_mp = self.player_stats[3::6]
     #adjust the spell masks to fit the new levels
     for i in range(30):
       mask = 0
@@ -395,9 +398,8 @@ class Rom:
     """
     Moves the repel spell to level 8
     """
-    for i in range(47, 90, 6):
-      self.player_stats[i] |= 0x80
-    self.rom_data[0xeb15] = 8
+    self.new_spell_levels[8] = 8
+    self.update_spell_masks()
 
   def buff_heal(self):
     self.rom_data[0xdbce] = 15

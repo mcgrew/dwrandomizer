@@ -4,7 +4,7 @@ import argparse
 import random
 import sys
 import hashlib
-from worldmap import WorldMap
+from worldmap import WorldMap,MapGrid
 
 VERSION = "0.9.7"
 #sha1sums of various roms
@@ -283,9 +283,12 @@ class Rom:
     """
     Shuffles the 3 searchable items in the game. (E.Armor, F.Flute, E.Token)
     """
-    searchables = [self.rom_data[self.token_slice],
-                   self.rom_data[self.flute_slice],
-                   self.rom_data[self.armor_slice]]
+    # move the token, then shuffle
+    tantegel = self.owmap.warps_from[self.owmap.tantegel_warp][1:3]
+    grid = MapGrid(self.owmap.grid)
+    new_token_loc = self.owmap.accessible_land(grid, *tantegel)
+    self.token_loc[1:3] = new_token_loc
+    searchables = [self.token_loc, self.flute_loc, self.armor_loc]
     random.shuffle(searchables)
     self.token_loc = searchables[0]
     self.flute_loc = searchables[1]

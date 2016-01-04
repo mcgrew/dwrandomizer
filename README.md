@@ -70,10 +70,6 @@ The HEAL spell will now have a range from 10-25 instead of 10-17.
 
 REPEL will now be learned at level 8 instead of 15.
 
-### Outside
-OUTSIDE doesn't always send you to where you'd expect it to, though it is 
-predictable. It's not a bug, it's a feature. Kappa
-
 ## Usage:
 
 Remember that if you are running this using Python instead of the exe, Python

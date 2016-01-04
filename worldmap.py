@@ -381,7 +381,7 @@ class WorldMap:
     
   def shuffle_warps(self):
     cave_end = 8 if self.generated else 7 
-    caves = [self.warps_from[x] for x in self.cave_warps]
+    caves = [self.warps_from[x] for x in self.cave_warps[:cave_end]]
     towns = [self.warps_from[x] for x in self.town_warps]
 #    for i in range(cave_end):
 #      caves.append(self.warps_from[self.cave_warps[i]])
@@ -389,11 +389,10 @@ class WorldMap:
 #    for i in range(6):
 #      towns.append(self.warps_from[self.town_warps[i]])
     random.shuffle(towns)
-    while not self.generated and (caves[3][0] == 21 or
-          (towns[3][0] == 11 and 21 in (caves[5][0], caves[6][0])) or
-          (towns[3][0] ==  9 and caves[6][0] == 21)):
+    while not self.generated and (tuple(caves[1]) == (1, 108, 109) or
+           (tuple(towns[4]) == (1, 102, 72) and caves[1][0] in (4, 9)) or
+           (tuple(towns[0]) == (1, 102, 72) and caves[1][0] == 9)):
       random.shuffle(caves)
-
     # save the shuffling
     for i in range(cave_end):
       self.warps_from[self.cave_warps[i]] = caves[i]

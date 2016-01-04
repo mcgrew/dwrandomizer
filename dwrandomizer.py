@@ -19,6 +19,10 @@ prg1sums = ['1ecc63aaac50a9612eaa8b69143858c3e48dd0ae'] #Dragon Warrior (U) (PRG
 
 class Rom:
   # Slices for various data. Offsets include iNES header.
+  # alphabet - 0x5f is breaking space, 60 is regular space (I think)
+  alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" + \
+             "__'______.,-_?!_)(_______________  "
+  token_dialogue_slice = slice(0xa252, 0xa298)
   chest_content_slice = slice(0x5de0, 0x5e59, 4)
   enemy_stats_slice = slice(0x5e5b, 0x60db)
   warps_slice = slice(0xf3d8, 0xf50b)
@@ -52,6 +56,15 @@ class Rom:
     elif digest in prg1sums:
       return 1
     return False
+
+  def ascii2dialogue(self, text):
+    dialogue = [self.alphabet.find(i) for i in text] 
+    return dialogue
+
+
+  def dialogue2ascii(self, slice_):
+    dialogue = self.rom_data[slice_]
+    return ''.join([self.alphabet[i] for i in self.rom_data[slice_]])
 
   def shuffle_chests(self):
     """
@@ -424,8 +437,29 @@ class Rom:
     self.new_spell_levels = self.rom_data[self.new_spell_slice]
     self.chests = self.rom_data[self.chests_slice]
 
+  def token_dialogue(self):
+    """
+    Generates new dialogue data for the NPC who tells you where the token is.
+
+    rtype: bytearray
+    return: new data to replace the npc dialogue.
+    """
+    if self.token_loc[0] == 1:
+      x, y = self.token_loc[1:3]
+    elif self.flute_loc[0] == 1:
+      x, y = self.flute_loc[1:3]
+    elif self.armor_loc[0] == 1:
+      x, y = self.armor_loc[1:3]
+    tx, ty = self.owmap.warps_from[self.owmap.tantegel_warp][1:3]
+    north_south = "north" if y < ty else "south"
+    east_west = "west" if x < tx else "east"
+    return self.ascii2dialogue(
+        ("From Tantegel Castle travel %2d leagues to the %s and %2d "
+         "to the %s") % (abs(y - ty), north_south, abs(x - tx), east_west))
+
   def commit(self):
     # commit map
+    self.rom_data[self.token_dialogue_slice] = self.token_dialogue()
     self.owmap.commit()
     self.rom_data[self.enemy_stats_slice] = self.enemy_stats 
     self.rom_data[self.mp_req_slice] = self.mp_reqs

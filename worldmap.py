@@ -49,6 +49,7 @@ class WorldMap:
   town_warps = (0, 2, 3, 9, 10, 11)
   tantegel_warp = 4
   charlock_warp = 6
+  love_calc_slice = slice(0xdf67, 0xdf4a, -28)
   return_point_addr = (0xdb11, 0xdb15, 0xdb1d)
   axe_knight_slice = slice(0xcd64, 0xcd76, 6)
   green_dragon_slice = slice(0xcd7b, 0xcd8d, 6)
@@ -57,6 +58,7 @@ class WorldMap:
   rainbow_bridge_slice = slice(0x2c4e, 0x2c5b, 6)
   tiles = ("grass", "desert", "hill", "mountain", "water", "block", 
            "trees", "swamp", "town", "cave",  "castle", "bridge", "stairs")
+
 
   def __init__(self, rom_data=None): 
     self.rom_data = rom_data
@@ -411,6 +413,9 @@ class WorldMap:
     for i in range(51):
       self.rom_data[warp_start:warp_start+3] = self.warps_to[i]
       warp_start += 3
+    # update gwaelin's love calculations
+    self.rom_data[self.love_calc_slice] = \
+        self.warps_from[self.tantegel_warp][1:3]
 
     #update the return point
     for i in range(3):

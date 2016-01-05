@@ -3,6 +3,19 @@ will work on either PRG0 or PRG1 ROMs.
 
 ## The randomizer has the following features:
 
+### Random overworld map generation
+
+A new overworld map can be generated with each seed. Checks are used to make
+sure all towns and caves are accessible. On generated maps, the Rainbow Drop
+is used just outside Charlock to create a bridge over the moat.
+
+### Ultra rando mode
+
+New options for a "no holds barred" approach to player growth, spell learning, 
+enemy spells, and enemy zones. This makes them (almost) completely random.
+All spells will be learned by level 20, and enemies in zones 0 and 1 are limited
+to no tougher than scorpions.
+
 ### Randomizing chest contents
 
 Chest contents throughout the game are shuffled. Checks are used to ensure that
@@ -47,9 +60,10 @@ Weapon shop inventory will now be random. Every shop will have 5-6 random items.
 ### Shuffled "Searched for" items
 
 The Fairy Flute, Erdrick's Armor, and Erdrick's Token will now be shuffled, so
-for example the token could be in Kol instead of the flute, and the armor in the
-swamp. In addition, Erdrick's Token could now be in a random chest instead of on
-the ground.
+for example the token could be in Kol instead of the flute, and the armor on the
+overworld. Erdrick's Token could also be in a random chest instead of on the 
+ground. In addition, the item's location on the overworld is randomized. The
+NPC in Cantlin can tell you where it is.
 
 ### Randomized Player Attributes
 

@@ -172,50 +172,23 @@ class Rom:
     """
     self.owmap.shuffle_warps()
 
-#    warp_data = self.rom_data[self.warps_slice]
-#    towns = [warp_data[153:156], warp_data[159:162], warp_data[162:165],
-#             warp_data[180:183], warp_data[183:186], warp_data[186:189]]
-#    caves = [warp_data[156:159], warp_data[168:171], warp_data[177:180],
-#             warp_data[189:192], warp_data[192:195], warp_data[204:207],
-#             warp_data[210:213]]
-#    random.shuffle(towns)
-#    random.shuffle(caves)
-#    # make sure the rimuldar cave isn't inaccessible
-#    # this could happen if it ends up in southern shrine position or
-#    # behind a locked door when rimuldar is in it's normal location.
-#    while (caves[3][0] == 21 or
-#          (towns[3][0] == 11 and 21 in (caves[5][0], caves[6][0])) or
-#          (towns[3][0] ==  9 and caves[6][0] == 21)):
-#      random.shuffle(caves)
-#    warp_data[153:156] = towns[0]
-#    warp_data[159:162] = towns[1]
-#    warp_data[162:165] = towns[2]
-#    warp_data[180:183] = towns[3]
-#    warp_data[183:186] = towns[4]
-#    warp_data[186:189] = towns[5]
-#
-#    warp_data[156:159] = caves[0]
-#    warp_data[168:171] = caves[1]
-#    warp_data[177:180] = caves[2]
-#    warp_data[189:192] = caves[3]
-#    warp_data[192:195] = caves[4]
-#    warp_data[204:207] = caves[5]
-#    warp_data[210:213] = caves[6]
-#    # randomly swap swamp cave exit with southern shrine
-#    if (random.randint(0,1)):
-#      warp_data[174:177],warp_data[189:192] = warp_data[189:192],warp_data[174:177]
-#    self.rom_data[self.warps_slice] = warp_data
-
   def randomize_zones(self, ultra=False):
     """
     Randomizes which enemies are present in each zone.
     """
     new_zones = list()
     if ultra:
-      #zone 0-1
+      # zone 0-1
       for i in range(0,10):
         new_zones.append(random.randint(0, 6))
-      for i in range(0,90):
+      # zones 2-15
+      for i in range(0,70):
+        new_zones.append(random.randint(0, 37))
+      # zones 16-18 (Charlock)
+      for i in range(0,15):
+        new_zones.append(random.randint(29,37))
+      # zone 19
+      for i in range(0,5):
         new_zones.append(random.randint(0, 37))
     else:
       #zones 2-19 

@@ -14,7 +14,9 @@ is used just outside Charlock to create a bridge over the moat.
 New options for a "no holds barred" approach to player growth, spell learning, 
 enemy spells, and enemy zones. This makes them (almost) completely random.
 All spells will be learned by level 20, and enemies in zones 0 and 1 are limited
-to no tougher than scorpions.
+to no tougher than scorpions. Encounters in Charlock are limited to Green
+Green Dragons and tougher. Forced encounters (Green Dragon, Axe Knight,
+Golem) enemy types will also be randomized.
 
 ### Randomizing chest contents
 

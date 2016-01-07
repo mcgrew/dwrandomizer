@@ -37,6 +37,14 @@ class Rom:
   flute_slice = slice(0xe15d, 0xe16a, 6)
   armor_slice = slice(0xe173, 0xe180, 6)
 
+  encounter_1_slice = slice(0xcd64, 0xcd71, 6) # axe knight
+  encounter_2_slice = slice(0xcd7b, 0xcd88, 6) # green dragon
+  encounter_3_slice = slice(0xcd98, 0xcda5, 6) # golem
+  encounter_1_run_slice = slice(0xe8e7, 0xe8f4, 6) # axe knight
+  encounter_2_run_slice = slice(0xe90e, 0xe91b, 6) # green dragon
+  encounter_3_run_slice = slice(0xe93b, 0xe948, 6) # golem
+  encounter_enemies_slice = slice(0xcd74, 0xcdaf, 29)
+
   def __init__(self, filename):
     input_file = open(filename, 'rb')
     self.rom_data = bytearray(input_file.read())
@@ -76,7 +84,6 @@ class Rom:
         chest_contents[i] = 21
       # 50/50 chance to have erdrick's token in a chest
       if chest_contents[i] == 0x17:
-        print(chest_contents[i])
         if random.randint(0,1):
           self.token_loc[0] = 0 # remove token from the ground
           chest_contents[i] = 10 # put it in a chest
@@ -172,6 +179,15 @@ class Rom:
     """
     self.owmap.shuffle_warps()
 
+  def generate_map(self):
+    self.owmap.generate()
+    # Stick encounter 3 in Charlock for now...
+    self.encounter_3_loc = (6, 31, 22)
+    # Let's not remember killing it...
+    self.encounter_3_kill_mask = 0
+
+
+
   def randomize_zones(self, ultra=False):
     """
     Randomizes which enemies are present in each zone.
@@ -190,6 +206,11 @@ class Rom:
       # zone 19
       for i in range(0,5):
         new_zones.append(random.randint(0, 37))
+
+      # randomize forced encounter enemies:
+      # Golem, Axe Knight, Blue Dragon, Stoneman, Armored Knight, Red Dragon
+      for i in range(3):
+        self.encounter_enemies[i] = random.choice((24, 33, 34, 35, 36, 37))
     else:
       #zones 2-19 
       for j in range(5): 
@@ -220,6 +241,7 @@ class Rom:
       for j in range(5):
         new_zones.append(random.randint(3, 11))
     self.zones = new_zones
+
 
   def randomize_shops(self):
     """
@@ -408,6 +430,13 @@ class Rom:
     self.token_loc = self.rom_data[self.token_slice]
     self.flute_loc = self.rom_data[self.flute_slice]
     self.armor_loc = self.rom_data[self.armor_slice]
+    self.encounter_1_loc = self.rom_data[self.encounter_1_slice] # axe knight
+    self.encounter_2_loc = self.rom_data[self.encounter_2_slice] # green dragon
+    self.encounter_3_loc = self.rom_data[self.encounter_3_slice] # golem
+    self.encounter_enemies = self.rom_data[self.encounter_enemies_slice]
+    # set these to 0 to disable remembering of killing them.
+    self.encounter_1_kill_mask = self.rom_data[0xe98a]
+    self.encounter_3_kill_mask = self.rom_data[0xe99c]
     self.player_stats = self.rom_data[self.player_stats_slice]
     self.new_spell_levels = self.rom_data[self.new_spell_slice]
     self.chests = self.rom_data[self.chests_slice]
@@ -448,6 +477,15 @@ class Rom:
     self.rom_data[self.token_slice] = self.token_loc
     self.rom_data[self.flute_slice] = self.flute_loc
     self.rom_data[self.armor_slice] = self.armor_loc
+    self.rom_data[self.encounter_1_slice] = self.encounter_1_loc 
+    self.rom_data[self.encounter_2_slice] = self.encounter_2_loc 
+    self.rom_data[self.encounter_3_slice] = self.encounter_3_loc 
+    self.rom_data[self.encounter_1_run_slice] = self.encounter_1_loc 
+    self.rom_data[self.encounter_2_run_slice] = self.encounter_2_loc 
+    self.rom_data[self.encounter_3_run_slice] = self.encounter_3_loc 
+    self.rom_data[self.encounter_enemies_slice] = self.encounter_enemies
+    self.rom_data[0xe98a] = self.encounter_1_kill_mask 
+    self.rom_data[0xe99c] = self.encounter_3_kill_mask 
     self.rom_data[self.player_stats_slice] = self.player_stats
     self.rom_data[self.new_spell_slice] = self.new_spell_levels
     self.rom_data[self.chests_slice] = self.chests
@@ -542,11 +580,11 @@ def randomize(args):
   if args.map:
     print("Generating new overworld map (experimental)...")
     flags += "a"
-    rom.owmap.generate()
+    rom.generate_map()
     while len(rom.owmap.encoded) > 2534:
       print(("Generated map is too large after encoding (%d/2534 bytes), "
              "regenerating... ") % len(rom.owmap.encoded))
-      rom.owmap.generate()
+      rom.generate_map()
 
   if args.searchitems:
     print("Shuffling searchable item locations...")

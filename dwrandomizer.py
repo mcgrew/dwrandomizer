@@ -501,43 +501,43 @@ def main():
   
   parser = argparse.ArgumentParser(prog="DWRandomizer",
       description="A randomizer for Dragon Warrior for NES")
-  parser.add_argument("-r","--remake", action="store_false",
+  parser.add_argument("-r","--no-remake", action="store_false",
       help="Do not set enemy HP, XP/Gold drops and MP use up to that of the "
            "remake. This will make grind times much longer.")
-  parser.add_argument("-c","--chests", action="store_false",
+  parser.add_argument("-c","---no-chests", action="store_false",
       help="Do not randomize chest contents.")
   parser.add_argument("-f","--force", action="store_false", 
       help="Skip checksums and force randomization. This may produce an invalid"
            " ROM if the incorrect file is used.")
-  parser.add_argument("-i","--searchitems", action="store_false", 
+  parser.add_argument("-i","--no-searchitems", action="store_false", 
       help="Do not randomize the locations of searchable items (Fairy Flute, "
            "Erdrick's Armor, Erdrick's Token).")
-  parser.add_argument("-g","--growth", action="store_false", 
+  parser.add_argument("-g","--no-growth", action="store_false", 
       help="Do not randomize player stat growth.")
   parser.add_argument("-G","--ultra-growth", action="store_true", 
       help="Enable ultra randomization of player stat growth.")
-  parser.add_argument("-l","--repel", action="store_false", 
+  parser.add_argument("-l","--no-repel", action="store_false", 
       help="Do not move repel to level 8.")
-  parser.add_argument("-m","--spells", action="store_false", 
+  parser.add_argument("-m","--no-spells", action="store_false", 
       help="Do not randomize the level spells are learned.")
   parser.add_argument("-M","--ultra-spells", action="store_true", 
       help="Enable ultra randomization of the level spells are learned.")
-  parser.add_argument("-a", "--map", action="store_true", 
-      help=argparse.SUPPRESS) #"Generate a new world map. VERY EXPERIMENTAL!")
-  parser.add_argument("-p","--patterns", action="store_false", 
+  parser.add_argument("--no-map", action="store_false", 
+      help="Generate a new world map. VERY EXPERIMENTAL!")
+  parser.add_argument("-p","--no-patterns", action="store_false", 
       help="Do not randomize enemy attack patterns.")
   parser.add_argument("-P","--ultra-patterns", action="store_true", 
       help="Enable ultra randomization of enemy attack patterns.")
   parser.add_argument("-s","--seed", type=int, 
       help="Specify a seed to be used for randomization.")
-  parser.add_argument("-t","--towns", action="store_false", 
+  parser.add_argument("-t","--no-towns", action="store_false", 
       help="Do not randomize towns.")
-  parser.add_argument("-w","--shops", action="store_false", 
+  parser.add_argument("-w","--no-shops", action="store_false", 
       help="Do not randomize weapon shops.")
-  parser.add_argument("-U","--ultra", action="store_true", 
+  parser.add_argument("-u","-U","--ultra", action="store_true", 
       help="Enable all '--ultra' options.")
 #  parser.add_argument('--version', action='version', version='%(prog) %s'%VERSION)
-  parser.add_argument("-z","--zones", action="store_false", 
+  parser.add_argument("-z","--no-zones", action="store_false", 
       help="Do not randomize enemy zones.")
   parser.add_argument("-Z","--ultra-zones", action="store_true", 
       help="Enable ultra randomization of enemy zones.")
@@ -585,28 +585,28 @@ def randomize(args):
   print("Fixing Northern Shrine...")
   rom.patch_northern_shrine()
 
-  if args.map:
+  if args.no_map:
     print("Generating new overworld map (experimental)...")
     flags += "a"
     while not rom.generate_map():
       print("Error: " + str(rom.owmap.error) + ", retrying...")
 
-  if args.searchitems:
+  if args.no_searchitems:
     print("Shuffling searchable item locations...")
     flags += "i"
     rom.shuffle_searchables()
 
-  if args.chests:
+  if args.no_chests:
     print("Shuffling chest contents...")
     flags += "c"
     rom.shuffle_chests()
 
-  if args.towns:
+  if args.no_towns:
     print("Shuffling town locations...")
     flags += "t"
     rom.shuffle_towns()
 
-  if args.zones:
+  if args.no_zones:
     if args.ultra or args.ultra_zones:
       print("Ultra randomizing enemy zones...")
       flags += "Z"
@@ -616,7 +616,7 @@ def randomize(args):
       flags += "z"
       rom.randomize_zones()
 
-  if args.patterns:
+  if args.no_patterns:
     if args.ultra or args.ultra_patterns:
       print("Ultra randomizing enemy attack patterns...")
       flags += "P"
@@ -626,12 +626,12 @@ def randomize(args):
       flags += "p"
       rom.randomize_attack_patterns()
 
-  if args.shops:
+  if args.no_shops:
     print("Randomizing weapon shops...")
     flags += "w"
     rom.randomize_shops()
 
-  if args.growth:
+  if args.no_growth:
     if args.ultra or args.ultra_growth:
       print("Ultra randomizing player stat growth...")
       flags += "G"
@@ -641,7 +641,7 @@ def randomize(args):
       flags += "g"
       rom.randomize_growth()
 
-  if args.remake:
+  if args.no_remake:
     print("Increasing XP/Gold drops to remake levels...")
     flags += "r"
     rom.update_drops()
@@ -650,12 +650,12 @@ def randomize(args):
     print("Lowering MP requirements to remake levels...")
     rom.update_mp_reqs()
 
-  if args.repel:
+  if args.no_repel:
     print("Moving REPEL to level 8...")
     flags += "l"
     rom.move_repel()
 
-  if args.spells:
+  if args.no_spells:
     if args.ultra or args.ultra_spells:
       print("Ultra randomizing level spells are learned...")
       flags += "M"

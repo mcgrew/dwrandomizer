@@ -45,6 +45,7 @@ class WorldMap:
   encoded_size = 0x8f6
   map_width = 120
   map_height = 120
+  min_walkable = 6000 # minimum accessible land area
   cave_warps = (1, 5, 8, 12, 13, 17, 19, 7)
   town_warps = (0, 2, 3, 9, 10, 11)
   tantegel_warp = 4
@@ -88,9 +89,9 @@ class WorldMap:
       self.grid.append([WATER]*self.map_width)
     tiles = [GRASS, GRASS, SWAMP, DESERT, DESERT, HILL, HILL, MOUNTAIN,
              TREES, TREES, WATER, WATER, WATER, WATER]
-    random.shuffle(tiles)
-    for tile in tiles:
-      for i in range(16):
+    for i in range(12):
+      random.shuffle(tiles)
+      for tile in tiles:
         points = []
         size = round((self.map_width * self.map_height) / 30)
         size = random.randint(round(size/4), size)
@@ -173,7 +174,7 @@ class WorldMap:
     charlock = (x-3, y)
     self.place_charlock(x-3, y)
 
-    if self.plot_size(grid, tantegel) < 4000:
+    if self.plot_size(grid, tantegel) < self.min_walkable:
       raise SanityError("Accessible land area is too small")
 
     if not self.is_accessible(grid, tantegel, (x+3, y)):

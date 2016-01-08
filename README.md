@@ -44,7 +44,7 @@ of the game. XP and gold drops are limited to 255 due to memory limitations.
 
 Towns are randomized, so you could end up with Kol where Cantlin should be, or
 Hauksness right next to Tantegel!
-
+ 
 ### Shuffling caves
 
 Cave locations are randomized so that the cave entrance can lead to an
@@ -97,15 +97,15 @@ to use the 3.x version of Python.
 
 ### Windows
 
-You can just drag and drop the ROM file onto the exe file. This will generate a 
-new ROM in the same directory as the executable. If the application doesn't 
-recognize the file, it will prompt you to make sure you really want to run it, 
-as it may generate an invalid file.
+You can just drag and drop the ROM file onto the exe file. This will prompt you
+for which options you want enabled, and generate a new ROM in the same directory 
+as the executable. If the application doesn't recognize the file, it will 
+prompt you to make sure you really want to run it, as it may generate an invalid
+file in this case.
 
-You can also run the application from a command prompt. If you require custom
-options, you will need to do this. The command is:
+You can also run the application from a command prompt. The command is:
   
-  dwrandomizer [options] C:\path\to\dragon_warrior_rom.nes
+    dwrandomizer [options] C:\path\to\dragon_warrior_rom.nes
 
 The path can be omitted if you have the ROM in the same folder as the 
 executable. See below for other command line options.
@@ -114,7 +114,7 @@ executable. See below for other command line options.
 
 Run the python script from the command line: 
 
-  python dwrandomizer.py [options] /path/to/dragon_warrior_rom.nes
+    python dwrandomizer.py [options] /path/to/dragon_warrior_rom.nes
 
 See below for other command line options.
 
@@ -124,31 +124,31 @@ See below for other command line options.
     filename              The rom file to use for input
 
 #### optional arguments:
-  -h, --help            show the help message and exit
-  -r, --no-remake       Do not set enemy HP, XP/Gold drops and MP use up to
-                        that of the remake. This will make grind times much
-                        longer.
-  -c, ---no-chests      Do not randomize chest contents.
-  -f, --force           Skip checksums and force randomization. This may
-                        produce an invalid ROM if the incorrect file is used.
-  -i, --no-searchitems  Do not randomize the locations of searchable items
-                        (Fairy Flute, Erdrick's Armor, Erdrick's Token).
-  -g, --no-growth       Do not randomize player stat growth.
-  -G, --ultra-growth    Enable ultra randomization of player stat growth.
-  -l, --no-repel        Do not move repel to level 8.
-  -m, --no-spells       Do not randomize the level spells are learned.
-  -M, --ultra-spells    Enable ultra randomization of the level spells are
-                        learned.
-  --no-map              Do not generate a new world map.
-  -p, --no-patterns     Do not randomize enemy attack patterns.
-  -P, --ultra-patterns  Enable ultra randomization of enemy attack patterns.
-  -s SEED, --seed SEED  Specify a seed to be used for randomization.
-  -t, --no-towns        Do not randomize towns.
-  -w, --no-shops        Do not randomize weapon shops.
-  -u, -U, --ultra       Enable all '--ultra' options.
-  -z, --no-zones        Do not randomize enemy zones.
-  -Z, --ultra-zones     Enable ultra randomization of enemy zones.
-  -v, --version         show the version number and exit
+    -h, --help            show the help message and exit
+    -r, --no-remake       Do not set enemy HP, XP/Gold drops and MP use up to
+                          that of the remake. This will make grind times much
+                          longer.
+    -c, ---no-chests      Do not randomize chest contents.
+    -f, --force           Skip checksums and force randomization. This may
+                          produce an invalid ROM if the incorrect file is used.
+    -i, --no-searchitems  Do not randomize the locations of searchable items
+                          (Fairy Flute, Erdrick's Armor, Erdrick's Token).
+    -g, --no-growth       Do not randomize player stat growth.
+    -G, --ultra-growth    Enable ultra randomization of player stat growth.
+    -l, --no-repel        Do not move repel to level 8.
+    -m, --no-spells       Do not randomize the level spells are learned.
+    -M, --ultra-spells    Enable ultra randomization of the level spells are
+                          learned.
+    --no-map              Do not generate a new world map.
+    -p, --no-patterns     Do not randomize enemy attack patterns.
+    -P, --ultra-patterns  Enable ultra randomization of enemy attack patterns.
+    -s SEED, --seed SEED  Specify a seed to be used for randomization.
+    -t, --no-towns        Do not randomize towns.
+    -w, --no-shops        Do not randomize weapon shops.
+    -u, -U, --ultra       Enable all '--ultra' options.
+    -z, --no-zones        Do not randomize enemy zones.
+    -Z, --ultra-zones     Enable ultra randomization of enemy zones.
+    -v, --version         show the version number and exit
 
 ## Special Thanks
 

@@ -129,7 +129,7 @@ script. See below for other command line options.
     -r, --no-remake       Do not set enemy HP, XP/Gold drops and MP use up to
                           that of the remake. This will make grind times much
                           longer.
-    -c, ---no-chests      Do not randomize chest contents.
+    -c, --no-chests      Do not randomize chest contents.
     -d, --defaults        Run the randomizer with the default options.
     -f, --force           Skip checksums and force randomization. This may
                           produce an invalid ROM if the incorrect file is used.

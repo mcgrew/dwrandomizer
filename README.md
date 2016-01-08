@@ -116,7 +116,8 @@ Run the python script from the command line:
 
     python dwrandomizer.py [options] /path/to/dragon_warrior_rom.nes
 
-See below for other command line options.
+The path can be omitted if you have the ROM in the same folder as the 
+script. See below for other command line options.
 
 ## Command line arguments:
 
@@ -129,6 +130,7 @@ See below for other command line options.
                           that of the remake. This will make grind times much
                           longer.
     -c, ---no-chests      Do not randomize chest contents.
+    -d, --defaults        Run the randomizer with the default options.
     -f, --force           Skip checksums and force randomization. This may
                           produce an invalid ROM if the incorrect file is used.
     -i, --no-searchitems  Do not randomize the locations of searchable items

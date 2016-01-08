@@ -504,8 +504,10 @@ def main():
   parser.add_argument("-r","--no-remake", action="store_false",
       help="Do not set enemy HP, XP/Gold drops and MP use up to that of the "
            "remake. This will make grind times much longer.")
-  parser.add_argument("-c","---no-chests", action="store_false",
+  parser.add_argument("-c","--no-chests", action="store_false",
       help="Do not randomize chest contents.")
+  parser.add_argument("-d","--defaults", action="store_true",
+      help="Run the randomizer with the default options.")
   parser.add_argument("-f","--force", action="store_false", 
       help="Skip checksums and force randomization. This may produce an invalid"
            " ROM if the incorrect file is used.")

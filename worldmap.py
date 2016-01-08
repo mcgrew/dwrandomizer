@@ -137,6 +137,9 @@ class WorldMap:
     return self.grid
 
   def place_landmarks(self):
+    """
+    Places landmarks on the map (castles, towns and caves)
+    """
     self.warps_from[self.tantegel_warp] = None
     self.warps_from[self.charlock_warp] = None
     for i in range(6):
@@ -181,6 +184,14 @@ class WorldMap:
       self.grid[y][x] = CAVE
 
   def place_charlock(self, x, y):
+    """
+    Places Charlock Castle on the map.
+    :Parameters:
+      x : int
+        The x coordinate of Charlock
+      y : int
+        The y coordinate of Charlock
+    """
     self.add_warp(1, x, y, CASTLE)
     self.grid[y][x] = CASTLE #charlock
     for i in range(-3, 4):
@@ -195,6 +206,28 @@ class WorldMap:
     self.rainbow_bridge = [1, x+2, y]
 
   def accessible_land(self, grid, fromx, fromy, minx=1, maxx=118, miny=1, maxy=118):
+    """
+    Returns a random land tile that is accessible from the given tile
+    :Parameters:
+      grid : MapGrid
+        A MapGrid object created from the world map grid
+      fromx : int
+        The x coordinate the tile must be accessible from
+      fromy : int
+        The y coordinate the tile must be accessible from
+      minx : int
+        The minimum x coordinate (default 1)
+      maxx : int
+        The maximum x coordinate (default 118)
+      miny : int
+        The minimum x coordinate (default 1)
+      maxy : int
+        The maximum y coordinate (default 118)
+
+
+    rtype: tuple
+    return: An x and y coordinate on the map.
+    """
     came_from = {}
     x = y = 0
     while not (x, y) in came_from.keys():
@@ -206,12 +239,40 @@ class WorldMap:
     
 
   def random_land(self, minx=1, maxx=118, miny=1, maxy=118):
+    """
+    Returns a random land tile.
+    :Parameters:
+      minx : int
+        The minimum x coordinate (default 1)
+      maxx : int
+        The maximum x coordinate (default 118)
+      miny : int
+        The minimum x coordinate (default 1)
+      maxy : int
+        The maximum y coordinate (default 118)
+
+
+    rtype: tuple
+    return: An x and y coordinate on the map.
+    """
     x, y = random.randint(minx, maxx), random.randint(miny, maxy)
     while self.grid[y][x] not in (GRASS, DESERT, HILL, TREES, SWAMP):
       x, y = random.randint(minx, maxx), random.randint(miny, maxy)
     return x, y
 
   def add_warp(self, m, x, y, type_):
+    """
+    Adds a warp item to the map (castle, town, or cave)
+    :Parameters:
+      m : int
+        The map to add the warp to (always 1)
+      x : int
+        The x coordinate on the map
+      y : int
+        The y coordinate on the map
+      type_ : int
+        The type of warp to add
+    """
     if type_ == CASTLE:
       if not self.warps_from[self.tantegel_warp]:
         self.warps_from[self.tantegel_warp] = [m, x, y]
@@ -386,6 +447,9 @@ class WorldMap:
     self.rainbow_bridge = self.rom_data[self.rainbow_bridge_slice]
 
   def read_warps(self):
+    """
+    Reads existing warps from the rom data.
+    """
     self.warps_from = []
     self.warps_to = []
     start = 0xf3d8
@@ -397,6 +461,9 @@ class WorldMap:
       start += 3
     
   def shuffle_warps(self):
+    """
+    Shuffles the map warps (towns and caves).
+    """
     cave_end = 8 if self.generated else 7 
     caves = [self.warps_from[x] for x in self.cave_warps[:cave_end]]
     towns = [self.warps_from[x] for x in self.town_warps]
@@ -417,6 +484,9 @@ class WorldMap:
       self.warps_from[self.town_warps[i]] = towns[i]
 
   def commit(self):
+    """
+    Commits the changes to the rom.
+    """
     if len(self.encoded) > 2534:
       print("Unable to commit map changes, map is too large.")
       return
@@ -453,7 +523,7 @@ class WorldMap:
     
   def to_html(self):
     """
-    Outputs a map to HTML format for viewing.
+    Outputs the map to HTML format for viewing.
 
     :Parameters:
       map_grid : array

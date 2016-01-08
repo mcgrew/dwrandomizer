@@ -6,7 +6,7 @@ import sys
 import hashlib
 from worldmap import WorldMap,MapGrid
 
-VERSION = "0.9.7"
+VERSION = "1.0-rc1"
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes
@@ -536,11 +536,12 @@ def main():
       help="Do not randomize weapon shops.")
   parser.add_argument("-u","-U","--ultra", action="store_true", 
       help="Enable all '--ultra' options.")
-#  parser.add_argument('--version', action='version', version='%(prog) %s'%VERSION)
   parser.add_argument("-z","--no-zones", action="store_false", 
       help="Do not randomize enemy zones.")
   parser.add_argument("-Z","--ultra-zones", action="store_true", 
       help="Enable ultra randomization of enemy zones.")
+  parser.add_argument("-v","--version", action="version", 
+      version="%%(prog)s %s" % VERSION)
   parser.add_argument("filename", help="The rom file to use for input")
   args = parser.parse_args()
   randomize(args)
@@ -554,6 +555,7 @@ def randomize(args):
 
   rom = Rom(args.filename)
 
+  print("\n\nDWRandomizer %s" % VERSION)
   if not args.seed:
     args.seed = random.randint(0, sys.maxsize)
   print("Randomizing %s using random seed %d..." % (args.filename, args.seed))

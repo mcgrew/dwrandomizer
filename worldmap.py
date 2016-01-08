@@ -138,8 +138,8 @@ class WorldMap:
           row[j+1],row[j+2] = row[j],row[j+3]
 
     #remove errantly placed bridges 
-    for i in range(len(self.grid)):
-      for j in range(len(self.grid[i])):
+    for i in range(len(self.grid)-1):
+      for j in range(1, len(self.grid[i])):
         if self.grid[i][j] == BRIDGE and self.grid[i+1][j] not in IMPASSABLE:
           self.grid[i][j] = self.grid[i][j-1]
 

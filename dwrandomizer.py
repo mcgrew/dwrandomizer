@@ -544,12 +544,82 @@ def main():
       version="%%(prog)s %s" % VERSION)
   parser.add_argument("filename", help="The rom file to use for input")
   args = parser.parse_args()
+
+  # if the user didn't enter any flags, ask for options.
+  if len(sys.argv) <= 2: 
+    prompt_for_options(args)
+
   randomize(args)
 
   # So the command prompt doesn't just disappear
   if sys.platform == 'win32':
     print("\n\n")
     input("Press enter to exit...")
+
+def prompt_for_options(args):
+  print()
+  while True:
+    seed = input("Enter seed number (leave blank for random seed): ")
+    if seed:
+      try:
+        args.seed = int(seed)
+        break
+      except:
+        print("\nThat is not a valid number. ", end="")
+    else:
+      break
+
+  mode = input("\nRandomization mode - ultra, normal, custom (u/n/C): ")
+  if (mode.lower().startswith("u")):
+    args.ultra = True
+    return
+  elif (mode.lower().startswith("n")):
+    return
+
+  if input("\nGenerate a random world map? (Y/n) ").lower().startswith("n"):
+    args.no_map = False
+
+  if args.no_map:
+    if input("\nRandomize town & cave locations? (Y/n) ").lower().startswith("n"):
+      args.no_towns = False
+
+  if input("\nRandomize weapon shops? (Y/n) ").lower().startswith("n"):
+    args.no_shops = False
+
+  if input("\nRandomize chests? (Y/n) ").lower().startswith("n"):
+    args.no_chests = False
+
+  if input("\nRandomize searchable items? (Y/n) ").lower().startswith("n"):
+    args.no_searchitems = False
+
+  growth = input("\nStat growth randomization - ultra, default, none (u/D/n): ")
+  if (growth.lower().startswith("u")):
+    args.ultra_growth = True
+  elif (growth.lower().startswith("n")):
+    args.growth = False
+
+  if input("\nMove REPEL to level 8? (Y/n) ").lower().startswith("n"):
+    args.no_repel = False
+
+  spells = input("\nSpell learning randomization - ultra, default, none (u/D/n): ")
+  if (spells.lower().startswith("u")):
+    args.ultra_spells = True
+  elif (spells.lower().startswith("n")):
+    args.no_spells = False
+
+  zones = input("\nEnemy zone randomization - ultra, default, none (u/D/n): ")
+  if (zones.lower().startswith("u")):
+    args.ultra_zones = True
+  elif (zones.lower().startswith("n")):
+    args.no_zones = False
+
+  patterns = input("\nEnemy attack randomization - ultra, default, none (u/D/n): ")
+  if (patterns.lower().startswith("u")):
+    args.ultra_patterns = True
+  elif (patterns.lower().startswith("n")):
+    args.no_patterns = False
+
+
 
 def randomize(args):
 

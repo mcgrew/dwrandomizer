@@ -545,6 +545,11 @@ def main():
   args = parser.parse_args()
   randomize(args)
 
+  # So the command prompt doesn't just disappear
+  if sys.platform == 'win32':
+    print("\n\n")
+    input("Press enter to exit...")
+
 def randomize(args):
 
   rom = Rom(args.filename)
@@ -560,9 +565,10 @@ def randomize(args):
     print("Verifying checksum...")
     result = rom.verify_checksum()
     if result is False:
-      print("Checksum does not match any known ROM, aborting.")
-      print("Rerun with -f to force randomization.")
-      sys.exit(-1)
+      print("Checksum does not match any known ROM.")
+      answer = input("Do you want to attempt to randomize anyway? ")
+      if not answer.lower().startswith("y"):
+        sys.exit(-1)
     else:
       print("Processing Dragon Warrior PRG%d ROM..." % result)
       prg = "PRG%d." % result

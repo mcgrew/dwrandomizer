@@ -249,11 +249,9 @@ class WorldMap:
     return: The RLE data for the ROM 
     """
     map_data = []
-    pointer_data = []
+    pointers = []
     for row in self.grid:
-      pointer_addr = len(map_data) + 0x9d5d
-      pointer_data.append(pointer_addr & 0xff)
-      pointer_data.append(pointer_addr >> 8)
+      pointers.append(len(map_data) + 0x9d5d)
       last_tile = None
       count = 0
       for tile in row:
@@ -273,14 +271,51 @@ class WorldMap:
         map_data.append(tile << 4 | count)
         last_tile = None
         count = 0
-          
-    self.encoded = self.optimize(bytearray(map_data), bytearray(pointer_data))
+
+    map_data, pointers = self.optimize(bytearray(map_data), pointers)
+    # create a byte array from the pointers, suitable for ROM insertion.
+    pointer_data = bytearray()
+    for i in range(len(pointers)):
+      pointer_data.append(pointers[i] & 0xff)
+      pointer_data.append(pointers[i] >> 8)
+
+    self.encoded = map_data + pointer_data
     return self.encoded
 
+  def optimize(self, encoded_map, pointers):
+    """
+    Optimizes the map by removing unneeded bytes. Not yet implemented.
+
+    :Parameters:
+      encoded_map : bytearray
+        The map encoded for use in the ROM. This will remove bytes that are 
+        unneccesary. 
+      pointers : array(int)
+        The pointer addresses to the beginning of each tile row.
+
+    rtype: bytearray
+    return: The map optimized for use in the ROM.
+    """
+    # remove redundant bytes at the end of each row.
+    print("Optimizing compressed map... ", end="")
+    saved = 0
+    for i in range(1, len(pointers)):
+      offset = pointers[i] - 0x9d5d
+      if (((encoded_map[offset-1] & 0xf0) == (encoded_map[offset] & 0xf0)) and 
+         ((encoded_map[offset-1] & 0xf) <= (encoded_map[offset] & 0xf))):
+        saved += 1
+        encoded_map = encoded_map[:offset-1] + encoded_map[offset:]
+        for j in range(i, len(pointers)):
+          pointers[j] -= 1
+    print("(Saved %d bytes)" % saved)
+
+    #extend the map data to the right length.
+    encoded_map += bytearray([0xff] * (self.encoded_size - len(encoded_map)))
+    return encoded_map, pointers
 
   def decode(self, map_data):
     """
-    Decodes a map from the orignal format from the ROM
+    Decodes a map from the orignal ROM format
 
     :Parameters:
       map_data : bytearray
@@ -319,24 +354,6 @@ class WorldMap:
       self.grid.append(decoded_row)
     return self.grid
 
-
-  def optimize(self, encoded_map, pointers):
-    """
-    Optimizes the map by removing unneeded bytes. Not yet implemented.
-
-    :Parameters:
-      encoded_map : bytearray
-        The map encoded for use in the ROM. This will remove bytes that are 
-        unneccesary. 
-      pointers : bytearray
-        The encoded pointers to the beginning of each tile row.
-
-    rtype: bytearray
-    return: The map optimized for use in the ROM.
-    """
-    #extend the map data to the right length.
-    encoded_map += bytearray([0xff] * (self.encoded_size - len(encoded_map)))
-    return encoded_map + pointers
 
 #  def from_rom(self, rom_file):
 #    f = open(rom_file, 'rb')
@@ -401,7 +418,7 @@ class WorldMap:
 
   def commit(self):
     if len(self.encoded) > 2534:
-      print("Unable to commit changes, map is too large.")
+      print("Unable to commit map changes, map is too large.")
       return
     self.rom_data[0x1d6d:0x2753] = self.encoded
     # update with the new warps

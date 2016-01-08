@@ -87,14 +87,16 @@ class WorldMap:
     self.grid = []
     for i in range(self.map_height):
       self.grid.append([WATER]*self.map_width)
-    tiles = [GRASS, GRASS, SWAMP, DESERT, DESERT, HILL, HILL, MOUNTAIN,
-             TREES, TREES, WATER, WATER, WATER, WATER]
+    tiles = [GRASS, GRASS, GRASS, SWAMP, DESERT, DESERT, HILL, MOUNTAIN,
+             TREES, TREES, TREES, WATER, WATER, WATER, WATER]
     for i in range(12):
       random.shuffle(tiles)
       for tile in tiles:
         points = []
         size = round((self.map_width * self.map_height) / 30)
         size = random.randint(round(size/4), size)
+        if tile == MOUNTAIN:
+          size >>= 1
         points.append((random.randint(0,self.map_width-1), 
                       random.randint(0,self.map_height-1)))
         while size > 0:
@@ -125,15 +127,15 @@ class WorldMap:
         if (row[j] != row[j+1] and row[j] == row[j+2]):
           row[j+1] = row[j]
         # add in some bridges
-        if (row[j+1] == WATER and WATER not in (row[j], row[j+2]) 
-             and MOUNTAIN not in (row[j], row[j+2])
-             and (i < 1 or self.grid[i-1][j+1] in IMPASSABLE)
-             and (i >= self.map_width-1 or self.grid[i+1][j+1] in IMPASSABLE)):
+        if (row[j+1] == WATER and WATER not in (row[j], row[j+2]) and
+             MOUNTAIN not in (row[j], row[j+2]) and 
+             (i < 1 or self.grid[i-1][j+1] in IMPASSABLE) and
+             (i >= self.map_height-1 or self.grid[i+1][j+1] in IMPASSABLE)):
           row[j+1] = BRIDGE
         if (j < self.map_width-3 and row[j+1] == WATER and row[j+1] == WATER 
              and WATER not in (row[j], row[j+3]) 
              and MOUNTAIN not in (row[j], row[j+3])):
-          row[j+1] = row[j+2] = row[j]
+          row[j+1],row[j+2] = row[j],row[j+3]
     try:
       self.place_landmarks()
     except SanityError as e:
@@ -146,7 +148,7 @@ class WorldMap:
               % len(self.encoded))
       return False
     self.generated = True
-    return self.grid
+    return True
 
   def place_landmarks(self):
     """

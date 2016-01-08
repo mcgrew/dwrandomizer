@@ -1,5 +1,5 @@
 This application is a randomizer for Dragon Warrior 1 for NES. This randomizer
-will work on either PRG0 or PRG1 ROMs.
+will work on either version of the ROM.
 
 ## The randomizer has the following features:
 
@@ -88,28 +88,33 @@ REPEL will now be learned at level 8 instead of 15.
 
 ## Usage:
 
-Remember that if you are running this using Python instead of the exe, Python
-2.x will not produce an identical file as Python 3.x. Even though this will run
-on both Python 2.7 and 3.x, The random number generator is different between the
-2 versions. **Remember this if you are using this for a race.** The exe is built
-with Python 3.x, so it is recommended that you to use the 3.x version of Python.
+Remember that if you are running this using Python instead of the Windows
+binary, Python 2.x will not produce an identical file to Python 3.x. Even though 
+this will run on both Python 2.7 and 3.x, The random number generator is 
+different between the 2 versions. **Remember this if you are using this for a 
+race.** The executable is built with Python 3.x, so it is recommended that you 
+to use the 3.x version of Python.
 
 ### Windows
 
-If you have a ROM from the GoodNES set, you can just drag and drop the ROM file
-onto the exe. This will generate a new ROM in the same directory as the exe. If
-This doesn't work, you will need to run the application from a command prompt.
-The command would is:
-  
-  dwrandomizer C:\path\to\dragon_warrior_rom.nes
+You can just drag and drop the ROM file onto the exe file. This will generate a 
+new ROM in the same directory as the executable. If the application doesn't 
+recognize the file, it will prompt you to make sure you really want to run it, 
+as it may generate an invalid file.
 
-See below for other command line options.
+You can also run the application from a command prompt. If you require custom
+options, you will need to do this. The command is:
+  
+  dwrandomizer [options] C:\path\to\dragon_warrior_rom.nes
+
+The path can be omitted if you have the ROM in the same folder as the 
+executable. See below for other command line options.
 
 ### Linux & Mac OS
 
 Run the python script from the command line: 
 
-  python dwrandomizer.py /path/to/dragon_warrior_rom.nes
+  python dwrandomizer.py [options] /path/to/dragon_warrior_rom.nes
 
 See below for other command line options.
 
@@ -119,19 +124,31 @@ See below for other command line options.
     filename              The rom file to use for input
 
 #### optional arguments:
-    -h, --help            show this help message and exit
-    -r, --remake          Do not set enemy HP, XP/Gold drops and MP use up to
-                          that of the remake. This will make grind times much
-                          longer.
-    -c, --chests          Do not randomize chest contents.
-    -f, --force           Skip checksums and force randomization. This may
-                          produce an invalid ROM if the incorrect file is used.
-    -l, --repel           Do not move repel to level 8.
-    -p, --patterns        Do not randomize enemy attack patterns.
-    -s SEED, --seed SEED  Specify a seed to be used for randomization.
-    -t, --towns           Do not randomize towns.
-    -w, --shops           Do not randomize weapon shops.
-    -z, --zones           Do not randomize enemy zones.
+  -h, --help            show the help message and exit
+  -r, --no-remake       Do not set enemy HP, XP/Gold drops and MP use up to
+                        that of the remake. This will make grind times much
+                        longer.
+  -c, ---no-chests      Do not randomize chest contents.
+  -f, --force           Skip checksums and force randomization. This may
+                        produce an invalid ROM if the incorrect file is used.
+  -i, --no-searchitems  Do not randomize the locations of searchable items
+                        (Fairy Flute, Erdrick's Armor, Erdrick's Token).
+  -g, --no-growth       Do not randomize player stat growth.
+  -G, --ultra-growth    Enable ultra randomization of player stat growth.
+  -l, --no-repel        Do not move repel to level 8.
+  -m, --no-spells       Do not randomize the level spells are learned.
+  -M, --ultra-spells    Enable ultra randomization of the level spells are
+                        learned.
+  --no-map              Do not generate a new world map.
+  -p, --no-patterns     Do not randomize enemy attack patterns.
+  -P, --ultra-patterns  Enable ultra randomization of enemy attack patterns.
+  -s SEED, --seed SEED  Specify a seed to be used for randomization.
+  -t, --no-towns        Do not randomize towns.
+  -w, --no-shops        Do not randomize weapon shops.
+  -u, -U, --ultra       Enable all '--ultra' options.
+  -z, --no-zones        Do not randomize enemy zones.
+  -Z, --ultra-zones     Enable ultra randomization of enemy zones.
+  -v, --version         show the version number and exit
 
 ## Special Thanks
 
@@ -143,3 +160,4 @@ the Window binary working.
 
 
 ###  -- Created by mcgrew
+

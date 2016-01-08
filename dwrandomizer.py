@@ -180,13 +180,14 @@ class Rom:
     self.owmap.shuffle_warps()
 
   def generate_map(self):
-    self.owmap.generate()
+    if not self.owmap.generate():
+      self.owmap.revert()
+      return False
     # Stick encounter 3 in Charlock for now...
     self.encounter_3_loc = (6, 31, 22)
     # Let's not remember killing it...
     self.encounter_3_kill_mask = 0
-
-
+    return True
 
   def randomize_zones(self, ultra=False):
     """
@@ -280,8 +281,9 @@ class Rom:
     # move the token, then shuffle
     tantegel = self.owmap.warps_from[self.owmap.tantegel_warp][1:3]
     grid = MapGrid(self.owmap.grid)
-    new_token_loc = self.owmap.accessible_land(grid, *tantegel)
+    new_token_loc = self.owmap.accessible_land(grid, tuple(tantegel))
     self.token_loc[1:3] = new_token_loc
+
     searchables = [self.token_loc, self.flute_loc, self.armor_loc]
     random.shuffle(searchables)
     self.token_loc = searchables[0]
@@ -580,11 +582,8 @@ def randomize(args):
   if args.map:
     print("Generating new overworld map (experimental)...")
     flags += "a"
-    rom.generate_map()
-    while len(rom.owmap.encoded) > 2534:
-      print(("Generated map is too large after encoding (%d/2534 bytes), "
-             "regenerating... ") % len(rom.owmap.encoded))
-      rom.generate_map()
+    while not rom.generate_map():
+      print("Error: " + str(rom.owmap.error) + ", retrying...")
 
   if args.searchitems:
     print("Shuffling searchable item locations...")

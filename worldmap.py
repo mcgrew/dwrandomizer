@@ -73,6 +73,7 @@ class WorldMap:
     self.golem = None
     self.chests = None
     self.revert()
+    self.error = None
 
   def generate(self):
     """
@@ -81,6 +82,7 @@ class WorldMap:
     rtype: array
     return: The newly generated map
     """
+    self.error = None
     self.grid = []
     for i in range(self.map_height):
       self.grid.append([WATER]*self.map_width)
@@ -131,8 +133,17 @@ class WorldMap:
              and WATER not in (row[j], row[j+3]) 
              and MOUNTAIN not in (row[j], row[j+3])):
           row[j+1] = row[j+2] = row[j]
-    self.place_landmarks()
+    try:
+      self.place_landmarks()
+    except SanityError as e:
+      self.error = e
+      return False
+
     self.encode()
+    if len(self.encoded) > 2534:
+      self.error = SanityError("Compressed map is too large (%d bytes)" 
+              % len(self.encoded))
+      return False
     self.generated = True
     return self.grid
 
@@ -156,30 +167,36 @@ class WorldMap:
     self.grid[y][x] = CASTLE #tantegel
 
     grid = MapGrid(self.grid)
-    
+
     # place Charlock
-    x, y = self.accessible_land(grid, *tantegel, 6, 118, 3, 116)
+    x, y = self.accessible_land(grid, tantegel, 6, 118, 3, 116)
     charlock = (x-3, y)
     self.place_charlock(x-3, y)
+
+    if self.plot_size(grid, tantegel) < 4000:
+      raise SanityError("Accessible land area is too small")
+
+    if not self.is_accessible(grid, tantegel, (x+3, y)):
+      raise SanityError("Charlock is obstructed")
 
     # make sure there's a town near tantegel
     x, y = charlock
     while (abs(x - charlock[0]) < 4 and abs(y - charlock[1]) < 4):
-      x, y = self.accessible_land(grid, *tantegel, x-10, x+10, y-10, y+10)
+      x, y = self.accessible_land(grid, tantegel, x-10, x+10, y-10, y+10)
     self.add_warp(1, x, y, TOWN)
     self.grid[y][x] = TOWN
 
     for i in range(5):
       x, y = charlock
       while (abs(x - charlock[0]) < 4 and abs(y - charlock[1]) < 4):
-        x, y = self.accessible_land(grid, *tantegel)
+        x, y = self.accessible_land(grid, tantegel)
       self.add_warp(1, x, y, TOWN)
       self.grid[y][x] = TOWN
 
     for i in range(6):
       x, y = charlock
       while (abs(x - charlock[0]) < 4 and abs(y - charlock[1]) < 4):
-        x, y = self.accessible_land(grid, *tantegel)
+        x, y = self.accessible_land(grid, tantegel)
       self.add_warp(1, x, y, CAVE)
       self.grid[y][x] = CAVE
 
@@ -205,7 +222,7 @@ class WorldMap:
           self.grid[y+j][x+i] = SWAMP
     self.rainbow_bridge = [1, x+2, y]
 
-  def accessible_land(self, grid, fromx, fromy, minx=1, maxx=118, miny=1, maxy=118):
+  def accessible_land(self, grid, from_, minx=1, maxx=118, miny=1, maxy=118):
     """
     Returns a random land tile that is accessible from the given tile
     :Parameters:
@@ -231,12 +248,42 @@ class WorldMap:
     came_from = {}
     x = y = 0
     while not (x, y) in came_from.keys():
-#      x, y = self.random_land(minx, maxx, miny, maxy)
       x, y = random.randint(minx, maxx), random.randint(miny, maxy)
-      came_from, cost_so_far = pathfinding.a_star_search(
-                                     grid, (fromx, fromy), (x, y))
+      came_from, cost_so_far = pathfinding.a_star_search(grid, from_, (x, y))
     return x, y
     
+  def is_accessible(self, grid, from_, to):
+    """
+    Determines if a particular tile is accessible from another
+    :Parameters:
+      grid : MapGrid
+        A MapGrid object created from the world map grid
+      from : tuple(int)
+        x and y coordinates of the starting point.
+
+    rtype: bool
+    return: Whether or not the player is able to walk between the 2 coordinates.
+    """
+    came_from, cost_so_far = pathfinding.a_star_search(grid, from_, to)
+    return to in came_from.keys()
+
+  def plot_size(self, grid, point):
+    """
+    Determines if a particular tile is accessible from another
+    :Parameters:
+      grid : MapGrid
+        A MapGrid object created from the world map grid
+      from_ : tuple(int)
+        x and y coordinates of the starting point.
+      to : tuple(int)
+        x and y coordinates of the ending point.
+
+    rtype: bool
+    return: Whether or not the player is able to walk between the 2 coordinates.
+    """
+    came_from, cost_so_far = \
+      pathfinding.a_star_search(grid, point, (self.map_width, self.map_height))
+    return len(came_from.keys())
 
   def random_land(self, minx=1, maxx=118, miny=1, maxy=118):
     """
@@ -558,7 +605,7 @@ class WorldMap:
 class MapGrid(pathfinding.SquareGrid):
 
   def __init__(self, grid):
-    pathfinding.SquareGrid.__init__(self, len(grid[0]), len(grid))
+    super(MapGrid, self).__init__(len(grid[0]), len(grid))
     self.grid = grid
 
   def passable(self, id):
@@ -568,8 +615,13 @@ class MapGrid(pathfinding.SquareGrid):
   def cost(self, *args):
     return 1
 
-if __name__ == "__main__":
+class SanityError(Exception):
+  def __init__(self, message):
+    super(SanityError, self).__init__(message)
 
+
+if __name__ == "__main__":
+  # Run this code if this module is called instead of imported
   parser = argparse.ArgumentParser(prog="DWRandomizer",
       description="A randomizer for Dragon Warrior for NES")
   parser.add_argument("--test", action="store_true",
@@ -585,12 +637,9 @@ if __name__ == "__main__":
   f.close()
   world_map = WorldMap(rom_data)
   if args.test:
-    world_map.generate()
-  # 0x8f6 is the maximum size for an encoded map that will fit in the ROM.
-    while len(world_map.encoded) > 0x8f6 + 240:
-      print(("Generated map is too large after encoding (%d/2534 bytes), "
-             "regenerating... ") % len(world_map.encoded))
-      world_map.generate()
+    while not world_map.generate():
+      print("Error: " + str(world_map.error) + ", retrying...")
+      world_map.revert()
   f = open('map.html', 'w')
   f.write(world_map.to_html())
   f.close()

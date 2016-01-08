@@ -90,7 +90,7 @@ class WorldMap:
     for tile in tiles:
       for i in range(16):
         points = []
-        size = round((self.map_width * self.map_height) / 20)
+        size = round((self.map_width * self.map_height) / 30)
         size = random.randint(round(size/4), size)
         points.append((random.randint(0,self.map_width-1), 
                       random.randint(0,self.map_height-1)))

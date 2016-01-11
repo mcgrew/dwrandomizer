@@ -184,7 +184,7 @@ class Rom:
       self.owmap.revert()
       return False
     # Stick encounter 3 in Charlock for now...
-    self.encounter_3_loc = (6, 31, 22)
+    self.encounter_3_loc = (6, 25, 22)
     # Let's not remember killing it...
     self.encounter_3_kill_mask = 0
     return True

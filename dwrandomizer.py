@@ -23,6 +23,7 @@ class Rom:
   alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" + \
              "__'______.,-_?!_)(_______________  "
   token_dialogue_slice = slice(0xa238, 0xa299)
+  will_not_work_slice = slice(0xad95, 0xadad)
   chest_content_slice = slice(0x5de0, 0x5e59, 4)
   enemy_stats_slice = slice(0x5e5b, 0x60db)
   warps_slice = slice(0xf3d8, 0xf50b)
@@ -66,7 +67,7 @@ class Rom:
     return False
 
   def ascii2dw(self, text):
-    return [self.alphabet.find(i) for i in text] 
+    return bytearray([self.alphabet.find(i) for i in text])
 
 
   def dw2ascii(self, dialogue):
@@ -457,18 +458,21 @@ class Rom:
     elif self.armor_loc[0] == 1:
       x, y = self.armor_loc[1:3]
     else:
-      return (self.ascii2dw("Thou must go and fight!") + [0xfc, 0xfb, 0x50] + 
+      return (self.ascii2dw("Thou must go and fight!") + 
+        bytearray([0xfc, 0xfb, 0x50]) + 
         self.ascii2dw( "Go forth, descendent of Erdrick, "
          "I have complete faith in thy victory! "))
     tx, ty = self.owmap.warps_from[self.owmap.tantegel_warp][1:3]
     north_south = "north" if y < ty else "south"
     east_west = "west" if x < tx else "east"
-    return (self.ascii2dw("Thou may go and search.") + [0xfc, 0xfb, 0x50] + 
-      self.ascii2dw(
+    return (self.ascii2dw("Thou may go and search.") + 
+      bytearray([0xfc, 0xfb, 0x50]) + self.ascii2dw(
       ("From Tantegel Castle travel %2d leagues to the %s and %2d to the %s.") % 
        (abs(y - ty), north_south, abs(x - tx), east_west)))
 
   def commit(self):
+    self.rom_data[self.will_not_work_slice] = \
+        self.ascii2dw("The spell had no effect.")
     self.rom_data[self.token_dialogue_slice] = self.token_dialogue()
     # commit map
     self.owmap.commit()
@@ -660,7 +664,7 @@ def randomize(args):
   rom.patch_northern_shrine()
 
   if args.no_map:
-    print("Generating new overworld map (experimental)...")
+    print("Generating new overworld map...")
     flags += "a"
     while not rom.generate_map():
       print("Error: " + str(rom.owmap.error) + ", retrying...")

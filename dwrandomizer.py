@@ -45,6 +45,8 @@ class Rom:
   encounter_2_run_slice = slice(0xe90e, 0xe91b, 6) # green dragon
   encounter_3_run_slice = slice(0xe93b, 0xe948, 6) # golem
   encounter_enemies_slice = slice(0xcd74, 0xcdaf, 29)
+  encounter_2_kill_slice = slice(0xe97e, 0xe985, 6) # green dragon
+  encounter_3_kill_slice = slice(0xe990, 0xe997, 6) #golem
 
   def __init__(self, filename):
     input_file = open(filename, 'rb')
@@ -186,8 +188,9 @@ class Rom:
       return False
     # Stick encounter 3 in Charlock for now...
     self.encounter_3_loc = (6, 25, 22)
+    self.encounter_3_kill[1] = self.encounter_3_loc[0]
     # Let's not remember killing it...
-    self.encounter_3_kill_mask = 0
+    self.encounter_3_kill[1] = 0
     return True
 
   def randomize_zones(self, ultra=False):
@@ -213,6 +216,8 @@ class Rom:
       # Golem, Axe Knight, Blue Dragon, Stoneman, Armored Knight, Red Dragon
       for i in range(3):
         self.encounter_enemies[i] = random.choice((24, 33, 34, 35, 36, 37))
+      self.encounter_2_kill[0] = self.encounter_enemies[1]
+      self.encounter_3_kill[0] = self.encounter_enemies[2]
     else:
       #zones 2-19 
       for j in range(5): 
@@ -437,9 +442,9 @@ class Rom:
     self.encounter_2_loc = self.rom_data[self.encounter_2_slice] # green dragon
     self.encounter_3_loc = self.rom_data[self.encounter_3_slice] # golem
     self.encounter_enemies = self.rom_data[self.encounter_enemies_slice]
-    # set these to 0 to disable remembering of killing them.
-    self.encounter_1_kill_mask = self.rom_data[0xe98a]
-    self.encounter_3_kill_mask = self.rom_data[0xe99c]
+    # set position 1 to these to disable remembering of killing them.
+    self.encounter_2_kill = self.rom_data[self.encounter_2_kill_slice]
+    self.encounter_3_kill = self.rom_data[self.encounter_3_kill_slice]
     self.player_stats = self.rom_data[self.player_stats_slice]
     self.new_spell_levels = self.rom_data[self.new_spell_slice]
     self.chests = self.rom_data[self.chests_slice]
@@ -490,8 +495,10 @@ class Rom:
     self.rom_data[self.encounter_2_run_slice] = self.encounter_2_loc 
     self.rom_data[self.encounter_3_run_slice] = self.encounter_3_loc 
     self.rom_data[self.encounter_enemies_slice] = self.encounter_enemies
-    self.rom_data[0xe98a] = self.encounter_1_kill_mask 
-    self.rom_data[0xe99c] = self.encounter_3_kill_mask 
+    # update the kill bit code
+    self.rom_data[self.encounter_2_kill_slice] = self.encounter_2_kill
+    self.rom_data[self.encounter_3_kill_slice] = self.encounter_3_kill
+
     self.rom_data[self.player_stats_slice] = self.player_stats
     self.rom_data[self.new_spell_slice] = self.new_spell_levels
     self.rom_data[self.chests_slice] = self.chests

@@ -416,7 +416,7 @@ class Rom:
     """
     Moves the repel spell to level 8
     """
-    self.new_spell_levels[8] = 8
+    self.new_spell_levels[7] = 8
     self.update_spell_masks()
 
   def buff_heal(self):

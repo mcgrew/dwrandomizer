@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-import random
+import custom_random as random
 import sys
 import hashlib
 from worldmap import WorldMap,MapGrid

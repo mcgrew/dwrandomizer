@@ -174,12 +174,13 @@ class WorldMap:
     x, y = self.random_land(30, 58, 30, 44)
     tantegel = (x, y)
     self.add_warp(1, x, y, CASTLE)
-    self.grid[y][x] = CASTLE #tantegel
 
     grid = MapGrid(self.grid)
 
     # place Charlock
-    x, y = self.accessible_land(grid, tantegel, 6, 118, 3, 116)
+    while (self.closer_than(x-3, y, *tantegel, 5) or
+        self.tile_at( x, y) in (TOWN, CASTLE, CAVE, STAIRS)):
+      x, y = self.accessible_land(grid, tantegel, 6, 118, 3, 116)
     charlock = (x-3, y)
     self.place_charlock(x-3, y)
 
@@ -191,24 +192,33 @@ class WorldMap:
 
     # make sure there's a town near tantegel
     x, y = charlock
-    while (abs(x - charlock[0]) < 4 and abs(y - charlock[1]) < 4):
+    while (self.closer_than(x, y, *charlock, 5) or
+        self.tile_at( x, y) in (TOWN, CASTLE, CAVE, STAIRS)):
       x, y = self.accessible_land(grid, tantegel, x-10, x+10, y-10, y+10)
     self.add_warp(1, x, y, TOWN)
-    self.grid[y][x] = TOWN
 
     for i in range(5):
       x, y = charlock
-      while (abs(x - charlock[0]) < 4 and abs(y - charlock[1]) < 4):
+      while (self.closer_than(x, y, *charlock, 5) or
+          self.grid[y][x] in (TOWN, CASTLE, CAVE, STAIRS)):
         x, y = self.accessible_land(grid, tantegel)
       self.add_warp(1, x, y, TOWN)
-      self.grid[y][x] = TOWN
 
     for i in range(6):
       x, y = charlock
-      while (abs(x - charlock[0]) < 4 and abs(y - charlock[1]) < 4):
+      while (self.closer_than(x, y, *charlock, 5) or
+          self.grid[y][x] in (TOWN, CASTLE, CAVE, STAIRS)):
         x, y = self.accessible_land(grid, tantegel)
       self.add_warp(1, x, y, CAVE)
-      self.grid[y][x] = CAVE
+
+  def closer_than (self, x1, y1, x2, y2, distance):
+      return (abs(x1 - x2) < distance and abs(y1 - y2) < distance)
+    
+  def tile_at(self, x, y):
+    return self.grid[y][x]
+
+  def set_tile(self, x, y, tile):
+    self.grid[y][x] = tile
 
   def place_charlock(self, x, y):
     """
@@ -220,16 +230,16 @@ class WorldMap:
         The y coordinate of Charlock
     """
     self.add_warp(1, x, y, CASTLE)
-    self.grid[y][x] = CASTLE #charlock
+    self.set_tile(x, y, CASTLE) #charlock
     for i in range(-3, 4):
       for j in range(-3, 4):
         if abs(i) >= 3 or abs(j) >= 3:
           if not (i > 0 and j == 0):
-            self.grid[y+j][x+i] = BLOCK
+            self.set_tile(x+i, y+j, BLOCK)
         elif abs(i) >= 2 or abs(j) >= 2:
-          self.grid[y+j][x+i] = WATER
+          self.set_tile(x+i, y+j, WATER)
         elif not (i==0 and j==0):
-          self.grid[y+j][x+i] = SWAMP
+          self.set_tile(x+i, y+j, SWAMP)
     self.rainbow_bridge = [1, x+2, y]
 
   def accessible_land(self, grid, from_, minx=1, maxx=118, miny=1, maxy=118):
@@ -354,6 +364,9 @@ class WorldMap:
         if self.warps_from[self.cave_warps[i]] is None:
           self.warps_from[self.cave_warps[i]] = [m, x, y]
           break
+    else:
+      return
+    self.set_tile(x, y, type_)
     
   def encode(self):
     """

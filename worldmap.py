@@ -190,14 +190,7 @@ class WorldMap:
     if not self.is_accessible(grid, tantegel, (x+3, y)):
       raise SanityError("Charlock is obstructed")
 
-    # make sure there's a town near tantegel
-    x, y = charlock
-    while (self.closer_than(x, y, *charlock, 5) or
-        self.tile_at( x, y) in (TOWN, CASTLE, CAVE, STAIRS)):
-      x, y = self.accessible_land(grid, tantegel, x-10, x+10, y-10, y+10)
-    self.add_warp(1, x, y, TOWN)
-
-    for i in range(5):
+    for i in range(6):
       x, y = charlock
       while (self.closer_than(x, y, *charlock, 5) or
           self.grid[y][x] in (TOWN, CASTLE, CAVE, STAIRS)):

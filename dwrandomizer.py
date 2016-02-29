@@ -477,6 +477,18 @@ class Rom:
       ("From Tantegel Castle travel %2d leagues to the %s and %2d to the %s.") % 
        (abs(y - ty), north_south, abs(x - tx), east_west)))
 
+  def add_tantegel_exit(self):
+    # add new stairs to the throne room and 1st floor
+    self.add_patch(0x43a, 1, [0x47])
+    self.add_patch(0x2b9, 1, [0x45])
+    # add a new exit to the first floor
+    self.add_patch(0x2d7, 1, [0x66])
+    # replace the usless grave warps with some for tantegel
+    self.add_patch(0xf45f, 1, [5, 1, 8])
+    self.add_patch(0xf4f8, 1, [4, 1, 7])
+    #remove the top set of stairs associated with the old warp in the grave
+    self.add_patch(0x1298, 1, [0x22])
+
   def commit(self):
     self.rom_data[self.will_not_work_slice] = \
         self.ascii2dw("The spell had no effect.")
@@ -684,6 +696,9 @@ def randomize(args):
 
   print("Fixing Northern Shrine...")
   rom.patch_northern_shrine()
+
+  print("Adding a new throne room exit...")
+  rom.add_tantegel_exit()
 
   if args.no_map:
     print("Generating new overworld map...")

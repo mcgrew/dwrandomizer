@@ -343,7 +343,7 @@ class Rom:
     # choose the levels for new spells
     if ultra:
       for i in range(len(self.new_spell_levels)):
-        self.new_spell_levels[i] = random.randint(0, 20)
+        self.new_spell_levels[i] = random.randint(0, 18)
     else:
       for i in range(len(self.new_spell_levels)):
         self.new_spell_levels[i] += random.randint(-2, 2)

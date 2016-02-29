@@ -89,11 +89,7 @@ REPEL will now be learned at level 8 instead of 15.
 ## Usage:
 
 Remember that if you are running this using Python instead of the Windows
-binary, Python 2.x will not produce an identical file to Python 3.x. Even though 
-this will run on both Python 2.7 and 3.x, The random number generator is 
-different between the 2 versions. **Remember this if you are using this for a 
-race.** The executable is built with Python 3.x, so it is recommended that you 
-to use the 3.x version of Python.
+binary, Python 3.x is required. DWRandomizer does not work with Python 2.x.
 
 ### Windows
 

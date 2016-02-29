@@ -205,12 +205,54 @@ class WorldMap:
       self.add_warp(1, x, y, CAVE)
 
   def closer_than (self, x1, y1, x2, y2, distance):
-      return (abs(x1 - x2) < distance and abs(y1 - y2) < distance)
+    """
+    Determines whether x1,y1 is closer than distance vertically and
+    horizontally to x2,y2.
+
+    :Parameters:
+      x1 : int
+        The x coordinate of the first point.
+      y1 : int
+        The y coordinate of the first point.
+      x2 : int
+        The x coordinate of the second point.
+      y2 : int
+        The y coordinate of the secont point.
+      distance : int
+        The distance for the calculation.
+
+    rtype: bool
+    return: A boolean indicating whether the 2 points are closer than distance.
+    """
+    return (abs(x1 - x2) < distance and abs(y1 - y2) < distance)
     
   def tile_at(self, x, y):
+    """
+    Returns the tile type at the given x,y coordinate.
+    
+    :Parameters:
+      x : int
+        The x coordinate of the tile.
+      y : int
+        The y coordinae of the tile.
+
+    rtype: int
+    return: The tile type at the given coordinates.
+    """
     return self.grid[y][x]
 
   def set_tile(self, x, y, tile):
+    """
+    Sets the type of the given tile
+
+    :Parameters:
+      x : int
+        The x coordinate of the tile
+      y : int
+        The y coordinate of the tile
+      tile : int
+        The new tile type.
+    """
     self.grid[y][x] = tile
 
   def place_charlock(self, x, y):
@@ -479,12 +521,6 @@ class WorldMap:
     return self.grid
 
 
-#  def from_rom(self, rom_file):
-#    f = open(rom_file, 'rb')
-#    self.from_rom_data(f.read()) 
-#    f.close()
-#
-
   def revert(self):
     """
     Creates a map from existing rom data.
@@ -625,13 +661,22 @@ class MapGrid(pathfinding.SquareGrid):
     self.grid = grid
 
   def passable(self, id):
+    """
+    Whether or not the given tile is passable by walking.
+    """
     x, y = id
     return self.grid[y][x] not in IMPASSABLE
 
   def cost(self, *args):
+    """
+    Returns the cost to move from one space to the next
+    """
     return 1
 
 class SanityError(Exception):
+  """
+  An error to be thrown when the new map fails a sanity check.
+  """
   def __init__(self, message):
     super(SanityError, self).__init__(message)
 

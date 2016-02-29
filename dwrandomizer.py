@@ -6,7 +6,7 @@ import sys
 import hashlib
 from worldmap import WorldMap,MapGrid
 
-VERSION = "1.0-rc1"
+VERSION = "1.0-rc2"
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes
@@ -63,6 +63,9 @@ class Rom:
     return hashlib.sha1(self.rom_data).hexdigest()
 
   def verify_checksum(self):
+    """
+    Verifies the checksum of the input ROM against known ROM checksums.
+    """
     digest = self.sha1()
     if digest in prg0sums:
       return 0
@@ -71,10 +74,30 @@ class Rom:
     return False
 
   def ascii2dw(self, text):
+    """
+    Converts an ascii string to bytes suitable for insertion into the ROM.
+
+    :Parameters:
+      text : string
+        The text to be converted.
+
+    rtype: bytearray
+    return: Dialoge bytes suitable for insertion into the ROM.
+    """
     return bytearray([self.alphabet.find(i) for i in text])
 
 
   def dw2ascii(self, dialogue):
+    """
+    Converts a string of bytes from the ROM to ascii text.
+
+    :Parameters:
+      dialogue : bytearray
+        The bytes from the ROM to be converted. 
+  
+    rtype: string
+    return: The ascii text after conversion.
+    """
     return ''.join([self.alphabet[i] for i in list(dialogue)])
 
   def shuffle_chests(self):
@@ -152,6 +175,10 @@ class Rom:
     """
     Randomizes attack patterns of enemies (whether or not they use spells/fire 
     breath).
+
+    :Parameters:
+      ultra : bool
+        Whether or not to apply ultra randomization
     """
     new_patterns = [] # attack patterns
     new_ss_resist = self.enemy_stats[4::16] 
@@ -189,6 +216,9 @@ class Rom:
     self.owmap.shuffle_warps()
 
   def generate_map(self):
+    """
+    Generates a new overworld map.
+    """
     if not self.owmap.generate():
       self.owmap.revert()
       return False
@@ -202,6 +232,10 @@ class Rom:
   def randomize_zones(self, ultra=False):
     """
     Randomizes which enemies are present in each zone.
+
+    :Parameters:
+      ultra : bool
+        Whether or not to apply ultra randomization
     """
     new_zones = list()
     if ultra:
@@ -303,6 +337,13 @@ class Rom:
     self.armor_loc = searchables[2]
 
   def randomize_growth(self, ultra=False):
+    """
+    Randomizes player growth.
+    
+    :Parameters:
+      ultra : bool
+        Whether or not to apply ultra randomization.
+    """
     
     player_str = list(self.player_stats[0:180:6])
     player_agi = list(self.player_stats[1:180:6])
@@ -339,6 +380,13 @@ class Rom:
     self.player_stats[3:180:6] = player_mp
 
   def randomize_spell_learning(self, ultra=False):
+    """
+    Randomizes the level at which spells are learned.
+
+    :Parameters:
+      ultra : bool
+        Whether or not to use ultra randomization.
+    """
     self.move_repel() # in case this hasn't been called yet.
     # choose the levels for new spells
     if ultra:
@@ -350,6 +398,10 @@ class Rom:
     self.update_spell_masks()
 
   def update_spell_masks(self):
+    """
+    Updates the spell masks to be written to the rom, based on the data in 
+    player_stats.
+    """
     new_masks = []
     player_mp = self.player_stats[3::6]
     #adjust the spell masks to fit the new levels
@@ -425,6 +477,9 @@ class Rom:
     self.update_spell_masks()
 
   def buff_heal(self):
+    """
+    Buffs the heal spell slightly to have a range of 10-25 instead of 10-15
+    """
     self.add_patch(0xdbce, 1, [15])
 
   def patch_northern_shrine(self):
@@ -435,6 +490,9 @@ class Rom:
     self.add_patch(0xd77, 10, [0x66, 0x66])
 
   def revert(self):
+    """
+    Reverts all previous changes to the ROM
+    """
     self.owmap = WorldMap(self.rom_data)
     self.enemy_stats = self.rom_data[self.enemy_stats_slice]
     self.mp_reqs = self.rom_data[self.mp_req_slice]
@@ -482,6 +540,9 @@ class Rom:
        (abs(y - ty), north_south, abs(x - tx), east_west)))
 
   def add_tantegel_exit(self):
+    """
+    Adds a quicker exit for the Tantegel throne room.
+    """
     # add new stairs to the throne room and 1st floor
     self.add_patch(0x43a, 1, [0x47])
     self.add_patch(0x2b9, 1, [0x45])
@@ -494,6 +555,9 @@ class Rom:
     self.add_patch(0x1298, 1, [0x22])
 
   def commit(self):
+    """
+    Commits all changes to the ROM
+    """
     self.rom_data[self.will_not_work_slice] = \
         self.ascii2dw("The spell had no effect.")
     self.rom_data[self.token_dialogue_slice] = self.token_dialogue()
@@ -523,6 +587,19 @@ class Rom:
     self.apply_patches()
 
   def add_patch(self, addr, step, data):
+    """
+    Adds a new manual rom patch
+    :Parameters:
+      addr : int
+        The address where the new data is to be applied
+      step : int 
+        The distance between each data byte in the rom
+      data : array
+        The data to be patched into the ROM
+
+    rtype: 
+    return: 
+    """
     self.patches[addr] = (step, *data)
 
   def apply_patches(self):
@@ -535,6 +612,12 @@ class Rom:
       self.rom_data[addr:addr+(len(patch)-1)*patch[0]:patch[0]] = patch[1:]
 
   def write(self, output_filename):
+    """
+    Writes out the new ROM file
+    :Parameters:
+      output_filename : string
+        The name of the new file
+    """
     outputfile = open(output_filename, 'wb')
     outputfile.write(self.rom_data)
     outputfile.close()
@@ -601,6 +684,9 @@ def main():
     input("Press enter to exit...")
 
 def prompt_for_options(args):
+  """
+  Prompts the user for randomizer options
+  """
   print()
   while True:
     seed = input("Enter seed number (leave blank for random seed): ")

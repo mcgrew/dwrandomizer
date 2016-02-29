@@ -47,6 +47,8 @@ class Rom:
   encounter_enemies_slice = slice(0xcd74, 0xcdaf, 29)
   encounter_2_kill_slice = slice(0xe97e, 0xe985, 6) # green dragon
   encounter_3_kill_slice = slice(0xe990, 0xe997, 6) #golem
+  # patch format: patch[addr] = (step, data...)
+  patches = {}
 
   def __init__(self, filename):
     input_file = open(filename, 'rb')
@@ -406,11 +408,10 @@ class Rom:
     """
     Adds functionality for the fighter's ring (+2 to attack)
     """
-    ring_patch1 = (0x20, 0x54, 0xff, 0xea)
-    ring_patch2 = (0x85, 0xcd, 0xa5, 0xcf, 0x29, 0x20, 0xf0, 0x07, 0xa5, 
-                   0xcc, 0x18, 0x69, 0x02, 0x85, 0xcc, 0xa5, 0xcf, 0x60)
-    self.rom_data[0xf10c:0xf110] = bytearray(ring_patch1)
-    self.rom_data[0xff64:0xff76] = bytearray(ring_patch2)
+    # ring patch 
+    self.add_patch(0xf10c, 1, (0x20, 0x54, 0xff, 0xea))
+    self.add_patch(0xff64 ,1, (0x85, 0xcd, 0xa5, 0xcf, 0x29, 0x20, 0xf0, 0x07, 
+                   0xa5, 0xcc, 0x18, 0x69, 0x02, 0x85, 0xcc, 0xa5, 0xcf, 0x60))
 
   def move_repel(self):
     """
@@ -420,14 +421,14 @@ class Rom:
     self.update_spell_masks()
 
   def buff_heal(self):
-    self.rom_data[0xdbce] = 15
+    self.add_patch(0xdbce, 1, [15])
 
   def patch_northern_shrine(self):
     """
     Removes the 2 blocks from around the shrine guardian so you can walk around 
     him.
     """
-    self.rom_data[0xd77] = self.rom_data[0xd81] = 0x66
+    self.add_patch(0xd77, 10, [0x66, 0x66])
 
   def revert(self):
     self.owmap = WorldMap(self.rom_data)
@@ -448,6 +449,7 @@ class Rom:
     self.player_stats = self.rom_data[self.player_stats_slice]
     self.new_spell_levels = self.rom_data[self.new_spell_slice]
     self.chests = self.rom_data[self.chests_slice]
+    self.patches = {}
 
   def token_dialogue(self):
     """
@@ -502,6 +504,19 @@ class Rom:
     self.rom_data[self.player_stats_slice] = self.player_stats
     self.rom_data[self.new_spell_slice] = self.new_spell_levels
     self.rom_data[self.chests_slice] = self.chests
+    self.apply_patches()
+
+  def add_patch(self, addr, step, data):
+    self.patches[addr] = (step, *data)
+
+  def apply_patches(self):
+    """
+    Applies any manual patches
+    """
+    # apply any manual patches
+    while len(self.patches):
+      addr,patch = self.patches.popitem()
+      self.rom_data[addr:addr+(len(patch)-1)*patch[0]:patch[0]] = patch[1:]
 
   def write(self, output_filename):
     outputfile = open(output_filename, 'wb')

@@ -84,16 +84,20 @@ class Rom:
     """
     chest_contents = self.chests[3::4]
     for i in range(len(chest_contents)):
-      # change all gold (and erdrick's tablet) to large gold stash
+      # replace the harp with a key.
+      if chest_contents[i] == 0xd:
+        chest_contents[i] = 3
+      # change all gold to large gold stash
       if (chest_contents[i] >= 18 and chest_contents[i] <= 20):
         chest_contents[i] = 21
-      # 50/50 chance to have erdrick's token in a chest
+      # 50/50 chance to have erdrick's token in a chest. If not, large gold.
       if chest_contents[i] == 0x17:
         if random.randint(0,1):
           self.token_loc[0] = 0 # remove token from the ground
           chest_contents[i] = 10 # put it in a chest
         else:
-          chest_contents[i] = 21
+          chest_contents[i] = 3 # else put in a key.
+
 
     random.shuffle(chest_contents)
 
@@ -111,7 +115,7 @@ class Rom:
               j = self.non_charlock_chest()
             chest_contents[j], chest_contents[i] = chest_contents[i], chest_contents[j]
 
-    # make sure there's a key to in the throne room
+    # make sure there's a key in the throne room
     if not (3 in chest_contents[4:7]):
       for i in range(len(chest_contents)):
         if chest_contents[i] == 3:

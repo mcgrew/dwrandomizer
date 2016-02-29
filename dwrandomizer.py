@@ -465,9 +465,9 @@ class Rom:
     Adds functionality for the fighter's ring (+2 to attack)
     """
     # ring patch 
-    self.add_patch(0xf10c, 1, (0x20, 0x54, 0xff, 0xea))
-    self.add_patch(0xff64 ,1, (0x85, 0xcd, 0xa5, 0xcf, 0x29, 0x20, 0xf0, 0x07, 
-                   0xa5, 0xcc, 0x18, 0x69, 0x02, 0x85, 0xcc, 0xa5, 0xcf, 0x60))
+    self.add_patch(0xf10c, 1, 0x20, 0x54, 0xff, 0xea)
+    self.add_patch(0xff64 ,1, 0x85, 0xcd, 0xa5, 0xcf, 0x29, 0x20, 0xf0, 0x07, 
+                   0xa5, 0xcc, 0x18, 0x69, 0x02, 0x85, 0xcc, 0xa5, 0xcf, 0x60)
 
   def move_repel(self):
     """
@@ -480,14 +480,14 @@ class Rom:
     """
     Buffs the heal spell slightly to have a range of 10-25 instead of 10-15
     """
-    self.add_patch(0xdbce, 1, [15])
+    self.add_patch(0xdbce, 1, 15)
 
   def patch_northern_shrine(self):
     """
     Removes the 2 blocks from around the shrine guardian so you can walk around 
     him.
     """
-    self.add_patch(0xd77, 10, [0x66, 0x66])
+    self.add_patch(0xd77, 10, 0x66, 0x66)
 
   def revert(self):
     """
@@ -544,15 +544,15 @@ class Rom:
     Adds a quicker exit for the Tantegel throne room.
     """
     # add new stairs to the throne room and 1st floor
-    self.add_patch(0x43a, 1, [0x47])
-    self.add_patch(0x2b9, 1, [0x45])
+    self.add_patch(0x43a, 1, 0x47)
+    self.add_patch(0x2b9, 1, 0x45)
     # add a new exit to the first floor
-    self.add_patch(0x2d7, 1, [0x66])
+    self.add_patch(0x2d7, 1, 0x66)
     # replace the usless grave warps with some for tantegel
-    self.add_patch(0xf45f, 1, [5, 1, 8])
-    self.add_patch(0xf4f8, 1, [4, 1, 7])
+    self.add_patch(0xf45f, 1, 5, 1, 8)
+    self.add_patch(0xf4f8, 1, 4, 1, 7)
     #remove the top set of stairs associated with the old warp in the grave
-    self.add_patch(0x1298, 1, [0x22])
+    self.add_patch(0x1298, 1, 0x22)
 
   def commit(self):
     """
@@ -586,21 +586,20 @@ class Rom:
     self.rom_data[self.chests_slice] = self.chests
     self.apply_patches()
 
-  def add_patch(self, addr, step, data):
+  def add_patch(self, addr, *data):
     """
     Adds a new manual rom patch
     :Parameters:
       addr : int
         The address where the new data is to be applied
-      step : int 
-        The distance between each data byte in the rom
       data : array
-        The data to be patched into the ROM
+        The first argument should be the distance between each byte to be placed
+        in the rom. The rest is the data to be patched into the ROM
 
     rtype: 
     return: 
     """
-    self.patches[addr] = (step, *data)
+    self.patches[addr] = data
 
   def apply_patches(self):
     """

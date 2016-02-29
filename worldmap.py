@@ -178,7 +178,7 @@ class WorldMap:
     grid = MapGrid(self.grid)
 
     # place Charlock
-    while (self.closer_than(x-3, y, *tantegel, 5) or
+    while (self.closer_than(5, x-3, y, *tantegel) or
         self.tile_at( x, y) in (TOWN, CASTLE, CAVE, STAIRS)):
       x, y = self.accessible_land(grid, tantegel, 6, 118, 3, 116)
     charlock = (x-3, y)
@@ -192,19 +192,19 @@ class WorldMap:
 
     for i in range(6):
       x, y = charlock
-      while (self.closer_than(x, y, *charlock, 5) or
+      while (self.closer_than(5, x, y, *charlock) or
           self.grid[y][x] in (TOWN, CASTLE, CAVE, STAIRS)):
         x, y = self.accessible_land(grid, tantegel)
       self.add_warp(1, x, y, TOWN)
 
     for i in range(6):
       x, y = charlock
-      while (self.closer_than(x, y, *charlock, 5) or
+      while (self.closer_than(5, x, y, *charlock) or
           self.grid[y][x] in (TOWN, CASTLE, CAVE, STAIRS)):
         x, y = self.accessible_land(grid, tantegel)
       self.add_warp(1, x, y, CAVE)
 
-  def closer_than (self, x1, y1, x2, y2, distance):
+  def closer_than (self, distance, x1, y1, x2, y2):
     """
     Determines whether x1,y1 is closer than distance vertically and
     horizontally to x2,y2.

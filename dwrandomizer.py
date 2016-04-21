@@ -5,6 +5,7 @@ import random
 import sys
 import hashlib
 from worldmap import WorldMap,MapGrid
+import ips
 
 VERSION = "1.0-rc2"
 #sha1sums of various roms
@@ -56,11 +57,14 @@ class Rom:
     input_file.close()
     self.revert()
 
-  def sha1(self):
+  def sha1(self, data=None):
     """
     Returns a sha1 checksum of the rom data
     """
-    return hashlib.sha1(self.rom_data).hexdigest()
+    if data:
+      return hashlib.sha1(data).hexdigest()
+    else:
+      return hashlib.sha1(self.rom_data).hexdigest()
 
   def verify_checksum(self):
     """
@@ -558,6 +562,7 @@ class Rom:
     """
     Commits all changes to the ROM
     """
+    orig_data = self.rom_data[:]
     self.rom_data[self.will_not_work_slice] = \
         self.ascii2dw("The spell had no effect.")
     self.rom_data[self.token_dialogue_slice] = self.token_dialogue()
@@ -585,6 +590,7 @@ class Rom:
     self.rom_data[self.new_spell_slice] = self.new_spell_levels
     self.rom_data[self.chests_slice] = self.chests
     self.apply_patches()
+    self.ips = ips.Patch.create(orig_data, self.rom_data)
 
   def add_patch(self, addr, *data):
     """
@@ -610,7 +616,7 @@ class Rom:
       addr,patch = self.patches.popitem()
       self.rom_data[addr:addr+(len(patch)-1)*patch[0]:patch[0]] = patch[1:]
 
-  def write(self, output_filename):
+  def write(self, output_filename, content=None):
     """
     Writes out the new ROM file
     :Parameters:
@@ -618,7 +624,10 @@ class Rom:
         The name of the new file
     """
     outputfile = open(output_filename, 'wb')
-    outputfile.write(self.rom_data)
+    if content:
+      outputfile.write(content)
+    else:
+      outputfile.write(self.rom_data)
     outputfile.close()
 
 def main():
@@ -638,6 +647,8 @@ def main():
   parser.add_argument("-i","--no-searchitems", action="store_false", 
       help="Do not randomize the locations of searchable items (Fairy Flute, "
            "Erdrick's Armor, Erdrick's Token).")
+  parser.add_argument("--ips", action="store_true", 
+      help="Also create an IPS patch for the original ROM")
   parser.add_argument("-g","--no-growth", action="store_false", 
       help="Do not randomize player stat growth.")
   parser.add_argument("-G","--ultra-growth", action="store_true", 
@@ -873,7 +884,12 @@ def randomize(args):
   output_filename = "DWRando.%s.%d.%snes" % (flags, args.seed, prg)
   print("Writing output file %s..." % output_filename)
   rom.write(output_filename)
+  if args.ips:
+    output_filename = "DWRando.%s.%d.%sips" % (flags, args.seed, prg)
+    print("Writing output file %s..." % output_filename)
+    rom.write(output_filename, rom.ips.encode())
   print ("New ROM Checksum: %s" % rom.sha1())
+  print ("IPS Checksum: %s" % rom.sha1(rom.ips.encode()))
 
 if __name__ == "__main__":
   main()

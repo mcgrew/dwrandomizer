@@ -8,7 +8,7 @@ import struct
 from worldmap import WorldMap,MapGrid
 import ips
 
-VERSION = "1.0"
+VERSION = "1.1-beta-2016.04.26"
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes

@@ -89,6 +89,12 @@ The HEAL spell will now have a range from 10-25 instead of 10-17.
 
 REPEL will have a normal learning level of 8 instead of 15.
 
+## Faster leveling
+
+The number of experience points required for level ups can be adjusted with the
+--fast-leveling and --very-fast-leveling command line options, or via the 
+prompts.
+
 ## Usage:
 
 Remember that if you are running this using Python instead of the Windows
@@ -149,6 +155,9 @@ same randomized game.
     -i, --no-searchitems  Do not randomize the locations of searchable items
                           (Fairy Flute, Erdrick's Armor, Erdrick's Token).
     --ips                 Also create an IPS patch for the original ROM
+    -f, --fast-leveling   Set XP requirements for each level to 75% of normal.
+    -F, --very-fast-leveling
+                          Set XP requirements for each level to 50% of normal.
     -g, --no-growth       Do not randomize player stat growth.
     -G, --ultra-growth    Enable ultra randomization of player stat growth.
     -l, --no-repel        Do not move repel to level 8.

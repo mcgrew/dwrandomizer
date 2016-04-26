@@ -355,14 +355,11 @@ class Rom:
     player_mp  = list(self.player_stats[3:180:6])
 
     if ultra:
-      for i in range(len(player_str)):
-        player_str[i] = random.randint(4,155)
-      for i in range(len(player_agi)):
-        player_agi[i] = random.randint(4,145)
-      for i in range(len(player_hp)):
-        player_hp[i] = random.randint(10,230)
-      for i in range(len(player_mp)):
-        player_mp[i] = random.randint(0,220)
+      # set these to make DL normally beatable at lvl 15
+      player_str = inverse_power_curve( 4, 155, 1.275)
+      player_agi = inverse_power_curve( 4, 145, 1.225)
+      player_hp  = inverse_power_curve(10, 230, 0.93 )
+      player_mp  = inverse_power_curve( 0, 220, 0.965)
     else:
       for i in range(len(player_str)):
         player_str[i] = round(player_str[i] * random.uniform(0.8, 1.2))
@@ -629,6 +626,15 @@ class Rom:
     else:
       outputfile.write(self.rom_data)
     outputfile.close()
+
+def inverse_power_curve(min_, max_, power, count=30):
+  range_ = max_ - min_
+  p_range = range_ ** (1/power)
+  points = []
+  for i in range(count):
+    points.append(round(max_ - ((random.random() * p_range) ** power)))
+  points.sort()
+  return points
 
 def main():
   

@@ -13,7 +13,7 @@ is used just outside Charlock to create a bridge over the moat.
 
 New options for a "no holds barred" approach to player growth, spell learning, 
 enemy spells, and enemy zones. This makes them (almost) completely random.
-All spells will be learned by level 20, and enemies in zones 0 and 1 are limited
+All spells will be learned by level 16, and enemies in zones 0 and 1 are limited
 to no tougher than scorpions. Encounters in Charlock are limited to Green
 Green Dragons and tougher. Forced encounters (Green Dragon, Axe Knight,
 Golem) enemy types will also be randomized.
@@ -22,7 +22,7 @@ Golem) enemy types will also be randomized.
 
 Chest contents throughout the game are shuffled. Checks are used to ensure that
 quest items (Staff of Rain, Silver Harp, Stones of Sunlight) are not located in 
-Charlock castle. Erdrick's Tablet is replaced with something more useful.
+Charlock castle. Erdrick's Tablet and the Silver Harp are replaced with keys.
 
 ### Randomizing enemy attack patterns
 
@@ -31,14 +31,15 @@ could have a Red Slime with SLEEP or a Wizard with Fire Breath!
 
 ### Randomizing enemy zones
 
-The locations of enemies will be changed. The randomizer ensures that you will
-not encounter powerful enemies too early, so you won't see a Red Dragon hanging
-around Tantegel, but you could see a Ghost.
+The locations of enemies will be changed. In normal mode, the randomizer ensures
+that you will not encounter powerful enemies too early, so you won't see a Red 
+Dragon hanging around Tantegel, but you could see a Ghost. Ultra mode removes
+this restriction, however.
 
 ### Boosting XP/Gold drops
 
-Enemies will now give you more XP and Gold, more inline with the remake versions
-of the game. XP and gold drops are limited to 255 due to memory limitations.
+Enemies will now give you more XP and Gold, in line with the SNES remake of the
+game. XP and gold drops are limited to 255 due to memory limitations.
 
 ### Shuffling town locations
 
@@ -53,13 +54,13 @@ entrance on the Rimuldar side to ensure you can get there.
 
 ### Lowering MP requirements
 
-MP requirements for spells are adjusted to be the same as those in the remakes.
+MP requirements for spells are adjusted to be the same as those in the remake.
 
 ### Randomized Weapon Shops
 
 Weapon shop inventory will now be random. Every shop will have 5-6 random items.
 
-### Shuffled "Searched for" items
+### Shuffled "searched for" items
 
 The Fairy Flute, Erdrick's Armor, and Erdrick's Token will now be shuffled, so
 for example the token could be in Kol instead of the flute, and the armor on the
@@ -74,9 +75,11 @@ original version.
 
 ### Randomized Spell Learning
 
-Spells learning is now randomized. Spells will still be learned within 2 levels
-of the original. For instance, in Dragon Warrior, RADIANT is normally learned at
-level 9. It will now be learned somewhere between level 7 and level 11.
+Spells learning is now randomized. In normal mode, spells will still be learned 
+within 2 levels of the original. For instance, in Dragon Warrior, RADIANT is 
+normally learned at level 9. It will now be learned somewhere between level 7 
+and level 11. In ultra mode, any spell can be learned anywhere from level 1 to
+level 16.
 
 ### Buffed HEAL
 
@@ -84,7 +87,7 @@ The HEAL spell will now have a range from 10-25 instead of 10-17.
 
 ### Earlier REPEL
 
-REPEL will now be learned at level 8 instead of 15.
+REPEL will have a normal learning level of 8 instead of 15.
 
 ## Usage:
 
@@ -115,6 +118,20 @@ Run the python script from the command line:
 The path can be omitted if you have the ROM in the same folder as the 
 script. See below for other command line options.
 
+## FAQ
+
+### What are the "checksums" in the program output?
+
+The program prints out 2 checksums when generating a new ROM. The ROM checksum
+can be used to verify that 2 instances of the game are the same, that is the 
+input ROM is the same, and the same seed and flags were used. The IPS checksum
+is a checksum that only includes changes for the game. This can be used to
+verify that the gameplay will be the same between 2 different ROM versions. If
+one player is using PRG0 and the other PRG1, the IPS checksum will still be
+identical, indicating the randomizer gameplay will still be the same. This is 
+mostly useful for verifying ROMs in races, where normally all players play the 
+same randomized game.
+
 ## Command line arguments:
 
 #### positional arguments:
@@ -131,6 +148,7 @@ script. See below for other command line options.
                           produce an invalid ROM if the incorrect file is used.
     -i, --no-searchitems  Do not randomize the locations of searchable items
                           (Fairy Flute, Erdrick's Armor, Erdrick's Token).
+    --ips                 Also create an IPS patch for the original ROM
     -g, --no-growth       Do not randomize player stat growth.
     -G, --ultra-growth    Enable ultra randomization of player stat growth.
     -l, --no-repel        Do not move repel to level 8.
@@ -152,10 +170,9 @@ script. See below for other command line options.
 
 Special thanks to Ryan8bit for his 
 [Formula Guide](http://www.gamefaqs.com/nes/563408-dragon-warrior/faqs/61640), 
-as this may not have been possible without it.  Thanks to Zombero on Twitch 
-for providing the Fighter's Ring patch and Zurkei on Twitch for helping me get 
-the Windows binary working.
+as this randomizer may not have been possible without it.  Thanks to Zombero on 
+Twitch for providing the Fighter's Ring patch and Zurkei on Twitch for helping
+me get the Windows binary working.
 
 
 ###  -- Created by mcgrew
-

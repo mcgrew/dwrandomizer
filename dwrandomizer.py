@@ -709,55 +709,62 @@ def prompt_for_options(args):
     else:
       break
 
+  custom = True
+
   mode = input("\nRandomization mode - ultra, normal, custom (u/n/C): ")
   if (mode.lower().startswith("u")):
     args.ultra = True
-    return
+    custom = False
   elif (mode.lower().startswith("n")):
-    return
+    custom = False
 
-  if input("\nGenerate a random world map? (Y/n) ").lower().startswith("n"):
-    args.no_map = False
+  if custom:
+    if input("\nGenerate a random world map? (Y/n) ").lower().startswith("n"):
+      args.no_map = False
 
-  if args.no_map:
-    if input("\nRandomize town & cave locations? (Y/n) ").lower().startswith("n"):
-      args.no_towns = False
+    if args.no_map:
+      if input("\nRandomize town & cave locations? (Y/n) ").lower().startswith("n"):
+        args.no_towns = False
 
-  if input("\nRandomize weapon shops? (Y/n) ").lower().startswith("n"):
-    args.no_shops = False
+    if input("\nRandomize weapon shops? (Y/n) ").lower().startswith("n"):
+      args.no_shops = False
 
-  if input("\nRandomize chests? (Y/n) ").lower().startswith("n"):
-    args.no_chests = False
+    if input("\nRandomize chests? (Y/n) ").lower().startswith("n"):
+      args.no_chests = False
 
-  if input("\nRandomize searchable items? (Y/n) ").lower().startswith("n"):
-    args.no_searchitems = False
+    if input("\nRandomize searchable items? (Y/n) ").lower().startswith("n"):
+      args.no_searchitems = False
 
-  growth = input("\nStat growth randomization - ultra, default, none (u/D/n): ")
-  if (growth.lower().startswith("u")):
-    args.ultra_growth = True
-  elif (growth.lower().startswith("n")):
-    args.growth = False
+    growth = input("\nStat growth randomization - ultra, default, none (u/D/n): ")
+    if (growth.lower().startswith("u")):
+      args.ultra_growth = True
+    elif (growth.lower().startswith("n")):
+      args.growth = False
 
-  if input("\nMove REPEL to level 8? (Y/n) ").lower().startswith("n"):
-    args.no_repel = False
+    if input("\nMove REPEL to level 8? (Y/n) ").lower().startswith("n"):
+      args.no_repel = False
 
-  spells = input("\nSpell learning randomization - ultra, default, none (u/D/n): ")
-  if (spells.lower().startswith("u")):
-    args.ultra_spells = True
-  elif (spells.lower().startswith("n")):
-    args.no_spells = False
+    spells = input("\nSpell learning randomization - ultra, default, none (u/D/n): ")
+    if (spells.lower().startswith("u")):
+      args.ultra_spells = True
+    elif (spells.lower().startswith("n")):
+      args.no_spells = False
 
-  zones = input("\nEnemy zone randomization - ultra, default, none (u/D/n): ")
-  if (zones.lower().startswith("u")):
-    args.ultra_zones = True
-  elif (zones.lower().startswith("n")):
-    args.no_zones = False
+    zones = input("\nEnemy zone randomization - ultra, default, none (u/D/n): ")
+    if (zones.lower().startswith("u")):
+      args.ultra_zones = True
+    elif (zones.lower().startswith("n")):
+      args.no_zones = False
 
-  patterns = input("\nEnemy attack randomization - ultra, default, none (u/D/n): ")
-  if (patterns.lower().startswith("u")):
-    args.ultra_patterns = True
-  elif (patterns.lower().startswith("n")):
-    args.no_patterns = False
+    patterns = input("\nEnemy attack randomization - ultra, default, none (u/D/n): ")
+    if (patterns.lower().startswith("u")):
+      args.ultra_patterns = True
+    elif (patterns.lower().startswith("n")):
+      args.no_patterns = False
+
+  ips = input("\nGenerate an IPS patch file along with the ROM? y/N): ")
+  if (ips.lower().startswith("y")):
+    args.ips= True
 
 
 

@@ -4,6 +4,7 @@ import argparse
 import random
 import sys
 import hashlib
+import struct
 from worldmap import WorldMap,MapGrid
 import ips
 
@@ -20,7 +21,7 @@ prg1sums = ['1ecc63aaac50a9612eaa8b69143858c3e48dd0ae'] #Dragon Warrior (U) (PRG
 
 class Rom:
   # Slices for various data. Offsets include iNES header.
-  # alphabet - 0x5f is breaking space, 60 is regular space (I think)
+  # alphabet - 0x5f is breaking space, 60 is non-breaking (I think)
   alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" + \
              "__'______.,-_?!_)(_______________  "
   token_dialogue_slice = slice(0xa238, 0xa299)
@@ -30,6 +31,7 @@ class Rom:
   warps_slice = slice(0xf3d8, 0xf50b)
   zones_slice = slice(0xf55f, 0xf5c3)
   mp_req_slice = slice(0x1d63, 0x1d6d) #mp requirements for each spell
+  xp_req_slice = slice(0xf36b, 0xf3a7)
   player_stats_slice = slice(0x60dd, 0x6191)
   weapon_shop_inv_slice = slice(0x19a1, 0x19cc)
   new_spell_slice = slice(0xeaf9, 0xeb1f, 4)
@@ -449,6 +451,17 @@ class Rom:
 #      for i in range(10):
 #        self.mp_reqs[i] = random.randint(1, 8)
 
+  def lower_xp_reqs(self, ultra=False):
+    """
+    Lowers the XP requirements for a faster game.
+    """
+    xp = struct.unpack( "<HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH", self.xp_reqs )
+    if ultra:
+      xp = [round(x * 0.5) for x in xp]
+    else:
+      xp = [round(x * 0.75) for x in xp]
+    self.xp_reqs = struct.pack( "<HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH", *xp )
+
   def update_enemy_hp(self):
     """
     Updates HP of enemies to that of the remake, where possible.
@@ -497,6 +510,7 @@ class Rom:
     self.owmap = WorldMap(self.rom_data)
     self.enemy_stats = self.rom_data[self.enemy_stats_slice]
     self.mp_reqs = self.rom_data[self.mp_req_slice]
+    self.xp_reqs = self.rom_data[self.xp_req_slice]
     self.zones = self.rom_data[self.zones_slice]
     self.shop_inventory = self.rom_data[self.weapon_shop_inv_slice]
     self.token_loc = self.rom_data[self.token_slice]
@@ -567,6 +581,7 @@ class Rom:
     self.owmap.commit()
     self.rom_data[self.enemy_stats_slice] = self.enemy_stats 
     self.rom_data[self.mp_req_slice] = self.mp_reqs
+    self.rom_data[self.xp_req_slice] = self.xp_reqs
     self.rom_data[self.zones_slice] = self.zones
     self.rom_data[self.weapon_shop_inv_slice] = self.shop_inventory
     self.rom_data[self.token_slice] = self.token_loc
@@ -647,7 +662,7 @@ def main():
       help="Do not randomize chest contents.")
   parser.add_argument("-d","--defaults", action="store_true",
       help="Run the randomizer with the default options.")
-  parser.add_argument("-f","--force", action="store_false", 
+  parser.add_argument("--force", action="store_false", 
       help="Skip checksums and force randomization. This may produce an invalid"
            " ROM if the incorrect file is used.")
   parser.add_argument("-i","--no-searchitems", action="store_false", 
@@ -655,6 +670,10 @@ def main():
            "Erdrick's Armor, Erdrick's Token).")
   parser.add_argument("--ips", action="store_true", 
       help="Also create an IPS patch for the original ROM")
+  parser.add_argument("-f","--fast-leveling", action="store_true", 
+      help="Set XP requirements for each level to 75%% of normal.")
+  parser.add_argument("-F","--very-fast-leveling", action="store_true", 
+      help="Set XP requirements for each level to 50%% of normal.")
   parser.add_argument("-g","--no-growth", action="store_false", 
       help="Do not randomize player stat growth.")
   parser.add_argument("-G","--ultra-growth", action="store_true", 
@@ -723,6 +742,12 @@ def prompt_for_options(args):
     custom = False
   elif (mode.lower().startswith("n")):
     custom = False
+
+  mode = input("\nLeveling speed - normal, fast, very fast (N/f/v): ")
+  if (mode.lower().startswith("v")):
+    args.very_fast_leveling = True
+  elif (mode.lower().startswith("f")):
+    args.fast_leveling = True
 
   if custom:
     if input("\nGenerate a random world map? (Y/n) ").lower().startswith("n"):
@@ -877,6 +902,13 @@ def randomize(args):
     rom.update_enemy_hp()
     print("Lowering MP requirements to remake levels...")
     rom.update_mp_reqs()
+
+  if args.very_fast_leveling:
+    print("Setting XP requirements for levels to 50% of normal...")
+    rom.lower_xp_reqs(True)
+  elif args.fast_leveling:
+    print("Setting XP requirements for levels to 75% of normal...")
+    rom.lower_xp_reqs()
 
   if args.no_repel:
     print("Moving REPEL to level 8...")

@@ -5,6 +5,7 @@ import random
 import sys
 import hashlib
 import struct
+import math
 from worldmap import WorldMap,MapGrid
 import ips
 
@@ -36,6 +37,7 @@ class Rom:
   weapon_shop_inv_slice = slice(0x19a1, 0x19cc)
   new_spell_slice = slice(0xeaf9, 0xeb1f, 4)
   chests_slice = slice(0x5ddd, 0x5e59)
+  title_text_slice = slice(0x3f36, 0x3fc3)
 
   token_slice = slice(0xe11e, 0xe12b, 6)
   flute_slice = slice(0xe15d, 0xe16a, 6)
@@ -526,6 +528,7 @@ class Rom:
     self.player_stats = self.rom_data[self.player_stats_slice]
     self.new_spell_levels = self.rom_data[self.new_spell_slice]
     self.chests = self.rom_data[self.chests_slice]
+    self.title_screen_text = self.rom_data[self.title_text_slice]
     self.patches = {}
 
   def token_dialogue(self):
@@ -601,6 +604,7 @@ class Rom:
     self.rom_data[self.player_stats_slice] = self.player_stats
     self.rom_data[self.new_spell_slice] = self.new_spell_levels
     self.rom_data[self.chests_slice] = self.chests
+    self.rom_data[self.title_text_slice] = self.title_screen_text
     self.apply_patches()
     self.ips = ips.Patch.create(orig_data, self.rom_data)
 
@@ -641,6 +645,33 @@ class Rom:
     else:
       outputfile.write(self.rom_data)
     outputfile.close()
+
+  def update_title_screen(self, seed, flags):
+    """
+    Adds flags and seed number to the title screen
+
+    :Parameters:
+      seed : int
+        The random seed used to generate this ROM.
+      flags: str
+        The flags used to generate this ROM.
+    """
+    # There are no lower case characters in the title screen alphabet :(
+    # I'm not sure how to deal with this yet wrt flags.
+    #limit the text length
+    flag_text = ("FLAGS " + flags.upper())[:20]
+    seed_text = ("SEED " + str(seed))[:24]
+    # pad the strings with spaces.
+    flag_text += " " * math.ceil((20 - len(flag_text)) / 2)
+    flag_text = " " * (20 - len(flag_text)) + flag_text
+    seed_text += " " * math.ceil((24 - len(seed_text)) / 2)
+    seed_text = " " * (24 - len(seed_text)) + seed_text
+    flag_bytes = self.ascii2dw(flag_text)
+    seed_bytes = self.ascii2dw(seed_text)
+
+    self.title_screen_text[76:96] = flag_bytes
+    self.title_screen_text[107:131] = seed_bytes
+    
 
 def inverted_power_curve(min_, max_, power, count=30):
   range_ = max_ - min_
@@ -905,9 +936,11 @@ def randomize(args):
 
   if args.very_fast_leveling:
     print("Setting XP requirements for levels to 50% of normal...")
+    flags += "f"
     rom.lower_xp_reqs(True)
   elif args.fast_leveling:
     print("Setting XP requirements for levels to 75% of normal...")
+    flags += "F"
     rom.lower_xp_reqs()
 
   if args.no_repel:
@@ -925,6 +958,7 @@ def randomize(args):
       flags += "m"
       rom.randomize_spell_learning()
 
+  rom.update_title_screen(args.seed, flags)
   rom.commit()
   output_filename = "DWRando.%s.%d.%snes" % (flags, args.seed, prg)
   print("Writing output file %s..." % output_filename)

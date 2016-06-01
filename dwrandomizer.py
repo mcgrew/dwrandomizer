@@ -9,7 +9,7 @@ import math
 from worldmap import WorldMap,MapGrid
 import ips
 
-VERSION = "1.1-beta-2016.04.26"
+VERSION = "1.1-beta-2016.05.01"
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes
@@ -37,7 +37,7 @@ class Rom:
   weapon_shop_inv_slice = slice(0x19a1, 0x19cc)
   new_spell_slice = slice(0xeaf9, 0xeb1f, 4)
   chests_slice = slice(0x5ddd, 0x5e59)
-  title_text_slice = slice(0x3f36, 0x3fc3)
+  title_text_slice = slice(0x3f36, 0x3fc5)
 
   token_slice = slice(0xe11e, 0xe12b, 6)
   flute_slice = slice(0xe15d, 0xe16a, 6)
@@ -658,19 +658,29 @@ class Rom:
     """
     # There are no lower case characters in the title screen alphabet :(
     # I'm not sure how to deal with this yet wrt flags.
-    #limit the text length
-    flag_text = ("FLAGS " + flags.upper())[:20]
-    seed_text = ("SEED " + str(seed))[:24]
-    # pad the strings with spaces.
-    flag_text += " " * math.ceil((20 - len(flag_text)) / 2)
-    flag_text = " " * (20 - len(flag_text)) + flag_text
-    seed_text += " " * math.ceil((24 - len(seed_text)) / 2)
-    seed_text = " " * (24 - len(seed_text)) + seed_text
-    flag_bytes = self.ascii2dw(flag_text)
-    seed_bytes = self.ascii2dw(seed_text)
+    padding = lambda s: struct.pack('BBB', 0xf7, s, 0x5f)
+    padline = lambda p: padding(math.floor((32 - len(p))/2)) + self.ascii2dw(p) + \
+                    padding(math.ceil((32 - len(p))/2)) + b'\xfc'
+    blank_line = struct.pack('BBBB', 0xf7, 32, 0x5f, 0xfc)
+    new_text = b''
+    new_text += blank_line
+    new_text += padline("RANDOMIZER")
+    new_text += blank_line
+    new_text += padline(VERSION.upper())
+    new_text += blank_line
+    new_text += blank_line
+    new_text += blank_line
+    new_text += blank_line
+    new_text += padline("FLAGS " + flags.upper())
+    new_text += blank_line
+    new_text += padline("SEED " + str(seed))
+    new_text += blank_line
 
-    self.title_screen_text[76:96] = flag_bytes
-    self.title_screen_text[107:131] = seed_bytes
+    needed_bytes = len(self.title_screen_text) - len(new_text) - 4
+    new_text += b'\x5f' * needed_bytes + padding(32 - needed_bytes) + b'\xfc'
+    new_text = new_text.replace(b'\x47', b'\x61').replace(b'\x49', b'\x63')
+
+    self.title_screen_text = new_text
     
 
 def inverted_power_curve(min_, max_, power, count=30):
@@ -689,14 +699,14 @@ def main():
   parser.add_argument("-r","--no-remake", action="store_false",
       help="Do not set enemy HP, XP/Gold drops and MP use up to that of the "
            "remake. This will make grind times much longer.")
-  parser.add_argument("-c","--no-chests", action="store_false",
+  parser.add_argument("-c","-C","--no-chests", action="store_false",
       help="Do not randomize chest contents.")
-  parser.add_argument("-d","--defaults", action="store_true",
+  parser.add_argument("-d","-D","--defaults", action="store_true",
       help="Run the randomizer with the default options.")
   parser.add_argument("--force", action="store_false", 
       help="Skip checksums and force randomization. This may produce an invalid"
            " ROM if the incorrect file is used.")
-  parser.add_argument("-i","--no-searchitems", action="store_false", 
+  parser.add_argument("-i","-I","--no-searchitems", action="store_false", 
       help="Do not randomize the locations of searchable items (Fairy Flute, "
            "Erdrick's Armor, Erdrick's Token).")
   parser.add_argument("--ips", action="store_true", 
@@ -709,7 +719,7 @@ def main():
       help="Do not randomize player stat growth.")
   parser.add_argument("-G","--ultra-growth", action="store_true", 
       help="Enable ultra randomization of player stat growth.")
-  parser.add_argument("-l","--no-repel", action="store_false", 
+  parser.add_argument("-l","-L","--no-repel", action="store_false", 
       help="Do not move repel to level 8.")
   parser.add_argument("-m","--no-spells", action="store_false", 
       help="Do not randomize the level spells are learned.")
@@ -721,11 +731,11 @@ def main():
       help="Do not randomize enemy attack patterns.")
   parser.add_argument("-P","--ultra-patterns", action="store_true", 
       help="Enable ultra randomization of enemy attack patterns.")
-  parser.add_argument("-s","--seed", type=int, 
+  parser.add_argument("-s","-S","--seed", type=int, 
       help="Specify a seed to be used for randomization.")
-  parser.add_argument("-t","--no-towns", action="store_false", 
+  parser.add_argument("-t","-T","--no-towns", action="store_false", 
       help="Do not randomize towns.")
-  parser.add_argument("-w","--no-shops", action="store_false", 
+  parser.add_argument("-w","-W","--no-shops", action="store_false", 
       help="Do not randomize weapon shops.")
   parser.add_argument("-u","-U","--ultra", action="store_true", 
       help="Enable all '--ultra' options.")
@@ -733,7 +743,7 @@ def main():
       help="Do not randomize enemy zones.")
   parser.add_argument("-Z","--ultra-zones", action="store_true", 
       help="Enable ultra randomization of enemy zones.")
-  parser.add_argument("-v","--version", action="version", 
+  parser.add_argument("-v","-V","--version", action="version", 
       version="%%(prog)s %s" % VERSION)
   parser.add_argument("filename", help="The rom file to use for input")
   args = parser.parse_args()
@@ -871,23 +881,23 @@ def randomize(args):
 
   if args.no_map:
     print("Generating new overworld map...")
-    flags += "a"
+    flags += "A"
     while not rom.generate_map():
       print("Error: " + str(rom.owmap.error) + ", retrying...")
 
   if args.no_searchitems:
     print("Shuffling searchable item locations...")
-    flags += "i"
+    flags += "I"
     rom.shuffle_searchables()
 
   if args.no_chests:
     print("Shuffling chest contents...")
-    flags += "c"
+    flags += "C"
     rom.shuffle_chests()
 
   if args.no_towns:
     print("Shuffling town locations...")
-    flags += "t"
+    flags += "T"
     rom.shuffle_towns()
 
   if args.no_zones:
@@ -912,7 +922,7 @@ def randomize(args):
 
   if args.no_shops:
     print("Randomizing weapon shops...")
-    flags += "w"
+    flags += "W"
     rom.randomize_shops()
 
   if args.no_growth:
@@ -927,7 +937,7 @@ def randomize(args):
 
   if args.no_remake:
     print("Increasing XP/Gold drops to remake levels...")
-    flags += "r"
+    flags += "R"
     rom.update_drops()
     print("Setting enemy HP to approximate remake levels...")
     rom.update_enemy_hp()
@@ -945,7 +955,7 @@ def randomize(args):
 
   if args.no_repel:
     print("Moving REPEL to level 8...")
-    flags += "l"
+    flags += "L"
     rom.move_repel()
 
   if args.no_spells:

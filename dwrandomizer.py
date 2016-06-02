@@ -505,6 +505,14 @@ class Rom:
     """
     self.add_patch(0xd77, 10, 0x66, 0x66)
 
+  def bump_zone_0_encounters(self):
+    """
+    Sets the encounter rate of Zone 0 to be the same as other zones.
+    """
+    # skip the extra rng for zone 0.
+    self.add_patch(0xced1, 1, *([0xea]*13))
+    
+
   def revert(self):
     """
     Reverts all previous changes to the ROM
@@ -876,6 +884,9 @@ def randomize(args):
   print("Fixing Northern Shrine...")
   rom.patch_northern_shrine()
 
+  print("Bumping encounter rate for zone 0...")
+  rom.bump_zone_0_encounters()
+
   print("Adding a new throne room exit...")
   rom.add_tantegel_exit()
 
@@ -968,6 +979,7 @@ def randomize(args):
       flags += "m"
       rom.randomize_spell_learning()
 
+  print("Updating title screen...")
   rom.update_title_screen(args.seed, flags)
   rom.commit()
   output_filename = "DWRando.%s.%d.%snes" % (flags, args.seed, prg)

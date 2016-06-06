@@ -21,10 +21,10 @@ prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG
 prg1sums = ['1ecc63aaac50a9612eaa8b69143858c3e48dd0ae'] #Dragon Warrior (U) (PRG1) [!].nes
 
 class Rom:
-  # Slices for various data. Offsets include iNES header.
   # alphabet - 0x5f is breaking space, 60 is non-breaking (I think)
   alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" + \
              "__'______.,-_?!_)(_______________  "
+  # Slices for various data. Offsets include iNES header.
   token_dialogue_slice = slice(0xa238, 0xa299)
   will_not_work_slice = slice(0xad95, 0xadad)
   chest_content_slice = slice(0x5de0, 0x5e59, 4)
@@ -52,7 +52,6 @@ class Rom:
   encounter_enemies_slice = slice(0xcd74, 0xcdaf, 29)
   encounter_2_kill_slice = slice(0xe97e, 0xe985, 6) # green dragon
   encounter_3_kill_slice = slice(0xe990, 0xe997, 6) #golem
-  # patch format: patch[addr] = (step, data...)
   patches = {}
 
   def __init__(self, filename):
@@ -157,13 +156,6 @@ class Rom:
           chest_contents[j], chest_contents[i] = chest_contents[i], chest_contents[j]
           break
 
-        # make sure staff of rain guy doesn't have the stones (potentially unwinnable)
-#      if (chest_contents[19] == 15):
-#        j = self.non_charlock_chest()
-#        #                  don't remove the key from the throne room
-#        while (j == 19 or (j in (4, 5, 6) and chest_contents[j] == 3)):
-#          j = self.non_charlock_chest()
-#        chest_contents[19],chest_contents[j] = chest_contents[j],chest_contents[19]
     self.chests[3::4] = chest_contents
 
   def non_charlock_chest(self):
@@ -475,12 +467,6 @@ class Rom:
     # randomize Dragonlord's second form HP somewhat 
     remake_hp[-1] -= random.randint(0, 15) # 150 - 165
     self.enemy_stats[2::16] = bytearray(remake_hp)
-
-  def fix_fighters_ring(self):
-    """
-    Adds functionality for the fighter's ring (+2 to attack)
-    """
-    # ring patch 
 
   def move_repel(self):
     """

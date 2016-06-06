@@ -9,7 +9,7 @@ import math
 from worldmap import WorldMap,MapGrid
 import ips
 
-VERSION = "1.1"
+VERSION = "1.2-b2016.06.06"
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes
@@ -481,9 +481,6 @@ class Rom:
     Adds functionality for the fighter's ring (+2 to attack)
     """
     # ring patch 
-    self.add_patch(0xf10c, 1, 0x20, 0x54, 0xff, 0xea)
-    self.add_patch(0xff64 ,1, 0x85, 0xcd, 0xa5, 0xcf, 0x29, 0x20, 0xf0, 0x07, 
-                   0xa5, 0xcc, 0x18, 0x69, 0x02, 0x85, 0xcc, 0xa5, 0xcf, 0x60)
 
   def move_repel(self):
     """
@@ -491,27 +488,6 @@ class Rom:
     """
     self.new_spell_levels[7] = 8
     self.update_spell_masks()
-
-  def buff_heal(self):
-    """
-    Buffs the heal spell slightly to have a range of 10-25 instead of 10-15
-    """
-    self.add_patch(0xdbce, 1, 15)
-
-  def patch_northern_shrine(self):
-    """
-    Removes the 2 blocks from around the shrine guardian so you can walk around 
-    him.
-    """
-    self.add_patch(0xd77, 10, 0x66, 0x66)
-
-  def bump_zone_0_encounters(self):
-    """
-    Sets the encounter rate of Zone 0 to be the same as other zones.
-    """
-    # skip the extra rng for zone 0.
-    self.add_patch(0xced1, 1, *([0xea]*13))
-    
 
   def revert(self):
     """
@@ -537,7 +513,25 @@ class Rom:
     self.new_spell_levels = self.rom_data[self.new_spell_slice]
     self.chests = self.rom_data[self.chests_slice]
     self.title_screen_text = self.rom_data[self.title_text_slice]
-    self.patches = {}
+    self.patches = {
+      # fighter's ring fix
+      0xf10c: (1, 0x20, 0x54, 0xff, 0xea),
+      0xff64: (1, 0x85, 0xcd, 0xa5, 0xcf, 0x29, 0x20, 0xf0, 0x07, 0xa5, 
+                  0xcc, 0x18, 0x69, 0x02, 0x85, 0xcc, 0xa5, 0xcf, 0x60),
+      0x43a: (0x47,), # add new stairs to the throne room
+      0x2b9: (0x45,), # add new stairs to the 1st floor
+      0x2d7: (0x66,), # add a new exit to the first floor
+      # replace the usless grave warps with some for tantegel
+      0xf45f: (1, 5, 1, 8),
+      0xf4f8: (1, 4, 1, 7),
+      0x1298: (0x22,), #remove the top set of stairs for the old warp in the grave
+      0xdbce: (15,), # buff the heal spell
+      # Removes the 2 blocks around the northern shrine guardian so you can 
+      # walk around him.
+      0xd77: (10, 0x66, 0x66),
+      # Sets the encounter rate of Zone 0 to be the same as other zones.
+      0xced1: (1, *([0xea]*13)),
+      }
 
   def token_dialogue(self):
     """
@@ -564,21 +558,6 @@ class Rom:
       bytearray([0xfc, 0xfb, 0x50]) + self.ascii2dw(
       ("From Tantegel Castle travel %2d leagues to the %s and %2d to the %s.") % 
        (abs(y - ty), north_south, abs(x - tx), east_west)))
-
-  def add_tantegel_exit(self):
-    """
-    Adds a quicker exit for the Tantegel throne room.
-    """
-    # add new stairs to the throne room and 1st floor
-    self.add_patch(0x43a, 1, 0x47)
-    self.add_patch(0x2b9, 1, 0x45)
-    # add a new exit to the first floor
-    self.add_patch(0x2d7, 1, 0x66)
-    # replace the usless grave warps with some for tantegel
-    self.add_patch(0xf45f, 1, 5, 1, 8)
-    self.add_patch(0xf4f8, 1, 4, 1, 7)
-    #remove the top set of stairs associated with the old warp in the grave
-    self.add_patch(0x1298, 1, 0x22)
 
   def commit(self):
     """
@@ -638,7 +617,10 @@ class Rom:
     # apply any manual patches
     while len(self.patches):
       addr,patch = self.patches.popitem()
-      self.rom_data[addr:addr+(len(patch)-1)*patch[0]:patch[0]] = patch[1:]
+      if (len(patch) == 1):
+        self.rom_data[addr:addr+(len(patch))] = patch
+      else:
+        self.rom_data[addr:addr+(len(patch)-1)*patch[0]:patch[0]] = patch[1:]
 
   def write(self, output_filename, content=None):
     """
@@ -727,8 +709,6 @@ def main():
       help="Do not randomize player stat growth.")
   parser.add_argument("-G","--ultra-growth", action="store_true", 
       help="Enable ultra randomization of player stat growth.")
-  parser.add_argument("-l","-L","--no-repel", action="store_false", 
-      help="Do not move repel to level 8.")
   parser.add_argument("-m","--no-spells", action="store_false", 
       help="Do not randomize the level spells are learned.")
   parser.add_argument("-M","--ultra-spells", action="store_true", 
@@ -821,9 +801,6 @@ def prompt_for_options(args):
     elif (growth.lower().startswith("n")):
       args.growth = False
 
-    if input("\nMove REPEL to level 8? (Y/n) ").lower().startswith("n"):
-      args.no_repel = False
-
     spells = input("\nSpell learning randomization - ultra, default, none (u/D/n): ")
     if (spells.lower().startswith("u")):
       args.ultra_spells = True
@@ -874,21 +851,6 @@ def randomize(args):
       
   else:
     print("Skipping checksum...")
-
-  print("Fixing functionality of the fighter's ring (+2 atk)...")
-  rom.fix_fighters_ring()
-
-  print("Buffing HEAL slightly...")
-  rom.buff_heal()
-
-  print("Fixing Northern Shrine...")
-  rom.patch_northern_shrine()
-
-  print("Bumping encounter rate for zone 0...")
-  rom.bump_zone_0_encounters()
-
-  print("Adding a new throne room exit...")
-  rom.add_tantegel_exit()
 
   if args.no_map:
     print("Generating new overworld map...")
@@ -946,14 +908,12 @@ def randomize(args):
       flags += "g"
       rom.randomize_growth()
 
-  if args.no_remake:
-    print("Increasing XP/Gold drops to remake levels...")
-    flags += "R"
-    rom.update_drops()
-    print("Setting enemy HP to approximate remake levels...")
-    rom.update_enemy_hp()
-    print("Lowering MP requirements to remake levels...")
-    rom.update_mp_reqs()
+  print("Increasing XP/Gold drops to remake levels...")
+  rom.update_drops()
+  print("Setting enemy HP to remake levels...")
+  rom.update_enemy_hp()
+  print("Lowering MP requirements to remake levels...")
+  rom.update_mp_reqs()
 
   if args.very_fast_leveling:
     print("Setting XP requirements for levels to 50% of normal...")
@@ -964,10 +924,8 @@ def randomize(args):
     flags += "f"
     rom.lower_xp_reqs()
 
-  if args.no_repel:
-    print("Moving REPEL to level 8...")
-    flags += "L"
-    rom.move_repel()
+  print("Moving REPEL to level 8...")
+  rom.move_repel()
 
   if args.no_spells:
     if args.ultra or args.ultra_spells:
@@ -981,6 +939,11 @@ def randomize(args):
 
   print("Updating title screen...")
   rom.update_title_screen(args.seed, flags)
+  print("Buffing HEAL slightly...")
+  print("Patching Northern Shrine...")
+  print("Fixing functionality of the fighter's ring (+2 atk)...")
+  print("Adding a new throne room exit...")
+  print("Bumping encounter rate for zone 0...")
   rom.commit()
   output_filename = "DWRando.%s.%d.%snes" % (flags, args.seed, prg)
   print("Writing output file %s..." % output_filename)

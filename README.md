@@ -160,7 +160,6 @@ same randomized game.
                           Set XP requirements for each level to 50% of normal.
     -g, --no-growth       Do not randomize player stat growth.
     -G, --ultra-growth    Enable ultra randomization of player stat growth.
-    -l, --no-repel        Do not move repel to level 8.
     -m, --no-spells       Do not randomize the level spells are learned.
     -M, --ultra-spells    Enable ultra randomization of the level spells are
                           learned.

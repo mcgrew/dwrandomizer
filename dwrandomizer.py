@@ -957,11 +957,11 @@ def randomize(args):
 
   if args.very_fast_leveling:
     print("Setting XP requirements for levels to 50% of normal...")
-    flags += "f"
+    flags += "F"
     rom.lower_xp_reqs(True)
   elif args.fast_leveling:
     print("Setting XP requirements for levels to 75% of normal...")
-    flags += "F"
+    flags += "f"
     rom.lower_xp_reqs()
 
   if args.no_repel:

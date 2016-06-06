@@ -746,7 +746,7 @@ def main():
   parser.add_argument("-w","-W","--no-shops", action="store_false", 
       help="Do not randomize weapon shops.")
   parser.add_argument("-u","-U","--ultra", action="store_true", 
-      help="Enable all '--ultra' options.")
+      help="Enable all 'ultra' options.")
   parser.add_argument("-z","--no-zones", action="store_false", 
       help="Do not randomize enemy zones.")
   parser.add_argument("-Z","--ultra-zones", action="store_true", 

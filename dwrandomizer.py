@@ -655,7 +655,7 @@ class Rom:
     new_text += blank_line
     new_text += padline("RANDOMIZER")
     new_text += blank_line
-    new_text += padline(VERSION.upper())
+    new_text += padline("V " + VERSION.upper())
     new_text += blank_line
     new_text += blank_line
     new_text += blank_line

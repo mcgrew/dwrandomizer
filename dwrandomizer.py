@@ -513,24 +513,25 @@ class Rom:
     self.new_spell_levels = self.rom_data[self.new_spell_slice]
     self.chests = self.rom_data[self.chests_slice]
     self.title_screen_text = self.rom_data[self.title_text_slice]
+    # patch format - address: (*data)
     self.patches = {
       # fighter's ring fix
-      0xf10c: (1, 0x20, 0x54, 0xff, 0xea),
-      0xff64: (1, 0x85, 0xcd, 0xa5, 0xcf, 0x29, 0x20, 0xf0, 0x07, 0xa5, 
+      0xf10c: (0x20, 0x54, 0xff, 0xea),
+      0xff64: (0x85, 0xcd, 0xa5, 0xcf, 0x29, 0x20, 0xf0, 0x07, 0xa5, 
                   0xcc, 0x18, 0x69, 0x02, 0x85, 0xcc, 0xa5, 0xcf, 0x60),
       0x43a: (0x47,), # add new stairs to the throne room
       0x2b9: (0x45,), # add new stairs to the 1st floor
       0x2d7: (0x66,), # add a new exit to the first floor
       # replace the usless grave warps with some for tantegel
-      0xf45f: (1, 5, 1, 8),
-      0xf4f8: (1, 4, 1, 7),
+      0xf45f: (5, 1, 8),
+      0xf4f8: (4, 1, 7),
       0x1298: (0x22,), #remove the top set of stairs for the old warp in the grave
       0xdbce: (15,), # buff the heal spell
       # Removes the 2 blocks around the northern shrine guardian so you can 
       # walk around him.
-      0xd77: (10, 0x66, 0x66),
+      0xd77: (0x66,), 0xd81: (0x66,)
       # Sets the encounter rate of Zone 0 to be the same as other zones.
-      0xced1: (1, *([0xea]*13)),
+      0xced1: (*([0xea]*13)),
       }
 
   def token_dialogue(self):
@@ -617,10 +618,8 @@ class Rom:
     # apply any manual patches
     while len(self.patches):
       addr,patch = self.patches.popitem()
-      if (len(patch) == 1):
-        self.rom_data[addr:addr+(len(patch))] = patch
-      else:
-        self.rom_data[addr:addr+(len(patch)-1)*patch[0]:patch[0]] = patch[1:]
+      self.rom_data[addr:addr+(len(patch))] = patch
+#      self.rom_data[addr:addr+(len(patch)-1)*patch[0]:patch[0]] = patch[1:]
 
   def write(self, output_filename, content=None):
     """

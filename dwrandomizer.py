@@ -9,7 +9,7 @@ import math
 from worldmap import WorldMap,MapGrid
 import ips
 
-VERSION = "1.2-b2016.06.06"
+VERSION = "1.2-beta-2016.06.06"
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes
@@ -641,7 +641,7 @@ class Rom:
     new_text += blank_line
     new_text += padline("RANDOMIZER")
     new_text += blank_line
-    new_text += padline("V " + VERSION.upper())
+    new_text += padline(VERSION.upper())
     new_text += blank_line
     new_text += blank_line
     new_text += blank_line

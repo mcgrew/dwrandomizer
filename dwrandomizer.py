@@ -515,10 +515,39 @@ class Rom:
       0xdbce: (15,), # buff the heal spell
       # Removes the 2 blocks around the northern shrine guardian so you can 
       # walk around him.
-      0xd77: (0x66,), 0xd81: (0x66,)
+      0xd77: (0x66,), 0xd81: (0x66,),
       # Sets the encounter rate of Zone 0 to be the same as other zones.
-      0xced1: (*([0xea]*13)),
-      }
+      0xced1: (0xea,)*13,
+    }
+    self.speed_hacks()
+
+  def speed_hacks(self):
+    """
+    Adds some hacks to speed up the game play
+    """
+    hacks = {
+      # Following are some speed hacks from @gameboy9
+      # speed up the text
+      0x7a43: (0xea, 0xea, 0xea),
+      # speed up encounter intros
+      0x341a: (0xea, 0xea, 0xea),
+      0xe44d: (0xea, 0xea, 0xea),
+      0xc35f: (0xea, 0xea, 0xea),
+      0xef49: (2,), # speed up the player attack animation
+      0xed45: (3,), # speed up the enemy attack animation
+      # speed up the death music
+      0x4d3c: (0x6,), 0x4d4b: (0x7,), 0x4d4d: (0x8,), 0x4d4f: (0x8,),
+      0x4d51: (0x8,), 0x4d53: (0x2,), 0x4d55: (0x2,), 0x4d57: (0x10,),
+      # speed up the level up music
+      0x463f: (0x3,), 0x4641: (0x3,), 0x4643: (0x3,), 0x4645: (0x6,),
+      0x4647: (0x6,), 0x4649: (0x6,), 0x464b: (0x3c,), 0x464d: (0x12,),
+      0x4653: (0x3,), 0x4655: (0x3,), 0x4657: (0x3,), 0x4659: (0x6,),
+      0x465b: (0x6,), 0x465d: (0x6,), 0x465f: (0x18,), 0x4662: (0x0,),
+      # speed up the battle win music
+      0x472a: (1,), 0x472c: (1,), 0x472e: (1,),
+    }
+    for key in hacks.keys():
+      self.patches[key] = hacks[key]
 
   def token_dialogue(self):
     """
@@ -694,6 +723,8 @@ def main():
       help="Do not randomize player stat growth.")
   parser.add_argument("-G","--ultra-growth", action="store_true", 
       help="Enable ultra randomization of player stat growth.")
+  parser.add_argument("-H","--no-speed_hacks", action="store_false", 
+      help="Do not apply game speed hacks.")
   parser.add_argument("-m","--no-spells", action="store_false", 
       help="Do not randomize the level spells are learned.")
   parser.add_argument("-M","--ultra-spells", action="store_true", 
@@ -766,6 +797,9 @@ def prompt_for_options(args):
   if custom:
     if input("\nGenerate a random world map? (Y/n) ").lower().startswith("n"):
       args.no_map = False
+
+    if input("\nApply hacks to speed up game play? (Y/n) ").lower().startswith("n"):
+      args.no_speed_hacks = False
 
     if args.no_map:
       if input("\nRandomize town & cave locations? (Y/n) ").lower().startswith("n"):
@@ -842,6 +876,11 @@ def randomize(args):
     flags += "A"
     while not rom.generate_map():
       print("Error: " + str(rom.owmap.error) + ", retrying...")
+
+  if not args.no_speed_hacks:
+    print("Applying game speed hacks...")
+    rom.speed_hacks()
+    flags += "H"
 
   if args.no_searchitems:
     print("Shuffling searchable item locations...")

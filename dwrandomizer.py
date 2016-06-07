@@ -681,6 +681,10 @@ class Rom:
     new_text += blank_line
 
     needed_bytes = len(self.title_screen_text) - len(new_text) - 4
+    if needed_bytes > 31: # current data is too short...
+      new_text = new_text[:-len(blank_line)] + (b'\x5f' * 32 + b'\xfc')
+      needed_bytes = len(self.title_screen_text) - len(new_text) - 4
+
     new_text += b'\x5f' * needed_bytes + padding(32 - needed_bytes) + b'\xfc'
     new_text = new_text.replace(b'\x47', b'\x61').replace(b'\x49', b'\x63')
 

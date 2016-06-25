@@ -9,7 +9,7 @@ import math
 from worldmap import WorldMap,MapGrid
 import ips
 
-VERSION = "1.2-beta-2016.06.06"
+VERSION = "1.2-beta-2016.06.25"
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes
@@ -352,10 +352,10 @@ class Rom:
 
     if ultra:
       # set these to make DL normally beatable at lvl 15
-      player_str = inverted_power_curve( 4, 155, 1.275)
-      player_agi = inverted_power_curve( 4, 145, 1.225)
-      player_hp  = inverted_power_curve(10, 230, 0.93 )
-      player_mp  = inverted_power_curve( 0, 220, 0.965)
+      player_str = inverted_power_curve( 4, 155, 1.18)
+      player_agi = inverted_power_curve( 4, 145, 1.32)
+      player_hp  = inverted_power_curve(10, 230, 0.98)
+      player_mp  = inverted_power_curve( 0, 220, 0.95)
     else:
       for i in range(len(player_str)):
         player_str[i] = round(player_str[i] * random.uniform(0.8, 1.2))
@@ -841,11 +841,6 @@ def prompt_for_options(args):
       args.ultra_patterns = True
     elif (patterns.lower().startswith("n")):
       args.no_patterns = False
-
-  ips = input("\nGenerate an IPS patch file along with the ROM? y/N): ")
-  if (ips.lower().startswith("y")):
-    args.ips= True
-
 
 
 def randomize(args):

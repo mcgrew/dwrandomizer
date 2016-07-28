@@ -89,7 +89,7 @@ The HEAL spell will now have a range from 10-25 instead of 10-17.
 
 REPEL will have a normal learning level of 8 instead of 15.
 
-## Faster leveling
+### Faster leveling
 
 The number of experience points required for level ups can be adjusted with the
 --fast-leveling and --very-fast-leveling command line options, or via the 
@@ -119,7 +119,7 @@ executable. See below for other command line options.
 
 Run the python script from the command line: 
 
-    python dwrandomizer.py [options] /path/to/dragon_warrior_rom.nes
+    python3 dwrandomizer.py [options] /path/to/dragon_warrior_rom.nes
 
 The path can be omitted if you have the ROM in the same folder as the 
 script. See below for other command line options.
@@ -160,7 +160,6 @@ same randomized game.
                           Set XP requirements for each level to 50% of normal.
     -g, --no-growth       Do not randomize player stat growth.
     -G, --ultra-growth    Enable ultra randomization of player stat growth.
-    -l, --no-repel        Do not move repel to level 8.
     -m, --no-spells       Do not randomize the level spells are learned.
     -M, --ultra-spells    Enable ultra randomization of the level spells are
                           learned.
@@ -170,7 +169,7 @@ same randomized game.
     -s SEED, --seed SEED  Specify a seed to be used for randomization.
     -t, --no-towns        Do not randomize towns.
     -w, --no-shops        Do not randomize weapon shops.
-    -u, -U, --ultra       Enable all '--ultra' options.
+    -u, -U, --ultra       Enable all 'ultra' options.
     -z, --no-zones        Do not randomize enemy zones.
     -Z, --ultra-zones     Enable ultra randomization of enemy zones.
     -v, --version         show the version number and exit

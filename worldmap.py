@@ -505,7 +505,7 @@ class WorldMap:
     rowcount = 0
     currentline = ""
     self.grid = []
-    for i in range(len(pointers)-1):
+    for i in range(len(pointers)):
       row = map_data[pointers[i]:]
       colcount = 0
       decoded_row = []

@@ -9,7 +9,7 @@ import math
 from worldmap import WorldMap,MapGrid
 import ips
 
-VERSION = "1.2-beta-2016.06.25"
+VERSION = "1.2-beta-2016.07.28"
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes
@@ -519,7 +519,6 @@ class Rom:
       # Sets the encounter rate of Zone 0 to be the same as other zones.
       0xced1: (0xea,)*13,
     }
-    self.speed_hacks()
 
   def speed_hacks(self):
     """
@@ -727,8 +726,8 @@ def main():
       help="Do not randomize player stat growth.")
   parser.add_argument("-G","--ultra-growth", action="store_true", 
       help="Enable ultra randomization of player stat growth.")
-  parser.add_argument("-H","--no-speed_hacks", action="store_false", 
-      help="Do not apply game speed hacks.")
+  parser.add_argument("-H","--speed-hacks", action="store_true", 
+      help="Apply game speed hacks (experimental)")
   parser.add_argument("-m","--no-spells", action="store_false", 
       help="Do not randomize the level spells are learned.")
   parser.add_argument("-M","--ultra-spells", action="store_true", 
@@ -802,8 +801,8 @@ def prompt_for_options(args):
     if input("\nGenerate a random world map? (Y/n) ").lower().startswith("n"):
       args.no_map = False
 
-    if input("\nApply hacks to speed up game play? (Y/n) ").lower().startswith("n"):
-      args.no_speed_hacks = False
+    if input("\nApply hacks to speed up game play (experimental)? (y/N) ").lower().startswith("y"):
+      args.speed_hacks = True
 
     if args.no_map:
       if input("\nRandomize town & cave locations? (Y/n) ").lower().startswith("n"):
@@ -876,7 +875,7 @@ def randomize(args):
     while not rom.generate_map():
       print("Error: " + str(rom.owmap.error) + ", retrying...")
 
-  if not args.no_speed_hacks:
+  if args.speed_hacks:
     print("Applying game speed hacks...")
     rom.speed_hacks()
     flags += "H"

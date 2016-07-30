@@ -16,7 +16,7 @@ features = {
   herb_store = true, -- buy herbs anywhere
   enemy_hp = true,  -- show enemy hit points
   grind_mode = true,
-  repulsive = false, -- no lower level enemy encounters
+  repulsive = true, -- no lower level enemy encounters
   autonav = true -- automatic navigation
 }
 
@@ -1154,7 +1154,7 @@ function encounter(address)
 end
 
 function cheats()
-  if debug.cheates_enabled and debug.cheats then
+  if debug.cheats_enabled and debug.cheats then
     if (memory.readbyte(0x45) == 1) then
       debug.cheats()
       debug.cheats = false

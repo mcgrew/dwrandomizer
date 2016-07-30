@@ -227,6 +227,8 @@ class Rom:
     self.encounter_3_kill[1] = self.encounter_3_loc[0]
     # Let's not remember killing it...
     self.encounter_3_kill[1] = 0
+    for i in self.owmap.border_tile_patch:
+      self.patches[i] = self.owmap.border_tile_patch[i]
     return True
 
   def randomize_zones(self, ultra=False):

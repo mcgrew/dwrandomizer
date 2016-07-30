@@ -3,6 +3,7 @@
 import random
 import argparse
 import pathfinding
+import struct
 
 ########################################################
 # Tiles:
@@ -39,7 +40,24 @@ BRIDGE  =11
 STAIRS  =12
 IMPASSABLE = (WATER, MOUNTAIN, BLOCK)
 
+# some border tile values
+BORDER = {
+  GRASS: 0,
+  DESERT: 1,
+  HILL: 2,
+#  BRICK: 4,
+  SWAMP: 6,
+  TREES: 11,
+  WATER: 15,
+  BLOCK: 16
+#  ROOF: 21
+}
 
+MAPS = { 2: "Charlock", 3: "Hauksness", 4: "Tantegel", 7: "Kol", 
+         8: "Brecconary", 9: "Garinham", 10: "Cantlin", 11: "Rimuldar",
+         12: "Tantegel Basement", 13:"Northern Shrine", 14: "Southern Shrine",
+         21: "Swamp Cave", 22: "Mountain Cave", 24: "Garin's Grave", 
+         28: "Erdrick's Cave" }
 
 class WorldMap:
   encoded_size = 0x8f6
@@ -59,6 +77,8 @@ class WorldMap:
   rainbow_bridge_slice = slice(0x2c4e, 0x2c5b, 6)
   tiles = ("grass", "desert", "hill", "mountain", "water", "block", 
            "trees", "swamp", "town", "cave",  "castle", "bridge", "stairs")
+  border_tile_patch = {}
+  border_addresses = {3:0x3d, 4:0x42, 7:0x51, 8:0x56, 9:0x5b, 10:0x60, 11:0x65}
 
 
   def __init__(self, rom_data=None): 
@@ -156,6 +176,25 @@ class WorldMap:
       return False
     self.generated = True
     return True
+
+  def set_border_tile(self, index, x, y):
+    """
+    Converts a map tile into a border tile for towns
+    :Parameters:
+      index : int
+        The map index of the town or castle
+      x : int
+        The x coordinate where the town will be placed
+      y : int
+        The y coordinate where the town will be placed
+    """
+    border_tile = BORDER.get(self.tile_at(x, y), 0)
+    if index in self.border_addresses:
+      self.border_tile_patch[self.border_addresses[index]] = (border_tile, )
+      print("Setting index %s border tile to %d based on world tile %d at (%d,%d)" % (MAPS[index], border_tile, self.tile_at(x,y), x, y))
+    else:
+      print("Error in border tile setting")
+      
 
   def place_landmarks(self):
     """
@@ -377,6 +416,7 @@ class WorldMap:
     """
     if type_ == CASTLE:
       if not self.warps_from[self.tantegel_warp]:
+#        self.set_border_tile(4, x, y)
         self.warps_from[self.tantegel_warp] = [m, x, y]
         # update the return point
         if self.grid[y+1][x] not in IMPASSABLE:
@@ -392,6 +432,7 @@ class WorldMap:
     elif type_ == TOWN:
       for i in range(0,6):
         if self.warps_from[self.town_warps[i]] is None:
+#          self.set_border_tile(self.warps_to[self.town_warps[i]][0], x, y)
           self.warps_from[self.town_warps[i]] = [m, x, y]
           break
     elif type_ == CAVE:
@@ -645,12 +686,21 @@ class WorldMap:
            ".bridge { background: no-repeat center center url(data:image/gif;base64,R0lGODlhEAAQAKEDAAAAAEBg+Ly8vP///yH+EUNyZWF0ZWQgd2l0aCBHSU1QACwAAAAAEAAQAAACPYwDqXmnCAGShskb811rbgGGIAeIZqicqlCu7ki2YjLUdp2g+ADwPs7y9YbC3e9mI95ivSOj4WjyoFTEoAAAOw==); } "
            ".stairs { background: no-repeat center center url(data:image/gif;base64,R0lGODlhEAAQAKEEAAAAAH9/f7y8vJjoACH+EUNyZWF0ZWQgd2l0aCBHSU1QACwAAAAAEAAQAAACPZwHcZdr7WCYIVFqK9i8e+SFmxEIpsgNkymgW1WacRuq7Fzb8s2O6w6kwXjBEkAnmCkFJGKSp8JcpBOXqAAAOw==); } "
            "</style><body><table border='0' cellpadding='0' cellspacing='0' width='%d'>" % (16 * self.map_width))
+    y=0
     for row in self.grid:
       html += "<tr>"
+      x=0
       for tile in row:
-        html += ("<td class='%s'></td>" % self.tiles[tile])
+        title = ''
+        tile_name = self.tiles[tile]
+        if tile_name in ('castle', 'town', 'cave'):
+
+          title = 'title="%s"' % MAPS[self.warps_to[
+              self.warps_from.index(struct.pack('BBB', 1, x, y))][0]]
+        html += ("<td class='%s' %s></td>" % (self.tiles[tile], title))
+        x += 1
       html += "</tr>"
-      
+      y += 1 
     html += "</table></body></html>"
     return html
 

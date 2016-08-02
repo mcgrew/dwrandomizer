@@ -191,9 +191,8 @@ class WorldMap:
     border_tile = BORDER.get(self.tile_at(x, y), 0)
     if index in self.border_addresses:
       self.border_tile_patch[self.border_addresses[index]] = (border_tile, )
-      print("Setting index %s border tile to %d based on world tile %d at (%d,%d)" % (MAPS[index], border_tile, self.tile_at(x,y), x, y))
     else:
-      print("Error in border tile setting")
+      print("Error in border tile setting: invalid index %d specified" % index)
       
 
   def place_landmarks(self):
@@ -416,7 +415,7 @@ class WorldMap:
     """
     if type_ == CASTLE:
       if not self.warps_from[self.tantegel_warp]:
-#        self.set_border_tile(4, x, y)
+        self.set_border_tile(4, x, y)
         self.warps_from[self.tantegel_warp] = [m, x, y]
         # update the return point
         if self.grid[y+1][x] not in IMPASSABLE:
@@ -432,7 +431,7 @@ class WorldMap:
     elif type_ == TOWN:
       for i in range(0,6):
         if self.warps_from[self.town_warps[i]] is None:
-#          self.set_border_tile(self.warps_to[self.town_warps[i]][0], x, y)
+          self.set_border_tile(self.warps_to[self.town_warps[i]][0], x, y)
           self.warps_from[self.town_warps[i]] = [m, x, y]
           break
     elif type_ == CAVE:
@@ -604,24 +603,21 @@ class WorldMap:
     """
     Shuffles the map warps (towns and caves).
     """
-    cave_end = 8 if self.generated else 7 
-    caves = [self.warps_from[x] for x in self.cave_warps[:cave_end]]
-    towns = [self.warps_from[x] for x in self.town_warps]
-#    for i in range(cave_end):
-#      caves.append(self.warps_from[self.cave_warps[i]])
-    random.shuffle(caves)
-#    for i in range(6):
-#      towns.append(self.warps_from[self.town_warps[i]])
-    random.shuffle(towns)
-    while not self.generated and (tuple(caves[1]) == (1, 108, 109) or
-           (tuple(towns[4]) == (1, 102, 72) and caves[1][0] in (4, 9)) or
-           (tuple(towns[0]) == (1, 102, 72) and caves[1][0] == 9)):
+    if not self.generated: # don't shuffle if this is a generated map.
+      cave_end = 8 if self.generated else 7 
+      caves = [self.warps_from[x] for x in self.cave_warps[:cave_end]]
+      towns = [self.warps_from[x] for x in self.town_warps]
       random.shuffle(caves)
-    # save the shuffling
-    for i in range(cave_end):
-      self.warps_from[self.cave_warps[i]] = caves[i]
-    for i in range(6):
-      self.warps_from[self.town_warps[i]] = towns[i]
+      random.shuffle(towns)
+      while not self.generated and (tuple(caves[1]) == (1, 108, 109) or
+             (tuple(towns[4]) == (1, 102, 72) and caves[1][0] in (4, 9)) or
+             (tuple(towns[0]) == (1, 102, 72) and caves[1][0] == 9)):
+        random.shuffle(caves)
+      # save the shuffling
+      for i in range(cave_end):
+        self.warps_from[self.cave_warps[i]] = caves[i]
+      for i in range(6):
+        self.warps_from[self.town_warps[i]] = towns[i]
 
   def commit(self):
     """

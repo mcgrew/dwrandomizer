@@ -208,8 +208,8 @@ class WorldMap:
       if self.warps_from[self.cave_warps[i]][0] == 1:
         self.warps_from[self.cave_warps[i]] = None
 
-    # keep tantegel in regular zone 0 for now
-    x, y = self.random_land(30, 58, 30, 44)
+    # place tantegel castle
+    x, y = self.random_land()
     tantegel = (x, y)
     self.add_warp(1, x, y, CASTLE)
 

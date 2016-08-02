@@ -9,7 +9,7 @@ import math
 from worldmap import WorldMap,MapGrid
 import ips
 
-VERSION = "1.2-beta-2016.07.28"
+VERSION = "1.2-beta-2016.08.02"
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes
@@ -31,6 +31,7 @@ class Rom:
   enemy_stats_slice = slice(0x5e5b, 0x60db)
   warps_slice = slice(0xf3d8, 0xf50b)
   zones_slice = slice(0xf55f, 0xf5c3)
+  zone_layout_slice = slice(0xf532, 0xf552)
   mp_req_slice = slice(0x1d63, 0x1d6d) #mp requirements for each spell
   xp_req_slice = slice(0xf36b, 0xf3a7)
   player_stats_slice = slice(0x60dd, 0x6191)
@@ -231,6 +232,22 @@ class Rom:
       self.patches[i] = self.owmap.border_tile_patch[i]
     return True
 
+  def randomize_zone_layout(self):
+    """
+    Randomizes enemy zone layout on the overworld map.
+    """
+    for i in range(len(self.zone_layout)):
+      self.zone_layout[i] = random.randint(1,15) << 4 | \
+                            random.randint(1,15)
+    # set tantegel's zone to 0
+    tx,ty = self.owmap.warps_from[self.owmap.tantegel_warp][1:]
+    tantegel_zone_index = (ty // 15 * 8) + tx // 15
+    if tantegel_zone_index % 2:
+      self.zone_layout[tantegel_zone_index // 2] &= 240 # second nybble
+    else:
+      self.zone_layout[tantegel_zone_index // 2] &= 15 # first nybble
+    print(tx, ty, tx // 15, ty // 15, tantegel_zone_index)
+
   def randomize_zones(self, ultra=False):
     """
     Randomizes which enemies are present in each zone.
@@ -241,9 +258,17 @@ class Rom:
     """
     new_zones = list()
     if ultra:
+      # randomize zone locations
+      if self.owmap.generated:
+        self.randomize_zone_layout()
       # zone 0-1
-      for i in range(0,10):
+      for i in range(0,5):
         new_zones.append(random.randint(0, 6))
+      for i in range(0,5):
+        if self.owmap.generated:
+          new_zones.append(random.randint(0, 37))
+        else:
+          new_zones.append(random.randint(0, 6))
       # zones 2-15
       for i in range(0,70):
         new_zones.append(random.randint(0, 37))
@@ -261,7 +286,7 @@ class Rom:
       self.encounter_2_kill[0] = self.encounter_enemies[1]
       self.encounter_3_kill[0] = self.encounter_enemies[2]
     else:
-      #zones 2-19 
+      #zone 0
       for j in range(5): 
         new_zones.append(int(random.randint(0, 6)/2))
 
@@ -486,6 +511,7 @@ class Rom:
     self.mp_reqs = self.rom_data[self.mp_req_slice]
     self.xp_reqs = self.rom_data[self.xp_req_slice]
     self.zones = self.rom_data[self.zones_slice]
+    self.zone_layout = self.rom_data[self.zone_layout_slice]
     self.shop_inventory = self.rom_data[self.weapon_shop_inv_slice]
     self.token_loc = self.rom_data[self.token_slice]
     self.flute_loc = self.rom_data[self.flute_slice]
@@ -587,6 +613,7 @@ class Rom:
     self.rom_data[self.mp_req_slice] = self.mp_reqs
     self.rom_data[self.xp_req_slice] = self.xp_reqs
     self.rom_data[self.zones_slice] = self.zones
+    self.rom_data[self.zone_layout_slice] = self.zone_layout
     self.rom_data[self.weapon_shop_inv_slice] = self.shop_inventory
     self.rom_data[self.token_slice] = self.token_loc
     self.rom_data[self.flute_slice] = self.flute_loc

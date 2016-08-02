@@ -1048,7 +1048,7 @@ function Enemy.hud (self)
     -- show the special attacks
     specialset1 = { "Sleep", "Stopspell", "Heal", "Healmore" }
     specialset2 = { "Hurt", "Hurtmore", "fire", "fire 2" }
-    specials = rom.readbyte(0x5e5c + enemy_index * 16)
+    specials = rom.readbyte(0x5e5e + enemy_index * 16)
     ypos = 104
     spectype = specialset1[math.floor(specials / 64) + 1]
     specchance = math.floor(specials / 16 % 4) * 25

@@ -228,8 +228,6 @@ class Rom:
     self.encounter_3_kill[1] = self.encounter_3_loc[0]
     # Let's not remember killing it...
     self.encounter_3_kill[1] = 0
-    for i in self.owmap.border_tile_patch:
-      self.patches[i] = self.owmap.border_tile_patch[i]
     return True
 
   def randomize_zone_layout(self):
@@ -576,7 +574,7 @@ class Rom:
   def token_dialogue(self):
     """
     Generates new dialogue data for the NPC who tells you where the token is.
-
+)
     rtype: bytearray
     return: new data to replace the npc dialogue.
     """
@@ -609,6 +607,7 @@ class Rom:
     self.rom_data[self.token_dialogue_slice] = self.token_dialogue()
     # commit map
     self.owmap.commit()
+    self.owmap.patch.apply(self.rom_data)
     self.rom_data[self.enemy_stats_slice] = self.enemy_stats 
     self.rom_data[self.mp_req_slice] = self.mp_reqs
     self.rom_data[self.xp_req_slice] = self.xp_reqs

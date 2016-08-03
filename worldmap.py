@@ -4,6 +4,7 @@ import random
 import argparse
 import pathfinding
 import struct
+import ips
 
 ########################################################
 # Tiles:
@@ -77,7 +78,6 @@ class WorldMap:
   rainbow_bridge_slice = slice(0x2c4e, 0x2c5b, 6)
   tiles = ("grass", "desert", "hill", "mountain", "water", "block", 
            "trees", "swamp", "town", "cave",  "castle", "bridge", "stairs")
-  border_tile_patch = {}
   border_addresses = {3:0x3d, 4:0x42, 7:0x51, 8:0x56, 9:0x5b, 10:0x60, 11:0x65}
 
 
@@ -175,6 +175,7 @@ class WorldMap:
               % len(self.encoded))
       return False
     self.generated = True
+    self.update_warps()
     return True
 
   def set_border_tile(self, index, x, y):
@@ -190,7 +191,7 @@ class WorldMap:
     """
     border_tile = BORDER.get(self.tile_at(x, y), 0)
     if index in self.border_addresses:
-      self.border_tile_patch[self.border_addresses[index]] = (border_tile, )
+      self.patch.add_record(self.border_addresses[index], (border_tile,))
     else:
       print("Error in border tile setting: invalid index %d specified" % index)
       
@@ -486,6 +487,7 @@ class WorldMap:
       pointer_data.append(pointers[i] >> 8)
 
     self.encoded = map_data + pointer_data
+    self.add_patch(0x1d6d, self.encoded)
     return self.encoded
 
   def optimize(self, encoded_map, pointers):
@@ -584,6 +586,7 @@ class WorldMap:
     self.golem = self.rom_data[self.golem_slice]
 
     self.rainbow_bridge = self.rom_data[self.rainbow_bridge_slice]
+    self.patch = ips.Patch()
 
   def read_warps(self):
     """
@@ -618,44 +621,57 @@ class WorldMap:
         self.warps_from[self.cave_warps[i]] = caves[i]
       for i in range(6):
         self.warps_from[self.town_warps[i]] = towns[i]
+      self.update_warps()
 
-  def commit(self):
-    """
-    Commits the changes to the rom.
-    """
-    if len(self.encoded) > 2534:
-      print("Unable to commit map changes, map is too large.")
-      return
-    self.rom_data[0x1d6d:0x2753] = self.encoded
+  def update_warps(self):
     # update with the new warps
-    warp_start = 0xf3d8
-    for i in range(51):
-      self.rom_data[warp_start:warp_start+3] = self.warps_from[i]
-      warp_start += 3
-    for i in range(51):
-      self.rom_data[warp_start:warp_start+3] = self.warps_to[i]
-      warp_start += 3
-    # update gwaelin's love calculations
-    self.rom_data[self.love_calc_slice] = \
-        self.warps_from[self.tantegel_warp][1:3]
+    warp_data = []
+    for i in range(20):
+      warp_data += self.warps_from[i]
+    self.add_patch(0xf3d8, warp_data)
+#    warp_data = []
+#    for i in range(20):
+#      warp_data += self.warps_to[i]
+#    self.add_patch(0xf471, warp_data)
+
+    # update gwaelin's love calculation code
+    self.add_patch(self.love_calc_slice, self.warps_from[self.tantegel_warp][1:3])
 
     #update the return point
     for i in range(3):
-      self.rom_data[self.return_point_addr[i]] = self.return_point[i]
+      self.add_patch(self.return_point_addr[i], self.return_point[i])
 
-    # update the fixed encounters
-    if self.axe_knight:
-      self.rom_data[self.axe_knight_slice] = self.axe_knight
-    if self.green_dragon:
-      self.rom_data[self.green_dragon_slice] = self.green_dragon
-    if self.golem:
-      self.rom_data[self.golem_slice] = self.golem
-
+    # update the rainbow bridge location and trigger
     if self.rainbow_bridge:
-      rainbow = self.rainbow_bridge
-      self.rom_data[self.rainbow_bridge_slice] = rainbow
+      rainbow = self.rainbow_bridge[:]
+      self.add_patch(self.rainbow_bridge_slice, rainbow)
       rainbow[1] += 1
-      self.rom_data[self.rainbow_drop_slice] = rainbow
+      self.add_patch(self.rainbow_drop_slice, rainbow)
+
+
+  def commit(self):
+    """
+    Deprecated. Left in for compatibility.
+    """
+    pass
+    # update the fixed encounters
+    # these aren't changed here yet, so let's comment them out for now
+#    if self.axe_knight:
+#      self.add_patch(self.axe_knight_slice, self.axe_knight)
+#    if self.green_dragon:
+#      self.add_patch(self.green_dragon_slice, self.green_dragon)
+#    if self.golem:
+#      self.add_patch(self.golem_slice, self.golem)
+
+  def add_patch(self, addr, values):
+    if not isinstance(addr, slice):
+      self.patch.add_record(addr, values)
+    elif addr.step == 1:
+      self.patch.add_record(addr.start, values)
+    else:
+      for i in range(len(values)):
+        self.patch.add_record(addr.start + i * addr.step, values[i])
+    
     
   def to_html(self, output="-"):
     """

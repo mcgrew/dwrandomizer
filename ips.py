@@ -33,12 +33,13 @@ class Patch:
           ips_ptr += 2
           record_content = struct.unpack_from("B", ips_content, ips_ptr)[0]
           ips_ptr += 1
-          self.records.append(RLERecord(record_addr, record_size, record_content))
+          self.records.append(Record(record_addr, record_content, record_size))
     
   def apply(self, orig_content):
-    orig_content = bytearray(orig_content)
+    if not isinstance(orig_content, bytearray):
+      orig_content = bytearray(orig_content)
     for record in self.records:
-      orig_content[record.address:record.address+record.size()] = record.content
+      record.apply(orig_content)
     return orig_content
 
   def encode(self):
@@ -46,6 +47,10 @@ class Patch:
     return b''.join((b'PATCH', encoded, b'EOF'))
 
   def add_record(self, address, content):
+    for r in self.records:
+      if r.address == address:
+        r.set_content(content)
+        return
     self.records.append(Record(address, content))
 
   def clear(self):
@@ -74,45 +79,47 @@ class Patch:
     return p
 
 class Record:
-  def __init__(self, address, content=None):
+  def __init__(self, address, content=None, rle_size=None):
     self.address = address 
-    self.content = content
+    self.rle_size = rle_size #RLE records only
+    if content is not None:
+      self.set_content(content)
 
   def set_addr(self, addr):
     self.address = addr
 
   def set_content(self, content):
-    self.content = content
+    try:
+      if len(content) > 1 and self.rle_size:
+        raise ValueError("RLE records may only contain one byte of content, "
+          "%d bytes provided" % len(content))
+      self.content = bytearray(content)
+    except TypeError:
+      self.content = bytearray((content,))
 
   def size(self):
+    if self.rle_size:
+      return self.rle_size
     if self.content:
       return len(self.content)
     else:
       return 0
 
   def encode(self):
+    if self.rle_size: #RLE record
+      return struct.pack('>BHHHB', self.address >> 16, self.address & 0xffff, 
+        self.rle_size, int(self.content[0]))
     return struct.pack('>BHH' + 'B' * self.size(), self.address >> 16, 
         self.address & 0xffff, self.size(), *[int(b) for b in self.content])
+
+  def apply(self, orig_content):
+    size = self.size()
+    if self.rle_size:
+      orig_content[self.address:self.address+size] = self.content * size
+    if size:
+      orig_content[self.address:self.address+size] = self.content
+    
  
-class RLERecord:
-  def __init__(self, address, size, content=None):
-    self.address = address 
-    self.size = size
-    self.set_content(content)
-
-  def set_content(self, content):
-    if content is not None and (len(content > 1)):
-      raise ValueError("RLE records may only contain one byte of content, "
-        "%d bytes provided" % len(content))
-    self.content = content
-
-  def size(self):
-    return self.size
-
-  def encode(self):
-    return struct.pack('>BHHHB', self.address >> 16, self.address & 0xffff, 
-      self.size, int(self.content))
-
 def main():
   parser = argparse.ArgumentParser(prog="ips",
       description="A utility for creating and appying IPS patches")

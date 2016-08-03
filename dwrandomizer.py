@@ -455,9 +455,9 @@ class Rom:
                   31, 40, 42,255, 47, 52, 58, 58, 64, 70, 72,255,  6, 
                   78, 83, 90, 95,135,105,120,130,180,155,172,255,  0,  0]
     # These are +1 for proper values in the ROM
-    remake_gold=[  3,  5,  7,  9, 17, 21, 26, 22, 20, 31, 26, 43, 51, 
-                  49, 61, 63,  7, 76, 81, 96,111,106,111,121, 11,255,
-                 151,136,149,156,161,170,186,166,151,149,153,144,  0,  0]
+    remake_gold=[  2,  4,  6,  8, 16, 20, 25, 21, 19, 30, 25, 42, 50, 
+                  48, 60, 62,  6, 75, 80, 95,110,105,110,120, 10,255,
+                 150,135,148,155,160,169,185,165,150,148,152,143,  0,  0]
     self.enemy_stats[6::16] = bytearray(remake_xp)
     self.enemy_stats[7::16] = bytearray(remake_gold)
 
@@ -545,6 +545,7 @@ class Rom:
       0xd77: (0x66,), 0xd81: (0x66,),
       # Sets the encounter rate of Zone 0 to be the same as other zones.
       0xced1: (0xea,)*13,
+      0xea51: (0xad, 0x07, 0x01, 0xea, 0xea),
     }
 
   def speed_hacks(self):

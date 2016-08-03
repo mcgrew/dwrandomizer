@@ -657,7 +657,7 @@ class WorldMap:
       rainbow[1] += 1
       self.rom_data[self.rainbow_drop_slice] = rainbow
     
-  def to_html(self):
+  def to_html(self, output="-"):
     """
     Outputs the map to HTML format for viewing.
 
@@ -690,14 +690,22 @@ class WorldMap:
         title = ''
         tile_name = self.tiles[tile]
         if tile_name in ('castle', 'town', 'cave'):
-
-          title = 'title="%s"' % MAPS[self.warps_to[
-              self.warps_from.index(struct.pack('BBB', 1, x, y))][0]]
+          try:
+            title = 'title="%s"' % MAPS[self.warps_to[
+                self.warps_from.index(struct.pack('BBB', 1, x, y))][0]]
+          except ValueError:
+            pass
         html += ("<td class='%s' %s></td>" % (self.tiles[tile], title))
         x += 1
       html += "</tr>"
       y += 1 
     html += "</table></body></html>"
+
+    if output == "-":
+      sys.stdout.write(html)
+    elif output:
+      with open(output, 'w') as f:
+        f.write(html)
     return html
 
 class MapGrid(pathfinding.SquareGrid):
@@ -733,6 +741,8 @@ if __name__ == "__main__":
       description="A randomizer for Dragon Warrior for NES")
   parser.add_argument("--test", action="store_true",
       help="Generate and export a test map.")
+  parser.add_argument("-o", "--output", default="map.html",
+      help="The output file. Defaults to 'map.html'")
            
   parser.add_argument("filename", help="The rom file to use for input")
   args = parser.parse_args()
@@ -747,8 +757,6 @@ if __name__ == "__main__":
     while not world_map.generate():
       print("Error: " + str(world_map.error) + ", retrying...")
       world_map.revert()
-  f = open('map.html', 'w')
-  f.write(world_map.to_html())
-  f.close()
+  world_map.to_html(args.output)
 
 

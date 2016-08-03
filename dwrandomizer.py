@@ -246,7 +246,6 @@ class Rom:
       self.zone_layout[tantegel_zone_index // 2] &= 240 # second nybble
     else:
       self.zone_layout[tantegel_zone_index // 2] &= 15 # first nybble
-    print(tx, ty, tx // 15, ty // 15, tantegel_zone_index)
 
   def randomize_zones(self, ultra=False):
     """

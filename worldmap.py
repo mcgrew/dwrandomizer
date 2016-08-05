@@ -216,6 +216,9 @@ class WorldMap:
 
     grid = MapGrid(self.grid)
 
+    if self.plot_size(grid, tantegel) < self.min_walkable:
+      raise SanityError("Accessible land area is too small")
+
     # place Charlock
     while (self.closer_than(5, x-3, y, *tantegel) or
         self.tile_at( x, y) in (TOWN, CASTLE, CAVE, STAIRS)):
@@ -223,6 +226,7 @@ class WorldMap:
     charlock = (x-3, y)
     self.place_charlock(x-3, y)
 
+    # check again, just in case.
     if self.plot_size(grid, tantegel) < self.min_walkable:
       raise SanityError("Accessible land area is too small")
 

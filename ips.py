@@ -11,8 +11,8 @@ def apply_ips(file_content, patch_content):
   return patch.apply(file_content)
 
 class Patch:
-  records = [] 
   def __init__(self, ips_content=None):
+    self.records = []
     if ips_content and ips_content[:5] == b'PATCH' and ips_content[-3:] == b'EOF':
       # trim 'PATCH' from the beginning and 'EOF' from the end.
       ips_ptr = 0
@@ -46,12 +46,16 @@ class Patch:
     encoded =  b''.join([r.encode() for r in self.records])
     return b''.join((b'PATCH', encoded, b'EOF'))
 
-  def add_record(self, address, content):
+  def add_record(self, address, content, rle_size=None):
     for r in self.records:
       if r.address == address:
         r.set_content(content)
         return
-    self.records.append(Record(address, content))
+    self.records.append(Record(address, content, rle_size))
+
+  def add_records(self, patchdict):
+    for addr,value in patchdict.items():
+      self.add_record(addr, value)
 
   def clear(self):
     self.records = []
@@ -107,7 +111,7 @@ class Record:
 
   def encode(self):
     if self.rle_size: #RLE record
-      return struct.pack('>BHHHB', self.address >> 16, self.address & 0xffff, 
+      return struct.pack('>BHHHB', self.address >> 16, self.address & 0xffff, 0,
         self.rle_size, int(self.content[0]))
     return struct.pack('>BHH' + 'B' * self.size(), self.address >> 16, 
         self.address & 0xffff, self.size(), *[int(b) for b in self.content])
@@ -116,7 +120,7 @@ class Record:
     size = self.size()
     if self.rle_size:
       orig_content[self.address:self.address+size] = self.content * size
-    if size:
+    elif size:
       orig_content[self.address:self.address+size] = self.content
     
  

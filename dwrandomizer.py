@@ -53,7 +53,6 @@ class Rom:
   encounter_enemies_slice = slice(0xcd74, 0xcdaf, 29)
   encounter_2_kill_slice = slice(0xe97e, 0xe985, 6) # green dragon
   encounter_3_kill_slice = slice(0xe990, 0xe997, 6) #golem
-  patches = {}
 
   def __init__(self, filename):
     input_file = open(filename, 'rb')
@@ -503,6 +502,7 @@ class Rom:
     """
     Reverts all previous changes to the ROM
     """
+    self.patch = ips.Patch()
     self.owmap = WorldMap(self.rom_data)
     self.enemy_stats = self.rom_data[self.enemy_stats_slice]
     self.mp_reqs = self.rom_data[self.mp_req_slice]
@@ -525,7 +525,8 @@ class Rom:
     self.chests = self.rom_data[self.chests_slice]
     self.title_screen_text = self.rom_data[self.title_text_slice]
     # patch format - address: (*data)
-    self.patches = {
+      # fighter's ring fix
+    self.add_patches({
       # fighter's ring fix
       0xf10c: (0x20, 0x54, 0xff, 0xea),
       0xff64: (0x85, 0xcd, 0xa5, 0xcf, 0x29, 0x20, 0xf0, 0x07, 0xa5, 
@@ -542,15 +543,17 @@ class Rom:
       # walk around him.
       0xd77: (0x66,), 0xd81: (0x66,),
       # Sets the encounter rate of Zone 0 to be the same as other zones.
-      0xced1: (0xea,)*13,
       0xea51: (0xad, 0x07, 0x01, 0xea, 0xea),
-    }
+    })
+      # Sets the encounter rate of Zone 0 to be the same as other zones.
+    self.add_patch(0xced1, 0xea, 13)
+
 
   def speed_hacks(self):
     """
     Adds some hacks to speed up the game play
     """
-    hacks = {
+    self.add_patches({
       # Following are some speed hacks from @gameboy9
       # speed up the text
       0x7a43: (0xea, 0xea, 0xea),
@@ -567,9 +570,7 @@ class Rom:
       0x463b: (0xff,),
       # speed up the battle win music
       0x4724: (1,), 0x472a: (1,), 0x472c: (1,), 0x472e: (1,),
-    }
-    for key in hacks.keys():
-      self.patches[key] = hacks[key]
+    })
 
   def token_dialogue(self):
     """
@@ -602,63 +603,66 @@ class Rom:
     Commits all changes to the ROM
     """
     orig_data = self.rom_data[:]
-    self.rom_data[self.will_not_work_slice] = \
-        self.ascii2dw("The spell had no effect.")
-    self.rom_data[self.token_dialogue_slice] = self.token_dialogue()
-    # commit map
-    self.owmap.commit()
-    self.owmap.patch.apply(self.rom_data)
-    self.rom_data[self.enemy_stats_slice] = self.enemy_stats 
-    self.rom_data[self.mp_req_slice] = self.mp_reqs
-    self.rom_data[self.xp_req_slice] = self.xp_reqs
-    self.rom_data[self.zones_slice] = self.zones
-    self.rom_data[self.zone_layout_slice] = self.zone_layout
-    self.rom_data[self.weapon_shop_inv_slice] = self.shop_inventory
-    self.rom_data[self.token_slice] = self.token_loc
-    self.rom_data[self.flute_slice] = self.flute_loc
-    self.rom_data[self.armor_slice] = self.armor_loc
-    self.rom_data[self.encounter_1_slice] = self.encounter_1_loc 
-    self.rom_data[self.encounter_2_slice] = self.encounter_2_loc 
-    self.rom_data[self.encounter_3_slice] = self.encounter_3_loc 
-    self.rom_data[self.encounter_1_run_slice] = self.encounter_1_loc 
-    self.rom_data[self.encounter_2_run_slice] = self.encounter_2_loc 
-    self.rom_data[self.encounter_3_run_slice] = self.encounter_3_loc 
-    self.rom_data[self.encounter_enemies_slice] = self.encounter_enemies
-    # update the kill bit code
-    self.rom_data[self.encounter_2_kill_slice] = self.encounter_2_kill
-    self.rom_data[self.encounter_3_kill_slice] = self.encounter_3_kill
+    self.add_patch(self.will_not_work_slice, self.ascii2dw("The spell had no effect."))
+    self.add_patch(self.token_dialogue_slice, self.token_dialogue())
+    self.add_patch(self.enemy_stats_slice, self.enemy_stats )
+    self.add_patch(self.mp_req_slice, self.mp_reqs)
+    self.add_patch(self.xp_req_slice, self.xp_reqs)
+    self.add_patch(self.zones_slice, self.zones)
+    self.add_patch(self.zone_layout_slice, self.zone_layout)
+    self.add_patch(self.weapon_shop_inv_slice, self.shop_inventory)
+    self.add_patch(self.token_slice, self.token_loc)
+    self.add_patch(self.flute_slice, self.flute_loc)
+    self.add_patch(self.armor_slice, self.armor_loc)
+    self.add_patch(self.encounter_1_slice, self.encounter_1_loc )
+    self.add_patch(self.encounter_2_slice, self.encounter_2_loc )
+    self.add_patch(self.encounter_3_slice, self.encounter_3_loc )
+    self.add_patch(self.encounter_1_run_slice, self.encounter_1_loc )
+    self.add_patch(self.encounter_2_run_slice, self.encounter_2_loc )
+    self.add_patch(self.encounter_3_run_slice, self.encounter_3_loc )
+    self.add_patch(self.encounter_enemies_slice, self.encounter_enemies)
+    # update the kill bit code)
+    self.add_patch(self.encounter_2_kill_slice, self.encounter_2_kill)
+    self.add_patch(self.encounter_3_kill_slice, self.encounter_3_kill)
 
-    self.rom_data[self.player_stats_slice] = self.player_stats
-    self.rom_data[self.new_spell_slice] = self.new_spell_levels
-    self.rom_data[self.chests_slice] = self.chests
-    self.rom_data[self.title_text_slice] = self.title_screen_text
-    self.apply_patches()
-    self.ips = ips.Patch.create(orig_data, self.rom_data)
+    self.add_patch(self.player_stats_slice, self.player_stats)
+    self.add_patch(self.new_spell_slice, self.new_spell_levels)
+    self.add_patch(self.chests_slice, self.chests)
+    self.add_patch(self.title_text_slice, self.title_screen_text)
 
-  def add_patch(self, addr, *data):
+    self.patch.combine(self.owmap.patch)
+    self.patch.apply(self.rom_data)
+
+  def add_patch(self, addr, values, size=None):
     """
     Adds a new manual rom patch
     :Parameters:
       addr : int
         The address where the new data is to be applied
-      data : array
+      values : array
         The first argument should be the distance between each byte to be placed
         in the rom. The rest is the data to be patched into the ROM
+      size : int
+        The size of the patch if this is an rle patch (the same byte repeated
+        over and over), otherwise None.
+    """
+    if not isinstance(addr, slice):
+      self.patch.add_record(addr, values, size)
+    elif addr.step in (1, None):
+      self.patch.add_record(addr.start, values, size)
+    else:
+      for i in range(len(values)):
+        self.patch.add_record(addr.start + i * addr.step, values[i])
 
-    rtype: 
-    return: 
+  def add_patches(self, patchdict):
     """
-    self.patches[addr] = data
-
-  def apply_patches(self):
+    Adds new manual patches
+    :Parameters:
+      patchdict : dict
+        A dictionary containing patches in the form addr: value. RLE records 
+        cannot be added via this method.
     """
-    Applies any manual patches
-    """
-    # apply any manual patches
-    while len(self.patches):
-      addr,patch = self.patches.popitem()
-      self.rom_data[addr:addr+(len(patch))] = patch
-#      self.rom_data[addr:addr+(len(patch)-1)*patch[0]:patch[0]] = patch[1:]
+    self.patch.add_records(patchdict)
 
   def write(self, output_filename, content=None):
     """
@@ -998,9 +1002,9 @@ def randomize(args):
   if args.ips:
     output_filename = "DWRando.%s.%d.%sips" % (flags, args.seed, prg)
     print("Writing output file %s..." % output_filename)
-    rom.write(output_filename, rom.ips.encode())
+    rom.write(output_filename, rom.patch.encode())
   print ("New ROM Checksum: %s" % rom.sha1())
-  print ("IPS Checksum: %s" % rom.sha1(rom.ips.encode()))
+  print ("IPS Checksum: %s" % rom.sha1(rom.patch.encode()))
 
 if __name__ == "__main__":
   main()

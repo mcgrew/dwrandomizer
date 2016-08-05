@@ -230,7 +230,7 @@ class WorldMap:
     if self.plot_size(grid, tantegel) < self.min_walkable:
       raise SanityError("Accessible land area is too small")
 
-    if not self.is_accessible(grid, tantegel, (x+3, y)):
+    if not self.is_accessible(grid, tantegel, (x, y)):
       raise SanityError("Charlock is obstructed")
 
     for i in range(6):

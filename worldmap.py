@@ -610,22 +610,22 @@ class WorldMap:
     """
     Shuffles the map warps (towns and caves).
     """
-    if not self.generated: # don't shuffle if this is a generated map.
-      cave_end = 8 if self.generated else 7 
-      caves = [self.warps_from[x] for x in self.cave_warps[:cave_end]]
-      towns = [self.warps_from[x] for x in self.town_warps]
+    cave_end = 8 if self.generated else 7 
+    caves = [self.warps_from[x] for x in self.cave_warps[:cave_end]]
+    towns = [self.warps_from[x] for x in self.town_warps]
+    random.shuffle(caves)
+    random.shuffle(towns)
+    while not self.generated and (tuple(caves[1]) == (1, 108, 109) or
+           (tuple(towns[4]) == (1, 102, 72) and caves[1][0] in (4, 9)) or
+           (tuple(towns[0]) == (1, 102, 72) and caves[1][0] == 9)):
       random.shuffle(caves)
-      random.shuffle(towns)
-      while not self.generated and (tuple(caves[1]) == (1, 108, 109) or
-             (tuple(towns[4]) == (1, 102, 72) and caves[1][0] in (4, 9)) or
-             (tuple(towns[0]) == (1, 102, 72) and caves[1][0] == 9)):
-        random.shuffle(caves)
-      # save the shuffling
-      for i in range(cave_end):
-        self.warps_from[self.cave_warps[i]] = caves[i]
+    # save the shuffling
+    for i in range(cave_end):
+      self.warps_from[self.cave_warps[i]] = caves[i]
+    if not self.generated: # don't shuffle towns if this is a generated map.
       for i in range(6):
         self.warps_from[self.town_warps[i]] = towns[i]
-      self.update_warps()
+    self.update_warps()
 
   def update_warps(self):
     # update with the new warps

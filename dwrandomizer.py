@@ -9,7 +9,7 @@ import math
 from worldmap import WorldMap,MapGrid
 import ips
 
-VERSION = "1.2"
+VERSION = "1.2.1"
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes
@@ -826,12 +826,12 @@ def prompt_for_options(args):
   elif (mode.lower().startswith("f")):
     args.fast_leveling = True
 
+  if input("\nApply hacks to speed up game play (experimental)? (y/N) ").lower().startswith("y"):
+    args.speed_hacks = True
+
   if custom:
     if input("\nGenerate a random world map? (Y/n) ").lower().startswith("n"):
       args.no_map = False
-
-    if input("\nApply hacks to speed up game play (experimental)? (y/N) ").lower().startswith("y"):
-      args.speed_hacks = True
 
     if args.no_map:
       if input("\nRandomize town & cave locations? (Y/n) ").lower().startswith("n"):

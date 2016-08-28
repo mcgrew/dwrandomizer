@@ -528,9 +528,43 @@ class Rom:
       # fighter's ring fix
     self.add_patches({
       # fighter's ring fix
-      0xf10c: (0x20, 0x54, 0xff, 0xea),
-      0xff64: (0x85, 0xcd, 0xa5, 0xcf, 0x29, 0x20, 0xf0, 0x07, 0xa5, 
-                  0xcc, 0x18, 0x69, 0x02, 0x85, 0xcc, 0xa5, 0xcf, 0x60),
+      0xf10c: (0x20, 0x7d, 0xff, 0xea),
+      0xff8d: (
+        # ff7d:
+              0x85, 0xcd,       # STA $00CD  ; replaces code removed from $F00C
+              0xa5, 0xcf,       # LDA $00CF  ; load status bits
+              0x29, 0x20,       # AND #$20   ; check bit 6 (fitghter's ring)
+              0xf0, 0x06,       # BEQ $FF8B 
+              0xa5, 0xcc,       # LDA $00CC  ; load attack power
+              0x69, 0x04,       # ADC #$04   ; add 4.
+              0x85, 0xcc,       # STA $00CC  ; store new attack power
+        # ff8b:
+              0x4c, 0x54, 0xff  # JMP $FF54  ; jump to next section
+      ),
+      0xff64: (
+        # ff54:
+              0xa5, 0xcf,       # LDA $00CF  ; load status bits
+              0x29, 0x80,       # AND #$80   ; check bit 8 (death necklace)
+              0xf0, 0x17,       # BEQ $FF71 
+              0xa5, 0xca,       # LDA $00CA  ; load max HP
+              0x46, 0xca,       # LSR $00CA  ; divide max HP by 4
+              0x46, 0xca,       # LSR $00CA
+         # ff60:
+              0xe5, 0xca,       # SBC $00CA  ; subtract the result
+              0x85, 0xca,       # STA $00CA  ; rewrite max HP
+              0xc5, 0xc5,       # CMP $00C5  ; compare to current HP
+              0xb0, 0x02,       # BCS $FF6A
+              0x85, 0xc5,       # STA $00C5  ; set current HP to max HP
+         # ff6a:
+              0x18,             # CLC
+              0xa5, 0xcc,       # LDA $00CC  ; load attack power
+              0x69, 0x0a,       # ADD #$0A   ; add 10
+              0x85, 0xcc,       # STA $00CC  ; rewrite attack power
+         # ff71:
+              0xa5, 0xcf,       # LDA $00CF   ; replaces code removed from $F00E
+              0x60,             # RTS
+      ),
+
       0x43a: (0x47,), # add new stairs to the throne room
       0x2b9: (0x45,), # add new stairs to the 1st floor
       0x2d7: (0x66,), # add a new exit to the first floor
@@ -538,14 +572,15 @@ class Rom:
       0xf45f: (5, 1, 8),
       0xf4f8: (4, 1, 7),
       0x1298: (0x22,), #remove the top set of stairs for the old warp in the grave
+      # Sets the encounter rate of Zone 0 to be the same as other zones.
+      0xcedd: 0,
+      0xe270: 0, # set death necklace chance to 100%
       0xdbce: (15,), # buff the heal spell
       # Removes the 2 blocks around the northern shrine guardian so you can 
       # walk around him.
       0xd77: (0x66,), 0xd81: (0x66,),
       0xea51: (0xad, 0x07, 0x01, 0xea, 0xea),
     })
-      # Sets the encounter rate of Zone 0 to be the same as other zones.
-    self.add_patch(0xced1, 0xea, 13)
 
 
   def speed_hacks(self):

@@ -527,13 +527,13 @@ class Rom:
     # patch format - address: (*data)
       # fighter's ring fix
     self.add_patches({
-      # fighter's ring fix
+      # fighter's ring fix and death necklace functionality
       0xf10c: (0x20, 0x7d, 0xff, 0xea),
       0xff8d: (
         # ff7d:
               0x85, 0xcd,       # STA $00CD  ; replaces code removed from $F00C
               0xa5, 0xcf,       # LDA $00CF  ; load status bits
-              0x29, 0x20,       # AND #$20   ; check bit 6 (fitghter's ring)
+              0x29, 0x20,       # AND #$20   ; check bit 6 (fighter's ring)
               0xf0, 0x06,       # BEQ $FF8B 
               0xa5, 0xcc,       # LDA $00CC  ; load attack power
               0x69, 0x04,       # ADC #$04   ; add 4.

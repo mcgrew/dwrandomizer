@@ -542,7 +542,6 @@ class Rom:
       # Removes the 2 blocks around the northern shrine guardian so you can 
       # walk around him.
       0xd77: (0x66,), 0xd81: (0x66,),
-      # Sets the encounter rate of Zone 0 to be the same as other zones.
       0xea51: (0xad, 0x07, 0x01, 0xea, 0xea),
     })
       # Sets the encounter rate of Zone 0 to be the same as other zones.
@@ -593,10 +592,17 @@ class Rom:
     tx, ty = self.owmap.warps_from[self.owmap.tantegel_warp][1:3]
     north_south = "north" if y < ty else "south"
     east_west = "west" if x < tx else "east"
-    return (self.ascii2dw("Thou may go and search.") + 
-      bytearray([0xfc, 0xfb, 0x50]) + self.ascii2dw(
-      ("From Tantegel Castle travel %2d leagues to the %s and %2d to the %s.") % 
-       (abs(y - ty), north_south, abs(x - tx), east_west)))
+    dx,dy = x - tx, y - ty
+    if abs(dx) < 100 and abs(dy) < 100:
+      return (self.ascii2dw("Thou may go and search.") + 
+        bytearray([0xfc, 0xfb, 0x50]) + self.ascii2dw(
+        ("From Tantegel Castle travel %2d leagues to the %s and %2d to the %s.") % 
+        (abs(dy), north_south, abs(dx), east_west)))
+    else:
+      return (self.ascii2dw("Thou may go and search.") + 
+        bytearray([0xfc, 0xfb, 0x50]) + self.ascii2dw(
+        (("From Tantegel Castle travel %d leagues %s and %d to the %s.         ") % 
+         (abs(dy), north_south, abs(dx), east_west))[:71]))
 
   def commit(self):
     """

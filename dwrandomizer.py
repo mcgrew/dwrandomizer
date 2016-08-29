@@ -573,7 +573,7 @@ class Rom:
       0xf4f8: (4, 1, 7),
       0x1298: (0x22,), #remove the top set of stairs for the old warp in the grave
       # Sets the encounter rate of Zone 0 to be the same as other zones.
-      0xcedd: 0,
+      0xcecf: (0x4c, 0x04, 0xcf), # skip over the zone 0 code
       0xe270: 0, # set death necklace chance to 100%
       0xdbce: (15,), # buff the heal spell
       # Removes the 2 blocks around the northern shrine guardian so you can 

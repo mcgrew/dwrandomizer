@@ -528,9 +528,20 @@ class Rom:
       # fighter's ring fix
     self.add_patches({
       # fighter's ring fix
-      0xf10c: (0x20, 0x54, 0xff, 0xea),
-      0xff64: (0x85, 0xcd, 0xa5, 0xcf, 0x29, 0x20, 0xf0, 0x07, 0xa5, 
-                  0xcc, 0x18, 0x69, 0x02, 0x85, 0xcc, 0xa5, 0xcf, 0x60),
+      0xf10c: (0x20, 0x7d, 0xff, 0xea),
+      0xff8d: (
+        # ff7d:
+              0x85, 0xcd,       # STA $00CD  ; replaces code removed from $F00C
+              0xa5, 0xcf,       # LDA $00CF  ; load status bits
+              0x29, 0x20,       # AND #$20   ; check bit 6 (fighter's ring)
+              0xf0, 0x06,       # BEQ $FF8B 
+              0xa5, 0xcc,       # LDA $00CC  ; load attack power
+              0x69, 0x04,       # ADC #$04   ; add 4.
+              0x85, 0xcc,       # STA $00CC  ; store new attack power
+        # ff8b:
+              0xa5, 0xcf,       # LDA $00CF   ; replaces code removed from $F00E
+              0x60,             # RTS
+      ),
       0x43a: (0x47,), # add new stairs to the throne room
       0x2b9: (0x45,), # add new stairs to the 1st floor
       0x2d7: (0x66,), # add a new exit to the first floor
@@ -538,11 +549,12 @@ class Rom:
       0xf45f: (5, 1, 8),
       0xf4f8: (4, 1, 7),
       0x1298: (0x22,), #remove the top set of stairs for the old warp in the grave
+      # sets the encounter rate of zone 0 to be the same as other zones.
+      0xcecf: (0x4c, 0x04, 0xcf), # skip over the zone 0 code
+      0xe270: 0, # set death necklace chance to 100%
       0xdbce: (15,), # buff the heal spell
       0xea51: (0xad, 0x07, 0x01, 0xea, 0xea),
     })
-      # Sets the encounter rate of Zone 0 to be the same as other zones.
-    self.add_patch(0xced1, 0xea, 13)
 
 
   def speed_hacks(self):

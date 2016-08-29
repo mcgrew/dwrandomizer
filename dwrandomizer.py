@@ -113,10 +113,9 @@ class Rom:
     quest items are located in Charlock chests.
     """
     chest_contents = self.chests[3::4]
+    staff_index = chest_contents.index(0x10)
+    chest_contents.remove(0x10) # don't shuffle the staff
     for i in range(len(chest_contents)):
-      # replace the harp with a key.
-      if chest_contents[i] == 0xd:
-        chest_contents[i] = 3
       # change all gold to large gold stash
       if (chest_contents[i] >= 18 and chest_contents[i] <= 20):
         chest_contents[i] = 21
@@ -132,7 +131,7 @@ class Rom:
     random.shuffle(chest_contents)
 
     # make sure required quest items aren't in Charlock
-    charlock_chests = chest_contents[11:17] + chest_contents[24:25]
+    charlock_chests = chest_contents[11:17] + chest_contents[-7:-6]
     charlock_chest_indices = (11, 12, 13, 14, 15, 16, 24)
     quest_items = (10, 13, 15, 16)
     for item in quest_items:
@@ -156,6 +155,7 @@ class Rom:
           chest_contents[j], chest_contents[i] = chest_contents[i], chest_contents[j]
           break
 
+    chest_contents.insert(staff_index, 0x10) # put the staff back in the array
     self.chests[3::4] = chest_contents
 
   def non_charlock_chest(self):
@@ -539,9 +539,6 @@ class Rom:
       0xf4f8: (4, 1, 7),
       0x1298: (0x22,), #remove the top set of stairs for the old warp in the grave
       0xdbce: (15,), # buff the heal spell
-      # Removes the 2 blocks around the northern shrine guardian so you can 
-      # walk around him.
-      0xd77: (0x66,), 0xd81: (0x66,),
       0xea51: (0xad, 0x07, 0x01, 0xea, 0xea),
     })
       # Sets the encounter rate of Zone 0 to be the same as other zones.

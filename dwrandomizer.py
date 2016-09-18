@@ -871,7 +871,7 @@ def prompt_for_options(args):
     if input("\nGenerate a random world map? (Y/n) ").lower().startswith("n"):
       args.no_map = False
 
-    if args.no_map:
+    if not args.no_map:
       if input("\nRandomize town & cave locations? (Y/n) ").lower().startswith("n"):
         args.no_towns = False
 

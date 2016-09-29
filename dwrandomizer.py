@@ -798,7 +798,7 @@ def parse_args():
   parser.add_argument("-c","-C","--no-chests", action="store_false",
       help="Do not randomize chest contents.")
   parser.add_argument("-d","-D","--death-necklace", action="store_true",
-      help="Enable Death Necklace functionality (+10 str -25% HP)")
+      help="Enable Death Necklace functionality (+10 str -25%% HP)")
   parser.add_argument("--force", action="store_false", 
       help="Skip checksums and force randomization. This may produce an invalid"
            " ROM if the incorrect file is used.")

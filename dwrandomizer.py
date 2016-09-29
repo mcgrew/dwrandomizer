@@ -9,7 +9,7 @@ import math
 from worldmap import WorldMap,MapGrid
 import ips
 
-VERSION = "1.3-beta-2016-08-28"
+VERSION = "1.3-dev-2016-09-28"
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes
@@ -24,6 +24,7 @@ class Rom:
   # alphabet - 0x5f is breaking space, 60 is non-breaking (I think)
   alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" + \
              "__'______.,-_?!_)(_______________  "
+  ring_power = 4
   # Slices for various data. Offsets include iNES header.
   token_dialogue_slice = slice(0xa238, 0xa299)
   will_not_work_slice = slice(0xad95, 0xadad)
@@ -531,17 +532,18 @@ class Rom:
       0xf10c: (0x20, 0x7d, 0xff, 0xea),
       0xff8d: (
         # ff7d:
-              0x85, 0xcd,       # STA $00CD  ; replaces code removed from $F00C
-              0xa5, 0xcf,       # LDA $00CF  ; load status bits
-              0x29, 0x20,       # AND #$20   ; check bit 6 (fighter's ring)
-              0xf0, 0x06,       # BEQ $FF8B 
-              0xa5, 0xcc,       # LDA $00CC  ; load attack power
-              0x69, 0x04,       # ADC #$04   ; add 4.
-              0x85, 0xcc,       # STA $00CC  ; store new attack power
+              0x85, 0xcd,            # STA $00CD  ; replaces code removed from $F00C
+              0xa5, 0xcf,            # LDA $00CF  ; load status bits
+              0x29, 0x20,            # AND #$20   ; check bit 6 (fighter's ring)
+              0xf0, 0x06,            # BEQ $FF8B 
+              0xa5, 0xcc,            # LDA $00CC  ; load attack power
+              0x69, self.ring_power, # ADC #$??   ; add fighter's ring power.
+              0x85, 0xcc,            # STA $00CC  ; store new attack power
         # ff8b:
-              0xa5, 0xcf,       # LDA $00CF   ; replaces code removed from $F00E
-              0x60,             # RTS
+              0xa5, 0xcf,            # LDA $00CF   ; replaces code removed from $F00E
+              0x60,                  # RTS
       ),
+
       0x43a: (0x47,), # add new stairs to the throne room
       0x2b9: (0x45,), # add new stairs to the 1st floor
       0x2d7: (0x66,), # add a new exit to the first floor
@@ -549,11 +551,55 @@ class Rom:
       0xf45f: (5, 1, 8),
       0xf4f8: (4, 1, 7),
       0x1298: (0x22,), #remove the top set of stairs for the old warp in the grave
-      # sets the encounter rate of zone 0 to be the same as other zones.
+      # Sets the encounter rate of Zone 0 to be the same as other zones.
       0xcecf: (0x4c, 0x04, 0xcf), # skip over the zone 0 code
       0xe270: 0, # set death necklace chance to 100%
-      0xdbce: (15,), # buff the heal spell
+      0xdbd1: (23,), # buff the heal spell
       0xea51: (0xad, 0x07, 0x01, 0xea, 0xea),
+    })
+
+  def death_necklace(self):
+    """
+    Adds functionality to the death necklace (+10 str and -25% HP).
+    """
+    # This replaces the fighter's ring fix with new code ending with a jump
+    # which jumps to the death necklace code.
+    self.add_patches({
+      0xff8d: (
+        # ff7d:
+              0x85, 0xcd,            # STA $00CD  ; replaces code removed from $F00C
+              0xa5, 0xcf,            # LDA $00CF  ; load status bits
+              0x29, 0x20,            # AND #$20   ; check bit 6 (fighter's ring)
+              0xf0, 0x06,            # BEQ $FF8B 
+              0xa5, 0xcc,            # LDA $00CC  ; load attack power
+              0x69, self.ring_power, # ADC #$??   ; add fighter's ring power.
+              0x85, 0xcc,            # STA $00CC  ; store new attack power
+        # ff8b:
+              0x4c, 0x54, 0xff       # JMP $FF54  ; jump to next section
+      ),
+      0xff64: (
+        # ff54:
+              0xa5, 0xcf,            # LDA $00CF  ; load status bits
+              0x29, 0x80,            # AND #$80   ; check bit 8 (death necklace)
+              0xf0, 0x17,            # BEQ $FF71 
+              0xa5, 0xca,            # LDA $00CA  ; load max HP
+              0x46, 0xca,            # LSR $00CA  ; divide max HP by 4
+              0x46, 0xca,            # LSR $00CA
+         # ff60:
+              0xe5, 0xca,            # SBC $00CA  ; subtract the result
+              0x85, 0xca,            # STA $00CA  ; rewrite max HP
+              0xc5, 0xc5,            # CMP $00C5  ; compare to current HP
+              0xb0, 0x02,            # BCS $FF6A
+              0x85, 0xc5,            # STA $00C5  ; set current HP to max HP
+         # ff6a:
+              0x18,                  # CLC
+              0xa5, 0xcc,            # LDA $00CC  ; load attack power
+              0x69, 0x0a,            # ADD #$0A   ; add 10
+              0x85, 0xcc,            # STA $00CC  ; rewrite attack power
+         # ff71:
+              0xa5, 0xcf,            # LDA $00CF   ; replaces code removed from $F00E
+              0x60,                  # RTS
+      ),
     })
 
 
@@ -743,8 +789,7 @@ def inverted_power_curve(min_, max_, power, count=30):
   points.sort()
   return points
 
-def main():
-  
+def parse_args():
   parser = argparse.ArgumentParser(prog="DWRandomizer",
       description="A randomizer for Dragon Warrior for NES")
   parser.add_argument("-r","--no-remake", action="store_false",
@@ -752,8 +797,8 @@ def main():
            "remake. This will make grind times much longer.")
   parser.add_argument("-c","-C","--no-chests", action="store_false",
       help="Do not randomize chest contents.")
-  parser.add_argument("-d","-D","--defaults", action="store_true",
-      help="Run the randomizer with the default options.")
+  parser.add_argument("-d","-D","--death-necklace", action="store_true",
+      help="Enable Death Necklace functionality (+10 str -25% HP)")
   parser.add_argument("--force", action="store_false", 
       help="Skip checksums and force randomization. This may produce an invalid"
            " ROM if the incorrect file is used.")
@@ -796,12 +841,21 @@ def main():
       help="Enable ultra randomization of enemy zones.")
   parser.add_argument("-v","-V","--version", action="version", 
       version="%%(prog)s %s" % VERSION)
-  parser.add_argument("filename", help="The rom file to use for input")
-  args = parser.parse_args()
+  # make this optional so the gui can use it.
+  parser.add_argument("filename", nargs="?", default='',
+      help="The rom file to use for input")
+  return parser.parse_args()
 
-  # if the user didn't enter any flags, ask for options.
-  if len(sys.argv) <= 2: 
-    prompt_for_options(args)
+
+def main():
+  args = parse_args()
+  if not(len(args.filename)):
+    print("\nThe filename of the ROM is required.")
+    sys.exit(-1)
+  
+#  # if the user didn't enter any flags, ask for options.
+#  if len(sys.argv) <= 2: 
+#    prompt_for_options(args)
 
   randomize(args)
 
@@ -810,80 +864,80 @@ def main():
     print("\n\n")
     input("Press enter to exit...")
 
-def prompt_for_options(args):
-  """
-  Prompts the user for randomizer options
-  """
-  print()
-  while True:
-    seed = input("Enter seed number (leave blank for random seed): ")
-    if seed:
-      try:
-        args.seed = int(seed)
-        break
-      except:
-        print("\nThat is not a valid number. ", end="")
-    else:
-      break
-
-  custom = True
-
-  mode = input("\nRandomization mode - ultra, normal, custom (u/n/C): ")
-  if (mode.lower().startswith("u")):
-    args.ultra = True
-    custom = False
-  elif (mode.lower().startswith("n")):
-    custom = False
-
-  mode = input("\nLeveling speed - normal, fast, very fast (N/f/v): ")
-  if (mode.lower().startswith("v")):
-    args.very_fast_leveling = True
-  elif (mode.lower().startswith("f")):
-    args.fast_leveling = True
-
-  if input("\nApply hacks to speed up game play (experimental)? (y/N) ").lower().startswith("y"):
-    args.speed_hacks = True
-
-  if custom:
-    if input("\nGenerate a random world map? (Y/n) ").lower().startswith("n"):
-      args.no_map = False
-
-    if not args.no_map:
-      if input("\nRandomize town & cave locations? (Y/n) ").lower().startswith("n"):
-        args.no_towns = False
-
-    if input("\nRandomize weapon shops? (Y/n) ").lower().startswith("n"):
-      args.no_shops = False
-
-    if input("\nRandomize chests? (Y/n) ").lower().startswith("n"):
-      args.no_chests = False
-
-    if input("\nRandomize searchable items? (Y/n) ").lower().startswith("n"):
-      args.no_searchitems = False
-
-    growth = input("\nStat growth randomization - ultra, default, none (u/D/n): ")
-    if (growth.lower().startswith("u")):
-      args.ultra_growth = True
-    elif (growth.lower().startswith("n")):
-      args.growth = False
-
-    spells = input("\nSpell learning randomization - ultra, default, none (u/D/n): ")
-    if (spells.lower().startswith("u")):
-      args.ultra_spells = True
-    elif (spells.lower().startswith("n")):
-      args.no_spells = False
-
-    zones = input("\nEnemy zone randomization - ultra, default, none (u/D/n): ")
-    if (zones.lower().startswith("u")):
-      args.ultra_zones = True
-    elif (zones.lower().startswith("n")):
-      args.no_zones = False
-
-    patterns = input("\nEnemy attack randomization - ultra, default, none (u/D/n): ")
-    if (patterns.lower().startswith("u")):
-      args.ultra_patterns = True
-    elif (patterns.lower().startswith("n")):
-      args.no_patterns = False
+#def prompt_for_options(args):
+#  """
+#  Prompts the user for randomizer options
+#  """
+#  print()
+#  while True:
+#    seed = input("Enter seed number (leave blank for random seed): ")
+#    if seed:
+#      try:
+#        args.seed = int(seed)
+#        break
+#      except:
+#        print("\nThat is not a valid number. ", end="")
+#    else:
+#      break
+#
+#  custom = True
+#
+#  mode = input("\nRandomization mode - ultra, normal, custom (u/n/C): ")
+#  if (mode.lower().startswith("u")):
+#    args.ultra = True
+#    custom = False
+#  elif (mode.lower().startswith("n")):
+#    custom = False
+#
+#  mode = input("\nLeveling speed - normal, fast, very fast (N/f/v): ")
+#  if (mode.lower().startswith("v")):
+#    args.very_fast_leveling = True
+#  elif (mode.lower().startswith("f")):
+#    args.fast_leveling = True
+#
+#  if input("\nApply hacks to speed up game play (experimental)? (y/N) ").lower().startswith("y"):
+#    args.speed_hacks = True
+#
+#  if custom:
+#    if input("\nGenerate a random world map? (Y/n) ").lower().startswith("n"):
+#      args.no_map = False
+#
+#    if not args.no_map:
+#      if input("\nRandomize town & cave locations? (Y/n) ").lower().startswith("n"):
+#        args.no_towns = False
+#
+#    if input("\nRandomize weapon shops? (Y/n) ").lower().startswith("n"):
+#      args.no_shops = False
+#
+#    if input("\nRandomize chests? (Y/n) ").lower().startswith("n"):
+#      args.no_chests = False
+#
+#    if input("\nRandomize searchable items? (Y/n) ").lower().startswith("n"):
+#      args.no_searchitems = False
+#
+#    growth = input("\nStat growth randomization - ultra, default, none (u/D/n): ")
+#    if (growth.lower().startswith("u")):
+#      args.ultra_growth = True
+#    elif (growth.lower().startswith("n")):
+#      args.growth = False
+#
+#    spells = input("\nSpell learning randomization - ultra, default, none (u/D/n): ")
+#    if (spells.lower().startswith("u")):
+#      args.ultra_spells = True
+#    elif (spells.lower().startswith("n")):
+#      args.no_spells = False
+#
+#    zones = input("\nEnemy zone randomization - ultra, default, none (u/D/n): ")
+#    if (zones.lower().startswith("u")):
+#      args.ultra_zones = True
+#    elif (zones.lower().startswith("n")):
+#      args.no_zones = False
+#
+#    patterns = input("\nEnemy attack randomization - ultra, default, none (u/D/n): ")
+#    if (patterns.lower().startswith("u")):
+#      args.ultra_patterns = True
+#    elif (patterns.lower().startswith("n")):
+#      args.no_patterns = False
 
 
 def randomize(args):
@@ -1007,9 +1061,15 @@ def randomize(args):
   rom.update_title_screen(args.seed, flags)
   print("Buffing HEAL slightly...")
   print("Patching Northern Shrine...")
-  print("Fixing functionality of the fighter's ring (+2 atk)...")
+  print("Fixing functionality of the fighter's ring (+%d atk)..." %
+    Rom.ring_power)
   print("Adding a new throne room exit...")
   print("Bumping encounter rate for zone 0...")
+
+  if args.death_necklace:
+    rom.death_necklace()
+    print("Adding functionality for the death necklace (+10 STR, -25% HP)...")
+
   rom.commit()
   output_filename = "DWRando.%s.%d.%snes" % (flags, args.seed, prg)
   print("Writing output file %s..." % output_filename)

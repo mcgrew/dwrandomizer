@@ -540,6 +540,10 @@ class Rom:
               0x69, self.ring_power, # ADC #$??   ; add fighter's ring power.
               0x85, 0xcc,            # STA $00CC  ; store new attack power
         # ff8b:
+              0x4c, 0x54, 0xff       # JMP $FF54  ; jump to next section
+      ),
+      0xff64: (
+        # ff54:
               0xa5, 0xcf,            # LDA $00CF   ; replaces code removed from $F00E
               0x60,                  # RTS
       ),
@@ -554,7 +558,8 @@ class Rom:
       # Sets the encounter rate of Zone 0 to be the same as other zones.
       0xcecf: (0x4c, 0x04, 0xcf), # skip over the zone 0 code
       0xe270: 0, # set death necklace chance to 100%
-      0xdbd1: (23,), # buff the heal spell
+      0xe75d: 9, #buff the hurt spell
+      0xdbd1: 18, # buff the heal spell
       0xea51: (0xad, 0x07, 0x01, 0xea, 0xea),
     })
 
@@ -562,21 +567,9 @@ class Rom:
     """
     Adds functionality to the death necklace (+10 str and -25% HP).
     """
-    # This replaces the fighter's ring fix with new code ending with a jump
-    # which jumps to the death necklace code.
+    # This replaces the code the fighters ring code jumps to which adds the 
+    # death necklace functionality
     self.add_patches({
-      0xff8d: (
-        # ff7d:
-              0x85, 0xcd,            # STA $00CD  ; replaces code removed from $F00C
-              0xa5, 0xcf,            # LDA $00CF  ; load status bits
-              0x29, 0x20,            # AND #$20   ; check bit 6 (fighter's ring)
-              0xf0, 0x06,            # BEQ $FF8B 
-              0xa5, 0xcc,            # LDA $00CC  ; load attack power
-              0x69, self.ring_power, # ADC #$??   ; add fighter's ring power.
-              0x85, 0xcc,            # STA $00CC  ; store new attack power
-        # ff8b:
-              0x4c, 0x54, 0xff       # JMP $FF54  ; jump to next section
-      ),
       0xff64: (
         # ff54:
               0xa5, 0xcf,            # LDA $00CF  ; load status bits

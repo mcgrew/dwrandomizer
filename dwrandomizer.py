@@ -9,7 +9,7 @@ import math
 from worldmap import WorldMap,MapGrid
 import ips
 
-VERSION = "1.3-dev-2016-09-29"
+VERSION = "1.3-dev-2016-10-01"
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes
@@ -607,6 +607,64 @@ class Rom:
       ),
     })
 
+  def menu_wrap(self):
+    self.add_patches({ #implement up/down wraparound for the menu
+      0x69f0: (
+        # f059: 
+          0x4c, 0xa0, 0xbe,         # JMP $BEA0
+          0xea,                     # NOP
+      ),
+      0x6a33: (
+        # 6a23: 
+          0x4c, 0xd0, 0xbe,         #JMP #BED0
+          0xea,                     # NOP
+      ),
+      0x7eb0: (
+        # 7ea0:
+          0xad, 0xe5, 0x64,         # LDA $64E5 
+          0xc9, 0x04,               # CMP #$04
+          0xf0, 0x1e,               # BEQ  
+          0x20, 0x30, 0xab,         # JMP $AB30 
+          0xa5, 0xd9,               # LDA $00D9
+          0xd0, 0x14,               # BNE 
+          0xad, 0xe5, 0x64,         # LDA $64E5
+        # 7eb0:
+          0xe9, 0x03,               # SBC #$03
+          0x4a,                     # LSR
+          0xe9, 0x00,               # SBC #$00
+          0x85, 0xd9,               # STA $00D9 
+          0x0a,                     # ASL
+          0x6d, 0xf3, 0x64,         # ADC $64F3 
+          0x8d, 0xf3, 0x64,         # STA $64F3
+          0x4c, 0x27, 0xaa,         # JMP $AA27
+        # 7ec0: 
+          0x4c, 0xe4, 0xa9,         # JMP $A9E4
+          0x60                      # RTS
+      ),
+      0x7ee0: (
+        # 7ed0
+          0x48,                     # PHA
+          0xad, 0xe5, 0x64,         # LDA $64E5 
+          0xc9, 0x04,               # CMP #$04
+          0xf0, 0x20,               # BEQ  
+          0x20, 0x30, 0xab,         # JSR $AB30
+          0x68,                     # PLA
+          0xc5, 0xd9,               # CMP $00D9
+          0xd0, 0x15,               # BNE
+          0xa9, 0x01,               # LDA #$01
+          0x85, 0xd9,               # STA $00D9
+          0xad, 0xf3, 0x64,         # LDA $64F3
+          0x29, 0x01,               # AND #$01
+          0xd0, 0x02,               # BNE
+          0x69, 0x02,               # ADC #$02
+          0x69, 0x01,               # ADC #$01
+          0x8d, 0xf3, 0x64,         # STA $64F3
+          0x4c, 0xe4, 0xa9,         # JMP $A9E4
+          0x4c, 0x27, 0xaa,         # JMP $AA27
+          0x68,                     # PLA
+          0x60                      # RTS
+      )
+    })
 
   def speed_hacks(self):
     """

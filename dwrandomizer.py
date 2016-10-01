@@ -526,26 +526,38 @@ class Rom:
     self.chests = self.rom_data[self.chests_slice]
     self.title_screen_text = self.rom_data[self.title_text_slice]
     # patch format - address: (*data)
+    rp = self.ring_power
       # fighter's ring fix
     self.add_patches({
       # fighter's ring fix
       0xf10c: (0x20, 0x7d, 0xff, 0xea),
       0xff8d: (
         # ff7d:
-              0x85, 0xcd,            # STA $00CD  ; replaces code removed from $F00C
-              0xa5, 0xcf,            # LDA $00CF  ; load status bits
-              0x29, 0x20,            # AND #$20   ; check bit 6 (fighter's ring)
-              0xf0, 0x06,            # BEQ $FF8B 
-              0xa5, 0xcc,            # LDA $00CC  ; load attack power
-              0x69, self.ring_power, # ADC #$??   ; add fighter's ring power.
-              0x85, 0xcc,            # STA $00CC  ; store new attack power
+              0x85, 0xcd,      # STA $00CD  ; replaces code removed from $F00C
+              0xa5, 0xcf,      # LDA $00CF  ; load status bits
+              0x29, 0x20,      # AND #$20   ; check bit 6 (fighter's ring)
+              0xf0, 0x06,      # BEQ $FF8B 
+              0xa5, 0xcc,      # LDA $00CC  ; load attack power
+              0x69, rp,        # ADC #$??   ; add fighter's ring power.
+              0x85, 0xcc,      # STA $00CC  ; store new attack power
         # ff8b:
-              0x4c, 0x54, 0xff       # JMP $FF54  ; jump to next section
+              0x4c, 0x54, 0xff # JMP $FF54  ; jump to next section
       ),
       0xff64: (
         # ff54:
-              0xa5, 0xcf,            # LDA $00CF   ; replaces code removed from $F00E
-              0x60,                  # RTS
+              0xa5, 0xcf,      # LDA $00CF   ; replaces code removed from $F00E
+              0x60,            # RTS
+      ),
+
+      0xde33: ( #Changes the enemies summoned by the harp.
+        # de23:
+              0x29, 0x7,        # AND #$07    ; limit the random number to 0-7
+              0xaa,             # TAX         ; move the value to the X register
+              0xbd, 0x54, 0xf5, # LDA #F554,X ; load the monster from the zone table
+              0xea,             # NOP         ; fill in the rest with NOP
+              0xea,             # NOP         ; 
+              0xea,             # NOP         ; 
+              0xea,             # NOP         ; 
       ),
 
       0x43a: (0x47,), # add new stairs to the throne room

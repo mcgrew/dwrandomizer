@@ -83,7 +83,7 @@ level 16.
 
 ### Buffed HEAL
 
-The HEAL spell will now have a range from 10-25 instead of 10-17.
+The HEAL spell will now have a range from 17-25 instead of 10-17.
 
 ### Earlier REPEL
 
@@ -149,7 +149,7 @@ same randomized game.
                           that of the remake. This will make grind times much
                           longer.
     -c, -C, --no-chests   Do not randomize chest contents.
-    -d, -D, --defaults    Run the randomizer with the default options.
+    -d, -D, --death_necklace Enable Death Necklace functionality 
     --force               Skip checksums and force randomization. This may
                           produce an invalid ROM if the incorrect file is used.
     -i, -I, --no-searchitems
@@ -187,46 +187,3 @@ me get the Windows binary working.
 
 
 ###  -- Created by mcgrew
-usage: DWRandomizer [-h] [-r] [-c] [-d] [--force] [-i] [--ips] [-f] [-F] [-g]
-                    [-G] [-H] [-m] [-M] [--no-map] [-p] [-P] [-s SEED] [-t]
-                    [-w] [-u] [-z] [-Z] [-v]
-                    filename
-
-A randomizer for Dragon Warrior for NES
-
-positional arguments:
-  filename              The rom file to use for input
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -r, --no-remake       Do not set enemy HP, XP/Gold drops and MP use up to
-                        that of the remake. This will make grind times much
-                        longer.
-  -c, -C, --no-chests   Do not randomize chest contents.
-  -d, -D, --defaults    Run the randomizer with the default options.
-  --force               Skip checksums and force randomization. This may
-                        produce an invalid ROM if the incorrect file is used.
-  -i, -I, --no-searchitems
-                        Do not randomize the locations of searchable items
-                        (Fairy Flute, Erdrick's Armor, Erdrick's Token).
-  --ips                 Also create an IPS patch for the original ROM
-  -f, --fast-leveling   Set XP requirements for each level to 75% of normal.
-  -F, --very-fast-leveling
-                        Set XP requirements for each level to 50% of normal.
-  -g, --no-growth       Do not randomize player stat growth.
-  -G, --ultra-growth    Enable ultra randomization of player stat growth.
-  -H, --speed-hacks     Apply game speed hacks (experimental)
-  -m, --no-spells       Do not randomize the level spells are learned.
-  -M, --ultra-spells    Enable ultra randomization of the level spells are
-                        learned.
-  --no-map              Do not generate a new world map.
-  -p, --no-patterns     Do not randomize enemy attack patterns.
-  -P, --ultra-patterns  Enable ultra randomization of enemy attack patterns.
-  -s SEED, -S SEED, --seed SEED
-                        Specify a seed to be used for randomization.
-  -t, -T, --no-towns    Do not randomize towns.
-  -w, -W, --no-shops    Do not randomize weapon shops.
-  -u, -U, --ultra       Enable all 'ultra' options.
-  -z, --no-zones        Do not randomize enemy zones.
-  -Z, --ultra-zones     Enable ultra randomization of enemy zones.
-  -v, -V, --version     show program's version number and exit

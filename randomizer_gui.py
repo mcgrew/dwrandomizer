@@ -34,8 +34,12 @@ class RandomizerUI(Frame):
     self.spell_frame = UltraFrame(self, "Spell Learning", 's', 0, 5)
     self.attack_frame = UltraFrame(self, "Enemy Attack Patterns", 'p', 1, 3)
     self.zone_frame = UltraFrame(self, "Enemy Zone Randomization", 'z', 1, 4)
-    self.randomize_button = Button(self, text="Randomize!")
+    self.randomize_button = Button(self, text="Randomize!", command=self.execute)
     self.randomize_button.grid(column=1, row=6, sticky="E")
+    self.toggle_frame.from_flags(self.flags_frame.tk_flags.get())
+
+  def execute(self):
+    pass
 
 # ==============================================================================
 
@@ -133,17 +137,36 @@ class FlagsFrame(LabelFrame):
 class ToggleFrame(LabelFrame):
   def __init__(self, master=None):
     LabelFrame.__init__(self, master, text="Options")
+    self.map_var = IntVar()
+    self.towns_var = IntVar()
+    self.ips_var = IntVar()
+    self.chests_var = IntVar()
+    self.searchable_var = IntVar()
+    self.remake_var = IntVar()
+    self.speed_hacks_var = IntVar()
+    self.death_necklace_var = IntVar()
     self.createWidgets()
 
   def createWidgets(self):
-    self.map_button   =          Checkbutton(self, text="Generate A New Map")
-    self.towns_button =          Checkbutton(self, text="Randomize Towns")
-    self.ips_button   =          Checkbutton(self, text="Generate IPS Patch File")
-    self.chests_button =         Checkbutton(self, text="Shuffle Chests")
-    self.searchable_button =     Checkbutton(self, text="Shuffle Searchable Items")
-    self.remake_button =         Checkbutton(self, text="Use Remake Enemy Stats")
-    self.speed_hacks_button =    Checkbutton(self, text="Enable Speed Hacks (experimental)")
-    self.death_necklace_button = Checkbutton(self, text="Enable Death Necklace Funcionality")
+    self.map_button   = \
+      Checkbutton(self,text="Generate A New Map", variable=self.map_var)
+    self.towns_button = \
+      Checkbutton(self, text="Randomize Towns", variable=self.towns_var)
+    self.ips_button   = \
+      Checkbutton(self, text="Generate IPS Patch File", variable=self.ips_var)
+    self.chests_button = \
+      Checkbutton(self, text="Shuffle Chests", variable=self.chests_var)
+    self.searchable_button = \
+      Checkbutton(self, text="Shuffle Searchable Items", 
+          variable=self.searchable_var)
+    self.remake_button = \
+      Checkbutton(self, text="Use Remake Enemy Stats", variable=self.remake_var)
+    self.speed_hacks_button = \
+      Checkbutton(self, text="Enable Speed Hacks (experimental)", 
+          variable=self.speed_hacks_var)
+    self.death_necklace_button = \
+      Checkbutton(self, text="Enable Death Necklace Funcionality", 
+          variable=self.death_necklace_var)
     self.map_button.grid(           column=0, row=0, sticky="NSW")
     self.towns_button.grid(         column=0, row=1, sticky="NSW")
     self.ips_button.grid(           column=0, row=2, sticky="NSW")
@@ -154,10 +177,38 @@ class ToggleFrame(LabelFrame):
     self.death_necklace_button.grid(column=2, row=2, sticky="NSW")
 
   def from_flags(self, flags):
-    pass
+    if 'c' in flags.lower():
+      self.chests_var.set(1)
+    if 'd' in flags.lower():
+      self.death_necklace_var.set(1)
+    if 'H' in flags:
+      self.speed_hacks_var.set(1)
+    if 'i' in flags.lower():
+      self.searchable_var.set(1)
+    if 'm' in flags.lower():
+      self.map_var.set(1)
+    if 'r' in flags.lower():
+      self.remake_var.set(1)
+    if 't' in flags.lower():
+      self.towns_var.set(1)
+
 
   def flags(self):
-    return ''
+    flags = ''
+    if self.chests_var.get():
+      flags += 'C'
+    if self.death_necklace_var.get():
+      flags += 'D'
+    if self.speed_hacks_var.get():
+      flags += 'H'
+    if self.searchable_var.get():
+      flags += 'I'
+    if self.map_var.get():
+      flags += 'M'
+    if self.remake_var.get():
+      flags += 'R'
+    if self.towns_var.get():
+      flags += 'T'
   
 
 # ==============================================================================

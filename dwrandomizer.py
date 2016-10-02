@@ -884,7 +884,7 @@ def parse_args():
       help="Do not randomize the level spells are learned.")
   parser.add_argument("-M","--ultra-spells", action="store_true", 
       help="Enable ultra randomization of the level spells are learned.")
-  parser.add_argument("--no-map", action="store_false", 
+  parser.add_argument("--no-map", action="store_true", 
       help="Do not generate a new world map.")
   parser.add_argument("-p","--no-patterns", action="store_true", 
       help="Do not randomize enemy attack patterns.")

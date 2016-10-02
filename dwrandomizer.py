@@ -855,17 +855,17 @@ def inverted_power_curve(min_, max_, power, count=30):
 def parse_args():
   parser = argparse.ArgumentParser(prog="DWRandomizer",
       description="A randomizer for Dragon Warrior for NES")
-  parser.add_argument("-r","--no-remake", action="store_false",
-      help="Do not set enemy HP, XP/Gold drops and MP use up to that of the "
-           "remake. This will make grind times much longer.")
-  parser.add_argument("-c","-C","--no-chests", action="store_false",
+#  parser.add_argument("-r", "-R","--no-remake", action="store_false",
+#      help="Do not set enemy HP, XP/Gold drops and MP use up to that of the "
+#           "remake. This will make grind times much longer.")
+  parser.add_argument("-c","-C","--no-chests", action="store_true",
       help="Do not randomize chest contents.")
   parser.add_argument("-d","-D","--death-necklace", action="store_true",
       help="Enable Death Necklace functionality (+10 str -25%% HP)")
-  parser.add_argument("--force", action="store_false", 
+  parser.add_argument("--force", action="store_true", 
       help="Skip checksums and force randomization. This may produce an invalid"
            " ROM if the incorrect file is used.")
-  parser.add_argument("-i","-I","--no-searchitems", action="store_false", 
+  parser.add_argument("-i","-I","--no-searchitems", action="store_true", 
       help="Do not randomize the locations of searchable items (Fairy Flute, "
            "Erdrick's Armor, Erdrick's Token).")
   parser.add_argument("--ips", action="store_true", 
@@ -874,31 +874,31 @@ def parse_args():
       help="Set XP requirements for each level to 75%% of normal.")
   parser.add_argument("-F","--very-fast-leveling", action="store_true", 
       help="Set XP requirements for each level to 50%% of normal.")
-  parser.add_argument("-g","--no-growth", action="store_false", 
+  parser.add_argument("-g","--no-growth", action="store_true", 
       help="Do not randomize player stat growth.")
   parser.add_argument("-G","--ultra-growth", action="store_true", 
       help="Enable ultra randomization of player stat growth.")
   parser.add_argument("-H","--speed-hacks", action="store_true", 
       help="Apply game speed hacks (experimental)")
-  parser.add_argument("-m","--no-spells", action="store_false", 
+  parser.add_argument("-m","--no-spells", action="store_true", 
       help="Do not randomize the level spells are learned.")
   parser.add_argument("-M","--ultra-spells", action="store_true", 
       help="Enable ultra randomization of the level spells are learned.")
   parser.add_argument("--no-map", action="store_false", 
       help="Do not generate a new world map.")
-  parser.add_argument("-p","--no-patterns", action="store_false", 
+  parser.add_argument("-p","--no-patterns", action="store_true", 
       help="Do not randomize enemy attack patterns.")
   parser.add_argument("-P","--ultra-patterns", action="store_true", 
       help="Enable ultra randomization of enemy attack patterns.")
   parser.add_argument("-s","-S","--seed", type=int, 
       help="Specify a seed to be used for randomization.")
-  parser.add_argument("-t","-T","--no-towns", action="store_false", 
+  parser.add_argument("-t","-T","--no-towns", action="store_true", 
       help="Do not randomize towns.")
-  parser.add_argument("-w","-W","--no-shops", action="store_false", 
+  parser.add_argument("-w","-W","--no-shops", action="store_true", 
       help="Do not randomize weapon shops.")
   parser.add_argument("-u","-U","--ultra", action="store_true", 
       help="Enable all 'ultra' options.")
-  parser.add_argument("-z","--no-zones", action="store_false", 
+  parser.add_argument("-z","--no-zones", action="store_true", 
       help="Do not randomize enemy zones.")
   parser.add_argument("-Z","--ultra-zones", action="store_true", 
       help="Enable ultra randomization of enemy zones.")
@@ -1015,14 +1015,14 @@ def randomize(args):
   flags = ""
   prg = ""
 
-  if args.force:
+  if not args.force:
     print("Verifying checksum...")
     result = rom.verify_checksum()
     if result is False:
       print("Checksum does not match any known ROM.")
-      answer = input("Do you want to attempt to randomize anyway? ")
-      if not answer.lower().startswith("y"):
-        sys.exit(-1)
+#      answer = input("Do you want to attempt to randomize anyway? ")
+#      if not answer.lower().startswith("y"):
+#        sys.exit(-1)
     else:
       print("Processing Dragon Warrior PRG%d ROM..." % result)
       prg = "PRG%d." % result
@@ -1030,7 +1030,7 @@ def randomize(args):
   else:
     print("Skipping checksum...")
 
-  if args.no_map:
+  if not args.no_map:
     print("Generating new overworld map...")
     flags += "A"
     while not rom.generate_map():
@@ -1041,22 +1041,22 @@ def randomize(args):
     rom.speed_hacks()
     flags += "H"
 
-  if args.no_searchitems:
+  if not args.no_searchitems:
     print("Shuffling searchable item locations...")
     flags += "I"
     rom.shuffle_searchables()
 
-  if args.no_chests:
+  if not args.no_chests:
     print("Shuffling chest contents...")
     flags += "C"
     rom.shuffle_chests()
 
-  if args.no_towns:
+  if not args.no_towns:
     print("Shuffling town locations...")
     flags += "T"
     rom.shuffle_towns()
 
-  if args.no_zones:
+  if not args.no_zones:
     if args.ultra or args.ultra_zones:
       print("Ultra randomizing enemy zones...")
       flags += "Z"
@@ -1076,12 +1076,12 @@ def randomize(args):
       flags += "p"
       rom.randomize_attack_patterns()
 
-  if args.no_shops:
+  if not args.no_shops:
     print("Randomizing weapon shops...")
     flags += "W"
     rom.randomize_shops()
 
-  if args.no_growth:
+  if not args.no_growth:
     if args.ultra or args.ultra_growth:
       print("Ultra randomizing player stat growth...")
       flags += "G"
@@ -1110,7 +1110,7 @@ def randomize(args):
   print("Moving REPEL to level 8...")
   rom.move_repel()
 
-  if args.no_spells:
+  if not args.no_spells:
     if args.ultra or args.ultra_spells:
       print("Ultra randomizing level spells are learned...")
       flags += "M"
@@ -1131,9 +1131,16 @@ def randomize(args):
 
   if args.death_necklace:
     rom.death_necklace()
+    flags += 'D'
     print("Adding functionality for the death necklace (+10 STR, -25% HP)...")
 
   rom.commit()
+
+  # sort the flags alphabetically
+  flags = list(flags)
+  flags.sort()
+  flags = ''.join(flags)
+
   output_filename = "DWRando.%s.%d.%snes" % (flags, args.seed, prg)
   print("Writing output file %s..." % output_filename)
   rom.write(output_filename)

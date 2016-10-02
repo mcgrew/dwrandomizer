@@ -8,10 +8,12 @@ import os
 import os.path
 
 HOME=os.path.expanduser('~' + os.sep)
+FLAGS='ACDGHIMPTWZf'
 
 class RandomizerUI(Frame):
   def __init__(self, master=None):
     Frame.__init__(self, master)
+    self.update_lock = 0
     self.columnconfigure(0, weight=1)
     self.columnconfigure(1, weight=1)
     self.createWidgets()
@@ -27,19 +29,83 @@ class RandomizerUI(Frame):
     self.seed_frame.grid(column=1, row=0, sticky="NSEW")
     self.flags_frame = FlagsFrame(self)
     self.flags_frame.grid(column=1, row=1, sticky="NSEW")
+    self.flags_frame.trace(self.update_settings)
     self.toggle_frame = ToggleFrame(self)
     self.toggle_frame.grid(column=0, row=2, columnspan=2,sticky="NSEW")
+    self.toggle_frame.trace(self.update_flags)
     self.level_frame = LevelingFrame(self, "Leveling Speed", 'f', 0, 3)
-    self.growth_frame = UltraFrame(self, "Growth Type", 'g',  0, 4)
-    self.spell_frame = UltraFrame(self, "Spell Learning", 's', 0, 5)
-    self.attack_frame = UltraFrame(self, "Enemy Attack Patterns", 'p', 1, 3)
+    self.level_frame.trace(self.update_flags)
+    self.growth_frame = UltraFrame(self, "Growth Randomization", 'g',  0, 4)
+    self.growth_frame.trace(self.update_flags)
+    self.spell_frame = UltraFrame(self, "Spell Learning Randomization", 'm', 0, 5)
+    self.spell_frame.trace(self.update_flags)
+    self.attack_frame = UltraFrame(self, "Enemy Attack Pattern Randomization", 'p', 1, 3)
+    self.attack_frame.trace(self.update_flags)
     self.zone_frame = UltraFrame(self, "Enemy Zone Randomization", 'z', 1, 4)
+    self.zone_frame.trace(self.update_flags)
     self.randomize_button = Button(self, text="Randomize!", command=self.execute)
     self.randomize_button.grid(column=1, row=6, sticky="E")
-    self.toggle_frame.from_flags(self.flags_frame.tk_flags.get())
+    self.update_settings()
+
+  def update_settings(self, *args):
+    if self.update_lock:
+      return
+    self.update_lock = 1
+    flags = self.flags_frame.tk_flags.get()
+    self.toggle_frame.from_flags(flags)
+    self.level_frame.from_flags(flags)
+    self.growth_frame.from_flags(flags)
+    self.spell_frame.from_flags(flags)
+    self.attack_frame.from_flags(flags)
+    self.zone_frame.from_flags(flags)
+    self.update_lock = 0
+
+  def update_flags(self, *args):
+    if self.update_lock:
+      return
+    self.update_lock = 1
+    flags = ''
+    flags += self.toggle_frame.flags()
+    flags += self.level_frame.flags()
+    flags += self.growth_frame.flags()
+    flags += self.spell_frame.flags()
+    flags += self.attack_frame.flags()
+    flags += self.zone_frame.flags()
+
+		# sort the flags alphabetically
+    flags = list(flags)
+    flags.sort()
+    self.flags_frame.set(''.join(flags))
+    self.update_lock = 0
+    
 
   def execute(self):
-    pass
+    self.args.filename = self.rom_frame.get()
+#    self.args.output_dir = self.output_frame.get()
+    self.args.seed = self.seed_frame.get()
+    self.args.force = True
+    flags = self.toggle_frame.flags()
+    self.args.no_map = not 'A' in flags
+    self.args.speed_hacks = 'H' in flags
+    self.args.no_search_items = not 'I' in flags
+    self.args.no_chests = not 'C' in flags
+    self.args.no_towns = not 'T' in flags
+    self.args.no_shops = not 'W' in flags
+    self.args.death_necklace = not 'D' in flags
+
+    self.args.no_zones = self.zone_frame.get() == 'none'
+    self.args.ultra_zones = self.zone_frame.get() == 'ultra'
+    self.args.no_patterns = self.attack_frame.get() == 'none'
+    self.args.ultra_patterns = self.attack_frame.get() == 'ultra'
+    self.args.no_growth = self.growth_frame.get() == 'none'
+    self.args.ultra_growth = self.growth_frame.get() == 'ultra'
+    self.args.no_spells = self.spell_frame.get() == 'none'
+    self.args.ultra_spells = self.spell_frame.get() == 'ultra'
+    self.args.very_fast_leveling = ( self.level_frame.get() == 'ultra')
+    self.args.fast_leveling = ( self.level_frame.get() == 'normal')
+
+    dwrandomizer.randomize(self.args)
+
 
 # ==============================================================================
 
@@ -119,12 +185,15 @@ class SeedFrame(LabelFrame):
 class FlagsFrame(LabelFrame):
   def __init__(self, master=None):
     LabelFrame.__init__(self, master, text="Flags")
-    self.tk_flags = StringVar(value="AICTZPWGfM")
+    self.tk_flags = StringVar(value=FLAGS)
     self.createWidgets()
 
   def createWidgets(self):
     self.flag_entry = Entry(self, textvariable=self.tk_flags)
     self.flag_entry.grid(column=0, row=0, sticky="NSEW")
+
+  def trace(self, func):
+    self.tk_flags.trace('w', func)
 
   def set(self, flags):
     self.tk_flags.set(flags)
@@ -142,7 +211,7 @@ class ToggleFrame(LabelFrame):
     self.ips_var = IntVar()
     self.chests_var = IntVar()
     self.searchable_var = IntVar()
-    self.remake_var = IntVar()
+    self.shops_var = IntVar()
     self.speed_hacks_var = IntVar()
     self.death_necklace_var = IntVar()
     self.createWidgets()
@@ -152,6 +221,8 @@ class ToggleFrame(LabelFrame):
       Checkbutton(self,text="Generate A New Map", variable=self.map_var)
     self.towns_button = \
       Checkbutton(self, text="Randomize Towns", variable=self.towns_var)
+    self.shops_button = \
+      Checkbutton(self, text="Randomize Weapon Shops", variable=self.shops_var)
     self.ips_button   = \
       Checkbutton(self, text="Generate IPS Patch File", variable=self.ips_var)
     self.chests_button = \
@@ -159,8 +230,6 @@ class ToggleFrame(LabelFrame):
     self.searchable_button = \
       Checkbutton(self, text="Shuffle Searchable Items", 
           variable=self.searchable_var)
-    self.remake_button = \
-      Checkbutton(self, text="Use Remake Enemy Stats", variable=self.remake_var)
     self.speed_hacks_button = \
       Checkbutton(self, text="Enable Speed Hacks (experimental)", 
           variable=self.speed_hacks_var)
@@ -169,32 +238,56 @@ class ToggleFrame(LabelFrame):
           variable=self.death_necklace_var)
     self.map_button.grid(           column=0, row=0, sticky="NSW")
     self.towns_button.grid(         column=0, row=1, sticky="NSW")
-    self.ips_button.grid(           column=0, row=2, sticky="NSW")
+    self.shops_button.grid(        column=0, row=2, sticky="NSW")
     self.chests_button.grid(        column=1, row=0, sticky="NSW")
     self.searchable_button.grid(    column=1, row=1, sticky="NSW")
-    self.remake_button.grid(        column=2, row=0, sticky="NSW")
+    self.ips_button.grid(           column=1, row=2, sticky="NSW")
     self.speed_hacks_button.grid(   column=2, row=1, sticky="NSW")
     self.death_necklace_button.grid(column=2, row=2, sticky="NSW")
 
+  def trace(self, func):
+    self.map_var.trace('w', func) 
+    self.chests_var.trace('w', func) 
+    self.death_necklace_var.trace('w', func) 
+    self.speed_hacks_var.trace('w', func) 
+    self.searchable_var.trace('w', func) 
+    self.towns_var.trace('w', func) 
+
   def from_flags(self, flags):
+    if 'A' in flags:
+      self.map_var.set(1)
+    else:
+      self.map_var.set(0)
     if 'c' in flags.lower():
       self.chests_var.set(1)
+    else:
+      self.chests_var.set(0)
     if 'd' in flags.lower():
       self.death_necklace_var.set(1)
+    else:
+      self.death_necklace_var.set(0)
     if 'H' in flags:
       self.speed_hacks_var.set(1)
+    else:
+      self.speed_hacks_var.set(0)
     if 'i' in flags.lower():
       self.searchable_var.set(1)
-    if 'm' in flags.lower():
-      self.map_var.set(1)
-    if 'r' in flags.lower():
-      self.remake_var.set(1)
+    else:
+      self.searchable_var.set(0)
     if 't' in flags.lower():
       self.towns_var.set(1)
+    else:
+      self.towns_var.set(0)
+    if 'w' in flags.lower():
+      self.shops_var.set(1)
+    else:
+      self.shops_var.set(0)
 
 
   def flags(self):
     flags = ''
+    if self.map_var.get():
+      flags += 'A'
     if self.chests_var.get():
       flags += 'C'
     if self.death_necklace_var.get():
@@ -203,12 +296,11 @@ class ToggleFrame(LabelFrame):
       flags += 'H'
     if self.searchable_var.get():
       flags += 'I'
-    if self.map_var.get():
-      flags += 'M'
-    if self.remake_var.get():
-      flags += 'R'
     if self.towns_var.get():
       flags += 'T'
+    if self.shops_var.get():
+      flags += 'W'
+    return flags
   
 
 # ==============================================================================
@@ -230,6 +322,9 @@ class UltraFrame(LabelFrame):
     ultra = Radiobutton(self, text="Ultra Random", variable=self.variable, value="ultra")
     ultra.grid(column=2, row=0)
 
+  def trace(self, func):
+    self.variable.trace('w', func)
+
   def from_flags(self, flags):
     if flag.upper() in flags:
       self.set('ultra')
@@ -245,6 +340,13 @@ class UltraFrame(LabelFrame):
       return self.flag.lower()
     return ''
 
+  def from_flags(self, flags):
+    if self.flag.upper() in flags:
+      self.variable.set('ultra')
+    elif self.flag.lower() in flags:
+      self.variable.set('normal')
+    else:
+      self.variable.set('none')
 
   def set(self, value):
     self.variable.set(value)
@@ -257,21 +359,15 @@ class UltraFrame(LabelFrame):
 class LevelingFrame(UltraFrame):
   def __init__(self, master=None, text='Label', flag='', col=0, row=0):
     UltraFrame.__init__(self, master, text, flag, col, row)
+    self.variable.set('normal')
 
   def createWidgets(self):
-    none = Radiobutton(self, text="Normal", variable=self.variable, value="normal")
+    none = Radiobutton(self, text="Normal", variable=self.variable, value="none")
     none.grid(column=0, row=0)
-    normal = Radiobutton(self, text="Fast", variable=self.variable, value="fast")
+    normal = Radiobutton(self, text="Fast", variable=self.variable, value="normal")
     normal.grid(column=1, row=0)
-    ultra = Radiobutton(self, text="Very Fast", variable=self.variable, value="veryfast")
+    ultra = Radiobutton(self, text="Very Fast", variable=self.variable, value="ultra")
     ultra.grid(column=2, row=0)
-
-  def flags(self):
-    if self.get() == 'veryfast':
-      return self.flag.upper()
-    if self.get() == 'fast':
-      return self.flag.lower()
-    return ''
 
 # ==============================================================================
 

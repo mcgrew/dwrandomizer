@@ -6,9 +6,17 @@ import dwrandomizer
 import random
 import os
 import os.path
+from contextlib import redirect_stdout
 
 HOME=os.path.expanduser('~' + os.sep)
 FLAGS='ACDGHIMPTWZf'
+
+class Logger(Text):
+  def __init__(self, master):
+    Text.__init__(self, master)
+  
+  def write(self, s):
+    self.insert(END, s)
 
 class RandomizerUI(Frame):
   def __init__(self, master=None):
@@ -44,7 +52,8 @@ class RandomizerUI(Frame):
     self.zone_frame = UltraFrame(self, "Enemy Zone Randomization", 'z', 1, 4)
     self.zone_frame.trace(self.update_flags)
     self.randomize_button = Button(self, text="Randomize!", command=self.execute)
-    self.randomize_button.grid(column=1, row=6, sticky="E")
+    self.randomize_button.grid(column=1, row=5, sticky="E")
+    self.logger = Logger(self)
     self.update_settings()
 
   def update_settings(self, *args):
@@ -103,8 +112,11 @@ class RandomizerUI(Frame):
     self.args.ultra_spells = self.spell_frame.get() == 'ultra'
     self.args.very_fast_leveling = ( self.level_frame.get() == 'ultra')
     self.args.fast_leveling = ( self.level_frame.get() == 'normal')
-
-    dwrandomizer.randomize(self.args)
+    
+    self.logger.grid(column=0, row=6, columnspan=2)
+    self.logger.delete('1.0', END)
+    with redirect_stdout(self.logger):
+      dwrandomizer.randomize(self.args)
 
 
 # ==============================================================================

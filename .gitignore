@@ -1,5 +1,8 @@
 *.nes
 *.zip
 map.html
+report.py
+.idea
+sdcard
 dist
 __pycache__

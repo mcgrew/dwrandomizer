@@ -24,7 +24,8 @@ class Rom:
   # alphabet - 0x5f is breaking space, 60 is non-breaking (I think)
   alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" + \
              "__'______.,-_?!_)(_______________  "
-  ring_power = 4
+  # Attack power modification for the fighter's ring
+  ring_power = 2
   # Slices for various data. Offsets include iNES header.
   token_dialogue_slice = slice(0xa238, 0xa299)
   will_not_work_slice = slice(0xad95, 0xadad)
@@ -1122,7 +1123,7 @@ def randomize(args):
 
   print("Updating title screen...")
   rom.update_title_screen(args.seed, flags)
-  print("Buffing HEAL slightly...")
+  print("Buffing HEAL and HURT slightly...")
   print("Patching Northern Shrine...")
   print("Fixing functionality of the fighter's ring (+%d atk)..." %
     Rom.ring_power)

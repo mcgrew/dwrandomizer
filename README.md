@@ -166,6 +166,8 @@ same randomized game.
     -M, --ultra-spells    Enable ultra randomization of the level spells are
                           learned.
     --no-map              Do not generate a new world map.
+    -o OUTPUT_DIR, --output-dir OUTPUT_DIR
+                          The directory where the randomized ROM will be written
     -p, --no-patterns     Do not randomize enemy attack patterns.
     -P, --ultra-patterns  Enable ultra randomization of enemy attack patterns.
     -s SEED, -S SEED, --seed SEED

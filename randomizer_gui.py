@@ -106,7 +106,7 @@ class RandomizerUI(Frame):
 
   def execute(self):
     self.args.filename = self.rom_frame.get()
-#    self.args.output_dir = self.output_frame.get()
+    self.args.output_dir = self.output_frame.get()
     self.args.seed = self.seed_frame.get()
     self.args.force = True
     flags = self.toggle_frame.flags()
@@ -209,9 +209,6 @@ class OutputFrame(LabelFrame):
     self.initial_dir = initial_dir
     self.tk_dirname = StringVar()
     self.createWidgets()
-    # temporary
-    self.dir_name_entry.config(state='disabled')
-    self.dir_open_button.config(state='disabled')
 
   def createWidgets(self):
     self.dir_name_entry = Entry(self, textvariable=self.tk_dirname)

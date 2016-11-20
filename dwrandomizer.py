@@ -8,6 +8,7 @@ import struct
 import math
 from worldmap import WorldMap,MapGrid
 import ips
+from os import sep as os_sep
 
 VERSION = "1.3-dev-2016-11-19"
 #sha1sums of various roms
@@ -836,12 +837,11 @@ class Rom:
         The name of the new file
     """
     print("Writing output file %s..." % output_filename)
-    outputfile = open(output_filename, 'wb')
-    if content:
-      outputfile.write(content)
-    else:
-      outputfile.write(self.rom_data)
-    outputfile.close()
+    with open(output_filename, 'wb') as outputfile:
+      if content:
+        outputfile.write(content)
+      else:
+        outputfile.write(self.rom_data)
 
   def update_title_screen(self, seed, flags):
     """
@@ -928,6 +928,8 @@ def parse_args():
       help="Enable ultra randomization of the level spells are learned.")
   parser.add_argument("--no-map", action="store_true", 
       help="Do not generate a new world map.")
+  parser.add_argument("-o","--output-dir", type=str, default="",
+      help="The directory where the randomized ROM will be written")
   parser.add_argument("-p","--no-patterns", action="store_true", 
       help="Do not randomize enemy attack patterns.")
   parser.add_argument("-P","--ultra-patterns", action="store_true", 
@@ -1151,10 +1153,14 @@ def randomize(args):
   flags.sort()
   flags = ''.join(flags)
 
-  output_filename = "DWRando.%s.%d.%snes" % (flags, args.seed, prg)
+  if args.output_dir and not args.output_dir.endswith(os_sep):
+    args.output_dir += os_sep
+  output_filename = "%sDWRando.%s.%d.%snes" % (args.output_dir, 
+      flags, args.seed, prg)
   rom.write(output_filename)
   if args.ips:
-    output_filename = "DWRando.%s.%d.%sips" % (flags, args.seed, prg)
+    output_filename = "%sDWRando.%s.%d.%sips" % (args.output_dir, 
+        flags, args.seed, prg)
     rom.write(output_filename, rom.patch.encode())
   print ("New ROM Checksum: %s" % rom.sha1())
   print ("IPS Checksum: %s" % rom.sha1(rom.patch.encode()))

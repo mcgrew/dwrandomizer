@@ -309,13 +309,13 @@ class ToggleFrame(LabelFrame):
       Checkbutton(self, text="Shuffle Searchable Items", 
           variable=self.searchable_var)
     self.speed_hacks_button = \
-      Checkbutton(self, text="Enable Speed Hacks (experimental)", 
+      Checkbutton(self, text="Enable Speed Hacks", 
           variable=self.speed_hacks_var)
     self.death_necklace_button = \
-      Checkbutton(self, text="Enable Death Necklace Funcionality", 
+      Checkbutton(self, text="Enable Death Necklace Funcionality (experimental)", 
           variable=self.death_necklace_var)
     self.ips_copy_button   = \
-      Checkbutton(self, text="Copy Checksum to Clipboard", variable=self.ips_copy_var)
+      Checkbutton(self, text="Copy IPS Checksum to Clipboard", variable=self.ips_copy_var)
     self.map_button.grid(           column=0, row=0, sticky="NSW")
     self.towns_button.grid(         column=0, row=1, sticky="NSW")
     self.shops_button.grid(        column=0, row=2, sticky="NSW")

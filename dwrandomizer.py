@@ -9,7 +9,7 @@ import math
 from worldmap import WorldMap,MapGrid
 import ips
 
-VERSION = "1.3-dev-2016-10-01"
+VERSION = "1.3-dev-2016-11-19"
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes
@@ -114,6 +114,7 @@ class Rom:
     Shuffles the contents of all chests in the game. Checks are used to ensure no
     quest items are located in Charlock chests.
     """
+    print("Shuffling chest contents...")
     chest_contents = self.chests[3::4]
     staff_index = chest_contents.index(0x10)
     chest_contents.remove(0x10) # don't shuffle the staff
@@ -182,6 +183,10 @@ class Rom:
       ultra : bool
         Whether or not to apply ultra randomization
     """
+    if ultra:
+      print("Ultra randomizing enemy attack patterns...")
+    else:
+      print("Randomizing enemy attack patterns...")
     new_patterns = [] # attack patterns
     new_ss_resist = self.enemy_stats[4::16] 
     for i in range(38):
@@ -215,6 +220,7 @@ class Rom:
     """
     Shuffles the locations of towns on the map.
     """
+    print("Shuffling town locations...")
     self.owmap.shuffle_warps()
 
   def generate_map(self):
@@ -254,6 +260,10 @@ class Rom:
       ultra : bool
         Whether or not to apply ultra randomization
     """
+    if ultra:
+      print("Ultra randomizing enemy zones...")
+    else:
+      print("Randomizing enemy zones...")
     new_zones = list()
     if ultra:
       # randomize zone locations
@@ -319,6 +329,7 @@ class Rom:
     """
     Randomizes the items available in each weapon shop
     """
+    print("Randomizing weapon shops...")
     weapons = (0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 14, 15, 16)
     new_shop_inv = []
     # add 5 items to each shop
@@ -349,6 +360,7 @@ class Rom:
     """
     Shuffles the 3 searchable items in the game. (E.Armor, F.Flute, E.Token)
     """
+    print("Shuffling searchable item locations...")
     # move the token, then shuffle
     tantegel = self.owmap.warps_from[self.owmap.tantegel_warp][1:3]
     grid = MapGrid(self.owmap.grid)
@@ -369,6 +381,10 @@ class Rom:
       ultra : bool
         Whether or not to apply ultra randomization.
     """
+    if ultra:
+      print("Ultra randomizing player stat growth...")
+    else:
+      print("Randomizing player stat growth...")
     
     player_str = list(self.player_stats[0:180:6])
     player_agi = list(self.player_stats[1:180:6])
@@ -409,6 +425,10 @@ class Rom:
       ultra : bool
         Whether or not to use ultra randomization.
     """
+    if ultra:
+      print("Ultra randomizing level spells are learned...")
+    else:
+      print("Randomizing level spells are learned...")
     self.move_repel() # in case this hasn't been called yet.
     # choose the levels for new spells
     if ultra:
@@ -450,6 +470,7 @@ class Rom:
     """
     Raises enemy XP and gold drops to those of the remakes.
     """
+    print("Increasing XP/Gold drops to remake levels...")
     remake_xp = [  1,  2,  3,  4,  8, 12, 16, 14, 15, 18, 20, 25, 28, 
                   31, 40, 42,255, 47, 52, 58, 58, 64, 70, 72,255,  6, 
                   78, 83, 90, 95,135,105,120,130,180,155,172,255,  0,  0]
@@ -464,6 +485,7 @@ class Rom:
     """
     Lowers the MP requirements of spells to that of the remake
     """
+    print("Lowering MP requirements to remake levels...")
     #magic required for each spell, in order
     self.mp_reqs = [3, 2, 2, 2, 2, 6, 8, 2, 8, 5]
 #    if ultra:
@@ -474,6 +496,9 @@ class Rom:
     """
     Lowers the XP requirements for a faster game.
     """
+    percent = 50 if ultra else 75
+    print("Setting XP requirements for levels to %d%% of normal..." % percent)
+
     xp = struct.unpack( "<HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH", self.xp_reqs )
     if ultra:
       xp = [round(x * 0.5) for x in xp]
@@ -485,6 +510,7 @@ class Rom:
     """
     Updates HP of enemies to that of the remake, where possible.
     """
+    print("Setting enemy HP to remake levels...")
     #dragonlord hp should be 204 and 350, but we want him beatable at lv 18
     remake_hp = [  2,  3,  5,  7, 12, 13, 13, 22, 26, 35, 16, 24, 28, 
                   18, 33, 39,  3, 48, 37, 35, 44, 37, 40, 40,153,110, 
@@ -496,9 +522,13 @@ class Rom:
   def move_repel(self):
     """
     Moves the repel spell to level 8
+
+    :param quiet: Whether or not to print the status message to stdout
     """
-    self.new_spell_levels[7] = 8
-    self.update_spell_masks()
+    if not self.new_spell_levels[7] == 8:
+      print("Moving REPEL to level 8...")
+      self.new_spell_levels[7] = 8
+      self.update_spell_masks()
 
   def revert(self):
     """
@@ -526,6 +556,13 @@ class Rom:
     self.new_spell_levels = self.rom_data[self.new_spell_slice]
     self.chests = self.rom_data[self.chests_slice]
     self.title_screen_text = self.rom_data[self.title_text_slice]
+    
+    print("Buffing HEAL and HURT slightly...")
+    print("Fixing functionality of the fighter's ring (+%d atk)..." 
+        % Rom.ring_power)
+    print("Adding a new throne room exit...")
+    print("Bumping encounter rate for zone 0...")
+
     # patch format - address: (*data)
     rp = self.ring_power
       # fighter's ring fix
@@ -582,6 +619,7 @@ class Rom:
     """
     # This replaces the code the fighters ring code jumps to which adds the 
     # death necklace functionality
+    print("Adding functionality for the death necklace (+10 STR, -25% HP)...")
     self.add_patches({
       0xff64: (
         # ff54:
@@ -671,6 +709,7 @@ class Rom:
     """
     Adds some hacks to speed up the game play
     """
+    print("Applying game speed hacks...")
     self.add_patches({
       # Following are some speed hacks from @gameboy9
       # speed up the text
@@ -796,6 +835,7 @@ class Rom:
       output_filename : string
         The name of the new file
     """
+    print("Writing output file %s..." % output_filename)
     outputfile = open(output_filename, 'wb')
     if content:
       outputfile.write(content)
@@ -813,6 +853,7 @@ class Rom:
       flags: str
         The flags used to generate this ROM.
     """
+    print("Updating title screen...")
     # There are no lower case characters in the title screen alphabet :(
     # I'm not sure how to deal with this yet wrt flags.
     padding = lambda s: struct.pack('BBB', 0xf7, s, 0x5f)
@@ -1003,12 +1044,10 @@ def main():
 #    elif (patterns.lower().startswith("n")):
 #      args.no_patterns = False
 
-
 def randomize(args):
 
-  rom = Rom(args.filename)
-
   print("\n\nDWRandomizer %s" % VERSION)
+
   if not args.seed:
     args.seed = random.randint(0, sys.maxsize)
   print("Randomizing %s using random seed %d..." % (args.filename, args.seed))
@@ -1016,21 +1055,18 @@ def randomize(args):
   flags = ""
   prg = ""
 
-  if not args.force:
-    print("Verifying checksum...")
-    result = rom.verify_checksum()
-    if result is False:
-      print("Checksum does not match any known ROM.")
-#      answer = input("Do you want to attempt to randomize anyway? ")
-#      if not answer.lower().startswith("y"):
-#        sys.exit(-1)
-    else:
-      print("Processing Dragon Warrior PRG%d ROM..." % result)
-      prg = "PRG%d." % result
-      
-  else:
-    print("Skipping checksum...")
+  rom = Rom(args.filename)
 
+
+  print("Verifying checksum...")
+  result = rom.verify_checksum()
+  if result is False:
+    print("Checksum does not match any known ROM.")
+    print("THE RANDOMIZED ROM MAY NOT WORK AND MAY NOT BE VALID FOR RACING!")
+  else:
+    print("Processing Dragon Warrior PRG%d ROM..." % result)
+    prg = "PRG%d." % result
+      
   if not args.no_map:
     print("Generating new overworld map...")
     flags += "A"
@@ -1038,102 +1074,75 @@ def randomize(args):
       print("Error: " + str(rom.owmap.error) + ", retrying...")
 
   if args.speed_hacks:
-    print("Applying game speed hacks...")
     rom.speed_hacks()
     flags += "H"
 
   if not args.no_searchitems:
-    print("Shuffling searchable item locations...")
     flags += "I"
     rom.shuffle_searchables()
 
   if not args.no_chests:
-    print("Shuffling chest contents...")
     flags += "C"
     rom.shuffle_chests()
 
   if not args.no_towns:
-    print("Shuffling town locations...")
     flags += "T"
     rom.shuffle_towns()
 
   if not args.no_zones:
     if args.ultra or args.ultra_zones:
-      print("Ultra randomizing enemy zones...")
       flags += "Z"
       rom.randomize_zones(True)
     else:
-      print("Randomizing enemy zones...")
       flags += "z"
       rom.randomize_zones()
 
   if args.no_patterns:
     if args.ultra or args.ultra_patterns:
-      print("Ultra randomizing enemy attack patterns...")
       flags += "P"
       rom.randomize_attack_patterns(True)
     else:
-      print("Randomizing enemy attack patterns...")
       flags += "p"
       rom.randomize_attack_patterns()
 
   if not args.no_shops:
-    print("Randomizing weapon shops...")
     flags += "W"
     rom.randomize_shops()
 
   if not args.no_growth:
     if args.ultra or args.ultra_growth:
-      print("Ultra randomizing player stat growth...")
       flags += "G"
       rom.randomize_growth(True)
     else:
-      print("Randomizing player stat growth...")
       flags += "g"
       rom.randomize_growth()
 
-  print("Increasing XP/Gold drops to remake levels...")
   rom.update_drops()
-  print("Setting enemy HP to remake levels...")
   rom.update_enemy_hp()
-  print("Lowering MP requirements to remake levels...")
   rom.update_mp_reqs()
 
   if args.very_fast_leveling:
-    print("Setting XP requirements for levels to 50% of normal...")
     flags += "F"
     rom.lower_xp_reqs(True)
   elif args.fast_leveling:
-    print("Setting XP requirements for levels to 75% of normal...")
     flags += "f"
     rom.lower_xp_reqs()
 
-  print("Moving REPEL to level 8...")
   rom.move_repel()
 
   if not args.no_spells:
     if args.ultra or args.ultra_spells:
-      print("Ultra randomizing level spells are learned...")
       flags += "M"
       rom.randomize_spell_learning(True)
     else:
-      print("Randomizing level spells are learned...")
       flags += "m"
       rom.randomize_spell_learning()
 
-  print("Updating title screen...")
   rom.update_title_screen(args.seed, flags)
-  print("Buffing HEAL and HURT slightly...")
-  print("Patching Northern Shrine...")
-  print("Fixing functionality of the fighter's ring (+%d atk)..." %
-    Rom.ring_power)
-  print("Adding a new throne room exit...")
-  print("Bumping encounter rate for zone 0...")
 
   if args.death_necklace:
     rom.death_necklace()
     flags += 'D'
-    print("Adding functionality for the death necklace (+10 STR, -25% HP)...")
 
   rom.commit()
 
@@ -1143,11 +1152,9 @@ def randomize(args):
   flags = ''.join(flags)
 
   output_filename = "DWRando.%s.%d.%snes" % (flags, args.seed, prg)
-  print("Writing output file %s..." % output_filename)
   rom.write(output_filename)
   if args.ips:
     output_filename = "DWRando.%s.%d.%sips" % (flags, args.seed, prg)
-    print("Writing output file %s..." % output_filename)
     rom.write(output_filename, rom.patch.encode())
   print ("New ROM Checksum: %s" % rom.sha1())
   print ("IPS Checksum: %s" % rom.sha1(rom.patch.encode()))

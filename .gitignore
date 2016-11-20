@@ -1,4 +1,5 @@
 *.nes
+*.ips
 *.zip
 map.html
 report.py

@@ -6,17 +6,25 @@ import dwrandomizer
 import random
 import os
 import os.path
+import json
+from threading import Thread
 from contextlib import redirect_stdout
 
 HOME=os.path.expanduser('~' + os.sep)
-FLAGS='ACDGHIMPTWZf'
+FLAGS='ACGHIMPTWZf'
 
 class Logger(Text):
   def __init__(self, master):
     Text.__init__(self, master)
   
   def write(self, s):
+    if s.startswith("IPS Checksum:") and self.master.toggle_frame.ips_copy_var.get():
+      self.clipboard_clear()
+      self.clipboard_append(s.strip(), type='STRING')
+      s += " (copied to clipboard)"
     self.insert(END, s)
+
+# ==============================================================================
 
 class RandomizerUI(Frame):
   def __init__(self, master=None):
@@ -25,8 +33,16 @@ class RandomizerUI(Frame):
     self.columnconfigure(0, weight=1)
     self.columnconfigure(1, weight=1)
     self.createWidgets()
-    self.grid()
+    self.grid(sticky="NSEW")
     self.args = dwrandomizer.parse_args()
+    self.load_config()
+    self.winfo_toplevel().bind("<Configure>", self.resize)
+    self.winfo_toplevel().protocol("WM_DELETE_WINDOW", self.quit)
+
+  def resize(self, event):
+    if event.widget == self.master:
+      self.master.columnconfigure(0, minsize=event.width)
+      self.master.rowconfigure(0, minsize=event.height)
 
   def createWidgets(self):
     self.rom_frame = RomFrame(self)
@@ -100,7 +116,8 @@ class RandomizerUI(Frame):
     self.args.no_chests = not 'C' in flags
     self.args.no_towns = not 'T' in flags
     self.args.no_shops = not 'W' in flags
-    self.args.death_necklace = not 'D' in flags
+    self.args.death_necklace = 'D' in flags
+    self.args.ips = bool(self.toggle_frame.ips_var.get())
 
     self.args.no_zones = self.zone_frame.get() == 'none'
     self.args.ultra_zones = self.zone_frame.get() == 'ultra'
@@ -112,11 +129,48 @@ class RandomizerUI(Frame):
     self.args.ultra_spells = self.spell_frame.get() == 'ultra'
     self.args.very_fast_leveling = ( self.level_frame.get() == 'ultra')
     self.args.fast_leveling = ( self.level_frame.get() == 'normal')
-    
-    self.logger.grid(column=0, row=6, columnspan=2)
+
+    self.logger.grid(column=0, row=6, columnspan=2, sticky='NSEW')
+    self.rowconfigure(6, weight=1)
     self.logger.delete('1.0', END)
+
     with redirect_stdout(self.logger):
+      self.save_config()
       dwrandomizer.randomize(self.args)
+
+  def quit(self):
+    self.save_config()
+    self.winfo_toplevel().destroy()
+
+  def save_config(self):
+    self.configuration = {'flags': self.flags_frame.get(), 
+        'ips': bool(self.toggle_frame.ips_var.get()),
+        'ips_copy': bool(self.toggle_frame.ips_copy_var.get()),
+        'geometry': self.master.geometry(),
+        'rom': self.rom_frame.get(), 'output': self.output_frame.get()
+      }
+    try:
+      if not os.path.exists(HOME + ".config/"):
+        os.makedirs(HOME + ".config/")
+      with open(HOME + ".config/dwrandomizer.conf", 'w') as cfgfile:
+        json.dump(self.configuration, cfgfile)
+    except OSError:
+      print("Unable to save configuration.")
+
+  def load_config(self):
+    if os.path.exists(HOME + ".config/dwrandomizer.conf"):
+      try:
+        with open(HOME + ".config/dwrandomizer.conf", 'r') as cfgfile:
+          self.configuration = json.load(cfgfile)
+        cfg = self.configuration
+        if 'flags'    in cfg: self.flags_frame.set(cfg['flags'])
+        if 'ips'      in cfg: self.toggle_frame.ips_var.set(int(cfg['ips']))
+        if 'ips_copy' in cfg: self.toggle_frame.ips_copy_var.set(int(cfg['ips_copy']))
+        if 'geometry' in cfg: self.master.geometry(cfg['geometry'])
+        if 'rom'      in cfg: self.rom_frame.set(cfg['rom'])
+        if 'output'   in cfg: self.output_frame.set(cfg['output'])
+      except OSError:
+        print("Unable to load configuration.")
 
 
 # ==============================================================================
@@ -132,6 +186,8 @@ class RomFrame(LabelFrame):
     self.file_open_button = Button(self, text="Choose", command=self.choose_file)
     self.file_name_entry.grid(column=0, row=0, sticky="NSEW")
     self.file_open_button.grid(column=1, row=0, sticky="E")
+    self.columnconfigure(0, weight=1)
+    self.columnconfigure(1, weight=0)
 
   def choose_file(self):
     self.set(filedialog.askopenfilename(defaultextension='.nes', 
@@ -153,12 +209,17 @@ class OutputFrame(LabelFrame):
     self.initial_dir = initial_dir
     self.tk_dirname = StringVar()
     self.createWidgets()
+    # temporary
+    self.dir_name_entry.config(state='disabled')
+    self.dir_open_button.config(state='disabled')
 
   def createWidgets(self):
     self.dir_name_entry = Entry(self, textvariable=self.tk_dirname)
     self.dir_open_button = Button(self, text="Choose", command=self.choose_dir)
     self.dir_name_entry.grid(column=0, row=0, sticky="NSEW")
     self.dir_open_button.grid(column=1, row=0, sticky="E")
+    self.columnconfigure(0, weight=1)
+    self.columnconfigure(1, weight=0)
 
   def choose_dir(self):
     self.set(filedialog.askdirectory(initialdir=self.initial_dir))
@@ -179,9 +240,11 @@ class SeedFrame(LabelFrame):
 
   def createWidgets(self):
     self.seed_entry = Entry(self, textvariable=self.tk_seed)
-    self.seed_entry.grid(column=0, row=0)
+    self.seed_entry.grid(column=0, row=0, sticky="NSEW")
     self.random_button = Button(self, text="Random", command=self.random_seed)
     self.random_button.grid(column=1, row=0, sticky="E")
+    self.columnconfigure(0, weight=1)
+    self.columnconfigure(1, weight=0)
 
   def random_seed(self):
     self.set(random.randint(0,sys.maxsize))
@@ -203,6 +266,8 @@ class FlagsFrame(LabelFrame):
   def createWidgets(self):
     self.flag_entry = Entry(self, textvariable=self.tk_flags)
     self.flag_entry.grid(column=0, row=0, sticky="NSEW")
+    self.columnconfigure(0, weight=1)
+
 
   def trace(self, func):
     self.tk_flags.trace('w', func)
@@ -226,6 +291,7 @@ class ToggleFrame(LabelFrame):
     self.shops_var = IntVar()
     self.speed_hacks_var = IntVar()
     self.death_necklace_var = IntVar()
+    self.ips_copy_var = IntVar()
     self.createWidgets()
 
   def createWidgets(self):
@@ -248,14 +314,20 @@ class ToggleFrame(LabelFrame):
     self.death_necklace_button = \
       Checkbutton(self, text="Enable Death Necklace Funcionality", 
           variable=self.death_necklace_var)
+    self.ips_copy_button   = \
+      Checkbutton(self, text="Copy Checksum to Clipboard", variable=self.ips_copy_var)
     self.map_button.grid(           column=0, row=0, sticky="NSW")
     self.towns_button.grid(         column=0, row=1, sticky="NSW")
     self.shops_button.grid(        column=0, row=2, sticky="NSW")
     self.chests_button.grid(        column=1, row=0, sticky="NSW")
     self.searchable_button.grid(    column=1, row=1, sticky="NSW")
     self.ips_button.grid(           column=1, row=2, sticky="NSW")
+    self.death_necklace_button.grid(column=2, row=0, sticky="NSW")
     self.speed_hacks_button.grid(   column=2, row=1, sticky="NSW")
-    self.death_necklace_button.grid(column=2, row=2, sticky="NSW")
+    self.ips_copy_button.grid(      column=2, row=2, sticky="NSW")
+    self.columnconfigure(0, weight=1)
+    self.columnconfigure(1, weight=1)
+    self.columnconfigure(2, weight=1)
 
   def trace(self, func):
     self.map_var.trace('w', func) 
@@ -263,6 +335,7 @@ class ToggleFrame(LabelFrame):
     self.death_necklace_var.trace('w', func) 
     self.speed_hacks_var.trace('w', func) 
     self.searchable_var.trace('w', func) 
+    self.shops_var.trace('w', func) 
     self.towns_var.trace('w', func) 
 
   def from_flags(self, flags):
@@ -333,6 +406,9 @@ class UltraFrame(LabelFrame):
     normal.grid(column=1, row=0)
     ultra = Radiobutton(self, text="Ultra Random", variable=self.variable, value="ultra")
     ultra.grid(column=2, row=0)
+    self.columnconfigure(0, weight=1)
+    self.columnconfigure(1, weight=1)
+    self.columnconfigure(2, weight=1)
 
   def trace(self, func):
     self.variable.trace('w', func)

@@ -926,7 +926,7 @@ def parse_args():
 #      help="Do not set enemy HP, XP/Gold drops and MP use up to that of the "
 #           "remake. This will make grind times much longer.")
   parser.add_argument("-e", "-E", "--escalator", action="store_true",
-      help="Automatically go up and down stairs.")
+      help="Automatically go up and down stairs (VERY EXPERIMENTAL).")
   parser.add_argument("-c","-C","--no-chests", action="store_true",
       help="Do not randomize chest contents.")
   parser.add_argument("-d","-D","--death-necklace", action="store_true",

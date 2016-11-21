@@ -117,8 +117,6 @@ class Rom:
     """
     print("Shuffling chest contents...")
     chest_contents = self.chests[3::4]
-    staff_index = chest_contents.index(0x10)
-    chest_contents.remove(0x10) # don't shuffle the staff
     for i in range(len(chest_contents)):
       # change all gold to large gold stash
       if (chest_contents[i] >= 18 and chest_contents[i] <= 20):
@@ -131,8 +129,10 @@ class Rom:
         else:
           chest_contents[i] = 3 # else put in a key.
 
-
+    staff_index = chest_contents.index(0x10)
+    chest_contents.remove(0x10) # don't shuffle the staff
     random.shuffle(chest_contents)
+    chest_contents.insert(staff_index, 0x10) # put the staff back in the array
 
     # make sure required quest items aren't in Charlock
     charlock_chests = chest_contents[11:17] + chest_contents[-7:-6]
@@ -159,7 +159,6 @@ class Rom:
           chest_contents[j], chest_contents[i] = chest_contents[i], chest_contents[j]
           break
 
-    chest_contents.insert(staff_index, 0x10) # put the staff back in the array
     self.chests[3::4] = chest_contents
 
   def non_charlock_chest(self):

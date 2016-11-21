@@ -1099,7 +1099,7 @@ def randomize(args):
       flags += "z"
       rom.randomize_zones()
 
-  if args.no_patterns:
+  if not args.no_patterns:
     if args.ultra or args.ultra_patterns:
       flags += "P"
       rom.randomize_attack_patterns(True)

@@ -615,11 +615,11 @@ class Rom:
 
   def death_necklace(self):
     """
-    Adds functionality to the death necklace (+10 str and -25% HP).
+    Adds functionality to the death necklace (+10 ATK and -25% HP).
     """
     # This replaces the code the fighters ring code jumps to which adds the 
     # death necklace functionality
-    print("Adding functionality for the death necklace (+10 STR, -25% HP)...")
+    print("Adding functionality for the death necklace (+10 ATK, -25% HP)...")
     self.add_patches({
       0xff64: (
         # ff54:
@@ -636,7 +636,7 @@ class Rom:
               0xb0, 0x02,            # BCS $FF6A
               0x85, 0xc5,            # STA $00C5  ; set current HP to max HP
          # ff6a:
-              0x18,                  # CLC
+              0x18,                  # CLC        ; clear the carry bit
               0xa5, 0xcc,            # LDA $00CC  ; load attack power
               0x69, 0x0a,            # ADD #$0A   ; add 10
               0x85, 0xcc,            # STA $00CC  ; rewrite attack power
@@ -902,7 +902,7 @@ def parse_args():
   parser.add_argument("-c","-C","--no-chests", action="store_true",
       help="Do not randomize chest contents.")
   parser.add_argument("-d","-D","--death-necklace", action="store_true",
-      help="Enable Death Necklace functionality (+10 str -25%% HP)")
+      help="Enable Death Necklace functionality (+10 ATK -25%% HP)")
   parser.add_argument("--force", action="store_true", 
       help="Skip checksums and force randomization. This may produce an invalid"
            " ROM if the incorrect file is used.")

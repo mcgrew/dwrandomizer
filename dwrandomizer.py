@@ -993,11 +993,6 @@ def main():
 
   randomize(args)
 
-  # So the command prompt doesn't just disappear
-  if sys.platform == 'win32':
-    print("\n\n")
-    input("Press enter to exit...")
-
 #def prompt_for_options(args):
 #  """
 #  Prompts the user for randomizer options

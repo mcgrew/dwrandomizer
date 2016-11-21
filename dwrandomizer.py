@@ -741,6 +741,20 @@ class Rom:
     self.add_patch(0xdb49, 0xea, 6)
     self.add_patch(0xdb54, 0xea, 9)
 
+  def auto_stairs(self):
+    """
+    Makes stairs automatic (no need for the stairs command)
+
+    """
+    print("Enabling automatic stairs")
+    self.add_patches({
+      0xb2ce: (0x20, 0xaf, 0xd9),
+      0xb3d2: (0x20, 0xaf, 0xd9),
+      0xb4c3: (0x20, 0xaf, 0xd9),
+      0xb5f4: (0x20, 0xaf, 0xd9),
+      0xda16: (0x4c, 0xc3, 0xb4),
+    )}
+
   def token_dialogue(self):
     """
     Generates new dialogue data for the NPC who tells you where the token is.
@@ -911,6 +925,8 @@ def parse_args():
 #  parser.add_argument("-r", "-R","--no-remake", action="store_false",
 #      help="Do not set enemy HP, XP/Gold drops and MP use up to that of the "
 #           "remake. This will make grind times much longer.")
+  parser.add_argument("-e", "-E", "--escalator", action="store_true",
+      help="Automatically go up and down stairs.")
   parser.add_argument("-c","-C","--no-chests", action="store_true",
       help="Do not randomize chest contents.")
   parser.add_argument("-d","-D","--death-necklace", action="store_true",
@@ -1129,6 +1145,10 @@ def randomize(args):
     else:
       flags += "g"
       rom.randomize_growth()
+
+  if args.escalator:
+    flags += "E"
+    rom.auto_stairs()
 
   rom.update_drops()
   rom.update_enemy_hp()

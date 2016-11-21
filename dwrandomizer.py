@@ -746,7 +746,8 @@ class Rom:
     Makes stairs automatic (no need for the stairs command)
 
     """
-    print("Enabling automatic stairs")
+    # This doesn't work as is...
+    print("Enabling automatic stairs...")
     self.add_patches({
       0xb2ce: (0x20, 0xaf, 0xd9),
       0xb3d2: (0x20, 0xaf, 0xd9),
@@ -925,8 +926,8 @@ def parse_args():
 #  parser.add_argument("-r", "-R","--no-remake", action="store_false",
 #      help="Do not set enemy HP, XP/Gold drops and MP use up to that of the "
 #           "remake. This will make grind times much longer.")
-  parser.add_argument("-e", "-E", "--escalator", action="store_true",
-      help="Automatically go up and down stairs (VERY EXPERIMENTAL).")
+#  parser.add_argument("-e", "-E", "--escalator", action="store_true",
+#      help="Automatically go up and down stairs (VERY EXPERIMENTAL).")
   parser.add_argument("-c","-C","--no-chests", action="store_true",
       help="Do not randomize chest contents.")
   parser.add_argument("-d","-D","--death-necklace", action="store_true",
@@ -1141,9 +1142,9 @@ def randomize(args):
       flags += "g"
       rom.randomize_growth()
 
-  if args.escalator:
-    flags += "E"
-    rom.auto_stairs()
+#  if args.escalator:
+#    flags += "E"
+#    rom.auto_stairs()
 
   rom.update_drops()
   rom.update_enemy_hp()

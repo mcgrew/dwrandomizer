@@ -10,7 +10,7 @@ from worldmap import WorldMap,MapGrid
 import ips
 from os import sep as os_sep
 
-VERSION = "1.3-dev-2016-11-19"
+VERSION = "1.3-dev-2016-11-27"
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes
@@ -496,14 +496,12 @@ class Rom:
     """
     Lowers the XP requirements for a faster game.
     """
-    percent = 50 if ultra else 75
-    print("Setting XP requirements for levels to %d%% of normal..." % percent)
+    percent = 0.50 if ultra else 0.75
+    print("Setting XP requirements for levels to %d%% of normal..." %
+          (percent * 100))
 
     xp = struct.unpack( "<HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH", self.xp_reqs )
-    if ultra:
-      xp = [round(x * 0.5) for x in xp]
-    else:
-      xp = [round(x * 0.75) for x in xp]
+    xp = [round(x * percent) for x in xp]
     self.xp_reqs = struct.pack( "<HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH", *xp )
 
   def update_enemy_hp(self):
@@ -512,8 +510,8 @@ class Rom:
     """
     print("Setting enemy HP to remake levels...")
     #dragonlord hp should be 204 and 350, but we want him beatable at lv 18
-    remake_hp = [  2,  3,  5,  7, 12, 13, 13, 22, 26, 35, 16, 24, 28, 
-                  18, 33, 39,  3, 48, 37, 35, 44, 37, 40, 40,153,110, 
+    remake_hp = [  2,  3,  5,  7, 12, 13, 13, 22, 23, 20, 16, 24, 28,
+                  18, 33, 39,  3, 33, 37, 35, 44, 37, 40, 40,153, 35,
                   47, 48, 38, 70, 72, 74, 65, 67, 98,135, 99,106,100,165]
     # randomize Dragonlord's second form HP somewhat 
     remake_hp[-1] -= random.randint(0, 15) # 150 - 165
@@ -744,7 +742,6 @@ class Rom:
   def auto_stairs(self):
     """
     Makes stairs automatic (no need for the stairs command)
-
     """
     # This doesn't work as is...
     print("Enabling automatic stairs...")
@@ -926,8 +923,8 @@ def parse_args():
 #  parser.add_argument("-r", "-R","--no-remake", action="store_false",
 #      help="Do not set enemy HP, XP/Gold drops and MP use up to that of the "
 #           "remake. This will make grind times much longer.")
-#  parser.add_argument("-e", "-E", "--escalator", action="store_true",
-#      help="Automatically go up and down stairs (VERY EXPERIMENTAL).")
+  parser.add_argument("-e", "-E", "--escalator", action="store_true",
+      help="Automatically go up and down stairs (VERY EXPERIMENTAL).")
   parser.add_argument("-c","-C","--no-chests", action="store_true",
       help="Do not randomize chest contents.")
   parser.add_argument("-d","-D","--death-necklace", action="store_true",
@@ -1063,9 +1060,9 @@ def randomize(args):
       flags += "g"
       rom.randomize_growth()
 
-#  if args.escalator:
-#    flags += "E"
-#    rom.auto_stairs()
+  if args.escalator:
+    flags += "E"
+    rom.auto_stairs()
 
   rom.update_drops()
   rom.update_enemy_hp()

@@ -10,7 +10,7 @@ from worldmap import WorldMap,MapGrid
 import ips
 from os import sep as os_sep
 
-VERSION = "1.3-dev-2016-11-27"
+VERSION = "1.3-dev-2016-11-29"
 #sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c', #Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb', #Dragon Warrior (U) (PRG0) [b1].nes

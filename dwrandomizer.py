@@ -135,11 +135,11 @@ class Rom:
     chest_contents.insert(staff_index, 0x10) # put the staff back in the array
 
     # make sure required quest items aren't in Charlock
-    charlock_chests = chest_contents[11:17] + chest_contents[-7:-6]
     charlock_chest_indices = (11, 12, 13, 14, 15, 16, 24)
+    charlock_chests = [chest_contents[c] for c in charlock_chest_indices]
     quest_items = (10, 13, 15, 16)
     for item in quest_items:
-      if (item in charlock_chests):
+      if item in charlock_chests:
         for i in charlock_chest_indices:
           if chest_contents[i] == item:
             # this could probably be cleaner...
@@ -154,7 +154,7 @@ class Rom:
         if chest_contents[i] == 3:
           j = random.randint(4, 6)
           # if key is in charlock and chest[j] contains a quest item, try again
-          while (i in charlock_chest_indices and (chest_contents[j] in quest_items)):
+          while i in charlock_chest_indices and (chest_contents[j] in quest_items):
             j = random.randint(4, 6)
           chest_contents[j], chest_contents[i] = chest_contents[i], chest_contents[j]
           break

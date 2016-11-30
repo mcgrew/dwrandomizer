@@ -190,12 +190,12 @@ class Rom:
     new_patterns = [] # attack patterns
     new_ss_resist = self.enemy_stats[4::16] 
     for i in range(38):
-      new_ss_resist[i] |= 0xf
+      new_ss_resist[i] |= 0xf  # max out the lower byte
       if random.randint(0,1): # 50/50 chance
         resist = random.randint(0,round(i/5))
-        new_ss_resist[i] &= (0xf0 | resist)
+        new_ss_resist[i] &= (0xf0 | resist)  # set the lower byte to the value of resist.
         if ultra:
-            new_patterns.append((random.randint(0,255)))
+            new_patterns.append((random.randint(0,255)))  # totally random attack pattern.
         else:
           if i <= 20:
             # heal, sleep, stopspell, hurt
@@ -210,7 +210,7 @@ class Rom:
             new_patterns.append((random.choice((0, 1, 3)) << 6) | 
                 (random.randint(0, 3) << 4) | slot2)
       else:
-        new_patterns.append(0)
+        new_patterns.append(0)  # fight only
     new_patterns.append(87) #Dragonlord form 1
     new_patterns.append(14) #Dragonlord form 2
     self.enemy_stats[3::16] = bytearray(new_patterns)
@@ -241,16 +241,43 @@ class Rom:
     """
     Randomizes enemy zone layout on the overworld map.
     """
+    # create a list so one zone doesn't dominate
+    zones = list(range(3, 16)) * 5  # 65 items - close enough.
+    random.shuffle(zones)
     for i in range(len(self.zone_layout)):
-      self.zone_layout[i] = random.randint(1,15) << 4 | \
-                            random.randint(1,15)
+      self.zone_layout[i] = zones.pop() << 4 | zones.pop()
     # set tantegel's zone to 0
     tx,ty = self.owmap.warps_from[self.owmap.tantegel_warp][1:]
-    tantegel_zone_index = (ty // 15 * 8) + tx // 15
-    if tantegel_zone_index % 2:
-      self.zone_layout[tantegel_zone_index // 2] &= 240 # second nybble
+    # tantegel_zone_index = (ty // 15 * 8) + tx // 15
+    zone_x, zone_y = tx // 15, ty // 15
+    self._set_ow_zone(zone_x,     zone_y, 0)
+    self._set_ow_zone(zone_x - 1, zone_y, 1)
+    self._set_ow_zone(zone_x + 1, zone_y, 1)
+    self._set_ow_zone(zone_x, zone_y - 1, 2)
+    self._set_ow_zone(zone_x, zone_y + 1, 2)
+    # if tantegel_zone_index % 2:
+    #   self.zone_layout[tantegel_zone_index // 2] &= 0xf0  # second nybble
+    # else:
+    #   self.zone_layout[tantegel_zone_index // 2] &= 0xf  # first nybble
+
+  def _set_ow_zone(self, x, y, value):
+    """
+    Sets the overworld zone at the given coordinates to the given value (16x16 grid)
+
+    :param value: The zone index to set this zone to.
+    :param x:  The x index of the zone to change.
+    :param y:  The y value of the zone to change.
+    """
+    if x < 0 or y < 0 or x > 7 or y > 7:  # ignore anything out of bounds.
+      return False
+    zone_index = x + 8 * y
+    if zone_index % 2:
+      self.zone_layout[zone_index // 2] &= 0xf0  # second nybble
+      self.zone_layout[zone_index // 2] |= (0xf & value)
     else:
-      self.zone_layout[tantegel_zone_index // 2] &= 15 # first nybble
+      self.zone_layout[zone_index // 2] &= 0xf  # first nybble
+      self.zone_layout[zone_index // 2] |= (0xf0 & (value << 4))
+    return True
 
   def randomize_zones(self, ultra=False):
     """
@@ -269,20 +296,18 @@ class Rom:
       # randomize zone locations
       if self.owmap.generated:
         self.randomize_zone_layout()
-      # zone 0-1
-      for i in range(0,5):
+      # zone 0
+      for i in range(0, 5):
         new_zones.append(random.randint(0, 6))
-      for i in range(0,5):
-        if self.owmap.generated:
-          new_zones.append(random.randint(0, 37))
-        else:
-          new_zones.append(random.randint(0, 6))
-      # zones 2-15
+      # zone 1-2
+      for i in range(0, 10):
+        new_zones.append(random.randint(0, 14))
+      # zones 3-15
       for i in range(0,70):
         new_zones.append(random.randint(0, 37))
       # zones 16-18 (Charlock)
       for i in range(0,15):
-        new_zones.append(random.randint(29,37))
+        new_zones.append(random.randint(29, 37))
       # zone 19
       for i in range(0,5):
         new_zones.append(random.randint(0, 37))
@@ -589,7 +614,7 @@ class Rom:
         # de23:
               0x29, 0x7,        # AND #$07    ; limit the random number to 0-7
               0xaa,             # TAX         ; move the value to the X register
-              0xbd, 0x54, 0xf5, # LDA #F554,X ; load the monster from the zone table
+              0xbd, 0x64, 0xf5, # LDA #F564,X ; load the monster from the zone table
               0xea,             # NOP         ; fill in the rest with NOP
               0xea,             # NOP         ; 
               0xea,             # NOP         ; 

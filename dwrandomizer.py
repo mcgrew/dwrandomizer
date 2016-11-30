@@ -303,7 +303,7 @@ class Rom:
       for i in range(0, 10):
         new_zones.append(random.randint(0, 14))
       # zones 3-15
-      for i in range(0,70):
+      for i in range(0,65):
         new_zones.append(random.randint(0, 37))
       # zones 16-18 (Charlock)
       for i in range(0,15):
@@ -670,61 +670,73 @@ class Rom:
     })
 
   def menu_wrap(self):
+    print("Adding functionality for menu wraparound...")
     self.add_patches({ #implement up/down wraparound for the menu
-      0x69f0: (
-        # f059: 
-          0x4c, 0xa0, 0xbe,         # JMP $BEA0
-          0xea,                     # NOP
+	  0x69f0: (
+        # f059:
+          0x4c, 0xa0, 0xbe, # JMP $BEA0
+          0xea, # NOP
       ),
-      0x6a33: (
-        # 6a23: 
-          0x4c, 0xd0, 0xbe,         #JMP #BED0
-          0xea,                     # NOP
+	  0x6a33: (
+        # 6a23:
+          0x4c, 0xd0, 0xbe, #JMP #BED0
+          0xea, # NOP
       ),
-      0x7eb0: (
-        # 7ea0:
-          0xad, 0xe5, 0x64,         # LDA $64E5 
-          0xc9, 0x04,               # CMP #$04
-          0xf0, 0x1e,               # BEQ  
-          0x20, 0x30, 0xab,         # JMP $AB30 
-          0xa5, 0xd9,               # LDA $00D9
-          0xd0, 0x14,               # BNE 
-          0xad, 0xe5, 0x64,         # LDA $64E5
-        # 7eb0:
-          0xe9, 0x03,               # SBC #$03
-          0x4a,                     # LSR
-          0xe9, 0x00,               # SBC #$00
-          0x85, 0xd9,               # STA $00D9 
-          0x0a,                     # ASL
-          0x6d, 0xf3, 0x64,         # ADC $64F3 
-          0x8d, 0xf3, 0x64,         # STA $64F3
-          0x4c, 0x27, 0xaa,         # JMP $AA27
-        # 7ec0: 
-          0x4c, 0xe4, 0xa9,         # JMP $A9E4
-          0x60                      # RTS
+	  0x7eb0: (
+          # 7ea0:
+          0xa5, 0x45, # LDA $0045
+          0xf0, 0x5c, # BEQ
+          0xad, 0xe5, 0x64, # LDA $64E5
+          0xc9, 0x04, # CMP #$04
+          0xf0, 0x1e, # BEQ
+          0x20, 0x30, 0xab, # JMP $AB30
+          0xa5, 0xd9, # LDA $00D9
+          0xd0, 0x14, # BNE
+          0xad, 0xe5, 0x64, # LDA $64E5
+          # 7eb0:
+          0xe9, 0x03, # SBC #$03
+          0x4a, # LSR
+          0xe9, 0x00, # SBC #$00
+          0x85, 0xd9, # STA $00D9
+          0x0a, # ASL
+          0x6d, 0xf3, 0x64, # ADC $64F3
+          0x8d, 0xf3, 0x64, # STA $64F3
+          0x4c, 0x27, 0xaa, # JMP $AA27
+          # 7ec0:
+          0x4c, 0xe4, 0xa9, # JMP $A9E4
+          0x60, # RTS
+          0xa5, 0xd9, 0x60
       ),
-      0x7ee0: (
+	  0x7ee0: (
         # 7ed0
-          0x48,                     # PHA
-          0xad, 0xe5, 0x64,         # LDA $64E5 
-          0xc9, 0x04,               # CMP #$04
-          0xf0, 0x20,               # BEQ  
-          0x20, 0x30, 0xab,         # JSR $AB30
-          0x68,                     # PLA
-          0xc5, 0xd9,               # CMP $00D9
-          0xd0, 0x15,               # BNE
-          0xa9, 0x01,               # LDA #$01
-          0x85, 0xd9,               # STA $00D9
-          0xad, 0xf3, 0x64,         # LDA $64F3
-          0x29, 0x01,               # AND #$01
-          0xd0, 0x02,               # BNE
-          0x69, 0x02,               # ADC #$02
-          0x69, 0x01,               # ADC #$01
-          0x8d, 0xf3, 0x64,         # STA $64F3
-          0x4c, 0xe4, 0xa9,         # JMP $A9E4
-          0x4c, 0x27, 0xaa,         # JMP $AA27
-          0x68,                     # PLA
-          0x60                      # RTS
+          0x48, # PHA
+          0xa5, 0x45, # LDA $0045
+          0xf0, 0x3b, # BEQ
+          0xad, 0xe5, 0x64, # LDA $64E5
+          0xc9, 0x04, # CMP #$04
+          0xf0, 0x20, # BEQ
+          0x20, 0x30, 0xab, # JSR $AB30
+          0x68, # PLA
+          0xc5, 0xd9, # CMP $00D9
+          0xd0, 0x15, # BNE
+          0xa9, 0x01, # LDA #$01
+          0x85, 0xd9, # STA $00D9
+          0xad, 0xf3, 0x64, # LDA $64F3
+          0x29, 0x01, # AND #$01
+          0xd0, 0x02, # BNE
+          0x69, 0x02, # ADC #$02
+          0x69, 0x01, # ADC #$01
+          0x8d, 0xf3, 0x64, # STA $64F3
+          0x4c, 0xe4, 0xa9, # JMP $A9E4
+          0x4c, 0x27, 0xaa, # JMP $AA27
+          0x68, # PLA
+          0x60 # RTS
+      ),
+	  0x7f10: (
+          0xa5, 0xd9, 0xf0, 0xf9, 0x4c, 0xe4, 0xa9
+      ),
+	  0x7f20: (
+          0x68, 0xc5, 0xd9, 0xf0, 0xe8, 0x4c, 0x27, 0xaa
       )
     })
 
@@ -1092,6 +1104,7 @@ def randomize(args):
   rom.update_drops()
   rom.update_enemy_hp()
   rom.update_mp_reqs()
+  rom.menu_wrap()
 
   if args.very_fast_leveling:
     flags += "F"

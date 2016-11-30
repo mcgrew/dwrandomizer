@@ -735,7 +735,7 @@ class Rom:
       0x4711: 1, 0x4715: 1,
     })
     # speed up spell casting
-    self.add_patch(0x439b, 0x9e)
+    self.add_patch(0x436b, 0x9e)
     self.add_patch(0xdb49, 0xea, 6)
     self.add_patch(0xdb54, 0xea, 9)
 

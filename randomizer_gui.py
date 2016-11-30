@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
 from tkinter import *
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 import dwrandomizer
 import random
 import os
 import os.path
 import json
-from threading import Thread
 from contextlib import redirect_stdout
 
 HOME=os.path.expanduser('~' + os.sep)
@@ -95,7 +94,7 @@ class RandomizerUI(Frame):
     flags += self.attack_frame.flags()
     flags += self.zone_frame.flags()
 
-		# sort the flags alphabetically
+    # sort the flags alphabetically
     flags = list(flags)
     flags.sort()
     self.flags_frame.set(''.join(flags))
@@ -104,7 +103,13 @@ class RandomizerUI(Frame):
 
   def execute(self):
     self.args.filename = self.rom_frame.get()
+    if not os.path.exists(self.args.filename):
+      messagebox.showerror("No such ROM", "The specified ROM file does not exist.")
+      return
     self.args.output_dir = self.output_frame.get()
+    if not os.path.isdir(self.args.output_dir):
+      messagebox.showerror("No such directory", "The specified output directory does not exist.")
+      return
     self.args.seed = self.seed_frame.get()
     self.args.force = True
     flags = self.toggle_frame.flags()
@@ -131,8 +136,12 @@ class RandomizerUI(Frame):
     self.logger.delete('1.0', END)
 
     with redirect_stdout(self.logger):
-      self.save_config()
-      dwrandomizer.randomize(self.args)
+      try:
+        self.save_config()
+        dwrandomizer.randomize(self.args)
+      except Exception as e:
+        print(str(e))
+        raise e
 
   def quit(self):
     self.save_config()
@@ -232,7 +241,8 @@ class SeedFrame(LabelFrame):
     self.createWidgets()
 
   def createWidgets(self):
-    self.seed_entry = Entry(self, textvariable=self.tk_seed)
+    valcommand = (self.register(self.validate), '%P')
+    self.seed_entry = Entry(self, textvariable=self.tk_seed, validate="key", validatecommand=valcommand)
     self.seed_entry.grid(column=0, row=0, sticky="NSEW")
     self.random_button = Button(self, text="Random", command=self.random_seed)
     self.random_button.grid(column=1, row=0, sticky="E")
@@ -247,6 +257,21 @@ class SeedFrame(LabelFrame):
 
   def get(self):
     return self.tk_seed.get()
+
+  def validate(self, current):
+    """
+    Validates the seed number input
+
+    :param current: The newly edited text
+    :return: True if the new text is allowed (numbers only)
+    """
+    try:
+      if len(current):
+        int(current)
+      return True
+    except ValueError:
+      return False
+
 
 # ==============================================================================
 

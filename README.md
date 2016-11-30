@@ -1,5 +1,3 @@
-# NOTICE:  This github is for developmental purposes only.  Please do not download from this repository; use mcgrew's repository instead:  https://github.com/mcgrew/dwrandomizer
-
 This application is a randomizer for Dragon Warrior 1 for NES. This randomizer
 will work on either version of the ROM.
 

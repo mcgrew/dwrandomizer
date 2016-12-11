@@ -59,9 +59,8 @@ class Rom:
     encounter_3_kill_slice = slice(0xe990, 0xe997, 6)  # golem
 
     def __init__(self, filename):
-        input_file = open(filename, 'rb')
-        self.rom_data = bytearray(input_file.read())
-        input_file.close()
+        with open(filename, 'rb') as input_file:
+            self.rom_data = bytearray(input_file.read())
         self.revert()
 
     def sha1(self, data=None):

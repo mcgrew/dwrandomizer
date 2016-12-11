@@ -188,7 +188,7 @@ class Rom:
     else:
       print("Randomizing enemy attack patterns...")
     new_patterns = [] # attack patterns
-    new_ss_resist = self.enemy_stats[4::16] 
+    new_ss_resist = self.enemy_stats[4::16]
     for i in range(38):
       new_ss_resist[i] |= 0xf  # max out the lower byte
       if random.randint(0,1): # 50/50 chance
@@ -207,7 +207,7 @@ class Rom:
             # healmore, sleep, stopspell, strong fire breath, fire breath, hurtmore
             #we'll be nice and not give Axe Knight Dragonlord's breath.
             slot2 = random.randint(4, 11) if i == 33 else random.randint(4, 15)
-            new_patterns.append((random.choice((0, 1, 3)) << 6) | 
+            new_patterns.append((random.choice((0, 1, 3)) << 6) |
                 (random.randint(0, 3) << 4) | slot2)
       else:
         new_patterns.append(0)  # fight only
@@ -320,7 +320,7 @@ class Rom:
       self.encounter_3_kill[0] = self.encounter_enemies[2]
     else:
       #zone 0
-      for j in range(5): 
+      for j in range(5):
         new_zones.append(int(random.randint(0, 6)/2))
 
       # zones 1-13 (Overworld)
@@ -332,11 +332,11 @@ class Rom:
           new_zones.append(enemy)
 
       #zone 14 - Garin's Grave?
-      for j in range(5): 
+      for j in range(5):
         new_zones.append(random.randint(7, 17))
 
       #zone 15 - Lower Garin's Grave
-      for j in range(5): 
+      for j in range(5):
         new_zones.append(random.randint(15, 23))
 
       # zone 16-18 - Charlock
@@ -372,8 +372,8 @@ class Rom:
     while new_item in new_shop_inv[six_item_shop]:
       new_item = random.choice(weapons)
     new_shop_inv[six_item_shop].append(new_item)
-    
-    # create the bytearray to insert into the rom. Shops are separated by an 
+
+    # create the bytearray to insert into the rom. Shops are separated by an
     # 0xfd byte
     self.shop_inventory = []
     for shop in new_shop_inv:
@@ -410,7 +410,7 @@ class Rom:
       print("Ultra randomizing player stat growth...")
     else:
       print("Randomizing player stat growth...")
-    
+
     player_str = list(self.player_stats[0:180:6])
     player_agi = list(self.player_stats[1:180:6])
     player_hp  = list(self.player_stats[2:180:6])
@@ -496,11 +496,11 @@ class Rom:
     Raises enemy XP and gold drops to those of the remakes.
     """
     print("Increasing XP/Gold drops to remake levels...")
-    remake_xp = [  1,  2,  3,  4,  8, 12, 16, 14, 15, 18, 20, 25, 28, 
-                  31, 40, 42,255, 47, 52, 58, 58, 64, 70, 72,255,  6, 
+    remake_xp = [  1,  2,  3,  4,  8, 12, 16, 14, 15, 18, 20, 25, 28,
+                  31, 40, 42,255, 47, 52, 58, 58, 64, 70, 72,255,  6,
                   78, 83, 90, 95,135,105,120,130,180,155,172,255,  0,  0]
     # These are +1 for proper values in the ROM
-    remake_gold=[  2,  4,  6,  8, 16, 20, 25, 21, 19, 30, 25, 42, 50, 
+    remake_gold=[  2,  4,  6,  8, 16, 20, 25, 21, 19, 30, 25, 42, 50,
                   48, 60, 62,  6, 75, 80, 95,110,105,110,120, 10,255,
                  150,135,148,155,160,169,185,165,150,148,152,143,  0,  0]
     self.enemy_stats[6::16] = bytearray(remake_xp)
@@ -538,7 +538,7 @@ class Rom:
     remake_hp = [  2,  3,  5,  7, 12, 13, 13, 22, 23, 20, 16, 24, 28,
                   18, 33, 39,  3, 33, 37, 35, 44, 37, 40, 40,153, 35,
                   47, 48, 38, 70, 72, 74, 65, 67, 98,135, 99,106,100,165]
-    # randomize Dragonlord's second form HP somewhat 
+    # randomize Dragonlord's second form HP somewhat
     remake_hp[-1] -= random.randint(0, 15) # 150 - 165
     self.enemy_stats[2::16] = bytearray(remake_hp)
 
@@ -579,9 +579,9 @@ class Rom:
     self.new_spell_levels = self.rom_data[self.new_spell_slice]
     self.chests = self.rom_data[self.chests_slice]
     self.title_screen_text = self.rom_data[self.title_text_slice]
-    
+
     print("Buffing HEAL and HURT slightly...")
-    print("Fixing functionality of the fighter's ring (+%d atk)..." 
+    print("Fixing functionality of the fighter's ring (+%d atk)..."
         % Rom.ring_power)
     print("Adding a new throne room exit...")
     print("Bumping encounter rate for zone 0...")
@@ -597,7 +597,7 @@ class Rom:
               0x85, 0xcd,      # STA $00CD  ; replaces code removed from $F00C
               0xa5, 0xcf,      # LDA $00CF  ; load status bits
               0x29, 0x20,      # AND #$20   ; check bit 6 (fighter's ring)
-              0xf0, 0x06,      # BEQ $FF8B 
+              0xf0, 0x06,      # BEQ $FF8B
               0xa5, 0xcc,      # LDA $00CC  ; load attack power
               0x69, rp,        # ADC #$??   ; add fighter's ring power.
               0x85, 0xcc,      # STA $00CC  ; store new attack power
@@ -616,9 +616,9 @@ class Rom:
               0xaa,             # TAX         ; move the value to the X register
               0xbd, 0x64, 0xf5, # LDA #F564,X ; load the monster from the zone table
               0xea,             # NOP         ; fill in the rest with NOP
-              0xea,             # NOP         ; 
-              0xea,             # NOP         ; 
-              0xea,             # NOP         ; 
+              0xea,             # NOP         ;
+              0xea,             # NOP         ;
+              0xea,             # NOP         ;
       ),
 
       0x43a: (0x47,), # add new stairs to the throne room
@@ -640,7 +640,7 @@ class Rom:
     """
     Adds functionality to the death necklace (+10 ATK and -25% HP).
     """
-    # This replaces the code the fighters ring code jumps to which adds the 
+    # This replaces the code the fighters ring code jumps to which adds the
     # death necklace functionality
     print("Adding functionality for the death necklace (+10 ATK, -25% HP)...")
     self.add_patches({
@@ -648,7 +648,7 @@ class Rom:
         # ff54:
               0xa5, 0xcf,            # LDA $00CF  ; load status bits
               0x29, 0x80,            # AND #$80   ; check bit 8 (death necklace)
-              0xf0, 0x17,            # BEQ $FF71 
+              0xf0, 0x17,            # BEQ $FF71
               0xa5, 0xca,            # LDA $00CA  ; load max HP
               0x46, 0xca,            # LSR $00CA  ; divide max HP by 4
               0x46, 0xca,            # LSR $00CA
@@ -670,73 +670,83 @@ class Rom:
     })
 
   def menu_wrap(self):
-    print("Adding functionality for menu wraparound...")
-    self.add_patches({ #implement up/down wraparound for the menu
-	  0x69f0: (
-        # f059:
-          0x4c, 0xa0, 0xbe, # JMP $BEA0
-          0xea, # NOP
+    print("Enabling menu wraparound...")
+    self.add_patches({  # implement up/down wraparound for the menu (from @gameboy9)
+      0x69f0: (
+        # 69e0
+          0x4c, 0xa0, 0xbe,  # JMP $BEA0
+          0xea,              # NOP
       ),
-	  0x6a33: (
+      0x6a33: (
         # 6a23:
-          0x4c, 0xd0, 0xbe, #JMP #BED0
-          0xea, # NOP
+          0x4c, 0xd0, 0xbe,  # JMP #BED0
+          0xea,              # NOP
       ),
-	  0x7eb0: (
-          # 7ea0:
-          0xa5, 0x45, # LDA $0045
-          0xf0, 0x5c, # BEQ
-          0xad, 0xe5, 0x64, # LDA $64E5
-          0xc9, 0x04, # CMP #$04
-          0xf0, 0x1e, # BEQ
-          0x20, 0x30, 0xab, # JMP $AB30
-          0xa5, 0xd9, # LDA $00D9
-          0xd0, 0x14, # BNE
-          0xad, 0xe5, 0x64, # LDA $64E5
-          # 7eb0:
-          0xe9, 0x03, # SBC #$03
-          0x4a, # LSR
-          0xe9, 0x00, # SBC #$00
-          0x85, 0xd9, # STA $00D9
-          0x0a, # ASL
-          0x6d, 0xf3, 0x64, # ADC $64F3
-          0x8d, 0xf3, 0x64, # STA $64F3
-          0x4c, 0x27, 0xaa, # JMP $AA27
-          # 7ec0:
-          0x4c, 0xe4, 0xa9, # JMP $A9E4
-          0x60, # RTS
+      0x7eb0: (
+        # 7ea0:
+          0xa5, 0x45,        # LDA $0045
+          0xf0, 0x5c,        # BEQ
+          0xad, 0xe5, 0x64,  # LDA $64E5
+          0xc9, 0x04,        # CMP #$04
+          0xf0, 0x1e,        # BEQ
+          0x20, 0x30, 0xab,  # JMP $AB30
+          0xa5, 0xd9,        # LDA $00D9
+          0xd0, 0x14,        # BNE
+          0xad, 0xe5, 0x64,  # LDA $64E5
+        # 7eb0:
+          0xe9, 0x03,        # SBC #$03
+          0x4a,              # LSR
+          0xe9, 0x00,        # SBC #$00
+          0x85, 0xd9,        # STA $00D9
+          0x0a,              # ASL
+          0x6d, 0xf3, 0x64,  # ADC $64F3
+          0x8d, 0xf3, 0x64,  # STA $64F3
+          0x4c, 0x27, 0xaa,  # JMP $AA27
+        # 7ec0:
+          0x4c, 0xe4, 0xa9,  # JMP $A9E4
+          0x60,              # RTS
           0xa5, 0xd9, 0x60
       ),
-	  0x7ee0: (
-        # 7ed0
-          0x48, # PHA
-          0xa5, 0x45, # LDA $0045
-          0xf0, 0x3b, # BEQ
-          0xad, 0xe5, 0x64, # LDA $64E5
-          0xc9, 0x04, # CMP #$04
-          0xf0, 0x20, # BEQ
-          0x20, 0x30, 0xab, # JSR $AB30
-          0x68, # PLA
-          0xc5, 0xd9, # CMP $00D9
-          0xd0, 0x15, # BNE
-          0xa9, 0x01, # LDA #$01
-          0x85, 0xd9, # STA $00D9
-          0xad, 0xf3, 0x64, # LDA $64F3
-          0x29, 0x01, # AND #$01
-          0xd0, 0x02, # BNE
-          0x69, 0x02, # ADC #$02
-          0x69, 0x01, # ADC #$01
-          0x8d, 0xf3, 0x64, # STA $64F3
-          0x4c, 0xe4, 0xa9, # JMP $A9E4
-          0x4c, 0x27, 0xaa, # JMP $AA27
-          0x68, # PLA
-          0x60 # RTS
+      0x7ee0: (
+        # 7ed0:
+          0x48,              # PHA
+          0xa5, 0x45,        # LDA $0045
+          0xf0, 0x3b,        # BEQ
+          0xad, 0xe5, 0x64,  # LDA $64E5
+          0xc9, 0x04,        # CMP #$04
+          0xf0, 0x20,        # BEQ $7EFB
+          0x20, 0x30, 0xab,  # JSR $AB30
+          0x68,              # PLA
+        # 7ee0:
+          0xc5, 0xd9,        # CMP $00D9
+          0xd0, 0x15,        # BNE $7EF3
+          0xa9, 0x01,        # LDA #$01
+          0x85, 0xd9,        # STA $00D9
+          0xad, 0xf3, 0x64,  # LDA $64F3
+          0x29, 0x01,        # AND #$01
+          0xd0, 0x02,        # BNE $7EF1
+          0x69, 0x02,        # ADC #$02
+        # 7ef1:
+          0x69, 0x01,        # ADC #$01
+        # 7ef3:
+          0x8d, 0xf3, 0x64,  # STA $64F3
+          0x4c, 0xe4, 0xa9,  # JMP $A9E4
+          0x4c, 0x27, 0xaa,  # JMP $AA27
+          0x68,              # PLA
+          0x60               # RTS
       ),
-	  0x7f10: (
-          0xa5, 0xd9, 0xf0, 0xf9, 0x4c, 0xe4, 0xa9
+      0x7f10: (
+        # 7f00:
+          0xa5, 0xd9,        # LDA $00D9
+          0xf0, 0xf9,        # BEQ $7EFE
+          0x4c, 0xe4, 0xa9   # JMP $A9E4
       ),
-	  0x7f20: (
-          0x68, 0xc5, 0xd9, 0xf0, 0xe8, 0x4c, 0x27, 0xaa
+      0x7f20: (
+        # 7f10:
+          0x68,              # PLA
+          0xc5, 0xd9,        # CMP $00D9
+          0xf0, 0xe8,        # BEQ $7EFE
+          0x4c, 0x27, 0xaa   # JMP $A9E4
       )
     })
 
@@ -804,8 +814,8 @@ class Rom:
     elif self.armor_loc[0] == 1:
       x, y = self.armor_loc[1:3]
     else:
-      return (self.ascii2dw("Thou must go and fight!") + 
-        bytearray([0xfc, 0xfb, 0x50]) + 
+      return (self.ascii2dw("Thou must go and fight!") +
+        bytearray([0xfc, 0xfb, 0x50]) +
         self.ascii2dw( "Go forth, descendent of Erdrick, "
          "I have complete faith in thy victory! "))
     tx, ty = self.owmap.warps_from[self.owmap.tantegel_warp][1:3]
@@ -813,14 +823,14 @@ class Rom:
     east_west = "west" if x < tx else "east"
     dx,dy = x - tx, y - ty
     if abs(dx) < 100 and abs(dy) < 100:
-      return (self.ascii2dw("Thou may go and search.") + 
+      return (self.ascii2dw("Thou may go and search.") +
         bytearray([0xfc, 0xfb, 0x50]) + self.ascii2dw(
-        ("From Tantegel Castle travel %2d leagues to the %s and %2d to the %s.") % 
+        ("From Tantegel Castle travel %2d leagues to the %s and %2d to the %s.") %
         (abs(dy), north_south, abs(dx), east_west)))
     else:
-      return (self.ascii2dw("Thou may go and search.") + 
+      return (self.ascii2dw("Thou may go and search.") +
         bytearray([0xfc, 0xfb, 0x50]) + self.ascii2dw(
-        (("From Tantegel Castle travel %d leagues %s and %d to the %s.         ") % 
+        (("From Tantegel Castle travel %d leagues %s and %d to the %s.         ") %
          (abs(dy), north_south, abs(dx), east_west))[:71]))
 
   def commit(self):
@@ -943,7 +953,7 @@ class Rom:
     new_text = new_text.replace(b'\x47', b'\x61').replace(b'\x49', b'\x63')
 
     self.title_screen_text = new_text
-    
+
 
 def inverted_power_curve(min_, max_, power, count=30):
   range_ = max_ - min_
@@ -957,58 +967,54 @@ def inverted_power_curve(min_, max_, power, count=30):
 def parse_args():
   parser = argparse.ArgumentParser(prog="DWRandomizer",
       description="A randomizer for Dragon Warrior for NES")
-#  parser.add_argument("-r", "-R","--no-remake", action="store_false",
-#      help="Do not set enemy HP, XP/Gold drops and MP use up to that of the "
-#           "remake. This will make grind times much longer.")
   parser.add_argument("-e", "-E", "--escalator", action="store_true",
       help="Automatically go up and down stairs (VERY EXPERIMENTAL).")
   parser.add_argument("-c","-C","--no-chests", action="store_true",
       help="Do not randomize chest contents.")
   parser.add_argument("-d","-D","--death-necklace", action="store_true",
       help="Enable Death Necklace functionality (+10 ATK -25%% HP)")
-  parser.add_argument("--force", action="store_true", 
-      help="Skip checksums and force randomization. This may produce an invalid"
-           " ROM if the incorrect file is used.")
-  parser.add_argument("-i","-I","--no-searchitems", action="store_true", 
+  parser.add_argument("-i","-I","--no-searchitems", action="store_true",
       help="Do not randomize the locations of searchable items (Fairy Flute, "
            "Erdrick's Armor, Erdrick's Token).")
-  parser.add_argument("--ips", action="store_true", 
+  parser.add_argument("--ips", action="store_true",
       help="Also create an IPS patch for the original ROM")
-  parser.add_argument("-f","--fast-leveling", action="store_true", 
+  parser.add_argument("-f","--fast-leveling", action="store_true",
       help="Set XP requirements for each level to 75%% of normal.")
-  parser.add_argument("-F","--very-fast-leveling", action="store_true", 
+  parser.add_argument("-F","--very-fast-leveling", action="store_true",
       help="Set XP requirements for each level to 50%% of normal.")
-  parser.add_argument("-g","--no-growth", action="store_true", 
+  parser.add_argument("-g","--no-growth", action="store_true",
       help="Do not randomize player stat growth.")
-  parser.add_argument("-G","--ultra-growth", action="store_true", 
+  parser.add_argument("-G","--ultra-growth", action="store_true",
       help="Enable ultra randomization of player stat growth.")
-  parser.add_argument("-H","--speed-hacks", action="store_true", 
+  parser.add_argument("-H","--speed-hacks", action="store_true",
       help="Apply game speed hacks (experimental)")
-  parser.add_argument("-m","--no-spells", action="store_true", 
+  parser.add_argument("-m","--no-spells", action="store_true",
       help="Do not randomize the level spells are learned.")
-  parser.add_argument("-M","--ultra-spells", action="store_true", 
+  parser.add_argument("-M","--ultra-spells", action="store_true",
       help="Enable ultra randomization of the level spells are learned.")
-  parser.add_argument("--no-map", action="store_true", 
+  parser.add_argument("-r", "-R", "--menu-wrap", action="store_true",
+      help="Enable menu wrap-around (experimental)")
+  parser.add_argument("--no-map", action="store_true",
       help="Do not generate a new world map.")
   parser.add_argument("-o","--output-dir", type=str, default="",
       help="The directory where the randomized ROM will be written")
-  parser.add_argument("-p","--no-patterns", action="store_true", 
+  parser.add_argument("-p","--no-patterns", action="store_true",
       help="Do not randomize enemy attack patterns.")
-  parser.add_argument("-P","--ultra-patterns", action="store_true", 
+  parser.add_argument("-P","--ultra-patterns", action="store_true",
       help="Enable ultra randomization of enemy attack patterns.")
-  parser.add_argument("-s","-S","--seed", type=int, 
+  parser.add_argument("-s","-S","--seed", type=int,
       help="Specify a seed to be used for randomization.")
-  parser.add_argument("-t","-T","--no-towns", action="store_true", 
+  parser.add_argument("-t","-T","--no-towns", action="store_true",
       help="Do not randomize towns.")
-  parser.add_argument("-w","-W","--no-shops", action="store_true", 
+  parser.add_argument("-w","-W","--no-shops", action="store_true",
       help="Do not randomize weapon shops.")
-  parser.add_argument("-u","-U","--ultra", action="store_true", 
+  parser.add_argument("-u","-U","--ultra", action="store_true",
       help="Enable all 'ultra' options.")
-  parser.add_argument("-z","--no-zones", action="store_true", 
+  parser.add_argument("-z","--no-zones", action="store_true",
       help="Do not randomize enemy zones.")
-  parser.add_argument("-Z","--ultra-zones", action="store_true", 
+  parser.add_argument("-Z","--ultra-zones", action="store_true",
       help="Enable ultra randomization of enemy zones.")
-  parser.add_argument("-v","-V","--version", action="version", 
+  parser.add_argument("-v","-V","--version", action="version",
       version="%%(prog)s %s" % VERSION)
   # make this optional so the gui can use it.
   parser.add_argument("filename", nargs="?", default='',
@@ -1021,7 +1027,7 @@ def main():
   if not(len(args.filename)):
     print("\nThe filename of the ROM is required.")
     sys.exit(-1)
-  
+
   randomize(args)
 
 def randomize(args):
@@ -1046,7 +1052,7 @@ def randomize(args):
   else:
     print("Processing Dragon Warrior PRG%d ROM..." % result)
     prg = "PRG%d." % result
-      
+
   if not args.no_map:
     print("Generating new overworld map...")
     flags += "A"
@@ -1104,7 +1110,9 @@ def randomize(args):
   rom.update_drops()
   rom.update_enemy_hp()
   rom.update_mp_reqs()
-  rom.menu_wrap()
+  if args.menu_wrap:
+      flags += "R"
+      rom.menu_wrap()
 
   if args.very_fast_leveling:
     flags += "F"
@@ -1138,11 +1146,11 @@ def randomize(args):
 
   if args.output_dir and not args.output_dir.endswith(os_sep):
     args.output_dir += os_sep
-  output_filename = "%sDWRando.%s.%d.%snes" % (args.output_dir, 
+  output_filename = "%sDWRando.%s.%d.%snes" % (args.output_dir,
       flags, args.seed, prg)
   rom.write(output_filename)
   if args.ips:
-    output_filename = "%sDWRando.%s.%d.%sips" % (args.output_dir, 
+    output_filename = "%sDWRando.%s.%d.%sips" % (args.output_dir,
         flags, args.seed, prg)
     rom.write(output_filename, rom.patch.encode())
   print ("New ROM Checksum: %s" % rom.sha1())

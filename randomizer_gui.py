@@ -120,6 +120,7 @@ class RandomizerUI(Frame):
     self.args.no_towns = not 'T' in flags
     self.args.no_shops = not 'W' in flags
     self.args.death_necklace = 'D' in flags
+    self.args.menu_wrap = 'R' in flags
     self.args.ips = bool(self.toggle_frame.ips_var.get())
 
     self.args.no_zones = self.zone_frame.get() == 'none'
@@ -309,6 +310,7 @@ class ToggleFrame(LabelFrame):
     self.shops_var = IntVar()
     self.speed_hacks_var = IntVar()
     self.death_necklace_var = IntVar()
+    self.menu_wrap_var = IntVar()
     self.ips_copy_var = IntVar()
     self.createWidgets()
 
@@ -324,14 +326,17 @@ class ToggleFrame(LabelFrame):
     self.chests_button = \
       Checkbutton(self, text="Shuffle Chests", variable=self.chests_var)
     self.searchable_button = \
-      Checkbutton(self, text="Shuffle Searchable Items", 
+      Checkbutton(self, text="Shuffle Searchable Items",
           variable=self.searchable_var)
     self.speed_hacks_button = \
-      Checkbutton(self, text="Enable Speed Hacks", 
+      Checkbutton(self, text="Enable Speed Hacks",
           variable=self.speed_hacks_var)
     self.death_necklace_button = \
-      Checkbutton(self, text="Enable Death Necklace Funcionality (experimental)", 
+      Checkbutton(self, text="Enable Death Necklace Funcionality (experimental)",
           variable=self.death_necklace_var)
+    self.menu_wrap_button = \
+      Checkbutton(self, text="Enable Menu Wrap-around (experimental)",
+          variable=self.menu_wrap_var)
     self.ips_copy_button   = \
       Checkbutton(self, text="Copy IPS Checksum to Clipboard", variable=self.ips_copy_var)
     self.map_button.grid(           column=0, row=0, sticky="NSW")
@@ -339,10 +344,11 @@ class ToggleFrame(LabelFrame):
     self.shops_button.grid(        column=0, row=2, sticky="NSW")
     self.chests_button.grid(        column=1, row=0, sticky="NSW")
     self.searchable_button.grid(    column=1, row=1, sticky="NSW")
-    self.ips_button.grid(           column=1, row=2, sticky="NSW")
+    self.menu_wrap_button.grid(     column=1, row=2, sticky="NSW")
     self.death_necklace_button.grid(column=2, row=0, sticky="NSW")
     self.speed_hacks_button.grid(   column=2, row=1, sticky="NSW")
-    self.ips_copy_button.grid(      column=2, row=2, sticky="NSW")
+    self.ips_button.grid(           column=2, row=2, sticky="NSW")
+    self.ips_copy_button.grid(      column=2, row=3, sticky="NSW")
     self.columnconfigure(0, weight=1)
     self.columnconfigure(1, weight=1)
     self.columnconfigure(2, weight=1)
@@ -350,10 +356,11 @@ class ToggleFrame(LabelFrame):
   def trace(self, func):
     self.map_var.trace('w', func) 
     self.chests_var.trace('w', func) 
-    self.death_necklace_var.trace('w', func) 
-    self.speed_hacks_var.trace('w', func) 
-    self.searchable_var.trace('w', func) 
-    self.shops_var.trace('w', func) 
+    self.death_necklace_var.trace('w', func)
+    self.menu_wrap_var.trace('w', func)
+    self.speed_hacks_var.trace('w', func)
+    self.searchable_var.trace('w', func)
+    self.shops_var.trace('w', func)
     self.towns_var.trace('w', func) 
 
   def from_flags(self, flags):
@@ -377,6 +384,10 @@ class ToggleFrame(LabelFrame):
       self.searchable_var.set(1)
     else:
       self.searchable_var.set(0)
+    if 'r' in flags.lower():
+      self.menu_wrap_var.set(1)
+    else:
+      self.menu_wrap_var.set(0)
     if 't' in flags.lower():
       self.towns_var.set(1)
     else:
@@ -399,6 +410,8 @@ class ToggleFrame(LabelFrame):
       flags += 'H'
     if self.searchable_var.get():
       flags += 'I'
+    if self.menu_wrap_var.get():
+      flags += 'R'
     if self.towns_var.get():
       flags += 'T'
     if self.shops_var.get():

@@ -10,7 +10,7 @@ from worldmap import WorldMap, MapGrid
 import ips
 from os import sep as os_sep
 
-VERSION = "1.3-dev-2016-11-29"
+VERSION = "1.3-beta-2016-12-11"
 # sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c',  # Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb',  # Dragon Warrior (U) (PRG0) [b1].nes
@@ -235,6 +235,15 @@ class Rom:
         # Let's not remember killing it...
         self.encounter_3_kill[1] = 0
         return True
+
+    def shuffle_music(self):
+        print("Shuffling music...")
+        music_choice = ((3, 4, 5) * 4) + (6, 7, 8, 9, 10, 11, 12, 13, 14)
+        new_music = bytearray([random.choice(music_choice) for _ in range(29)])
+        music_ips = ips.Patch()
+        music_ips.add_record(0x31bf, new_music)
+        self.add_patch(0x31bf, new_music)
+        music_ips.apply(self.rom_data)
 
     def randomize_zone_layout(self):
         """
@@ -972,9 +981,6 @@ def parse_args():
                         help="Do not randomize chest contents.")
     parser.add_argument("-d", "-D", "--death-necklace", action="store_true",
                         help="Enable Death Necklace functionality (+10 ATK -25%% HP)")
-    parser.add_argument("-i", "-I", "--no-searchitems", action="store_true",
-                        help="Do not randomize the locations of searchable items (Fairy Flute, "
-                             "Erdrick's Armor, Erdrick's Token).")
     parser.add_argument("--ips", action="store_true",
                         help="Also create an IPS patch for the original ROM")
     parser.add_argument("-f", "--fast-leveling", action="store_true",
@@ -987,10 +993,13 @@ def parse_args():
                         help="Enable ultra randomization of player stat growth.")
     parser.add_argument("-H", "--speed-hacks", action="store_true",
                         help="Apply game speed hacks (experimental)")
+    parser.add_argument("-i", "-I", "--no-searchitems", action="store_true",
+                        help="Do not randomize the locations of searchable items (Fairy Flute, "
+                             "Erdrick's Armor, Erdrick's Token).")
+    parser.add_argument("-k", "-K", "--shuffle_music", action="store_true",
+                        help="Shuffle the game music.")
     parser.add_argument("-m", "--no-spells", action="store_true",
                         help="Do not randomize the level spells are learned.")
-    parser.add_argument("-M", "--ultra-spells", action="store_true",
-                        help="Enable ultra randomization of the level spells are learned.")
     parser.add_argument("-r", "-R", "--menu-wrap", action="store_true",
                         help="Enable menu wrap-around (experimental)")
     parser.add_argument("--no-map", action="store_true",
@@ -1003,6 +1012,8 @@ def parse_args():
                         help="Enable ultra randomization of enemy attack patterns.")
     parser.add_argument("-s", "-S", "--seed", type=int,
                         help="Specify a seed to be used for randomization.")
+    parser.add_argument("-M", "--ultra-spells", action="store_true",
+                        help="Enable ultra randomization of the level spells are learned.")
     parser.add_argument("-t", "-T", "--no-towns", action="store_true",
                         help="Do not randomize towns.")
     parser.add_argument("-w", "-W", "--no-shops", action="store_true",
@@ -1136,12 +1147,19 @@ def randomize(args):
         flags += 'D'
 
     rom.commit()
+    ips_checksum = rom.sha1(rom.patch.encode())
+
+    if args.shuffle_music:
+        flags += 'K'
+        rom.shuffle_music()  # call this last so it doesn't affect the IPS checksum (since it doesn't affect gameplay)
 
     # sort the flags alphabetically
     flags = list(flags)
     flags.sort()
     flags = ''.join(flags)
 
+    print("IPS Checksum: %s" % ips_checksum)
+    print("New ROM Checksum: %s" % rom.sha1())
     if args.output_dir and not args.output_dir.endswith(os_sep):
         args.output_dir += os_sep
     output_filename = "%sDWRando.%s.%d.%snes" % (args.output_dir,
@@ -1151,8 +1169,6 @@ def randomize(args):
         output_filename = "%sDWRando.%s.%d.%sips" % (args.output_dir,
                                                      flags, args.seed, prg)
         rom.write(output_filename, rom.patch.encode())
-    print("New ROM Checksum: %s" % rom.sha1())
-    print("IPS Checksum: %s" % rom.sha1(rom.patch.encode()))
 
 
 if __name__ == "__main__":

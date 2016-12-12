@@ -117,6 +117,7 @@ class RandomizerUI(Frame):
         self.args.no_map = not 'A' in flags
         self.args.speed_hacks = 'H' in flags
         self.args.no_search_items = not 'I' in flags
+        self.args.shuffle_music = 'K' in flags
         self.args.no_chests = not 'C' in flags
         self.args.no_towns = not 'T' in flags
         self.args.no_shops = not 'W' in flags
@@ -316,6 +317,7 @@ class ToggleFrame(LabelFrame):
         self.death_necklace_var = IntVar()
         self.menu_wrap_var = IntVar()
         self.ips_copy_var = IntVar()
+        self.music_var = IntVar()
         self.create_widgets()
 
     def create_widgets(self):
@@ -341,11 +343,15 @@ class ToggleFrame(LabelFrame):
         self.menu_wrap_button = \
             Checkbutton(self, text="Enable Menu Wrap-around (experimental)",
                         variable=self.menu_wrap_var)
+        self.music_button = \
+            Checkbutton(self, text="Shuffle the game music",
+                        variable=self.music_var)
         self.ips_copy_button = \
             Checkbutton(self, text="Copy IPS Checksum to Clipboard", variable=self.ips_copy_var)
         self.map_button.grid(column=0, row=0, sticky="NSW")
         self.towns_button.grid(column=0, row=1, sticky="NSW")
         self.shops_button.grid(column=0, row=2, sticky="NSW")
+        self.music_button.grid(column=0, row=3, sticky="NSW")
         self.chests_button.grid(column=1, row=0, sticky="NSW")
         self.searchable_button.grid(column=1, row=1, sticky="NSW")
         self.menu_wrap_button.grid(column=1, row=2, sticky="NSW")
@@ -365,6 +371,7 @@ class ToggleFrame(LabelFrame):
         self.speed_hacks_var.trace('w', func)
         self.searchable_var.trace('w', func)
         self.shops_var.trace('w', func)
+        self.music_var.trace('w', func)
         self.towns_var.trace('w', func)
 
     def from_flags(self, flags):
@@ -388,6 +395,10 @@ class ToggleFrame(LabelFrame):
             self.searchable_var.set(1)
         else:
             self.searchable_var.set(0)
+        if 'k' in flags.lower():
+            self.music_var.set(1)
+        else:
+            self.music_var.set(0)
         if 'r' in flags.lower():
             self.menu_wrap_var.set(1)
         else:
@@ -413,6 +424,8 @@ class ToggleFrame(LabelFrame):
             flags += 'H'
         if self.searchable_var.get():
             flags += 'I'
+        if self.music_var.get():
+            flags += 'K'
         if self.menu_wrap_var.get():
             flags += 'R'
         if self.towns_var.get():

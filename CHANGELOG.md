@@ -1,10 +1,40 @@
+# 1.3 - Lots of balance changes and improvements #
+###### Unreleased ######
+
+ * Graphical interface! DWRandomizer now has a GUI for a better user experience.
+ * There is now a Windows installer for DWRandomizer - it will now be added to the start menu.
+ * The ROM output directory can now be specified in the GUI or from the command line via the `--output-dir` option
+ * Fixed the Cantlin NPC dialog when the overworld item is more than 100 steps from the castle.
+ * Added back the silver harp.
+ > * The NPC in the Northern Shrine will now always have the Staff of Rain.
+ > * Enemies summoned by the harp will now be a random set of 8 different enemies.
+ * Buffed some of the weaker spells.
+ > * `HEAL` now has a range of 18-25 HP.
+ > * `HURT` now has a range of 9-16 HP.
+ * Menu wrap-around.
+ > * Various menus in the game will now have the cursor wrap from top to bottom *(optional)*.
+ * The Death Necklace will now always appear in it's chest the first time. You can still only get one.
+ * Death Necklace now has an *optional* function other than cursing you. It can give a +10 ATK at the expense of 25% of your HP (you are still cursed).
+ * Some enemy balance changes:
+ > * Reduced Droll HP from 35 to 20
+ > * Reduced Poltergeist HP from 26 to 23
+ > * Reduced Specter HP from 48 to 33
+ > * Reduced Goldman HP from 110 to 35
+ * Some changes to zone randomization:
+ > * Zones 1 & 2 will now have Wolf and below only.
+ > * Tantegel will have 2 of each of these zones surrounding it
+ >> * Zone 1 will be to the east and west
+ >> * Zone 2 will be to the north and south
+ > * All other zones will be random (using a new algorithm)
+ >> * The new algorithm ensures each zone will appear on the overworld no more than 5 times.
+
+
 
 # 1.2.1 - Some bug fixes #
 ###### Released Aug 6, 2016 ######
 
  * Fixed an issue where Garin's Grave and Tantegel Basement weren't randomized
  * Moved "speed hacks" option to a top level question.
-
 
 
 
@@ -43,7 +73,7 @@ Some refinement to growth curves
 # 1.1 - Game length improvements # 
 ###### Released Jun 6, 2016 ######
 
- * Added --fast-leveling (-f) and --very-fast-leveling (-F) options.
+ * Added `--fast-leveling` (`-f`) and `--very-fast-leveling` (`-F`) options.
  * The XP requirements for each level will be 75% and 50% of normal, respectively.
  * Refined the player growth curves so that the average level to finish the game is level 15.
  * Raised the encounter rate in zone 0 to the same as other zones
@@ -68,7 +98,7 @@ What's New?
 
  * Added a new exit from the Tantegel throne room. Now you can die even faster!
  * Moved the maximum spell level in ultra to 16 from 20. Too many grindfests resulted from learning HEALMORE at 20.
- * Fixed a bug in normal rando where HEALMORE was being moved to level 8 instead of REPEL.
+ * Fixed a bug in normal rando where `HEALMORE` was being moved to level 8 instead of `REPEL`.
  * Removed the Silver Harp and replaced it with a key.
  * Changed Erdrick's Token chest to contain a key instead of gold if the token is on the ground.
  * Fixed a bug where towns were occasionally being placed on top of other towns/castles.

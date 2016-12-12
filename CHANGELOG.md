@@ -38,7 +38,7 @@
 
 
 
-# 1.2 - Speed hacks & maps are now more random! # 
+# 1.2 - Speed hacks & maps are now more random! #
 ###### Released Aug 5, 2016 ######
 
 * A new option --speed-hacks (-H) has been added to speed up text and some other aspects of the game.
@@ -52,7 +52,7 @@
 
 
 
-# 1.1.2 - Growth refinement # 
+# 1.1.2 - Growth refinement #
 ###### Released Jun 25, 2016 ######
 
 Some refinement to growth curves
@@ -63,14 +63,14 @@ Some refinement to growth curves
 
 
 
-# 1.1.1 - Fixed a crash # 
+# 1.1.1 - Fixed a crash #
 ###### Released Jun 7, 2016 ######
 
 * Fixed an issue where the program crashed when formatting the title screen with short seed numbers.
 
 
 
-# 1.1 - Game length improvements # 
+# 1.1 - Game length improvements #
 ###### Released Jun 6, 2016 ######
 
 * Added `--fast-leveling` (`-f`) and `--very-fast-leveling` (`-F`) options.
@@ -83,7 +83,7 @@ Some refinement to growth curves
 
 
 
-# 1.0 - We're stable boyz! 1.0!! # 
+# 1.0 - We're stable boyz! 1.0!! #
 ###### Released Apr 26 ######
 
 * Added an IPS checksum and IPS file generation.
@@ -91,7 +91,7 @@ Some refinement to growth curves
 
 
 
-# 1.0-rc2 - Minor bug fixes and tweaks # 
+# 1.0-rc2 - Minor bug fixes and tweaks #
 ###### Pre-release - Released Feb 29, 2016 ######
 
 What's New?
@@ -105,7 +105,7 @@ What's New?
 
 
 
-# 1.0-rc1 - 1.0 Release Candidate 1! Randomly Generated Map & More! # 
+# 1.0-rc1 - 1.0 Release Candidate 1! Randomly Generated Map & More! #
 ###### Pre-release - Released Jan 12, 2016 ######
 
 Generated Overworld!
@@ -146,7 +146,7 @@ This version also includes minor tweaks to zone randomization in normal mode.
 
 
 
-# 0.9.4 - More randomization! # 
+# 0.9.4 - More randomization! #
 ###### Pre-release - Released Dec 22, 2015 ######
 
 * Added randomization of player HP, MP, strength, and agility (+/- 20%).
@@ -182,7 +182,7 @@ This version also includes minor tweaks to zone randomization in normal mode.
 
 
 
-# 0.9.1 - - Bugfix for initial beta #
+# 0.9.1 - Bugfix for initial beta #
 ###### Pre-release - Released Dec 2, 2015 ######
 
 * Added fix for fighter's ring. It now adds +2 to attack. Special thanks to Zombero for supplying the ips patch for this.

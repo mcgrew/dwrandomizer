@@ -1,5 +1,5 @@
-# 1.3 - Lots of balance changes and improvements #
-###### Unreleased ######
+# 1.3-rc1 - Lots of balance changes and improvements #
+###### Pre-release - Released Dec 11, 2016 ######
 
  * Graphical interface! DWRandomizer now has a GUI for a better user experience.
  * There is now a Windows installer for DWRandomizer - it will now be added to the start menu.

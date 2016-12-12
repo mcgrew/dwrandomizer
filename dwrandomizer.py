@@ -238,7 +238,7 @@ class Rom:
 
     def shuffle_music(self):
         print("Shuffling music...")
-        music_choice = ((3, 4, 5) * 4) + (6, 7, 8, 9, 10, 11, 12, 13, 14)
+        music_choice = ((1, 2, 3, 4, 5) * 3) + (6, 7, 8, 9, 10, 11, 12, 13, 14)
         new_music = bytearray([random.choice(music_choice) for _ in range(29)])
         music_ips = ips.Patch()
         music_ips.add_record(0x31bf, new_music)

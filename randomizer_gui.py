@@ -36,6 +36,7 @@ class RandomizerUI(Frame):
         self.create_widgets()
         self.grid(sticky="NSEW")
         self.args = dwrandomizer.parse_args()
+        self.master.geometry('750x500+100+100')  # set a reasonable default
         self.load_config()
         self.master.columnconfigure(0, weight=1)
         self.master.rowconfigure(0, weight=1)
@@ -152,6 +153,7 @@ class RandomizerUI(Frame):
 
     def save_config(self):
         self.configuration = {'flags': self.flags_frame.get(),
+                              'seed': self.seed_frame.get(),
                               'ips': bool(self.toggle_frame.ips_var.get()),
                               'ips_copy': bool(self.toggle_frame.ips_copy_var.get()),
                               'geometry': self.master.geometry(),
@@ -172,6 +174,7 @@ class RandomizerUI(Frame):
                     self.configuration = json.load(cfgfile)
                 cfg = self.configuration
                 if 'flags' in cfg: self.flags_frame.set(cfg['flags'])
+                if 'seed' in cfg: self.seed_frame.set(cfg['seed'])
                 if 'ips' in cfg: self.toggle_frame.ips_var.set(int(cfg['ips']))
                 if 'ips_copy' in cfg: self.toggle_frame.ips_copy_var.set(int(cfg['ips_copy']))
                 if 'geometry' in cfg: self.master.geometry(cfg['geometry'])

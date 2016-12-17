@@ -930,9 +930,13 @@ class Rom:
           flags: str
             The flags used to generate this ROM.
         """
-        print("Updating title screen...")
         # There are no lower case characters in the title screen alphabet :(
         # I'm not sure how to deal with this yet wrt flags.
+        print("Updating title screen...")
+        # sort the flags alphabetically
+        flags = list(flags)
+        flags.sort()
+        flags = ''.join(flags)
         padding = lambda s: struct.pack('BBB', 0xf7, s, 0x5f)
         padline = lambda p: padding(math.floor((32 - len(p)) / 2)) + self.ascii2dw(p) + \
                             padding(math.ceil((32 - len(p)) / 2)) + b'\xfc'
@@ -1140,6 +1144,9 @@ def randomize(args):
             flags += "m"
             rom.randomize_spell_learning()
 
+    if args.shuffle_music:
+        flags += 'K'
+
     rom.update_title_screen(args.seed, flags)
 
     if args.death_necklace:
@@ -1150,7 +1157,6 @@ def randomize(args):
     ips_checksum = rom.sha1(rom.patch.encode())
 
     if args.shuffle_music:
-        flags += 'K'
         rom.shuffle_music()  # call this last so it doesn't affect the IPS checksum (since it doesn't affect gameplay)
 
     # sort the flags alphabetically

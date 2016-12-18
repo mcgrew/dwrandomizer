@@ -245,6 +245,12 @@ class Rom:
         self.add_patch(0x31bf, new_music)
         music_ips.apply(self.rom_data)
 
+    def disable_music(self):
+        music_ips = ips.Patch()
+        music_ips.add_record(0x31bf, 0, 29)
+        self.add_patch(0x31bf, 0, 29)
+        music_ips.apply(self.rom_data)
+
     def randomize_zone_layout(self):
         """
         Randomizes enemy zone layout on the overworld map.
@@ -1000,7 +1006,7 @@ def parse_args():
     parser.add_argument("-i", "-I", "--no-searchitems", action="store_true",
                         help="Do not randomize the locations of searchable items (Fairy Flute, "
                              "Erdrick's Armor, Erdrick's Token).")
-    parser.add_argument("-k", "-K", "--shuffle_music", action="store_true",
+    parser.add_argument("-k", "-K", "--shuffle-music", action="store_true",
                         help="Shuffle the game music.")
     parser.add_argument("-m", "--no-spells", action="store_true",
                         help="Do not randomize the level spells are learned.")
@@ -1014,6 +1020,9 @@ def parse_args():
                         help="Do not randomize enemy attack patterns.")
     parser.add_argument("-P", "--ultra-patterns", action="store_true",
                         help="Enable ultra randomization of enemy attack patterns.")
+    parser.add_argument("-q", "-Q", "--disable-music", action="store_true",
+                        help="Disables most of the game music (beta). This doesn't work for battle music yet, and some"
+                             "other tunes, such as the flute, death music, victory music, etc., still play.")
     parser.add_argument("-s", "-S", "--seed", type=int,
                         help="Specify a seed to be used for randomization.")
     parser.add_argument("-M", "--ultra-spells", action="store_true",
@@ -1144,7 +1153,9 @@ def randomize(args):
             flags += "m"
             rom.randomize_spell_learning()
 
-    if args.shuffle_music:
+    if args.disable_music:
+        flags += 'Q'
+    elif args.shuffle_music:
         flags += 'K'
 
     rom.update_title_screen(args.seed, flags)
@@ -1156,7 +1167,9 @@ def randomize(args):
     rom.commit()
     ips_checksum = rom.sha1(rom.patch.encode())
 
-    if args.shuffle_music:
+    if args.disable_music:
+        rom.disable_music()  # call this last so it doesn't affect the IPS checksum (since it doesn't affect gameplay)
+    elif args.shuffle_music:
         rom.shuffle_music()  # call this last so it doesn't affect the IPS checksum (since it doesn't affect gameplay)
 
     # sort the flags alphabetically

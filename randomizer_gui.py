@@ -116,10 +116,11 @@ class RandomizerUI(Frame):
         self.args.force = True
         flags = self.toggle_frame.flags()
         self.args.no_map = not 'A' in flags
+        self.args.no_chests = not 'C' in flags
         self.args.speed_hacks = 'H' in flags
         self.args.no_search_items = not 'I' in flags
         self.args.shuffle_music = 'K' in flags
-        self.args.no_chests = not 'C' in flags
+        self.args.disable_music = 'Q' in flags
         self.args.no_towns = not 'T' in flags
         self.args.no_shops = not 'W' in flags
         self.args.death_necklace = 'D' in flags
@@ -321,6 +322,7 @@ class ToggleFrame(LabelFrame):
         self.menu_wrap_var = IntVar()
         self.ips_copy_var = IntVar()
         self.music_var = IntVar()
+        self.music_off_var = IntVar()
         self.create_widgets()
 
     def create_widgets(self):
@@ -347,8 +349,11 @@ class ToggleFrame(LabelFrame):
             Checkbutton(self, text="Enable Menu Wrap-around (experimental)",
                         variable=self.menu_wrap_var)
         self.music_button = \
-            Checkbutton(self, text="Shuffle the game music",
+            Checkbutton(self, text="Shuffle the game music(beta)",
                         variable=self.music_var)
+        self.music_off_button = \
+            Checkbutton(self, text="Disable the game music(beta)",
+                        variable=self.music_off_var)
         self.ips_copy_button = \
             Checkbutton(self, text="Copy IPS Checksum to Clipboard", variable=self.ips_copy_var)
         self.map_button.grid(column=0, row=0, sticky="NSW")
@@ -358,6 +363,7 @@ class ToggleFrame(LabelFrame):
         self.chests_button.grid(column=1, row=0, sticky="NSW")
         self.searchable_button.grid(column=1, row=1, sticky="NSW")
         self.menu_wrap_button.grid(column=1, row=2, sticky="NSW")
+        self.music_off_button.grid(column=1, row=3, sticky="NSW")
         self.death_necklace_button.grid(column=2, row=0, sticky="NSW")
         self.speed_hacks_button.grid(column=2, row=1, sticky="NSW")
         self.ips_button.grid(column=2, row=2, sticky="NSW")
@@ -375,6 +381,7 @@ class ToggleFrame(LabelFrame):
         self.searchable_var.trace('w', func)
         self.shops_var.trace('w', func)
         self.music_var.trace('w', func)
+        self.music_off_var.trace('w', func)
         self.towns_var.trace('w', func)
 
     def from_flags(self, flags):
@@ -402,6 +409,10 @@ class ToggleFrame(LabelFrame):
             self.music_var.set(1)
         else:
             self.music_var.set(0)
+        if 'q' in flags.lower():
+            self.music_off_var.set(1)
+        else:
+            self.music_off_var.set(0)
         if 'r' in flags.lower():
             self.menu_wrap_var.set(1)
         else:
@@ -431,6 +442,8 @@ class ToggleFrame(LabelFrame):
             flags += 'K'
         if self.menu_wrap_var.get():
             flags += 'R'
+        if self.music_off_var.get():
+            flags += 'Q'
         if self.towns_var.get():
             flags += 'T'
         if self.shops_var.get():

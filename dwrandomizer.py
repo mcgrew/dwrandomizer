@@ -604,24 +604,27 @@ class Rom:
         # fighter's ring fix
         self.add_patches({
             # fighter's ring fix
+            # 0xf119: (0x4c, 0x7d, 0xff),
             0xf10c: (0x20, 0x7d, 0xff, 0xea),
             0xff8d: (
                 # ff7d:
-                0x85, 0xcd,  # STA $00CD  ; replaces code removed from $F00C
+                # 0x85, 0xcd,  # STA $00CD  ; replaces code removed from $F109
                 0xa5, 0xcf,  # LDA $00CF  ; load status bits
                 0x29, 0x20,  # AND #$20   ; check bit 6 (fighter's ring)
                 0xf0, 0x06,  # BEQ $FF8B
                 0xa5, 0xcc,  # LDA $00CC  ; load attack power
-                0x69, rp,  # ADC #$??   ; add fighter's ring power.
+                0x69, rp,    # ADC #$??   ; add fighter's ring power.
                 0x85, 0xcc,  # STA $00CC  ; store new attack power
                 # ff8b:
-                0x4c, 0x54, 0xff  # JMP $FF54  ; jump to next section
-            ),
-            0xff64: (
-                # ff54:
                 0xa5, 0xcf,  # LDA $00CF   ; replaces code removed from $F00E
                 0x60,  # RTS
+                # 0x4c, 0x54, 0xff  # JMP $FF54  ; jump to next section
             ),
+            # 0xff64: (
+            #     # ff54:
+            #     0xa5, 0xcf,  # LDA $00CF   ; replaces code removed from $F00E
+            #     0x60,  # RTS
+            # ),
 
             0xde33: (  # Changes the enemies summoned by the harp.
                 # de23:
@@ -653,113 +656,127 @@ class Rom:
         """
         Adds functionality to the death necklace (+10 ATK and -25% HP).
         """
-        # This replaces the code the fighters ring code jumps to which adds the
-        # death necklace functionality
+        # This adds the death necklace functionality
         print("Adding functionality for the death necklace (+10 ATK, -25% HP)...")
         self.add_patches({
+            0xf0dd: (
+                0x20, 0x54, 0xff  # JSR $FF54  ; jump to death necklace code
+                # 0x20, 0xb7, 0xbf  # JSR $FF54  ; jump to death necklace code
+            ),
+            # 0x7fc7: (
             0xff64: (
                 # ff54:
-                0xa5, 0xcf,  # LDA $00CF  ; load status bits
-                0x29, 0x80,  # AND #$80   ; check bit 8 (death necklace)
-                0xf0, 0x17,  # BEQ $FF71
-                0xa5, 0xca,  # LDA $00CA  ; load max HP
-                0x46, 0xca,  # LSR $00CA  ; divide max HP by 4
+                0xa5, 0xcf,  # LDA $00CF ; load status bits
+                0x29, 0x80,  # AND #$80  ; check bit 8 (death necklace)
+                0xf0, 0x16,  # BEQ $FF70
+                # 0xf0, 0x17,  # BEQ $FF70
+                0xa5, 0xca,  # LDA $00CA ; load max HP
+                0x46, 0xca,  # LSR $00CA ; divide max HP by 4
                 0x46, 0xca,  # LSR $00CA
                 # ff60:
-                0xe5, 0xca,  # SBC $00CA  ; subtract the result
-                0x85, 0xca,  # STA $00CA  ; rewrite max HP
-                0xc5, 0xc5,  # CMP $00C5  ; compare to current HP
+                0xe5, 0xca,  # SBC $00CA ; subtract the result
+                0x85, 0xca,  # STA $00CA ; rewrite max HP
+                0xc5, 0xc5,  # CMP $00C5 ; compare to current HP
                 0xb0, 0x02,  # BCS $FF6A
-                0x85, 0xc5,  # STA $00C5  ; set current HP to max HP
+                0x85, 0xc5,  # STA $00C5 ; set current HP to max HP
                 # ff6a:
-                0x18,  # CLC        ; clear the carry bit
-                0xa5, 0xcc,  # LDA $00CC  ; load attack power
-                0x69, 0x0a,  # ADD #$0A   ; add 10
-                0x85, 0xcc,  # STA $00CC  ; rewrite attack power
-                # ff71:
-                0xa5, 0xcf,  # LDA $00CF   ; replaces code removed from $F00E
-                0x60,  # RTS
+                # 0x18,        # CLC       ; Clear the carry bit
+                0xa5, 0xc8,  # LDA $00CC ; load strength
+                0x69, 0x0a,  # ADD #$0A  ; add 10
+                0x85, 0xc8,  # STA $00CC ; rewrite strength
+                # ff70:
+                0xa5, 0xbe,  # LDA $00BE ; replaces code removed from $F0CD
+                0x4a,        # LSR       ; replaces code removed from $F0CF
+                0x60,        # RTS
             ),
         })
 
     def menu_wrap(self):
         print("Enabling menu wraparound...")
-        self.add_patches({  # implement up/down wraparound for the menu (from @gameboy9)
+        self.add_patches({  # implement up/down wraparound for most menus (from @gameboy9)
             0x69f0: (
                 # 69e0
                 0x4c, 0xa0, 0xbe,  # JMP $BEA0
-                0xea,  # NOP
+                0xea,              # NOP
             ),
             0x6a33: (
                 # 6a23:
-                0x4c, 0xd0, 0xbe,  # JMP #BED0
-                0xea,  # NOP
+                0x4c, 0xcd, 0xbe,  # JMP #BECD
+                0xea,              # NOP
             ),
             0x7eb0: (
+                # 7e9e:
+                0xa5, 0x45,        # LDA $0045 ; Load the map number
                 # 7ea0:
-                0xa5, 0x45,  # LDA $0045
-                0xf0, 0x5c,  # BEQ
-                0xad, 0xe5, 0x64,  # LDA $64E5
-                0xc9, 0x04,  # CMP #$04
-                0xf0, 0x1e,  # BEQ
-                0x20, 0x30, 0xab,  # JMP $AB30
-                0xa5, 0xd9,  # LDA $00D9
-                0xd0, 0x14,  # BNE
-                0xad, 0xe5, 0x64,  # LDA $64E5
+                0xf0, 0x57,        # BEQ $7EF9 ; If it's 0 (the title screen), jump to $7EF9
+                0xad, 0xe5, 0x64,  # LDA $64E5 ; Load ???
+                0xc9, 0x04,        # CMP #$04  ; Compare to ???
+                0xf0, 0x1e,        # BEQ $7ED7 ; If they are equal, branch to $7ED7 (return)
+                0x20, 0x30, 0xab,  # JMP $AB30 ; Jump to $AB30
+                0xa5, 0xd9,        # LDA $00D9 ; Load Cursor Y position
+                0xd0, 0x14,        # BNE $7ED4 ; If it's not 0, jump to $7ED4
                 # 7eb0:
-                0xe9, 0x03,  # SBC #$03
-                0x4a,  # LSR
-                0xe9, 0x00,  # SBC #$00
-                0x85, 0xd9,  # STA $00D9
-                0x0a,  # ASL
-                0x6d, 0xf3, 0x64,  # ADC $64F3
-                0x8d, 0xf3, 0x64,  # STA $64F3
-                0x4c, 0x27, 0xaa,  # JMP $AA27
-                # 7ec0:
-                0x4c, 0xe4, 0xa9,  # JMP $A9E4
-                0x60,  # RTS
-                0xa5, 0xd9, 0x60
+                0xad, 0xe5, 0x64,  # LDA $64E5 ; Load ?
+                0xe9, 0x03,        # SBC #$03  ; Subtract 3
+                0x4a,              # LSR       ; Divide by 2
+                0xe9, 0x00,        # SBC #$00  ; Subtract 0 (?)
+                0x85, 0xd9,        # STA $00D9 ; Rewrite map number (?)
+                0x0a,              # ASL       ; Multiply by 2 (?)
+                0x6d, 0xf3, 0x64,  # ADC $64F3 ; Add ???
+                0x8d, 0xf3, 0x64,  # STA $64F3 ; Write to ???
+                # 7ec2:
+                0x4c, 0x27, 0xaa,  # JMP $AA27 ; Jump to AA27
+                # 7ed4:
+                0x4c, 0xe4, 0xa9,  # JMP $A9E4 ; Jump to $A9E4
+                # 7ed7:
+                0x60,              # RTS       ; Return
+                0xa5, 0xd9,        # LDA $00D9 ; Load Cursor Y position
+                0x60               # RTS       ; Return
             ),
-            0x7ee0: (
+            0x7edd: (
+                # 7ecb:
+                0x48,              # PHA       ; Push A to stack
+                0xa5, 0x45,        # LDA $0045 ; Load map number
+                0xf0, 0x30,        # BEQ $7F00 ; If it's 0, branch to $7F00
                 # 7ed0:
-                0x48,  # PHA
-                0xa5, 0x45,  # LDA $0045
-                0xf0, 0x3b,  # BEQ
-                0xad, 0xe5, 0x64,  # LDA $64E5
-                0xc9, 0x04,  # CMP #$04
-                0xf0, 0x20,  # BEQ $7EFB
-                0x20, 0x30, 0xab,  # JSR $AB30
-                0x68,  # PLA
-                # 7ee0:
-                0xc5, 0xd9,  # CMP $00D9
-                0xd0, 0x15,  # BNE $7EF3
-                0xa9, 0x01,  # LDA #$01
-                0x85, 0xd9,  # STA $00D9
-                0xad, 0xf3, 0x64,  # LDA $64F3
-                0x29, 0x01,  # AND #$01
-                0xd0, 0x02,  # BNE $7EF1
-                0x69, 0x02,  # ADC #$02
-                # 7ef1:
-                0x69, 0x01,  # ADC #$01
-                # 7ef3:
-                0x8d, 0xf3, 0x64,  # STA $64F3
-                0x4c, 0xe4, 0xa9,  # JMP $A9E4
-                0x4c, 0x27, 0xaa,  # JMP $AA27
-                0x68,  # PLA
-                0x60  # RTS
+                0xad, 0xe5, 0x64,  # LDA $64E5 ; Load ???
+                0xc9, 0x04,        # CMP #$04  ; Compare to 4
+                0xf0, 0x20,        # BEQ $7EFB ; If it's 4, branch to $7EFB
+                0x20, 0x30, 0xab,  # JSR $AB30 ; Jump to $AB30
+                0x68,              # PLA       ; Pull A from stack
+                0xc5, 0xd9,        # CMP $00D9 ; Compare to map number
+                0xd0, 0x15,        # BNE $7EF4 ; If they are equal, branch to $7EF4
+                0xa9, 0x01,        # LDA #$01  ; Set A to 1
+                # 7ee1:
+                0x85, 0xd9,        # STA $00D9 ; Set map number to 1
+                0xad, 0xf3, 0x64,  # LDA $64F3 ; Load ???
+                0x29, 0x01,        # AND #$01  ; Limit to only the lowest bit
+                0xd0, 0x02,        # BNE $7EEC ; If it's odd, branch to $7EEC
+                0x69, 0x02,        # ADC #$02  ; Add 2
+                # 7eec:
+                0x69, 0x01,        # ADC #$01  ; Add 1
+                # 7eee:
+                0x8d, 0xf3, 0x64,  # STA $64F3 ; Store at $64F3
+                0x4c, 0xe4, 0xa9,  # JMP $A9E4 ; Jump to $A9E4
+                # 7ef4:
+                0x4c, 0x27, 0xaa,  # JMP $AA27 ; Jump to $AA27
+                # 7ef7:
+                0x68,              # PLA       ; Pull A from stack
+                # 7ef8:
+                0x60,              # RTS       ; Return
             ),
-            0x7f10: (
-                # 7f00:
-                0xa5, 0xd9,  # LDA $00D9
-                0xf0, 0xf9,  # BEQ $7EFE
-                0x4c, 0xe4, 0xa9  # JMP $A9E4
+            0x7f0b: (
+                # 7efb:
+                0xa5, 0xd9,        # LDA $00D9 ; Load map number
+                0xf0, 0xfa,        # BEQ $7EF8 ; If it's 0, branch to $7EF8 (return)
+                0x4c, 0xe4, 0xa9,  # JMP $A9E4 ; Jump to $A9E4
             ),
-            0x7f20: (
-                # 7f10:
-                0x68,  # PLA
-                0xc5, 0xd9,  # CMP $00D9
-                0xf0, 0xe8,  # BEQ $7EFE
-                0x4c, 0x27, 0xaa  # JMP $A9E4
+            0x7f12: (
+                # 7f02:
+                0x68,              # PLA       ; Pull A from stack
+                0xc5, 0xd9,        # CMP $00D9 ; Compare to map number
+                0xf0, 0xf3,        # BEQ $7EF8 ; If they are equal, jump to $7EF8 (return)
+                0x4c, 0x27, 0xaa,  # JMP $A9E4 ; Jump to $A9E4
             )
         })
 

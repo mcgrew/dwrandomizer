@@ -657,36 +657,40 @@ class Rom:
         Adds functionality to the death necklace (+10 ATK and -25% HP).
         """
         # This adds the death necklace functionality
-        print("Adding functionality for the death necklace (+10 ATK, -25% HP)...")
+        print("Adding functionality for the death necklace...")
+        stat = random.choice((0xc8, 0xc9, 0xca, 0xcb))
+        stat = 0xc9
+        max_ = stat - 5 if stat >= 0xca else None
         self.add_patches({
             0xf0dd: (
                 0x20, 0x54, 0xff  # JSR $FF54  ; jump to death necklace code
-                # 0x20, 0xb7, 0xbf  # JSR $FF54  ; jump to death necklace code
             ),
-            # 0x7fc7: (
             0xff64: (
                 # ff54:
                 0xa5, 0xcf,  # LDA $00CF ; load status bits
                 0x29, 0x80,  # AND #$80  ; check bit 8 (death necklace)
                 0xf0, 0x16,  # BEQ $FF70
-                # 0xf0, 0x17,  # BEQ $FF70
-                0xa5, 0xca,  # LDA $00CA ; load max HP
-                0x46, 0xca,  # LSR $00CA ; divide max HP by 4
-                0x46, 0xca,  # LSR $00CA
-                # ff60:
-                0xe5, 0xca,  # SBC $00CA ; subtract the result
-                0x85, 0xca,  # STA $00CA ; rewrite max HP
-                0xc5, 0xc5,  # CMP $00C5 ; compare to current HP
-                0xb0, 0x02,  # BCS $FF6A
-                0x85, 0xc5,  # STA $00C5 ; set current HP to max HP
-                # ff6a:
-                # 0x18,        # CLC       ; Clear the carry bit
                 0xa5, 0xc8,  # LDA $00CC ; load strength
                 0x69, 0x0a,  # ADD #$0A  ; add 10
                 0x85, 0xc8,  # STA $00CC ; rewrite strength
+                0xa5, stat,  # LDA $STAT ; load stat
+                0x46, stat,  # LSR $STAT ; divide stat by 4 (or 2 if agility)
+            ) + ((
+                0x46, stat,  # LSR $STAT
+            ) if stat is not 0xc9 else (0xea,) * 2) + # nerf by 50% if it's agility
+            (
+                # ff60:
+                0xe5, stat,  # SBC $STAT ; subtract the result
+                0x85, stat,  # STA $STAT ; rewrite stat
+            ) + ((
+                0xc5, max_,  # CMP $00C5 ; compare to current HP/MP
+                0xb0, 0x02,  # BCS $FF70
+                0x85, max_,  # STA $00C5 ; set current HP/MP to max HP/MP
+            ) if max_ else (0xea,) * 6) +  # if we're not nerfing HP or MP, we don't need to do anything here
+            (
                 # ff70:
-                0xa5, 0xbe,  # LDA $00BE ; replaces code removed from $F0CD
-                0x4a,        # LSR       ; replaces code removed from $F0CF
+                0xa5, 0xbe,  # LDA $00BE ; load equipment byte (replaces code removed from $F0CD)
+                0x4a,        # LSR       ; shift right (replaces code removed from $F0CF)
                 0x60,        # RTS
             ),
         })
@@ -708,75 +712,75 @@ class Rom:
                 # 7e9e:
                 0xa5, 0x45,        # LDA $0045 ; Load the map number
                 # 7ea0:
-                0xf0, 0x57,        # BEQ $7EF9 ; If it's 0 (the title screen), jump to $7EF9
-                0xad, 0xe5, 0x64,  # LDA $64E5 ; Load ???
-                0xc9, 0x04,        # CMP #$04  ; Compare to ???
-                0xf0, 0x1e,        # BEQ $7ED7 ; If they are equal, branch to $7ED7 (return)
-                0x20, 0x30, 0xab,  # JMP $AB30 ; Jump to $AB30
-                0xa5, 0xd9,        # LDA $00D9 ; Load Cursor Y position
-                0xd0, 0x14,        # BNE $7ED4 ; If it's not 0, jump to $7ED4
+                0xf0, 0x57,        # BEQ $7EFB ; if it's 0 (the title screen), jump to $7EFB
+                0xad, 0xe5, 0x64,  # LDA $64E5 ; load ???
+                0xc9, 0x04,        # CMP #$04  ; compare to ???
+                0xf0, 0x1e,        # BEQ $7ED7 ; if they are equal, branch to $7ED7 (return)
+                0x20, 0x30, 0xab,  # JMP $AB30 ; jump to $AB30
+                0xa5, 0xd9,        # LDA $00D9 ; load cursor y position
+                0xd0, 0x14,        # BNE $7ED4 ; if it's not 0, jump to $7ED4
                 # 7eb0:
-                0xad, 0xe5, 0x64,  # LDA $64E5 ; Load ?
-                0xe9, 0x03,        # SBC #$03  ; Subtract 3
-                0x4a,              # LSR       ; Divide by 2
-                0xe9, 0x00,        # SBC #$00  ; Subtract 0 (?)
-                0x85, 0xd9,        # STA $00D9 ; Rewrite map number (?)
-                0x0a,              # ASL       ; Multiply by 2 (?)
-                0x6d, 0xf3, 0x64,  # ADC $64F3 ; Add ???
-                0x8d, 0xf3, 0x64,  # STA $64F3 ; Write to ???
+                0xad, 0xe5, 0x64,  # LDA $64E5 ; load ?
+                0xe9, 0x03,        # SBC #$03  ; subtract 3
+                0x4a,              # LSR       ; divide by 2
+                0xe9, 0x00,        # SBC #$00  ; subtract 0 (?)
+                0x85, 0xd9,        # STA $00D9 ; rewrite map number (?)
+                0x0a,              # ASL       ; multiply by 2 (?)
+                0x6d, 0xf3, 0x64,  # ADC $64F3 ; add ???
+                0x8d, 0xf3, 0x64,  # STA $64F3 ; write to ???
                 # 7ec2:
-                0x4c, 0x27, 0xaa,  # JMP $AA27 ; Jump to AA27
+                0x4c, 0x27, 0xaa,  # JMP $AA27 ; jump to $AA27
                 # 7ed4:
-                0x4c, 0xe4, 0xa9,  # JMP $A9E4 ; Jump to $A9E4
+                0x4c, 0xe4, 0xa9,  # JMP $A9E4 ; jump to $A9E4
                 # 7ed7:
-                0x60,              # RTS       ; Return
-                0xa5, 0xd9,        # LDA $00D9 ; Load Cursor Y position
-                0x60               # RTS       ; Return
+                0x60,              # RTS       ; return
+                0xa5, 0xd9,        # LDA $00D9 ; load cursor y position
+                0x60               # RTS       ; return
             ),
             0x7edd: (
                 # 7ecb:
-                0x48,              # PHA       ; Push A to stack
+                0x48,              # PHA       ; push A to stack
                 0xa5, 0x45,        # LDA $0045 ; Load map number
-                0xf0, 0x30,        # BEQ $7F00 ; If it's 0, branch to $7F00
+                0xf0, 0x30,        # BEQ $7F00 ; if it's 0, branch to $7F00
                 # 7ed0:
-                0xad, 0xe5, 0x64,  # LDA $64E5 ; Load ???
-                0xc9, 0x04,        # CMP #$04  ; Compare to 4
-                0xf0, 0x20,        # BEQ $7EFB ; If it's 4, branch to $7EFB
-                0x20, 0x30, 0xab,  # JSR $AB30 ; Jump to $AB30
-                0x68,              # PLA       ; Pull A from stack
-                0xc5, 0xd9,        # CMP $00D9 ; Compare to map number
-                0xd0, 0x15,        # BNE $7EF4 ; If they are equal, branch to $7EF4
-                0xa9, 0x01,        # LDA #$01  ; Set A to 1
+                0xad, 0xe5, 0x64,  # LDA $64E5 ; load ???
+                0xc9, 0x04,        # CMP #$04  ; compare to 4
+                0xf0, 0x20,        # BEQ $7EFB ; if it's 4, branch to $7EFB
+                0x20, 0x30, 0xab,  # JSR $AB30 ; jump to $AB30
+                0x68,              # PLA       ; pull A from stack
+                0xc5, 0xd9,        # CMP $00D9 ; compare to map number
+                0xd0, 0x15,        # BNE $7EF4 ; if they are equal, branch to $7EF4
+                0xa9, 0x01,        # LDA #$01  ; set A to 1
                 # 7ee1:
-                0x85, 0xd9,        # STA $00D9 ; Set map number to 1
-                0xad, 0xf3, 0x64,  # LDA $64F3 ; Load ???
-                0x29, 0x01,        # AND #$01  ; Limit to only the lowest bit
-                0xd0, 0x02,        # BNE $7EEC ; If it's odd, branch to $7EEC
-                0x69, 0x02,        # ADC #$02  ; Add 2
+                0x85, 0xd9,        # STA $00D9 ; set map number to 1
+                0xad, 0xf3, 0x64,  # LDA $64F3 ; load ???
+                0x29, 0x01,        # AND #$01  ; limit to only the lowest bit
+                0xd0, 0x02,        # BNE $7EEC ; if it's odd, branch to $7EEC
+                0x69, 0x02,        # ADC #$02  ; add 2
                 # 7eec:
-                0x69, 0x01,        # ADC #$01  ; Add 1
+                0x69, 0x01,        # ADC #$01  ; add 1
                 # 7eee:
-                0x8d, 0xf3, 0x64,  # STA $64F3 ; Store at $64F3
-                0x4c, 0xe4, 0xa9,  # JMP $A9E4 ; Jump to $A9E4
+                0x8d, 0xf3, 0x64,  # STA $64F3 ; store at $64F3
+                0x4c, 0xe4, 0xa9,  # JMP $A9E4 ; jump to $A9E4
                 # 7ef4:
-                0x4c, 0x27, 0xaa,  # JMP $AA27 ; Jump to $AA27
+                0x4c, 0x27, 0xaa,  # JMP $AA27 ; jump to $AA27
                 # 7ef7:
-                0x68,              # PLA       ; Pull A from stack
+                0x68,              # PLA       ; pull A from stack
                 # 7ef8:
-                0x60,              # RTS       ; Return
+                0x60,              # RTS       ; return
             ),
             0x7f0b: (
                 # 7efb:
-                0xa5, 0xd9,        # LDA $00D9 ; Load map number
-                0xf0, 0xfa,        # BEQ $7EF8 ; If it's 0, branch to $7EF8 (return)
-                0x4c, 0xe4, 0xa9,  # JMP $A9E4 ; Jump to $A9E4
+                0xa5, 0xd9,        # LDA $00D9 ; load map number
+                0xf0, 0xfa,        # BEQ $7EF8 ; if it's 0, branch to $7EF8 (return)
+                0x4c, 0xe4, 0xa9,  # JMP $A9E4 ; jump to $A9E4
             ),
             0x7f12: (
                 # 7f02:
-                0x68,              # PLA       ; Pull A from stack
-                0xc5, 0xd9,        # CMP $00D9 ; Compare to map number
-                0xf0, 0xf3,        # BEQ $7EF8 ; If they are equal, jump to $7EF8 (return)
-                0x4c, 0x27, 0xaa,  # JMP $A9E4 ; Jump to $A9E4
+                0x68,              # PLA       ; pull A from stack
+                0xc5, 0xd9,        # CMP $00D9 ; compare to map number
+                0xf0, 0xf3,        # BEQ $7EF8 ; if they are equal, jump to $7EF8 (return)
+                0x4c, 0x27, 0xaa,  # JMP $A9E4 ; jump to $A9E4
             )
         })
 

@@ -677,7 +677,7 @@ class Rom:
                 0x46, stat,  # LSR $STAT ; divide stat by 4 (or 2 if agility)
             ) + ((
                 0x46, stat,  # LSR $STAT
-            ) if stat is not 0xc9 else (0xea,) * 2) + # nerf by 50% if it's agility
+            ) if stat is not 0xc9 else (0xea,) * 2) +  # nerf by 50% if it's agility
             (
                 # ff60:
                 0xe5, stat,  # SBC $STAT ; subtract the result
@@ -867,9 +867,9 @@ class Rom:
                 (("From Tantegel Castle travel %d leagues %s and %d to the %s.         ") %
                  (abs(dy), north_south, abs(dx), east_west))[:71]))
 
-    def commit(self):
+    def finalize(self):
         """
-        Commits all changes to the ROM
+        Finalizes the IPS.
         """
         orig_data = self.rom_data[:]
         self.add_patch(self.will_not_work_slice, self.ascii2dw("The spell had no effect."))
@@ -897,8 +897,11 @@ class Rom:
         self.add_patch(self.player_stats_slice, self.player_stats)
         self.add_patch(self.new_spell_slice, self.new_spell_levels)
         self.add_patch(self.chests_slice, self.chests)
-        self.add_patch(self.title_text_slice, self.title_screen_text)
 
+    def commit(self):
+        """
+        Commits all changes to the ROM
+        """
         self.patch.combine(self.owmap.patch)
         self.patch.apply(self.rom_data)
 
@@ -991,6 +994,7 @@ class Rom:
         new_text = new_text.replace(b'\x47', b'\x61').replace(b'\x49', b'\x63')
 
         self.title_screen_text = new_text
+        self.add_patch(self.title_text_slice, self.title_screen_text)
 
 
 def inverted_power_curve(min_, max_, power, count=30):
@@ -1174,24 +1178,24 @@ def randomize(args):
             flags += "m"
             rom.randomize_spell_learning()
 
-    if args.disable_music:
-        flags += 'Q'
-    elif args.shuffle_music:
-        flags += 'K'
-
     rom.update_title_screen(args.seed, flags)
 
     if args.death_necklace:
         rom.death_necklace()
         flags += 'D'
 
-    rom.commit()
+    rom.finalize()
     ips_checksum = rom.sha1(rom.patch.encode())
 
     if args.disable_music:
         rom.disable_music()  # call this last so it doesn't affect the IPS checksum (since it doesn't affect gameplay)
+        flags += 'Q'
     elif args.shuffle_music:
         rom.shuffle_music()  # call this last so it doesn't affect the IPS checksum (since it doesn't affect gameplay)
+        flags += 'K'
+    if args.disable_music or args.shuffle_music:  # update the title screen text again, since it changed.
+        rom.update_title_screen(args.seed, flags)
+    rom.commit()
 
     # sort the flags alphabetically
     flags = list(flags)

@@ -10,7 +10,7 @@ from worldmap import WorldMap, MapGrid
 import ips
 from os import sep as os_sep
 
-VERSION = "1.3-rc1"
+VERSION = "1.3-rc2"
 # sha1sums of various roms
 prg0sums = ['6a50ce57097332393e0e8751924fd56456ef083c',  # Dragon Warrior (U) (PRG0) [!].nes
             '66330df6fe3e3c85adb8183721e5f88c149e52eb',  # Dragon Warrior (U) (PRG0) [b1].nes
@@ -238,7 +238,8 @@ class Rom:
 
     def shuffle_music(self):
         print("Shuffling music...")
-        music_choice = ((1, 2, 3, 4, 5) * 3) + (6, 7, 8, 9, 10, 11, 12, 13, 14)
+        music_choice = ((1, 2, 3, 4, 5, 15, 16) * 3) + 
+                        (6, 7, 8, 9, 10, 11, 12, 13, 14)
         new_music = bytearray([random.choice(music_choice) for _ in range(29)])
         music_ips = ips.Patch()
         music_ips.add_record(0x31bf, new_music)

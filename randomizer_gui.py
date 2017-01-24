@@ -520,6 +520,9 @@ class LevelingFrame(UltraFrame):
         normal.grid(column=1, row=0)
         ultra = Radiobutton(self, text="Very Fast", variable=self.variable, value="ultra")
         ultra.grid(column=2, row=0)
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+        self.columnconfigure(2, weight=1)
 
 
 # ==============================================================================

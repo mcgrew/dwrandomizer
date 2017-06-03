@@ -343,16 +343,16 @@ class ToggleFrame(LabelFrame):
             Checkbutton(self, text="Enable Speed Hacks",
                         variable=self.speed_hacks_var)
         self.death_necklace_button = \
-            Checkbutton(self, text="Enable Death Necklace Funcionality (experimental)",
+            Checkbutton(self, text="Enable Death Necklace Funcionality",
                         variable=self.death_necklace_var)
         self.menu_wrap_button = \
-            Checkbutton(self, text="Enable Menu Wrap-around (experimental)",
+            Checkbutton(self, text="Enable Menu Wrap-around",
                         variable=self.menu_wrap_var)
         self.music_button = \
-            Checkbutton(self, text="Shuffle the game music(beta)",
+            Checkbutton(self, text="Shuffle game music(beta)",
                         variable=self.music_var)
         self.music_off_button = \
-            Checkbutton(self, text="Disable the game music(beta)",
+            Checkbutton(self, text="Disable game music(beta)",
                         variable=self.music_off_var)
         self.ips_copy_button = \
             Checkbutton(self, text="Copy IPS Checksum to Clipboard", variable=self.ips_copy_var)

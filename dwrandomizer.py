@@ -659,8 +659,8 @@ class Rom:
         """
         # This adds the death necklace functionality
         print("Adding functionality for the death necklace...")
-        stat = random.choice((0xc8, 0xc9, 0xca, 0xcb))
-        stat = 0xc9
+#        stat = random.choice((0xc8, 0xc9, 0xca, 0xcb))
+        stat = 0xc9 #hit points
         max_ = stat - 5 if stat >= 0xca else None
         self.add_patches({
             0xf0dd: (

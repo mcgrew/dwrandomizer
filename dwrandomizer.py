@@ -677,9 +677,9 @@ class Rom:
                 0x85, 0xc5,  # STA $00C5 ; set current HP to max HP
                 # ff6a:
                 0x18,        # CLC       ; Clear the carry bit
-                0xa5, 0xc8,  # LDA $00CC ; load strength
+                0xa5, 0xcc,  # LDA $00CC ; load attack power
                 0x69, 0x0a,  # ADD #$0A  ; add 10
-                0x85, 0xc8,  # STA $00CC ; rewrite strength
+                0x85, 0xcc,  # STA $00CC ; rewrite attack power
                 # ff71:
                 0xa5, 0xcf,  # LDA $00CF   ; replaces code removed from $F00E
                 0x60,  # RTS

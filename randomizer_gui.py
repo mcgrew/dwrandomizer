@@ -118,7 +118,7 @@ class RandomizerUI(Frame):
         self.args.no_map = not 'A' in flags
         self.args.no_chests = not 'C' in flags
         self.args.speed_hacks = 'H' in flags
-        self.args.no_search_items = not 'I' in flags
+        self.args.no_searchitems = not 'I' in flags
         self.args.shuffle_music = 'K' in flags
         self.args.disable_music = 'Q' in flags
         self.args.no_towns = not 'T' in flags

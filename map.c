@@ -11,7 +11,7 @@
 
 static bool map_encode(dw_rom *rom)
 {
-    int i, j;
+    int x, y;
     uint8_t *e, encoded[120 * 120]; 
     uint16_t pointers[121];
 
@@ -19,39 +19,42 @@ static bool map_encode(dw_rom *rom)
     e = encoded;
 
     pointers[0] = 0x9d5d;
-    for (i=0; i < 120; i++) {
-        for (j=0; j < 120; j++) {
+    for (y=0; y < 120; y++) {
+        for (x=0; x < 120; x++) {
             if (*e == 0xff) {
-                *e = rom->map.tiles[i][j] << 4;
-            } else if (*e >> 4 == rom->map.tiles[i][j]) {
+                *e = rom->map.tiles[x][y] << 4;
+            } else if (*e >> 4 == rom->map.tiles[x][y]) {
                 (*e)++;
             } else {
                 e++;
-                *e = rom->map.tiles[i][j] << 4;
+                *e = rom->map.tiles[x][y] << 4;
             }
             if ((*e & 0xf) == 0xf) {
                 e++;
             }
         }
         e++;
-        pointers[i+1] = e - encoded + 0x9d5d;
+        pointers[y+1] = e - encoded + 0x9d5d;
     }
-    /* need to optimize the map here */
-    for (i=0; i < 120; i++) {
-        for (j=0; j < 120; j++) {
-//            printf("%d ", rom->map.tiles[j][i]);
-        }
-//        printf("\n");
-    }
+
+//    for (x=0; x < MAP_ENCODED_SIZE; x++)
+//        printf("%02x ", encoded[x]);
 //    printf("\n");
 
-//    for (i=0; i < MAP_ENCODED_SIZE; i++)
-//        printf("%02x ", encoded[i]);
+    /* need to optimize the map here */
+//    for (y=0; y < 120; y++) {
+//        for (x=0; x < 120; x++) {
+//            printf("%d ", rom->map.tiles[x][y]);
+//        }
+//        printf("\n");
+//    }
 //    printf("\n");
 
     if (e - encoded > MAP_ENCODED_SIZE) {
-        printf("Map is too large\n");
+        printf("Compressed map is too large (%d)\n", e - encoded);
         return false;
+    } else {
+        printf("Compressed map size: %d\n", e - encoded);
     }
     memcpy(rom->map.encoded, encoded, MAP_ENCODED_SIZE);
     memcpy(rom->map.pointers, pointers, 240);
@@ -84,8 +87,8 @@ static bool place_landmarks(dw_rom *rom)
 {
 }
 
-static int map_fill_point(dw_rom *rom, uint8_t *points, uint8_t x, uint8_t y,
-        dw_tile tile)
+static int map_fill_point(dw_rom *rom, uint8_t *points, 
+        uint8_t x, uint8_t y, dw_tile tile)
 {
     uint8_t *p = points;
     if (x >= 120 || y >= 120)
@@ -119,8 +122,8 @@ static void map_fill(dw_rom *rom, dw_tile tile, int size)
     uint8_t x, y, *points, *p;
     uint64_t directions;
 
-    p = points = malloc(MAX_BLOB * 2 + 1);
-    memset(p, 0xff, MAX_BLOB * 2 + 1);
+    p = points = malloc(MAX_BLOB * 4 + 1);
+    memset(p, 0xff, MAX_BLOB * 4 + 1);
     p[0] = mt_rand(0, 120);
     p[1] = mt_rand(0, 120);
     size = mt_rand(MAX_BLOB/4, MAX_BLOB);
@@ -155,38 +158,23 @@ static void map_fill(dw_rom *rom, dw_tile tile, int size)
  *  rom : dw_rom*
  *      The rom pointer.
  */
-static void smooth_map(dw_rom *rom)
+static void map_smooth(dw_rom *rom)
 {
-    uint8_t *tiles, *point;
+    uint8_t x, y;
 
-    tiles = (uint8_t*)rom->map.tiles;
     /* If a single different tile is between 2 of the same tile, convert it.
        This will help the map compress (and look) better. */
-    for (point = tiles + 1; point - tiles < 120*120-1; point++) {
-        if (*point != *(point-1) && *(point-1) == *(point+1)) {
-            *point = *(point-1);
+    for (x=1; x < 119; x++) {
+        for (y=0; y < 120; y++) {
+            if (rom->map.tiles[x-1][y] == rom->map.tiles[x+1][y]) {
+                rom->map.tiles[x][y] = rom->map.tiles[x-1][y];
+            }
         }
     }
 }
 
-/*
- * Finds the size of a continent given a point on it. Also fills in the 
- * walkable area array.
- *
- * Params:
- *  rom : dw_rom*
- *      The rom pointer.
- *  continent_index : int
- *      The index for this continent.
- */
-static int map_continent(dw_rom *rom, int continent_index)
+static bool tile_is_walkable(dw_tile tile)
 {
-}
-
-static bool tile_is_walkable(dw_rom *rom, int x, int y)
-{
-    dw_tile tile = (dw_tile)rom->map.tiles[x][y];
-
     switch(tile) {
         case TILE_WATER:
         case TILE_MOUNTAIN:
@@ -197,14 +185,79 @@ static bool tile_is_walkable(dw_rom *rom, int x, int y)
     }
 }
 
-static inline void find_walkable_area(dw_rom *rom, int *continent_sizes)
+/*
+ * Finds the size of a continent given a point on it. Also fills in the 
+ * walkable area array.
+ *
+ * Params:
+ *  rom : dw_rom*
+ *      The rom pointer.
+ *  x : uint8_t
+ *      The x coordinate of the tile to start mapping.
+ *  y : uint8_t
+ *      The y coordinate of the tile to start mapping.
+ *  cont_index : int
+ *      The index for this continent.
+ */
+static int map_continent(dw_map *map, uint8_t x, uint8_t y,
+        uint8_t cont_index)
 {
-    int largest = 0, next_largest = 0;
+    int size = 1;
+
+    if (x >= 120 || y >= 120)
+        return 0;
+
+    if (map->walkable[x][y])
+        return 0;
+
+    if (!tile_is_walkable(map->tiles[x][y]))
+        return 0;
+
+    map->walkable[x][y] = cont_index;
+    size += map_continent(map, x-1, y, cont_index);
+    size += map_continent(map, x+1, y, cont_index);
+    size += map_continent(map, x, y-1, cont_index);
+    size += map_continent(map, x, y+1, cont_index);
+
+    return size;
+}
+
+static inline int find_walkable_area(dw_rom *rom, int *cont_sizes)
+{
+    int x, y, size, largest = 0;
+    uint8_t continent = 0;
+    dw_map *map = &rom->map;
+
+    memset(map->walkable, 0, 120 * 120);
+    for (y=0; y < 120; y++) {
+        for (x=0; x < 120; x++) {
+            if (!map->walkable[x][y] && tile_is_walkable(map->tiles[x][y])) {
+                cont_sizes[continent] = 
+                        map_continent(&rom->map, x, y, continent+1);
+                continent++;
+            }
+        }
+    }
+    for (y=0; y < 120; y++) {
+        for (x=0; x < 120; x++) {
+            if (rom->map.walkable[x][y])
+                printf("%x ", rom->map.walkable[x][y]);
+            else
+                printf("  ");
+        }
+        printf("\n");
+    }
+    printf("\n");
+    for (x=0; x < continent; x++) {
+        printf("%d ", cont_sizes[x]);
+    }
+    printf("\n");
+    return (int)continent;
 }
 
 bool map_generate_terrain(dw_rom *rom)
 {
-    int i, j, size, continent_sizes[1024];
+    int i, j, size, continents, continent_sizes[256];
 
     dw_tile tiles[16] = {
             TILE_GRASS,  TILE_GRASS,  TILE_GRASS, TILE_SWAMP,
@@ -224,8 +277,10 @@ bool map_generate_terrain(dw_rom *rom)
         }
     }
 
-    smooth_map(rom);
-    find_walkable_area(rom, continent_sizes);
+    map_smooth(rom);
+
+    /* zero out the walkability data */
+    continents = find_walkable_area(rom, continent_sizes);
     return map_encode(rom);
 }
 

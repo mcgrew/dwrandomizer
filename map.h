@@ -63,7 +63,7 @@ typedef enum {
 
 #include "dwr_types.h"
 
-void map_decode(dw_rom *rom);
+void map_decode(dw_map *map);
 
 bool map_generate_terrain(dw_rom *rom);
 

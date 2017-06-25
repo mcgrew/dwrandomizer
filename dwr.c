@@ -109,7 +109,7 @@ bool dwr_init(dw_rom *rom, const char *input_file, const char *flags)
     rom->armor = (dw_searchable*)&rom->data[0xe170];
     rom->weapon_shops = &rom->data[0x19a1];
 
-    map_decode(rom);
+    map_decode(&rom->map);
 }
 
 static inline void sha1(uint8_t *buffer, size_t bufsize, char *hash)
@@ -301,9 +301,9 @@ void dwr_randomize(const char* input_file, uint64_t seed, const char *flags,
         const char* output_dir)
 {
     mt_init(seed);
-//    mt_init(3);
     dw_rom rom;
     dwr_init(&rom, input_file, flags);
+
     while(!map_generate_terrain(&rom)) {}
     shuffle_chests(&rom);
     randomize_zone_layout(&rom);

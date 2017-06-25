@@ -7,45 +7,55 @@
 #include "map.h"
 
 #define MAX_BLOB 2400
-#define MAP_ENCODED_SIZE 2534
+#define MAP_ENCODED_SIZE 2294
 #define VIABLE_CONT 250 /* minimum size for a continent to use */
 
-static bool map_encode(dw_rom *rom)
+bool map_encode(dw_map *map)
 {
     int x, y;
     uint8_t *e, encoded[120 * 120]; 
-    uint16_t pointers[121];
+    uint16_t pointers[120];
 
     memset(encoded, 0xff, 120 * 120);
     e = encoded;
 
-    pointers[0] = 0x9d5d;
     for (y=0; y < 120; y++) {
+        pointers[y] = e - encoded + 0x9d5d;
         for (x=0; x < 120; x++) {
             if (*e == 0xff) {
-                *e = rom->map.tiles[x][y] << 4;
-            } else if (*e >> 4 == rom->map.tiles[x][y]) {
+                *e = map->tiles[x][y] << 4;
+            } else if (*e >> 4 == map->tiles[x][y]) {
                 (*e)++;
             } else {
                 e++;
-                *e = rom->map.tiles[x][y] << 4;
+                *e = map->tiles[x][y] << 4;
             }
             if ((*e & 0xf) == 0xf) {
                 e++;
             }
         }
-        e++;
-        pointers[y+1] = e - encoded + 0x9d5d;
+        if ((*e & 0xf) != 0xf) {
+            e++;
+        }
     }
 
-//    for (x=0; x < MAP_ENCODED_SIZE; x++)
+//    y = 0;
+//    uint16_t *p = pointers;
+//    printf("%4x %4d ", *p, *p - 0x9d5d);
+//    for (x=0; x < MAP_ENCODED_SIZE; x++) {
 //        printf("%02x ", encoded[x]);
+//        y += (encoded[x] & 0xf) + 1;
+//        if (y >= 120) {
+//            y = 0;
+//            printf("\n%4x %4d ", *(++p), *p - 0x9d5d);
+//        }
+//    }
 //    printf("\n");
-
+//
     /* need to optimize the map here */
 //    for (y=0; y < 120; y++) {
 //        for (x=0; x < 120; x++) {
-//            printf("%d ", rom->map.tiles[x][y]);
+//            printf("%d ", map->tiles[x][y]);
 //        }
 //        printf("\n");
 //    }
@@ -57,13 +67,26 @@ static bool map_encode(dw_rom *rom)
     } else {
         printf("Compressed map size: %d\n", e - encoded);
     }
-    memcpy(rom->map.encoded, encoded, MAP_ENCODED_SIZE);
-    memcpy(rom->map.pointers, pointers, 240);
+    memcpy(map->encoded, encoded, MAP_ENCODED_SIZE);
+    memcpy(map->pointers, pointers, 240);
     return true;
 }
 
-void map_decode(dw_rom *rom)
+void map_decode(dw_map *map)
 {
+    uint8_t x, y, *e, current;
+
+    for (y=0; y < 120; y++) {
+        e = &map->encoded[map->pointers[y] - 0x9d5d];
+        current = *e;
+        for (x=0; x < 120; x++) {
+            current--;
+            map->tiles[x][y] = current >> 4;
+            if (!(current & 0xf)) {
+                current = *(++e);
+            }
+        }
+    }
 }
 
 static void map_find_land(dw_map *map, int one, int two, uint8_t *x, uint8_t *y)
@@ -117,18 +140,19 @@ static bool place_landmarks(dw_map *map, int *cont_sizes, int cont_count)
 
     /* find the 2 largest land masses */
     for(i=0; i < cont_count; i++) {
-        if (cont_sizes[i] > cont_sizes[largest-1]) {
+        if (!largest || cont_sizes[i] > cont_sizes[largest-1]) {
             next = largest;
             largest = i + 1;
-        } else if (cont_sizes[i] > cont_sizes[next-1]) {
+        } else if (!next || cont_sizes[i] > cont_sizes[next-1]) {
             next = i + 1;
         }
     }
 
-    if (cont_sizes[next] < 400) {
+    if (cont_sizes[next-1] < 400) {
         next = 0;
     }
-
+    
+//    printf("Largest: %d, %d\n", largest, next);
     place(map, WARP_SWAMP_SOUTH, TILE_CAVE, next ? next : largest, next);
     place(map, WARP_SWAMP_NORTH, TILE_CAVE, largest, 0);
     place(map, WARP_NORTHERN_SHRINE, TILE_CAVE, largest, next);
@@ -237,6 +261,19 @@ static bool tile_is_walkable(dw_tile tile)
     }
 }
 
+static void destroy_continent(dw_map *map, int continent)
+{
+    uint8_t x, y;
+
+    for (x = 0; x < 120; x++) {
+        for (y = 0; y < 120; y++) {
+            if (map->walkable[x][y] == continent) {
+                map->tiles[x][y] = TILE_WATER;
+            }
+        }
+    }
+}
+
 /*
  * Finds the size of a continent given a point on it. Also fills in the 
  * walkable area array.
@@ -306,7 +343,7 @@ static bool add_bridges(dw_map *map, int *cont_sizes)
 
 static inline int find_walkable_area(dw_map *map, int *cont_sizes)
 {
-    int x, y, size, largest = 0;
+    int x, y, size;
     uint8_t continent = 0;
 
     memset(map->walkable, 0, 120 * 120);
@@ -364,7 +401,12 @@ bool map_generate_terrain(dw_rom *rom)
     continents = find_walkable_area(&rom->map, continent_sizes);
     if (add_bridges(&rom->map, continent_sizes))
         continents = find_walkable_area(&rom->map, continent_sizes);
+    for (i=0; i < continents; i++) {
+        if (continent_sizes[i] < 200)
+            destroy_continent(&rom->map, i+1);
+    }
+    continents = find_walkable_area(&rom->map, continent_sizes);
     place_landmarks(&rom->map, continent_sizes, continents);
-    return map_encode(rom);
+    return map_encode(&rom->map);
 }
 

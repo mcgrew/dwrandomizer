@@ -87,6 +87,10 @@ bool dwr_init(dw_rom *rom, const char *input_file, const char *flags)
     rom->map.meta = (dw_map_meta*)&rom->data[0x2f];
     rom->map.warps_from = (dw_warp*)&rom->data[0xf3d8];
     rom->map.warps_to   = (dw_warp*)&rom->data[0xf471];
+    rom->map.love_calc = (dw_love_calc*)&rom->data[0xdb11];
+    rom->map.return_point = (dw_return_point*)&rom->data[0xdf4b];
+    rom->map.rainbow_drop = (dw_rainbow_drop*)&rom->data[0xde9b];
+    rom->map.rainbow_bridge = (dw_rainbow_drop*)&rom->data[0x2c4b];
     rom->stats = (dw_stats*)&rom->data[0x60dd];
     rom->mp_reqs = &rom->data[0x1d63];
     rom->xp_reqs = (uint16_t*)&rom->data[0xf36b];
@@ -94,10 +98,6 @@ bool dwr_init(dw_rom *rom, const char *input_file, const char *flags)
     rom->zones = &rom->data[0xf55f];
     rom->zone_layout = &rom->data[0xf532];
     rom->chests = (dw_chest*)&rom->data[0x5ddd];
-    rom->love_calc = (dw_love_calc*)&rom->data[0xdb11];
-    rom->map.return_point = (dw_return_point*)&rom->data[0xdf4b];
-    rom->map.rainbow_drop = (dw_rainbow_drop*)&rom->data[0xde9b];
-    rom->map.rainbow_bridge = (dw_rainbow_drop*)&rom->data[0x2c4b];
     rom->encounters[0] = (dw_forced_encounter*)&rom->data[0xcd61];
     rom->encounters[1] = (dw_forced_encounter*)&rom->data[0xcd78];
     rom->encounters[2] = (dw_forced_encounter*)&rom->data[0xcd95];

@@ -205,6 +205,7 @@ typedef struct {
     dw_map_meta *meta;
     dw_warp *warps_from;
     dw_warp *warps_to;
+    dw_love_calc *love_calc;
     dw_return_point *return_point;
     dw_rainbow_drop *rainbow_drop;
     dw_rainbow_drop *rainbow_bridge;
@@ -223,7 +224,6 @@ typedef struct {
     uint8_t *zones;
     uint8_t *zone_layout;
     dw_chest *chests;
-    dw_love_calc *love_calc;
     dw_forced_encounter *encounters[3];
     uint8_t *encounter_types[3];
     dw_searchable *token;

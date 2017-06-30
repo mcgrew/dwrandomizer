@@ -21,7 +21,7 @@ int main(int argc, char **argv)
         srand(time(NULL));
         seed = ((uint64_t)rand() << 32) | ((uint64_t)rand() & 0xffffffffL);
     }
-    printf("Randomizing using seed: %Lu\n", seed);
+    printf("Randomizing using seed: %Lu with flags %s\n", seed, flags);
 
     dwr_randomize( "/home/mcgrew/Dropbox/Dragon Warrior (U) (PRG0) [!].nes", 
             seed, flags, "/tmp/");

@@ -3,11 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <openssl/sha.h>
 #include <math.h>
 
 #include "dwr.h"
 #include "mt64.h"
+#include "crc64.h"
 #include "map.h"
 
 const char *prg0sums[8] = {
@@ -42,14 +42,15 @@ static int compare(const void *a, const void *b)
 static void parse_flags(dw_rom *rom, char *flags)
 {
     int i, len;
+    char *order;
 
     len = strlen(flags);
     qsort(flags, len, sizeof(char), &compare);
     rom->flags = 0;
     for (i=0; i < len; i++) {
-        int order = strchr(flag_order, flags[i]) - flags;
-        if (order >= 0) {
-            rom->flags |= (uint64_t)1L << order;
+        order = strchr(flag_order, flags[i]);
+        if (order) {
+            rom->flags |= UINT64_C(1) << (order - flag_order);
         }
     }
 }
@@ -106,11 +107,6 @@ bool dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->title_text = &rom->data[0x3f36];
 
     map_decode(&rom->map);
-}
-
-static inline void sha1(uint8_t *buffer, size_t bufsize, char *hash)
-{
-    SHA1(buffer, bufsize, hash);
 }
 
 void ascii2dw(char *string, uint8_t *bytes)
@@ -204,6 +200,9 @@ static void shuffle_chests(dw_rom *rom) {
     uint8_t *key; /* the magic key in the throne room */
     uint8_t *cont, contents[CHEST_COUNT-2];
 
+    if (!(rom->flags & FLAG_C))
+        return;
+
     printf("Shuffling chest contents...\n");
     cont = contents;
     chest = rom->chests;
@@ -262,6 +261,11 @@ static void randomize_attack_patterns(dw_rom *rom)
 {
     int i;
 
+    if (!(rom->flags & FLAG_P))
+        return;
+
+    printf("Randomizing enemy attack patterns\n");
+
     for (i=SLIME; i < DRAGONLORD_1; i++) {
         if (mt_rand_bool()) {
             rom->enemies[i].pattern = mt_rand(0, 256);
@@ -282,6 +286,13 @@ static void randomize_attack_patterns(dw_rom *rom)
 void randomize_music(dw_rom *rom)
 {
     int i;
+
+    
+    if (!(rom->flags & FLAG_K))
+        return;
+
+    printf("Randomizing game music\n");
+
     uint8_t choices[] = {0x1, 0x1, 0x1, 0x2, 0x2, 0x2, 0x3, 0x3, 0x3, 0x4, 0x4, 
                          0x4, 0x5, 0x5, 0x5, 0xf, 0xf, 0xf, 0x10, 0x10, 0x10,
                          0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd};
@@ -295,6 +306,12 @@ void randomize_music(dw_rom *rom)
 static void disable_music(dw_rom *rom)
 {
     uint8_t *new_music;
+
+    if (!(rom->flags & FLAG_Q))
+        return;
+
+    printf("Disabling game music\n");
+
     memset(rom->music, 0, 29);
 }
 
@@ -320,6 +337,8 @@ static void randomize_zone_layout(dw_rom *rom)
     int i;
     dw_warp *tantegel = &rom->map.warps_from[WARP_TANTEGEL];
 
+    printf("Randomizing enemy zone layout\n");
+
     for (i=0; i < 31; i++) {
         rom->zone_layout[i] = 0;
         rom->zone_layout[i] |= mt_rand(3, 16) << 4;
@@ -337,6 +356,12 @@ static void randomize_zone_layout(dw_rom *rom)
 static void randomize_zones(dw_rom *rom)
 {
     int i, zone;
+
+
+    if (!(rom->flags & FLAG_Z))
+        return;
+
+    printf("Randomizing monsters in enemy zones\n");
 
     zone = 0;  /* tantege zone */
     for (i=0; i < 5; i++) { 
@@ -375,6 +400,11 @@ static void randomize_shops(dw_rom *rom)
             CLOTHES, LEATHER_ARMOR, CHAIN_MAIL, HALF_PLATE, FULL_PLATE,
             MAGIC_ARMOR, SMALL_SHIELD, LARGE_SHIELD, SILVER_SHIELD
     };
+
+    if (!(rom->flags & FLAG_W))
+        return;
+
+    printf("Randomizing weapon shop inventory\n");
     
     six_item_shop = mt_rand(0, 7);
     shop_item = rom->weapon_shops;
@@ -405,17 +435,22 @@ static void shuffle_searchables(dw_rom *rom)
 
     dw_searchable searchables[3] = { searchable_1, searchable_2, searchable_3 };
 
+    if (!(rom->flags & FLAG_I))
+        return;
+
+    printf("Shuffling searchable items\n");
+
     mt_shuffle(searchables, 3, sizeof(dw_searchable));
 
-    rom->token->map = searchable_1.map;
-    rom->token->x   = searchable_1.x;
-    rom->token->y   = searchable_1.y;
-    rom->flute->map = searchable_2.map;
-    rom->flute->x   = searchable_2.x;
-    rom->flute->y   = searchable_2.y;
-    rom->armor->map = searchable_3.map;
-    rom->armor->x   = searchable_3.x;
-    rom->armor->y   = searchable_3.y;
+    rom->token->map = searchables[1].map;
+    rom->token->x   = searchables[1].x;
+    rom->token->y   = searchables[1].y;
+    rom->flute->map = searchables[2].map;
+    rom->flute->x   = searchables[2].x;
+    rom->flute->y   = searchables[2].y;
+    rom->armor->map = searchables[3].map;
+    rom->armor->x   = searchables[3].x;
+    rom->armor->y   = searchables[3].y;
 }
 
 static uint8_t inverted_power_curve(uint8_t min, uint8_t max, double power)
@@ -434,6 +469,11 @@ static void randomize_growth(dw_rom *rom)
     uint8_t agi[30];
     uint8_t  mp[30];
     uint8_t  hp[30];
+
+    if (!(rom->flags & FLAG_G))
+        return;
+
+    printf("Randomizing stat growth\n");
 
     for (i=0; i < 30; i++) {
         str[i] = inverted_power_curve(4, 155, 1.18);
@@ -460,6 +500,11 @@ static void randomize_spells(dw_rom *rom)
     int i, j;
     dw_stats *stats;
 
+    if (!(rom->flags & FLAG_M))
+        return;
+
+    printf("Randomizing spell learning\n");
+
     /* choose levels for each spell */
     for (i=0; i < 10; i++) {
         rom->new_spells[i].level = mt_rand(1, 17);
@@ -469,6 +514,7 @@ static void randomize_spells(dw_rom *rom)
         stats = &rom->stats[i];
         stats->spells = 0;
         for (j=0; j < 10; j++) {
+            /* spell masks are in big endian format for some reason */
             if (rom->new_spells[j].level <= i+1) {
                 stats->spells |= 1 << (j + 8) % 16;
             }
@@ -516,11 +562,13 @@ static void lower_xp_reqs(dw_rom *rom)
 {
     int i;
 
-    if (true) {
+    if (rom->flags & FLAG_f) {
+        printf("Changing required experience to 75%% of normal\n");
         for (i=0; i < 30; i++) {
             rom->xp_reqs[i] = rom->xp_reqs[i] * 3 / 4;
         }
-    } else {
+    } else if (rom->flags & FLAG_F) {
+        printf("Changing required experience to 50%% of normal\n");
         for (i=0; i < 30; i++) {
             rom->xp_reqs[i] = rom->xp_reqs[i] / 2;
         }
@@ -582,6 +630,8 @@ static uint16_t patch(dw_rom *rom, uint16_t address, uint32_t size, uint8_t *dat
 
 static void dwr_fighters_ring(dw_rom *rom)
 {
+
+    printf("Fixing the fighter's ring\n");
     /* fighter's ring fix */
     vpatch(rom, 0xf10c, 4, 0x20, 0x7d, 0xff, 0xea);
     vpatch(rom, 0xff8d, 17,
@@ -605,6 +655,12 @@ static void dwr_fighters_ring(dw_rom *rom)
 
 static void dwr_death_necklace(dw_rom *rom)
 {
+
+    if (!(rom->flags & FLAG_D))
+        return;
+
+    printf("Adding functionality to the death necklace\n");
+
     vpatch(rom, 0xff64, 32,
             /* ff54: */
             0xa5, 0xcf,  /* LDA $00CF ; load status bits                   */
@@ -659,6 +715,11 @@ static void other_patches(dw_rom *rom)
 
 static void dwr_menu_wrap(dw_rom *rom)
 {
+    if (!(rom->flags & FLAG_R))
+        return;
+
+    printf("Enabling menu cursor wrap-around\n");
+
     /* implement up/down wraparound for most menus (from @gameboy9) */
     vpatch(rom, 0x69f0, 3,
         /* 69e0 */
@@ -748,6 +809,11 @@ static void dwr_menu_wrap(dw_rom *rom)
 
 static void dwr_speed_hacks(dw_rom *rom)
 {
+    if (!(rom->flags & FLAG_H))
+        return;
+
+    printf("Enabling speed hacks\n");
+
     /* Following are some speed hacks from @gameboy9 */
     /* speed up the text */
     vpatch(rom, 0x7a43, 3, 0xea, 0xea, 0xea);
@@ -834,6 +900,8 @@ static void dwr_write(dw_rom *rom, const char *output_file)
 void dwr_randomize(const char* input_file, uint64_t seed, char *flags, 
         const char* output_dir)
 {
+    uint64_t crc;
+
     mt_init(seed);
     dw_rom rom;
     dwr_init(&rom, input_file, flags);
@@ -851,14 +919,20 @@ void dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     update_mp_reqs(&rom);
     lower_xp_reqs(&rom);
     update_enemy_hp(&rom);
-    update_title_screen(&rom);
     dwr_death_necklace(&rom);
     dwr_menu_wrap(&rom);
-//    dwr_speed_hacks(&rom);
+    dwr_speed_hacks(&rom);
     dwr_token_dialogue(&rom);
-//    randomize_music(&rom);
-//    disable_music(&rom);
     other_patches(&rom);
+    crc = crc64(0, rom.data, ROM_SIZE);
+    printf("Intermediate Checksum: %016LX\n", crc);
+
+    update_title_screen(&rom);
+    randomize_music(&rom);
+    disable_music(&rom);
+    crc = crc64(0, rom.data, ROM_SIZE);
+    printf("Final Checksum: %016LX\n", crc);
+
     dwr_write(&rom, "/tmp/DWRando_v2.nes");
 
 }

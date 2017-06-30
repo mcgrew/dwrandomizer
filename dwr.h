@@ -71,7 +71,7 @@ extern "C" {
 #define FLAG_y 0x1000000000000000
 #define FLAG_z 0x2000000000000000
 
-void dwr_randomize(const char* input_file, uint64_t seed, const char *flags, 
+void dwr_randomize(const char* input_file, uint64_t seed, char *flags, 
         const char* output_dir);
 
 #ifdef __cplusplus

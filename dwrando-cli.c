@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "dwr.h"
@@ -10,6 +11,9 @@
 int main(int argc, char **argv)
 {
     uint64_t seed;
+    char flags[256];
+
+    strncpy(flags, "CDGIMPRTWZf", 256);
 
     if (argc > 1) {
         sscanf(argv[1], "%Lu", &seed);
@@ -20,7 +24,7 @@ int main(int argc, char **argv)
     printf("Randomizing using seed: %Lu\n", seed);
 
     dwr_randomize( "/home/mcgrew/Dropbox/Dragon Warrior (U) (PRG0) [!].nes", 
-            seed, "CDGIMPRTWZf", "/tmp/");
+            seed, flags, "/tmp/");
 
     return 0;
 }

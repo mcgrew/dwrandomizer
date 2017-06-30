@@ -4,7 +4,11 @@
 
 #include <inttypes.h>
 
-#define ROM_SIZE 81937
+#define ROM_SIZE 81936
+
+#define ABS(x) ((x < 0) ? -x : x)
+#define MAX(x,y) ((x > y) ? x : y)
+#define MIN(x,y) ((x < y) ? x : y)
 
 typedef enum {
     false,
@@ -45,42 +49,42 @@ typedef enum {
 } dw_map_index;
 
 typedef enum {
-    SLIME,
+    SLIME,       /* 0 */
     RED_SLIME,
     DRAKEE,
     GHOST,
     MAGICIAN,
-    MAGIDRAKEE,
+    MAGIDRAKEE,  /* 5 */
     SCORPION,
     DRUIN,
     POLTERGEIST,
     DROLL,
-    DRAKEEMA,
+    DRAKEEMA,    /* 10 */
     SKELETON,
     WARLOCK,
     METAL_SCORPION,
     WOLF,
-    WRAITH,
+    WRAITH,      /* 15 */
     METAL_SLIME,
     SPECTER,
     WOLFLORD,
     DRUINLORD,
-    DROLLMAGI,
+    DROLLMAGI,   /* 20 */
     WYVERN,
     ROGUE_SCORPION,
     WRAITH_KNIGHT,
     GOLEM,
-    GOLDMAN,
+    GOLDMAN,     /* 25 */
     KNIGHT,
     MAGIWYVERN,
     DEMON_KNIGHT,
     WEREWOLF,
-    GREEN_DRAGON,
+    GREEN_DRAGON,/* 30 */
     STARWYVERN,
     WIZARD,
     AXE_KNIGHT,
     BLUE_DRAGON,
-    STONEMAN,
+    STONEMAN,   /* 35 */
     ARMORED_KNIGHT,
     RED_DRAGON,
     DRAGONLORD_1,
@@ -89,18 +93,18 @@ typedef enum {
 
 typedef enum {
     HERB = 0x2,
-    MAGIC_KEY,
+    KEY,
     TORCH,
     FAIRY_WATER, /* 5 */
     WINGS,
     DRAGONS_SCALE,
-    FAIRY_FLUTE,
-    FIGHTERS_RING,
+    FLUTE,
+    RING,
     TOKEN, /* 10 */
     GWAELINS_LOVE,
     CURSED_BELT,
-    SILVER_HARP,
-    DEATH_NECKLACE,
+    HARP,
+    NECKLACE,
     STONES, /* 15 */
     STAFF,
     SWORD,
@@ -111,6 +115,27 @@ typedef enum {
     GOLD_120,
     TABLET,
 } dw_chest_content;
+
+typedef enum {
+    BAMBOO_POLE,
+    CLUB,
+    COPPER_SWORD,
+    HAND_AXE,
+    BROAD_SWORD,
+    FLAME_SWORD,
+    ERDRICKS_SWORD,
+    CLOTHES,
+    LEATHER_ARMOR,
+    CHAIN_MAIL,
+    HALF_PLATE,
+    FULL_PLATE,
+    MAGIC_ARMOR,
+    ERDRICKS_ARMOR,
+    SMALL_SHIELD,
+    LARGE_SHIELD,
+    SILVER_SHIELD,
+    SHOP_END = 0xfd,
+} dw_shop_item;
 
 typedef struct {
     uint8_t y;
@@ -164,8 +189,9 @@ typedef struct {
 } dw_stats;
 
 typedef struct {
-    uint8_t code[3];
+    uint8_t code1;
     uint8_t level;
+    uint8_t code2[2];
 } dw_new_spell;
 
 typedef struct {
@@ -218,6 +244,7 @@ typedef struct {
     uint64_t flags;
     dw_map map;
     dw_stats *stats;
+    dw_new_spell *new_spells;
     uint8_t *mp_reqs;
     uint16_t *xp_reqs;
     dw_enemy *enemies;
@@ -230,6 +257,8 @@ typedef struct {
     dw_searchable *flute;
     dw_searchable *armor;
     uint8_t *weapon_shops;
+    uint8_t *music;
+    uint8_t *title_text;
 } dw_rom;
 
 #endif

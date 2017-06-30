@@ -124,8 +124,20 @@ static uint64_t genrand64_int64()
 
 uint64_t mt_rand(uint64_t min, uint64_t max)
 {
-    uint64_t ret = min + (genrand64_int64() % (max - min));
-    return ret;
+    if (min >= max) return min;
+
+    return min + (genrand64_int64() % (max - min));
+}
+
+double mt_rand_double()
+{
+    return (genrand64_int64() >> 11) * (1.0/9007199254740992.0);
+}
+
+
+int mt_rand_bool()
+{
+    return genrand64_int64() & 0x1;
 }
 
 void mt_shuffle(void *array, size_t n, size_t size)

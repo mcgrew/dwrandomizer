@@ -66,6 +66,10 @@ void mt_init(uint64_t seed);
 
 uint64_t mt_rand(uint64_t min, uint64_t max);
 
+int mt_rand_bool();
+
+double mt_rand_double();
+
 void mt_shuffle(void *array, size_t n, size_t size);
 #ifdef __cplusplus
 }

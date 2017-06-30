@@ -225,7 +225,7 @@ static void shuffle_chests(dw_rom *rom) {
                 *(cont++) = KEY;
                 break;
             case TABLET: /* remove the tablet */
-                if (mt_rand(0, 1)) { /* 50/50 chance */
+                if (mt_rand_bool()) { /* 50/50 chance */
                     rom->token->map = NO_MAP; /* remove token */
                     *(cont++) = TOKEN; /* put it in a chest */
                 } else {
@@ -286,7 +286,6 @@ static void randomize_attack_patterns(dw_rom *rom)
 void randomize_music(dw_rom *rom)
 {
     int i;
-
     
     if (!(rom->flags & FLAG_K))
         return;
@@ -442,15 +441,15 @@ static void shuffle_searchables(dw_rom *rom)
 
     mt_shuffle(searchables, 3, sizeof(dw_searchable));
 
-    rom->token->map = searchables[1].map;
-    rom->token->x   = searchables[1].x;
-    rom->token->y   = searchables[1].y;
-    rom->flute->map = searchables[2].map;
-    rom->flute->x   = searchables[2].x;
-    rom->flute->y   = searchables[2].y;
-    rom->armor->map = searchables[3].map;
-    rom->armor->x   = searchables[3].x;
-    rom->armor->y   = searchables[3].y;
+    rom->token->map = searchables[0].map;
+    rom->token->x   = searchables[0].x;
+    rom->token->y   = searchables[0].y;
+    rom->flute->map = searchables[1].map;
+    rom->flute->x   = searchables[1].x;
+    rom->flute->y   = searchables[1].y;
+    rom->armor->map = searchables[2].map;
+    rom->armor->x   = searchables[2].x;
+    rom->armor->y   = searchables[2].y;
 }
 
 static uint8_t inverted_power_curve(uint8_t min, uint8_t max, double power)

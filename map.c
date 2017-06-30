@@ -505,6 +505,7 @@ static bool place_landmarks(dw_map *map, int *lm_sizes, int *lm_count)
 bool map_generate_terrain(dw_rom *rom)
 {
     int i, j, size, lm_count, lm_sizes[256], viable_land_masses, *v;
+    int largest, next;
 
     dw_tile tiles[16] = {
             TILE_GRASS,  TILE_GRASS,  TILE_GRASS, TILE_SWAMP,
@@ -538,6 +539,11 @@ bool map_generate_terrain(dw_rom *rom)
     if (!place_landmarks(&rom->map, lm_sizes, &lm_count)) {
         return false;
     }
+    /* place the token */
+    lm_count = find_walkable_area(&rom->map, lm_sizes);
+    find_largest_lm(&rom->map, lm_sizes, lm_count, &largest, &next);
+    map_find_land(&rom->map, largest, next, &rom->token->x, &rom->token->y);
+
     return map_encode(&rom->map);
 }
 

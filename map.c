@@ -268,6 +268,9 @@ static void place_charlock(dw_map *map, int largest, int next)
         }
     }
     map->tiles[x-3][y] = TILE_CASTLE;
+    map->rainbow_drop->x = warp->x + 3;
+    map->rainbow_bridge->x = warp->x + 2;
+    map->rainbow_bridge->y = map->rainbow_drop->y = warp->y;
 }
 
 static uint8_t place_tantegel(dw_map *map, int largest, int next)

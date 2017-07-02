@@ -900,6 +900,9 @@ void dwr_randomize(const char* input_file, uint64_t seed, char *flags,
         const char* output_dir)
 {
     uint64_t crc;
+    char output_file[1024];
+    snprintf(output_file, 1024, "%s/DWRando.%Lu.%s.nes", output_dir, seed,
+            flags);
 
     mt_init(seed);
     dw_rom rom;
@@ -932,6 +935,6 @@ void dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     crc = crc64(0, rom.data, ROM_SIZE);
     printf("Final Checksum: %016LX\n", crc);
 
-    dwr_write(&rom, "/tmp/DWRando_v2.nes");
+    dwr_write(&rom, output_file);
 
 }

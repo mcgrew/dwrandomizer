@@ -210,8 +210,8 @@ static void map_find_land(dw_map *map, int one, int two, uint8_t *x, uint8_t *y)
     uint8_t cont;
 
     for (;;) {
-        *x = mt_rand(0, 120);
-        *y = mt_rand(0, 120);
+        *x = mt_rand(0, 119);
+        *y = mt_rand(0, 119);
         cont = map->walkable[*x][*y];
         if (cont && (cont == one || cont == two))
             return;
@@ -329,13 +329,13 @@ static void map_fill(dw_rom *rom, dw_tile tile, int size)
 
     p = points = malloc(MAX_BLOB * 4 + 1);
     memset(p, 0xff, MAX_BLOB * 4 + 1);
-    p[0] = mt_rand(0, 120);
-    p[1] = mt_rand(0, 120);
+    p[0] = mt_rand(0, 119);
+    p[1] = mt_rand(0, 119);
     size = mt_rand(MAX_BLOB/4, MAX_BLOB);
 
     while (size > 0) {
         x = p[0]; y=p[1];
-        directions = mt_rand(0, 16);
+        directions = mt_rand(0, 15);
         if (directions & 8) {
             size -= map_fill_point(rom, points, x-1, y, tile);
         }

@@ -240,7 +240,7 @@ typedef struct {
 } dw_map;
 
 typedef struct {
-    uint8_t data[ROM_SIZE];
+    uint8_t *data;
     uint64_t flags;
     dw_map map;
     dw_stats *stats;

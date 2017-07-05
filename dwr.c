@@ -26,12 +26,15 @@ const char *prg1sums[2] = {
 };
 
 const char alphabet[] = "0123456789abcdefghijklmnopqrstuvwxyz"
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ__'______.,-_?!_)(_______________  ";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ\"\"'*>_:__.,-_?!;)(``_'___________  ";
+
+const char title_alphabet[] = "0123456789__________________________"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ__________________________________!.c-     ";
 
 const int CHEST_COUNT = 31;
 
-const char flag_order[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                     "abcdefghijklmnopqrstuvwxyz";
+const char flag_order[] = 
+        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 /* for qsort() */
 static int compare(const void *a, const void *b)
@@ -60,6 +63,7 @@ bool dwr_init(dw_rom *rom, const char *input_file, char *flags)
     FILE *input;
     int read;
 
+    rom->data = malloc(ROM_SIZE);
     memset(rom->data, 0, ROM_SIZE);
     input = fopen(input_file, "rb");
     if (!input) {
@@ -109,28 +113,33 @@ bool dwr_init(dw_rom *rom, const char *input_file, char *flags)
     map_decode(&rom->map);
 }
 
-void ascii2dw(char *string, uint8_t *bytes)
+size_t ascii2dw(uint8_t *string)
 {
-    int i, j, len, alphalen;
+    uint8_t i, j;
+    int len, alphalen;
 
     len = strlen(string);
     alphalen = strlen(alphabet);
     for (i=0; i < len; i++) {
-        bytes[i] = (uint8_t)0x59;
         for (j=0; j < alphalen; j++) {
-            if (string[i] = alphabet[j]) {
-                bytes[i] = (uint8_t)j;
+            if (string[i] == alphabet[j]) {
+                string[i] = j;
+                break;
+            } else if (j == alphalen-1) {
+                string[i] = 0x5f;
             }
         }
     }
 }
 
-void dw2ascii(char *string, uint8_t *bytes, size_t bufsize)
+size_t dw2ascii(uint8_t *string, size_t bufsize)
 {
     int i, alphalen;
+
+    alphalen = strlen(alphabet);
     for (i=0; i < bufsize; i++) {
-        if (bytes[i] < alphalen) {
-            string[i] = alphabet[bytes[i]];
+        if (string[i] < alphalen) {
+            string[i] = alphabet[string[i]];
         } else {
             string[i] = ' ';
         }
@@ -144,7 +153,7 @@ static inline int non_charlock_chest()
 {
     int chest;
 
-    chest = (int)mt_rand(0, 23);
+    chest = (int)mt_rand(0, 22);
     /* avoid 11-16 and chest 24 (they are in charlock) */
     if (chest >= 11) chest += 6;
     if (chest >= 24) chest += 1;
@@ -268,7 +277,7 @@ static void randomize_attack_patterns(dw_rom *rom)
 
     for (i=SLIME; i < DRAGONLORD_1; i++) {
         if (mt_rand_bool()) {
-            rom->enemies[i].pattern = mt_rand(0, 256);
+            rom->enemies[i].pattern = mt_rand(0, 255);
             rom->enemies[i].s_ss_resist &= 0xf0;
             rom->enemies[i].s_ss_resist |= mt_rand(0, i/3);
         } else {
@@ -298,7 +307,7 @@ void randomize_music(dw_rom *rom)
 
 
     for (i=0; i < 29; i++) {
-        rom->music[i] = choices[mt_rand(0, sizeof(choices))];
+        rom->music[i] = choices[mt_rand(0, sizeof(choices)-1)];
     }
 }
 
@@ -340,8 +349,8 @@ static void randomize_zone_layout(dw_rom *rom)
 
     for (i=0; i < 31; i++) {
         rom->zone_layout[i] = 0;
-        rom->zone_layout[i] |= mt_rand(3, 16) << 4;
-        rom->zone_layout[i] |= mt_rand(3, 16);
+        rom->zone_layout[i] |= mt_rand(3, 15) << 4;
+        rom->zone_layout[i] |= mt_rand(3, 15);
     }
 
     /* set up zones around tantegel */
@@ -364,29 +373,29 @@ static void randomize_zones(dw_rom *rom)
 
     zone = 0;  /* tantege zone */
     for (i=0; i < 5; i++) { 
-        rom->zones[zone * 5 + i] = mt_rand(SLIME, SCORPION+1);
+        rom->zones[zone * 5 + i] = mt_rand(SLIME, SCORPION);
     }
 
     for (zone=1; zone < 2; zone++) { /* tantegel adjacent zones */
         for (i=0; i < 5; i++) {
-            rom->zones[zone * 5 + i] = mt_rand(SLIME, WOLF+1);
+            rom->zones[zone * 5 + i] = mt_rand(SLIME, WOLF);
         }
     }
 
     for (zone=3; zone < 15; zone++) { /* overworld/hybrid zones */
         for (i=0; i < 5; i++) {
-            rom->zones[zone * 5 + i] = mt_rand(SLIME, RED_DRAGON+1);
+            rom->zones[zone * 5 + i] = mt_rand(SLIME, RED_DRAGON);
         }
     }
 
     for (zone=16; zone < 18; zone++) { /* charlock */
         for (i=0; i < 5; i++) {
-            rom->zones[zone * 5 + i] = mt_rand(WEREWOLF, RED_DRAGON+1);
+            rom->zones[zone * 5 + i] = mt_rand(WEREWOLF, RED_DRAGON);
         }
     }
     zone = 19;  /* swamp cave */
     for (i=0; i < 5; i++) {
-        rom->zones[zone * 5 + i] = mt_rand(SLIME, RED_DRAGON+1);
+        rom->zones[zone * 5 + i] = mt_rand(SLIME, RED_DRAGON);
     }
 }
 
@@ -405,18 +414,18 @@ static void randomize_shops(dw_rom *rom)
 
     printf("Randomizing weapon shop inventory\n");
     
-    six_item_shop = mt_rand(0, 7);
+    six_item_shop = mt_rand(0, 6);
     shop_item = rom->weapon_shops;
     
     for (i=0; i < 7; i++) {
         shop_start = shop_item;
-        *(shop_item++) = items[mt_rand(0, 15)];
-        *(shop_item++) = items[mt_rand(0, 15)];
-        *(shop_item++) = items[mt_rand(0, 15)];
-        *(shop_item++) = items[mt_rand(0, 15)];
-        *(shop_item++) = items[mt_rand(0, 15)];
+        *(shop_item++) = items[mt_rand(0, 14)];
+        *(shop_item++) = items[mt_rand(0, 14)];
+        *(shop_item++) = items[mt_rand(0, 14)];
+        *(shop_item++) = items[mt_rand(0, 14)];
+        *(shop_item++) = items[mt_rand(0, 14)];
         if (i == six_item_shop) {
-            *(shop_item++) = items[mt_rand(0, 15)];
+            *(shop_item++) = items[mt_rand(0, 14)];
             qsort(shop_start, 6, sizeof(uint8_t), &compare);
         } else {
             qsort(shop_start, 5, sizeof(uint8_t), &compare);
@@ -427,17 +436,16 @@ static void randomize_shops(dw_rom *rom)
 
 static void shuffle_searchables(dw_rom *rom)
 {
-    dw_searchable searchable_1, searchable_2, searchable_3;
-    searchable_1 = *(rom->token);
-    searchable_2 = *(rom->flute);
-    searchable_3 = *(rom->armor);
-
-    dw_searchable searchables[3] = { searchable_1, searchable_2, searchable_3 };
+    dw_searchable searchables[3];
 
     if (!(rom->flags & FLAG_I))
         return;
 
     printf("Shuffling searchable items\n");
+
+    searchables[0] = *(rom->token);
+    searchables[1] = *(rom->flute);
+    searchables[2] = *(rom->armor);
 
     mt_shuffle(searchables, 3, sizeof(dw_searchable));
 
@@ -506,7 +514,7 @@ static void randomize_spells(dw_rom *rom)
 
     /* choose levels for each spell */
     for (i=0; i < 10; i++) {
-        rom->new_spells[i].level = mt_rand(1, 17);
+        rom->new_spells[i].level = mt_rand(1, 16);
     }
 
     for (i=0; i < 30; i++) {
@@ -585,7 +593,7 @@ static void update_enemy_hp(dw_rom *rom)
     for (i=SLIME; i <= DRAGONLORD_2; i++) {
         rom->enemies[i].hp =   remake_hp[i];
     }
-    rom->enemies[DRAGONLORD_2].hp -= mt_rand(0, 16);
+    rom->enemies[DRAGONLORD_2].hp -= mt_rand(0, 15);
 }
 
 /*
@@ -710,6 +718,11 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0xe75d, 1, 9);  /* buff the hurt spell */
     vpatch(rom, 0xdbd1, 1, 18);  /* buff the heal spell */
     vpatch(rom, 0xea51, 5, 0xad, 0x07, 0x01, 0xea, 0xea); /* I forget what this does */
+    /* fixing some annoying roaming npcs */
+    vpatch(rom, 0x18fe, 1, 0xa7); /* move the stupid old man from the item shop */
+    vpatch(rom, 0x91f,  1, 0x6f); /* quit ignoring the customers */
+    vpatch(rom, 0x94c,  1, 0x6f); /* quit ignoring the customers */
+    vpatch(rom, 0x17b2,  3, 0, 0, 0); /* roaming throne room guard */
 }
 
 static void dwr_menu_wrap(dw_rom *rom)
@@ -881,6 +894,35 @@ static void dwr_speed_hacks(dw_rom *rom)
 
 static void dwr_token_dialogue(dw_rom *rom)
 {
+    dw_searchable *searchable;
+    uint8_t text1[24], text2[72];
+    size_t len;
+    int dx, dy;
+
+    searchable = rom->token;
+    if (searchable->map != OVERWORLD) {
+        searchable = rom->flute;
+    }
+    if (searchable->map != OVERWORLD) {
+        searchable = rom->armor;
+    }
+    if (searchable->map != OVERWORLD) {
+        strcpy(text1, "Thou must go and fight!");
+        strcpy(text2, "Go forth, descendant of Erdrick, " 
+                "I have complete faith in thy victory! ");
+        ascii2dw(text1);
+        patch(rom, 0xa238, 23, text1);
+        vpatch(rom, 0xa298, 1, 0x53); /* replace .' with ' */
+    } else {
+        dx = rom->map.warps_to[TANTEGEL].x - searchable->x;
+        dy = rom->map.warps_to[TANTEGEL].y - searchable->y;
+//        strcpy(text1, "Thou may go and search.");
+        snprintf(text2, 72, "From Tantegel Castle travel %2d leagues to the %s "
+                "and %2d to the %s", ABS(dy), (dy < 0) ? "north" : "south", 
+                ABS(dx), (dx < 0) ? "west" : "east");
+    }
+    ascii2dw(text2);
+    patch(rom, 0xa252, 70, text2);
 }
 
 static void dwr_write(dw_rom *rom, const char *output_file)
@@ -936,5 +978,6 @@ void dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     printf("Final Checksum: %016LX\n", crc);
 
     dwr_write(&rom, output_file);
+    free(rom.data);
 
 }

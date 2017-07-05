@@ -126,7 +126,7 @@ uint64_t mt_rand(uint64_t min, uint64_t max)
 {
     if (min >= max) return min;
 
-    return min + (genrand64_int64() % (max - min));
+    return min + (genrand64_int64() % (max - min + 1));
 }
 
 double mt_rand_double()
@@ -148,7 +148,7 @@ void mt_shuffle(void *array, size_t n, size_t size)
 
     if (n > 1) {
         for (i = 0; i < n - 1; ++i) {
-            j = mt_rand(i, n);
+            j = mt_rand(i, n-1);
 
             memcpy(tmp, arr + j * stride, size);
             memcpy(arr + j * stride, arr + i * stride, size);

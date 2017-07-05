@@ -16,7 +16,7 @@ static void print_usage(const char *command)
     printf("\n");
     printf("Flags:\n");
     printf("    C  Randomize chest contents.\n");
-    printf("    D  Enable Death Necklace functionality (+10 ATK -25% HP)\n");
+    printf("    D  Enable Death Necklace functionality (+10 ATK -25%% HP)\n");
     printf("    f  Set XP requirements for each level to 75%% of normal.\n");
     printf("    F  Set XP requirements for each level to 50%% of normal.\n");
     printf("    G  Enable ultra randomization of player stat growth.\n");
@@ -58,12 +58,12 @@ int main(int argc, char **argv)
         flags = default_flags;
     }
     if (argc > 3) {
-        sscanf(argv[argc-2], "%Lu", &seed);
+        sscanf(argv[argc-2], "%"PRIu64"u", &seed);
     } else {
         srand(time(NULL));
         seed = ((uint64_t)rand() << 32) | ((uint64_t)rand() & 0xffffffffL);
     }
-    printf("Randomizing using seed: %Lu with flags %s\n", seed, flags);
+    printf("Randomizing using seed: %"PRIu64"u with flags %s\n", seed, flags);
 
     dwr_randomize(input_file, seed, flags, output_dir);
 

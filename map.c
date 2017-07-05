@@ -10,7 +10,7 @@
 #define MAP_ENCODED_SIZE 2294
 #define VIABLE_CONT 250 /* minimum size for a land_mass to use */
 
-bool map_encode(dw_map *map)
+static bool map_encode(dw_map *map)
 {
     int x, y;
     uint8_t *e, encoded[120 * 120]; 
@@ -62,10 +62,10 @@ bool map_encode(dw_map *map)
 //    printf("\n");
 
     if (e - encoded > MAP_ENCODED_SIZE) {
-        printf("Compressed map is too large (%d)\n", e - encoded);
+        printf("Compressed map is too large (%d)\n", (int)(e - encoded));
         return false;
     } else {
-        printf("Compressed map size: %d\n", e - encoded);
+        printf("Compressed map size: %d\n", (int)(e - encoded));
     }
     memcpy(map->encoded, encoded, MAP_ENCODED_SIZE);
     memcpy(map->pointers, pointers, 240);
@@ -173,7 +173,7 @@ static int map_land_mass(dw_map *map, uint8_t x, uint8_t y,
     return size;
 }
 
-static bool inline needs_bridge(uint8_t left, uint8_t right, int *lm_sizes)
+static inline bool needs_bridge(uint8_t left, uint8_t right, int *lm_sizes)
 {
     if (!left || !right || left == right)
         return false;
@@ -206,7 +206,6 @@ static bool add_bridges(dw_map *map, int *lm_sizes)
 
 static void map_find_land(dw_map *map, int one, int two, uint8_t *x, uint8_t *y)
 {
-    int i;
     uint8_t cont;
 
     for (;;) {
@@ -275,7 +274,7 @@ static void place_charlock(dw_map *map, int largest, int next)
 
 static uint8_t place_tantegel(dw_map *map, int largest, int next)
 {
-    int x, y, tantegel_lm;
+    int x, y;
     dw_warp *warp;
 
     place(map, WARP_TANTEGEL, TILE_CASTLE, largest, next);
@@ -322,10 +321,11 @@ static int map_fill_point(dw_rom *rom, uint8_t *points,
     return 1;
 }
 
-static void map_fill(dw_rom *rom, dw_tile tile, int size)
+static void map_fill(dw_rom *rom, dw_tile tile)
 {
     uint8_t x, y, *points, *p;
     uint64_t directions;
+    int size;
 
     p = points = malloc(MAX_BLOB * 4 + 1);
     memset(p, 0xff, MAX_BLOB * 4 + 1);
@@ -358,7 +358,7 @@ static void map_fill(dw_rom *rom, dw_tile tile, int size)
 
 static inline int find_walkable_area(dw_map *map, int *lm_sizes)
 {
-    int x, y, size;
+    int x, y;
     uint8_t land_mass = 0;
 
     memset(map->walkable, 0, 120 * 120);
@@ -391,7 +391,7 @@ static inline int find_walkable_area(dw_map *map, int *lm_sizes)
 static void find_largest_lm(dw_map *map, int *lm_sizes, int lm_count,
         int *largest, int *next)
 {
-    int i, j;
+    int i;
 
     *largest = *next = 0;
     for(i=0; i < lm_count; i++) {
@@ -412,7 +412,6 @@ static void find_largest_lm(dw_map *map, int *lm_sizes, int lm_count,
 static bool place_landmarks(dw_map *map, int *lm_sizes, int *lm_count)
 {
     int i, largest = 0, next = 0;
-    int sc_count = 0;
     uint8_t tantegel_lm, charlock_lm;
     dw_map_index swamp_north, swamp_south;
     bool swamp_placed = false;
@@ -504,7 +503,7 @@ static bool place_landmarks(dw_map *map, int *lm_sizes, int *lm_count)
 
 bool map_generate_terrain(dw_rom *rom)
 {
-    int i, j, size, lm_count, lm_sizes[256], viable_land_masses, *v;
+    int i, j, lm_count, lm_sizes[256];
     int largest, next;
 
     dw_tile tiles[16] = {
@@ -521,7 +520,7 @@ bool map_generate_terrain(dw_rom *rom)
     for (i=0; i < 57600 / MAX_BLOB; i++) {
         mt_shuffle(tiles, sizeof(tiles) / sizeof(dw_tile), sizeof(dw_tile));
         for (j=0; j < 16 ; j++) {
-            map_fill(rom, tiles[j], size);
+            map_fill(rom, tiles[j]);
         }
     }
 

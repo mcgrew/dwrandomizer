@@ -58,7 +58,7 @@ static void parse_flags(dw_rom *rom, char *flags)
     }
 }
 
-bool dwr_init(dw_rom *rom, const char *input_file, char *flags)
+void dwr_init(dw_rom *rom, const char *input_file, char *flags)
 {
     FILE *input;
     int read;
@@ -118,7 +118,7 @@ size_t ascii2dw(uint8_t *string)
     uint8_t i, j;
     int len, alphalen;
 
-    len = strlen(string);
+    len = strlen((char*)string);
     alphalen = strlen(alphabet);
     for (i=0; i < len; i++) {
         for (j=0; j < alphalen; j++) {
@@ -130,6 +130,7 @@ size_t ascii2dw(uint8_t *string)
             }
         }
     }
+    return i;
 }
 
 size_t dw2ascii(uint8_t *string, size_t bufsize)
@@ -144,6 +145,7 @@ size_t dw2ascii(uint8_t *string, size_t bufsize)
             string[i] = ' ';
         }
     }
+    return bufsize;
 }
 
 /* 
@@ -204,9 +206,6 @@ static inline void check_quest_items(dw_rom *rom)
 static void shuffle_chests(dw_rom *rom) {
     int i;
     dw_chest *chest;
-    long addr;
-    size_t size;
-    uint8_t *key; /* the magic key in the throne room */
     uint8_t *cont, contents[CHEST_COUNT-2];
 
     if (!(rom->flags & FLAG_C))
@@ -292,7 +291,7 @@ static void randomize_attack_patterns(dw_rom *rom)
 //{
 //}
 
-void randomize_music(dw_rom *rom)
+static void randomize_music(dw_rom *rom)
 {
     int i;
     
@@ -313,8 +312,6 @@ void randomize_music(dw_rom *rom)
 
 static void disable_music(dw_rom *rom)
 {
-    uint8_t *new_music;
-
     if (!(rom->flags & FLAG_Q))
         return;
 
@@ -896,7 +893,6 @@ static void dwr_token_dialogue(dw_rom *rom)
 {
     dw_searchable *searchable;
     uint8_t text1[24], text2[72];
-    size_t len;
     int dx, dy;
 
     searchable = rom->token;
@@ -907,8 +903,8 @@ static void dwr_token_dialogue(dw_rom *rom)
         searchable = rom->armor;
     }
     if (searchable->map != OVERWORLD) {
-        strcpy(text1, "Thou must go and fight!");
-        strcpy(text2, "Go forth, descendant of Erdrick, " 
+        strcpy((char*)text1, "Thou must go and fight!");
+        strcpy((char*)text2, "Go forth, descendant of Erdrick, " 
                 "I have complete faith in thy victory! ");
         ascii2dw(text1);
         patch(rom, 0xa238, 23, text1);
@@ -916,9 +912,10 @@ static void dwr_token_dialogue(dw_rom *rom)
     } else {
         dx = rom->map.warps_to[TANTEGEL].x - searchable->x;
         dy = rom->map.warps_to[TANTEGEL].y - searchable->y;
-//        strcpy(text1, "Thou may go and search.");
-        snprintf(text2, 72, "From Tantegel Castle travel %2d leagues to the %s "
-                "and %2d to the %s", ABS(dy), (dy < 0) ? "north" : "south", 
+//        strcpy((char*)text1, "Thou may go and search.");
+        snprintf((char*)text2, 72, "From Tantegel Castle travel %2d leagues "
+                "to the %s and %2d to the %s",
+                ABS(dy), (dy < 0) ? "north" : "south", 
                 ABS(dx), (dx < 0) ? "west" : "east");
     }
     ascii2dw(text2);
@@ -943,7 +940,7 @@ void dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 {
     uint64_t crc;
     char output_file[1024];
-    snprintf(output_file, 1024, "%s/DWRando.%Lu.%s.nes", output_dir, seed,
+    snprintf(output_file, 1024, "%s/DWRando.%"PRIu64".%s.nes", output_dir, seed,
             flags);
 
     mt_init(seed);
@@ -963,19 +960,20 @@ void dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     update_mp_reqs(&rom);
     lower_xp_reqs(&rom);
     update_enemy_hp(&rom);
+    dwr_fighters_ring(&rom);
     dwr_death_necklace(&rom);
     dwr_menu_wrap(&rom);
     dwr_speed_hacks(&rom);
     dwr_token_dialogue(&rom);
     other_patches(&rom);
     crc = crc64(0, rom.data, ROM_SIZE);
-    printf("Intermediate Checksum: %016LX\n", crc);
+    printf("Checksum: %016"PRIX64"\n", crc);
 
     update_title_screen(&rom);
     randomize_music(&rom);
     disable_music(&rom);
     crc = crc64(0, rom.data, ROM_SIZE);
-    printf("Final Checksum: %016LX\n", crc);
+//    printf("Final Checksum: %016"PRIX64"\n", crc);
 
     dwr_write(&rom, output_file);
     free(rom.data);

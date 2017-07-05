@@ -58,12 +58,12 @@ int main(int argc, char **argv)
         flags = default_flags;
     }
     if (argc > 3) {
-        sscanf(argv[argc-2], "%"PRIu64"u", &seed);
+        sscanf(argv[argc-2], "%"PRIu64"", &seed);
     } else {
         srand(time(NULL));
         seed = ((uint64_t)rand() << 32) | ((uint64_t)rand() & 0xffffffffL);
     }
-    printf("Randomizing using seed: %"PRIu64"u with flags %s\n", seed, flags);
+    printf("Randomizing using seed: %"PRIu64" with flags %s\n", seed, flags);
 
     dwr_randomize(input_file, seed, flags, output_dir);
 

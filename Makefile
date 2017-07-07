@@ -1,6 +1,6 @@
 
 CC          = gcc
-WINCC       = x86_64-w64-mingw32-gcc
+WINCC       = ../mxe/usr/bin/i686-w64-mingw32.static-gcc
 INCLUDES    = -I. 
 CFLAGS      = -g # -fPIC
 DEFINES     = 

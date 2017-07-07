@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <math.h>
+#include <ctype.h>
 
 #include "dwr.h"
 #include "mt64.h"
@@ -42,7 +43,7 @@ static int compare(const void *a, const void *b)
     return *(uint8_t*)a - *(uint8_t*)b;
 }
 
-static void parse_flags(dw_rom *rom, char *flags)
+static uint64_t parse_flags(dw_rom *rom, char *flags)
 {
     int i, len;
     char *order;
@@ -56,6 +57,7 @@ static void parse_flags(dw_rom *rom, char *flags)
             rom->flags |= UINT64_C(1) << (order - flag_order);
         }
     }
+    return rom->flags;
 }
 
 void dwr_init(dw_rom *rom, const char *input_file, char *flags)
@@ -78,7 +80,7 @@ void dwr_init(dw_rom *rom, const char *input_file, char *flags)
     }
     fclose(input);
 
-    parse_flags(rom, flags);
+    rom->map.flags = parse_flags(rom, flags);
     /* subtract 0x9d5d from these pointers */
     rom->map.pointers = (uint16_t*)&rom->data[0x2663];
     rom->map.encoded = &rom->data[0x1d6d];
@@ -123,6 +125,36 @@ size_t ascii2dw(uint8_t *string)
     for (i=0; i < len; i++) {
         for (j=0; j < alphalen; j++) {
             if (string[i] == alphabet[j]) {
+                string[i] = j;
+                break;
+            } else if (j == alphalen-1) {
+                string[i] = 0x5f;
+            }
+        }
+    }
+    return i;
+}
+
+void touppercase(uint8_t *string) {
+    char *c = (char*)string;
+    while (*c) {
+        *c = toupper(*c);
+        c++;
+    }
+}
+
+size_t ascii2dw_title(uint8_t *string)
+{
+    uint8_t i, j;
+    int len, alphalen;
+
+    touppercase(string);
+
+    len = strlen((char*)string);
+    alphalen = strlen(title_alphabet);
+    for (i=0; i < len; i++) {
+        for (j=0; j < alphalen; j++) {
+            if (string[i] == title_alphabet[j]) {
                 string[i] = j;
                 break;
             } else if (j == alphalen-1) {
@@ -593,15 +625,6 @@ static void update_enemy_hp(dw_rom *rom)
     rom->enemies[DRAGONLORD_2].hp -= mt_rand(0, 15);
 }
 
-/*
- * Patches the ROM and returns the next address after the patch.
- */
-static void update_title_screen(dw_rom *rom)
-{
-    uint8_t blank_line[5] = { 0xf7, 0x20, 0x5f, 0xfc, 0xf0 };
-
-}
-
 static uint16_t vpatch(dw_rom *rom, uint16_t address, uint32_t size, ...)
 {
     int i;
@@ -631,6 +654,81 @@ static uint16_t patch(dw_rom *rom, uint16_t address, uint32_t size, uint8_t *dat
     }
     return p - rom->data;
 }
+
+static int center_title_text(dw_rom *rom, int pos, 
+        const char *text)
+{
+    uint8_t len, space, dw_text[33];
+
+    strncpy((char*)dw_text, text, 33);
+
+    ascii2dw_title(dw_text);
+    len = strlen(text);
+    space = 32 - len;
+    if (space) 
+        pos = vpatch(rom, pos, 3, 0xf7, space/2, 0x5f); 
+    pos = patch(rom, pos, len, dw_text);
+    if (space) 
+        pos = vpatch(rom, pos, 4, 0xf7, (space+1)/2, 0x5f, 0xfc); 
+
+    return pos;
+}
+
+/*
+ * Patches the ROM and returns the next address after the patch.
+ */
+static void update_title_screen(dw_rom *rom)
+{
+    int pos = 0x3f36, needed;
+    char *f, *fo, text[33];
+    uint64_t flags;
+    
+    text[33] = '\0';
+    flags = rom->flags;
+    f = text;
+    fo = (char*)flag_order;
+
+    pos = vpatch(rom, pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
+    pos = center_title_text(rom, pos, "RANDOMIZER");
+    pos = vpatch(rom, pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
+    pos = center_title_text(rom, pos, VERSION);
+
+    pos = vpatch(rom, pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
+    pos = vpatch(rom, pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
+    pos = vpatch(rom, pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
+    pos = vpatch(rom, pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
+
+    /* parse the flags back to a string */
+    while (flags) {
+        if (flags & 1) *(f++) = *fo;
+        flags >>= 1;
+        fo++;
+        if (f - text >= 32) break;
+    }
+    *f = '\0';
+
+    pos = center_title_text(rom, pos, text);
+    pos = vpatch(rom, pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
+    snprintf((char *)text, 33, "%"PRIu64, rom->seed);
+    pos = center_title_text(rom, pos, text);
+
+    needed = MIN(0x3fc5 - pos - 8, 32);
+    memset(text, 0x5f, needed);
+    pos = patch(rom, pos, needed, (uint8_t*)text);
+    if (needed == 32) {
+        pos = vpatch(rom, pos, 1, 0xfc);
+    } else {
+        pos = vpatch(rom, pos, 4, 0xf7, 32 - needed, 0x5f, 0xfc);
+    }
+
+    needed = MAX(0x3fc5 - pos - 4, 0);
+    if (needed > 0)
+        pos = patch(rom, pos, needed, (uint8_t*)text);
+    pos = vpatch(rom, pos, 4, 0xf7, 32 - needed, 0x5f, 0xfc);
+
+    // 0x3fc5
+}
+
 
 static void dwr_fighters_ring(dw_rom *rom)
 {
@@ -946,6 +1044,7 @@ void dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     mt_init(seed);
     dw_rom rom;
     dwr_init(&rom, input_file, flags);
+    rom.seed = seed;
 
     while(!map_generate_terrain(&rom)) {}
     shuffle_searchables(&rom);

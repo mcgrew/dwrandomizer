@@ -1,3 +1,14 @@
+# 2.0 Complete rewrite - split continents & more #
+###### Released Xxx XX, 2017 ######
+
+* Split continents can now occur, causing the swamp cave to be required
+* Some NPCs have been moved or removed
+   * The roving guard in the throne room has been sacked
+   * The old man in the Garinam item ahop has been moved
+   * The weapon shop in Cantlin now contains 4 counter tiles - the owner can no longer hide!
+* No more bridges to nowhere.
+   * The islands the bridges lead to may be empty, but they won't be tiny.
+
 # 1.3-rc1 - Lots of balance changes and improvements #
 ###### Pre-release - Released Dec 11, 2016 ######
 

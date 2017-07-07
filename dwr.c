@@ -428,10 +428,23 @@ static void randomize_zones(dw_rom *rom)
     }
 }
 
+static bool shop_contains(uint8_t *shop_start, uint8_t *shop_end,
+    dw_shop_item item)
+{
+    while (shop_start < shop_end) {
+        if (*shop_start == item) {
+            return true;
+        }
+        shop_start++;
+    }
+    return false;
+
+}
+
 static void randomize_shops(dw_rom *rom)
 {
     uint8_t *shop_start, *shop_item;
-    int i, six_item_shop;
+    int i, j, six_item_shop;
     dw_shop_item items[15] = {
             BAMBOO_POLE, CLUB, COPPER_SWORD, HAND_AXE, BROAD_SWORD, FLAME_SWORD,
             CLOTHES, LEATHER_ARMOR, CHAIN_MAIL, HALF_PLATE, FULL_PLATE,
@@ -448,13 +461,15 @@ static void randomize_shops(dw_rom *rom)
     
     for (i=0; i < 7; i++) {
         shop_start = shop_item;
-        *(shop_item++) = items[mt_rand(0, 14)];
-        *(shop_item++) = items[mt_rand(0, 14)];
-        *(shop_item++) = items[mt_rand(0, 14)];
-        *(shop_item++) = items[mt_rand(0, 14)];
-        *(shop_item++) = items[mt_rand(0, 14)];
+        for (j=0; j < 5; j++) {
+            while(shop_contains(shop_start, shop_item, 
+                    *shop_item = items[mt_rand(0, 14)])) {}
+            shop_item++;
+        }
         if (i == six_item_shop) {
-            *(shop_item++) = items[mt_rand(0, 14)];
+            while(shop_contains(shop_start, shop_item, 
+                    *shop_item = items[mt_rand(0, 14)])) {}
+            shop_item++;
             qsort(shop_start, 6, sizeof(uint8_t), &compare);
         } else {
             qsort(shop_start, 5, sizeof(uint8_t), &compare);
@@ -1006,8 +1021,8 @@ static void dwr_token_dialogue(dw_rom *rom)
         patch(rom, 0xa238, 23, text1);
         vpatch(rom, 0xa298, 1, 0x53); /* replace .' with ' */
     } else {
-        dx = rom->map.warps_to[TANTEGEL].x - searchable->x;
-        dy = rom->map.warps_to[TANTEGEL].y - searchable->y;
+        dx = searchable->x - rom->map.warps_to[TANTEGEL].x;
+        dy = searchable->y - rom->map.warps_to[TANTEGEL].y;
 //        strcpy((char*)text1, "Thou may go and search.");
         snprintf((char*)text2, 72, "From Tantegel Castle travel %2d leagues "
                 "to the %s and %2d to the %s",

@@ -8,7 +8,7 @@
 #include "dwr_types.h"
 #include "map.h"
 
-static void print_usage(const char *command)
+static void print_usage(const char *command, char *default_flags)
 {
     printf("Usage %s <rom_file> [[flags] seed] <output_dir>\n", command);
     printf("\n");
@@ -34,7 +34,8 @@ static void print_usage(const char *command)
     printf("    W  Randomize weapon shops.\n");
     printf("    Z  Randomize enemy zones.\n");
     printf("\n");
-    printf("If flags are not specified, the flags \"CDGIMPRTWZf\" will be used\n");
+    printf("If flags are not specified, the flags \"%s\" will be used\n",
+            default_flags);
     printf("If the seed is not specified, a random seed will be chosen\n");
 }
 
@@ -42,11 +43,11 @@ int main(int argc, char **argv)
 {
     uint64_t seed;
     char *flags;
-    char default_flags[] = "CDGIMPRTWZf";
+    char default_flags[] = "CDGIMPRWZf";
     char *input_file, *output_dir;
 
     if (argc < 3) {
-        print_usage(argv[0]);
+        print_usage(argv[0], default_flags);
         exit(0);
     }
 

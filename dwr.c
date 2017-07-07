@@ -557,8 +557,6 @@ static void randomize_spells(dw_rom *rom)
         }
         if (stats->spells) {
             stats->mp = MAX(stats->mp, 6);
-        } else {
-            stats->mp = 0;
         }
     }
 }

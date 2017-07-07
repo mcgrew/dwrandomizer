@@ -19,14 +19,14 @@ static void print_usage(const char *command)
     printf("    D  Enable Death Necklace functionality (+10 ATK -25%% HP)\n");
     printf("    f  Set XP requirements for each level to 75%% of normal.\n");
     printf("    F  Set XP requirements for each level to 50%% of normal.\n");
-    printf("    G  Enable ultra randomization of player stat growth.\n");
+    printf("    G  Enable randomization of player stat growth.\n");
     printf("    H  Apply game speed hacks\n");
     printf("    I  Randomize the locations of searchable items\n");
     printf("       (Fairy Flute, Erdrick's Armor, Erdrick's Token).\n");
     printf("    K  Shuffle the game music. (beta)\n");
     printf("    M  Randomize the level spells are learned.\n");
     printf("    R  Enable menu wrap-around\n");
-    printf("    P  Enable ultra randomization of enemy attack patterns.\n");
+    printf("    P  Enable randomization of enemy attack patterns.\n");
     printf("    Q  Disables most of the game music (beta). This doesn't\n");
     printf("       work for battle music yet, and someother tunes, such\n");
     printf("       as the flute, death music, victory music, etc., still\n");

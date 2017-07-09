@@ -1021,8 +1021,8 @@ static void dwr_token_dialogue(dw_rom *rom)
         patch(rom, 0xa238, 23, text1);
         vpatch(rom, 0xa298, 1, 0x53); /* replace .' with ' */
     } else {
-        dx = searchable->x - rom->map.warps_to[TANTEGEL].x;
-        dy = searchable->y - rom->map.warps_to[TANTEGEL].y;
+        dx = searchable->x - rom->map.warps_from[WARP_TANTEGEL].x;
+        dy = searchable->y - rom->map.warps_from[WARP_TANTEGEL].y;
 //        strcpy((char*)text1, "Thou may go and search.");
         snprintf((char*)text2, 72, "From Tantegel Castle travel %2d leagues "
                 "to the %s and %2d to the %s",

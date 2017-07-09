@@ -253,7 +253,9 @@ typedef struct {
     uint8_t *zones;
     uint8_t *zone_layout;
     dw_chest *chests;
-    dw_forced_encounter *encounters[3];
+    dw_forced_encounter *axe_knight;
+    dw_forced_encounter *green_dragon;
+    dw_forced_encounter *golem;
     uint8_t *encounter_types[3];
     dw_searchable *token;
     dw_searchable *flute;

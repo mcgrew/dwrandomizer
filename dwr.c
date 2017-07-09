@@ -99,12 +99,12 @@ void dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->zones = &rom->data[0xf55f];
     rom->zone_layout = &rom->data[0xf532];
     rom->chests = (dw_chest*)&rom->data[0x5ddd];
-    rom->encounters[0] = (dw_forced_encounter*)&rom->data[0xcd61];
-    rom->encounters[1] = (dw_forced_encounter*)&rom->data[0xcd78];
-    rom->encounters[2] = (dw_forced_encounter*)&rom->data[0xcd95];
+    rom->axe_knight = (dw_forced_encounter*)&rom->data[0xcd61];
+    rom->green_dragon = (dw_forced_encounter*)&rom->data[0xcd78];
+    rom->golem = (dw_forced_encounter*)&rom->data[0xcd95];
     rom->encounter_types[0] = &rom->data[0xcd74];
-    rom->encounter_types[1] = &rom->data[0xcd87];
-    rom->encounter_types[2] = &rom->data[0xcd95];
+    rom->encounter_types[1] = &rom->data[0xcd91];
+    rom->encounter_types[2] = &rom->data[0xcdae];
     rom->token = (dw_searchable*)&rom->data[0xe11b];
     rom->flute = (dw_searchable*)&rom->data[0xe15a];
     rom->armor = (dw_searchable*)&rom->data[0xe170];
@@ -393,7 +393,8 @@ static void randomize_zone_layout(dw_rom *rom)
 static void randomize_zones(dw_rom *rom)
 {
     int i, zone;
-
+    const dw_enemies forced_enemies[6] = {AXE_KNIGHT, BLUE_DRAGON, STONEMAN,
+            ARMORED_KNIGHT, RED_DRAGON, GOLEM };
 
     if (!(rom->flags & FLAG_Z))
         return;
@@ -425,6 +426,10 @@ static void randomize_zones(dw_rom *rom)
     zone = 19;  /* swamp cave */
     for (i=0; i < 5; i++) {
         rom->zones[zone * 5 + i] = mt_rand(SLIME, RED_DRAGON);
+    }
+
+    for (i=0; i < 3; i++) { /* randomize the forced encounters */
+        *rom->encounter_types[i] = forced_enemies[mt_rand(0, 5)];
     }
 }
 
@@ -668,6 +673,31 @@ static uint16_t patch(dw_rom *rom, uint16_t address, uint32_t size, uint8_t *dat
     return p - rom->data;
 }
 
+static uint8_t *ppatch(uint8_t *p, uint32_t size, uint8_t *data)
+{
+    int i;
+
+    for (i=0; i < size; i++) {
+        *(p++) = data[i];
+    }
+    return p;
+}
+
+static uint8_t *pvpatch(uint8_t *p, uint32_t size, ...)
+{
+    int i;
+    va_list arg;
+
+    va_start(arg, size);
+
+    for (i=0; i < size; i++) {
+        *(p++) = va_arg(arg, int);
+    }
+    va_end(arg);
+    return p;
+
+}
+
 static int center_title_text(dw_rom *rom, int pos, 
         const char *text)
 {
@@ -803,6 +833,12 @@ static void dwr_death_necklace(dw_rom *rom)
 
 static void other_patches(dw_rom *rom)
 {
+    /* move the golem encounter to charlock */
+    rom->golem->map = CHARLOCK_THRONE_ROOM;
+    rom->golem->x = 25;
+    rom->golem->y = 22;
+    vpatch(rom, 0xcdab, 2, 0xea, 0xea); /* make sure he always appears */
+
     vpatch(rom, 0xde33, 10,  /* Changes the enemies summoned by the harp. */
         /* de23: */
         0x29, 0x7,  /* AND #$07    ; limit the random number to 0-7 */
@@ -831,6 +867,7 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0x91f,  1, 0x6f); /* quit ignoring the customers */
     vpatch(rom, 0x94c,  1, 0x6f); /* quit ignoring the customers */
     vpatch(rom, 0x17b2,  3, 0, 0, 0); /* roaming throne room guard */
+    
 }
 
 static void dwr_menu_wrap(dw_rom *rom)

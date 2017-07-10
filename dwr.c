@@ -698,8 +698,7 @@ static uint8_t *pvpatch(uint8_t *p, uint32_t size, ...)
 
 }
 
-static int center_title_text(dw_rom *rom, int pos, 
-        const char *text)
+static uint8_t *center_title_text(uint8_t *pos, const char *text)
 {
     uint8_t len, space, dw_text[33];
 
@@ -709,10 +708,10 @@ static int center_title_text(dw_rom *rom, int pos,
     len = strlen(text);
     space = 32 - len;
     if (space) 
-        pos = vpatch(rom, pos, 3, 0xf7, space/2, 0x5f); 
-    pos = patch(rom, pos, len, dw_text);
+        pos = pvpatch(pos, 3, 0xf7, space/2, 0x5f); 
+    pos = ppatch(pos, len, dw_text);
     if (space) 
-        pos = vpatch(rom, pos, 4, 0xf7, (space+1)/2, 0x5f, 0xfc); 
+        pos = pvpatch(pos, 4, 0xf7, (space+1)/2, 0x5f, 0xfc); 
 
     return pos;
 }
@@ -722,24 +721,27 @@ static int center_title_text(dw_rom *rom, int pos,
  */
 static void update_title_screen(dw_rom *rom)
 {
-    int pos = 0x3f36, needed;
+    int  needed;
     char *f, *fo, text[33];
     uint64_t flags;
+    uint8_t *pos, *end;
     
+    pos = &rom->data[0x3f36];
+    end = &rom->data[0x3fc5];
     text[33] = '\0';
     flags = rom->flags;
     f = text;
     fo = (char*)flag_order;
 
-    pos = vpatch(rom, pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
-    pos = center_title_text(rom, pos, "RANDOMIZER");
-    pos = vpatch(rom, pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
-    pos = center_title_text(rom, pos, VERSION);
+    pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
+    pos = center_title_text(pos, "RANDOMIZER");
+    pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
+    pos = center_title_text(pos, VERSION);
 
-    pos = vpatch(rom, pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
-    pos = vpatch(rom, pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
-    pos = vpatch(rom, pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
-    pos = vpatch(rom, pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
+    pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
+    pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
+    pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
+    pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
 
     /* parse the flags back to a string */
     while (flags) {
@@ -750,24 +752,24 @@ static void update_title_screen(dw_rom *rom)
     }
     *f = '\0';
 
-    pos = center_title_text(rom, pos, text);
-    pos = vpatch(rom, pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
+    pos = center_title_text(pos, text);
+    pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
     snprintf((char *)text, 33, "%"PRIu64, rom->seed);
-    pos = center_title_text(rom, pos, text);
+    pos = center_title_text(pos, text);
 
-    needed = MIN(0x3fc5 - pos - 8, 32);
+    needed = MIN(end - pos - 8, 32);
     memset(text, 0x5f, needed);
-    pos = patch(rom, pos, needed, (uint8_t*)text);
+    pos = ppatch(pos, needed, (uint8_t*)text);
     if (needed == 32) {
-        pos = vpatch(rom, pos, 1, 0xfc);
+        pos = pvpatch(pos, 1, 0xfc);
     } else {
-        pos = vpatch(rom, pos, 4, 0xf7, 32 - needed, 0x5f, 0xfc);
+        pos = pvpatch(pos, 4, 0xf7, 32 - needed, 0x5f, 0xfc);
     }
 
-    needed = MAX(0x3fc5 - pos - 4, 0);
+    needed = MAX(end - pos - 4, 0);
     if (needed > 0)
-        pos = patch(rom, pos, needed, (uint8_t*)text);
-    pos = vpatch(rom, pos, 4, 0xf7, 32 - needed, 0x5f, 0xfc);
+        pos = ppatch(pos, needed, (uint8_t*)text);
+    pos = pvpatch(pos, 4, 0xf7, 32 - needed, 0x5f, 0xfc);
 
     // 0x3fc5
 }

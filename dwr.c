@@ -246,6 +246,15 @@ static void shuffle_chests(dw_rom *rom) {
     printf("Shuffling chest contents...\n");
     cont = contents;
     chest = rom->chests;
+
+    if (!mt_rand(0, 2)) { /* 33% chance */
+        rom->token->map = NO_MAP; /* remove flute */
+        rom->chests[15].item = TOKEN; /* replace cursed belt in a chest */
+    }
+    if (!mt_rand(0, 2)) { /* 33% chance */
+        rom->flute->map = NO_MAP; /* remove flute */
+        rom->chests[22].item = FLUTE; /* replace cursed belt in a chest */
+    }
     
     /* load up the chest contents into an array */
     for (i=0; i < CHEST_COUNT; i++) {
@@ -256,21 +265,18 @@ static void shuffle_chests(dw_rom *rom) {
             continue;
         }
         switch((dw_chest_content)chest->item) {
-            case GOLD_5: /* change all gold to large gold */
-            case GOLD_6:
-            case GOLD_10:
-                *(cont++) = GOLD_500;
-                break;
+            case TABLET:
             case GOLD_120:
                 *(cont++) = KEY;
                 break;
-            case TABLET: /* remove the tablet */
-                if (mt_rand_bool()) { /* 50/50 chance */
-                    rom->token->map = NO_MAP; /* remove token */
-                    *(cont++) = TOKEN; /* put it in a chest */
-                } else {
-                    *(cont++) = KEY; /* replace with a key */
-                }
+            case GOLD_5:
+                *(cont++) = DRAGONS_SCALE;
+                break;
+            case GOLD_6:
+                *(cont++) = GOLD_500;
+                break;
+            case GOLD_10:
+                *(cont++) = FAIRY_WATER;
                 break;
             default:
                 *(cont++) = chest->item;

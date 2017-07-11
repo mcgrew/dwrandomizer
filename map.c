@@ -10,6 +10,36 @@
 #define MAP_ENCODED_SIZE 2294
 #define VIABLE_CONT 250 /* minimum size for a land_mass to use */
 
+static void shift_bytes(uint8_t *start, uint8_t *end)
+{
+    uint8_t *p;
+    --end;
+
+    for (p = start; p < end; p++) {
+        *p = *(p + 1);
+    }
+}
+
+static int optimize_map(dw_map *map)
+{
+    int i, j, saved = 0;
+    uint8_t *start, *end;
+
+    end = &map->encoded[MAP_ENCODED_SIZE];
+
+    for (i=1; i < 120; i++) {
+        start = &map->encoded[map->pointers[i] - 0x9d5d - 1];
+        if (*start >> 4 == *(start+1) >> 4 && *start < *(start+1)) {
+            ++saved;
+            shift_bytes(start, end);
+            for (j=i; j < 120; j++) {
+                --map->pointers[j];
+            }
+        }
+    }
+    return saved;
+}
+
 static bool map_encode(dw_map *map)
 {
     int x, y;
@@ -39,28 +69,6 @@ static bool map_encode(dw_map *map)
         }
     }
 
-//    y = 0;
-//    uint16_t *p = pointers;
-//    printf("%4x %4d ", *p, *p - 0x9d5d);
-//    for (x=0; x < MAP_ENCODED_SIZE; x++) {
-//        printf("%02x ", encoded[x]);
-//        y += (encoded[x] & 0xf) + 1;
-//        if (y >= 120) {
-//            y = 0;
-//            printf("\n%4x %4d ", *(++p), *p - 0x9d5d);
-//        }
-//    }
-//    printf("\n");
-//
-    /* need to optimize the map here */
-//    for (y=0; y < 120; y++) {
-//        for (x=0; x < 120; x++) {
-//            printf("%d ", map->tiles[x][y]);
-//        }
-//        printf("\n");
-//    }
-//    printf("\n");
-
     if (e - encoded > MAP_ENCODED_SIZE) {
         printf("Compressed map is too large (%d)\n", (int)(e - encoded));
         return false;
@@ -69,6 +77,7 @@ static bool map_encode(dw_map *map)
     }
     memcpy(map->encoded, encoded, MAP_ENCODED_SIZE);
     memcpy(map->pointers, pointers, 240);
+    optimize_map(map);
     return true;
 }
 

@@ -5,10 +5,6 @@
 
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef enum {
     TILE_NONE     = -1,
     TILE_GRASS    = 0x0,
@@ -59,9 +55,11 @@ typedef enum {
     WARP_GARINS_GRAVE_POINTLESS = 45
 } dw_warp_index;
 
-
-
 #include "dwr_types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void map_decode(dw_map *map);
 

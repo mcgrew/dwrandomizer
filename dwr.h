@@ -4,7 +4,9 @@
 
 #include <stdint.h>
 
-#define VERSION "2-alpha build 2017.07.10"
+#include "build.h"
+
+#define VERSION "2-alpha build " BUILD
 
 #define FLAG_0 UINT64_C(0x0000000000000001)
 #define FLAG_1 UINT64_C(0x0000000000000002)

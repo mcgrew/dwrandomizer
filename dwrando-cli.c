@@ -64,6 +64,7 @@ int main(int argc, char **argv)
         srand(time(NULL));
         seed = ((uint64_t)rand() << 32) | ((uint64_t)rand() & 0xffffffffL);
     }
+    printf("DWRandomizer version %s\n", VERSION);
     printf("Randomizing using seed: %"PRIu64" with flags %s\n", seed, flags);
 
     dwr_randomize(input_file, seed, flags, output_dir);

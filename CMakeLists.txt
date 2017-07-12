@@ -3,6 +3,7 @@ project(dwrandomizer)
 
 set(CMAKE_CXX_STANDARD 11)
 
+set(CMAKE_BUILD_TYPE Debug)
 
 set(SOURCE_FILES
         crc64.c

@@ -84,7 +84,7 @@ void dwr_init(dw_rom *rom, const char *input_file, char *flags)
     /* subtract 0x9d5d from these pointers */
     rom->map.pointers = (uint16_t*)&rom->data[0x2663];
     rom->map.encoded = &rom->data[0x1d6d];
-    rom->map.meta = (dw_map_meta*)&rom->data[0x2f];
+    rom->map.meta = (dw_map_meta*)&rom->data[0x2a];
     rom->map.warps_from = (dw_warp*)&rom->data[0xf3d8];
     rom->map.warps_to   = (dw_warp*)&rom->data[0xf471];
     rom->map.love_calc = (dw_love_calc*)&rom->data[0xdf4a];

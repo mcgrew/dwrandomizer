@@ -226,7 +226,18 @@ static void map_find_land(dw_map *map, int one, int two, uint8_t *x, uint8_t *y)
     }
 }
 
-static void place(dw_map *map, dw_warp_index warp_idx, dw_tile tile, 
+static dw_border_tile border_for(dw_tile tile)
+{
+    switch(tile) {
+        case TILE_DESERT: return BORDER_DESERT;
+        case TILE_HILL:   return BORDER_HILL;
+        case TILE_SWAMP:  return BORDER_SWAMP;
+        case TILE_TREES:  return BORDER_TREES;
+        default:          return BORDER_GRASS;
+    }
+}
+
+static dw_border_tile place(dw_map *map, dw_warp_index warp_idx, dw_tile tile,
         int lm_one, int lm_two)
 {
     uint8_t x, y;
@@ -245,7 +256,7 @@ static void place(dw_map *map, dw_warp_index warp_idx, dw_tile tile,
     warp->x = x;
     warp->y = y;
     map->tiles[x][y] = tile;
-//    printf("Placed %d at %d,%d\n", (int)warp_idx, x, y);
+    return border_for(old_tile);
 }
 
 static void place_charlock(dw_map *map, int largest, int next)
@@ -285,8 +296,9 @@ static uint8_t place_tantegel(dw_map *map, int largest, int next)
 {
     int x, y;
     dw_warp *warp;
+    dw_border_tile old_tile;
 
-    place(map, WARP_TANTEGEL, TILE_CASTLE, largest, next);
+    old_tile = place(map, WARP_TANTEGEL, TILE_CASTLE, largest, next);
     warp = &map->warps_from[WARP_TANTEGEL];
     x = warp->x;
     y = warp->y;
@@ -307,6 +319,7 @@ static uint8_t place_tantegel(dw_map *map, int largest, int next)
         map->return_point->y = y;
     }
     /* do some stuff */
+    map->meta[TANTEGEL].border = old_tile;
     return map->walkable[x][y];
 }
 
@@ -380,20 +393,6 @@ static inline int find_walkable_area(dw_map *map, int *lm_sizes)
             }
         }
     }
-//    for (y=0; y < 120; y++) {
-//        for (x=0; x < 120; x++) {
-//            if (map->walkable[x][y])
-//                printf("%x ", map->walkable[x][y]);
-//            else
-//                printf("  ");
-//        }
-//        printf("\n");
-//    }
-//    printf("\n");
-//    for (x=0; x < land_mass; x++) {
-//        printf("%d ", lm_sizes[x]);
-//    }
-//    printf("\n");
     return (int)land_mass;
 }
 
@@ -421,6 +420,7 @@ static void find_largest_lm(dw_map *map, int *lm_sizes, int lm_count,
 static bool place_landmarks(dw_map *map, int *lm_sizes, int *lm_count)
 {
     int i, largest = 0, next = 0;
+    dw_tile tile;
     uint8_t tantegel_lm, charlock_lm;
     dw_map_index swamp_north, swamp_south;
     bool swamp_placed = false;
@@ -488,23 +488,31 @@ static bool place_landmarks(dw_map *map, int *lm_sizes, int *lm_count)
         } else {
             tantegel_lm = place_tantegel(map, largest, 0);
         }
-        place(map, WARP_RIMULDAR, TILE_TOWN, tantegel_lm, 0);
+        map->meta[RIMULDAR].border =
+                place(map, WARP_RIMULDAR, TILE_TOWN, tantegel_lm, 0);
     } else {
         place_tantegel(map, largest, next);
-        place(map, WARP_RIMULDAR, TILE_TOWN, largest, next);
+        map->meta[RIMULDAR].border =
+                place(map, WARP_RIMULDAR, TILE_TOWN, largest, next);
     }
 
     if (swamp_north == GARINHAM || swamp_south == GARINHAM) {
-        place(map, WARP_GARINHAM, TILE_TOWN, largest, 0);
+        map->meta[GARINHAM].border =
+                place(map, WARP_GARINHAM, TILE_TOWN, largest, 0);
     } else {
-        place(map, WARP_GARINHAM, TILE_TOWN, largest, next);
+        map->meta[GARINHAM].border =
+                place(map, WARP_GARINHAM, TILE_TOWN, largest, next);
     }
 
 
-    place(map, WARP_KOL, TILE_TOWN, largest, next);
-    place(map, WARP_BRECCONARY, TILE_TOWN, largest, next);
-    place(map, WARP_HAUKSNESS, TILE_TOWN, largest, next);
-    place(map, WARP_CANTLIN, TILE_TOWN, largest, next);
+    map->meta[KOL].border =
+            place(map, WARP_KOL, TILE_TOWN, largest, next);
+    map->meta[BRECCONARY].border =
+            place(map, WARP_BRECCONARY, TILE_TOWN, largest, next);
+    map->meta[HAUKSNESS].border =
+            place(map, WARP_HAUKSNESS, TILE_TOWN, largest, next);
+    map->meta[CANTLIN].border =
+            place(map, WARP_CANTLIN, TILE_TOWN, largest, next);
 
     return true;
 }

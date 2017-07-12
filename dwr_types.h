@@ -195,9 +195,9 @@ typedef struct {
 } dw_new_spell;
 
 typedef struct {
-    uint16_t pointer;
-    uint8_t width;
-    uint8_t height;
+    uint8_t pointer[2]; /* if we use uint16_t here it causes memalign issues */
+    uint8_t width;      /* This causes the struct to be size 6 instead of 5, */
+    uint8_t height;     /* which breaks things */
     uint8_t border;
 } dw_map_meta;
 

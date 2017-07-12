@@ -1,7 +1,7 @@
 
 debug = {
 	hud = true,
-  cheats_enabled = true,
+  cheats_enabled = false,
   cheats = function()
     player:set_experience(65535)
     player:set_gold(65535)
@@ -15,9 +15,7 @@ debug = {
 features = {
   herb_store = true, -- buy herbs anywhere
   enemy_hp = true,  -- show enemy hit points
-  grind_mode = true,
-  repulsive = true, -- no lower level enemy encounters
-  autonav = true -- automatic navigation
+  repulsive = false, -- no lower level enemy encounters
 }
 
 levels = {}
@@ -210,21 +208,6 @@ Player = {
   last_tile = 0,
   valid_tile = false,
 
-  last_command = 0,
-  grind_action = 0,
-  quiet = false,
-  mode = {
-    grind = false,
-    auto_battle = false,
-    fraidy_cat = false,
-    explore = false,
-    manual = true
-  },
-  path = nil,
-  path_pointer = 1,
-  destination = nil,
-  destination_commands = nil,
-  destination_callback = nil
 }
 
 function Player.update (self)
@@ -282,12 +265,6 @@ function Player.update (self)
 
   if hp == 0 and self.change.hp ~= 0 and player:get_map() > 0 then
     battle_message(strings.playerdefeat, player:get_tile()+1)
-  end
-
-  -- update grind mode if needed
-  if features.grind_mode and not player.mode.grind and 
-    emu.framecount() - player.last_command > 36000 then
-    player:set_mode("grind")
   end
 
 end
@@ -409,540 +386,6 @@ function Player.set_experience (self, amount)
   memory.writebyte(0xba, self.experience % 256)
 end
 
-function Player.add_herb (self)
-  self.herbs = memory.readbyte(0xc0)
-  if self.herbs >= 6 then
-    return false
-  end
-  memory.writebyte(0xc0, self.herbs + 1)
-  return true
-end
-
-function Player.cancel(self, c)
-  if c == nil then
-    c = 3
-  end
-  for j=1,c do
-    pressb()
-  end
-end
-
-function Player.check_cursor(self, x, y)
-  return memory.readbyte(0xd8) == x and memory.readbyte(0xd9) == y
-end
-
-function Player.down(self, c)
-  if c == nil or c < 1 then 
-    c = 1
-  end
-  local input = {}
-  input.down = true
-  for j=1,c do
-    local starty = memory.readbyte(0x8f)
-    local startcursor = memory.readbyte(0xd9)
-    for i=1,45 do
-      joypad.set(1, input)
-      emu.frameadvance()
-      if memory.readbyte(0x8f) > starty or memory.readbyte(0xd9) > startcursor then
-        break
-      end
-    end
-    -- we were unable to move, give up
-    if memory.readbyte(0x8f) == starty and memory.readbyte(0xd9) == startcursor then
-      return false
-    end
-  end
-  return true
-end
-
-function Player.up(self, c)
-  if c == nil or c < 1 then 
-    c = 1
-  end
-  local input = {}
-  input.up = true
-  for j=1,c do
-    local starty = memory.readbyte(0x8f)
-    local startcursor = memory.readbyte(0xd9)
-    for i=1,45 do
-      joypad.set(1, input)
-      emu.frameadvance()
-      if memory.readbyte(0x8f) < starty or memory.readbyte(0xd9) < startcursor then
-        break
-      end
-    end
-    -- we were unable to move, give up
-    if memory.readbyte(0x8f) == starty and memory.readbyte(0xd9) == startcursor then
-      return false
-    end
-  end
-end
-
-function Player.left(self, c)
-  if c == nil or c < 1 then 
-    c = 1
-  end
-  local input = {}
-  input.left = true
-  for j=1,c do
-    local startx = memory.readbyte(0x8e)
-    local startcursor = memory.readbyte(0xd8)
-    for i=1,45 do
-      joypad.set(1, input)
-      emu.frameadvance()
-      if memory.readbyte(0x8e) < startx or memory.readbyte(0xd8) < startcursor then
-        break
-      end
-    end
-    -- we were unable to move, give up
-    if memory.readbyte(0x8e) == startx and memory.readbyte(0xd8) == startcursor then
-      return false
-    end
-  end
-end
-
-function Player.right(self, c)
-  if c == nil or c < 1 then 
-    c = 1
-  end
-  local input = {}
-  input.right = true
-  for j=1,c do
-    local startx = memory.readbyte(0x8e)
-    local startcursor = memory.readbyte(0xd8)
-    for i=1,45 do
-      joypad.set(1, input)
-      emu.frameadvance()
-      if memory.readbyte(0x8e) > startx or memory.readbyte(0xd8) > startcursor then
-        break
-      end
-    end
-    -- we were unable to move, give up
-    if memory.readbyte(0x8e) == startx and memory.readbyte(0xd8) == startcursor then
-      return false
-    end
-  end
-end
-
-function Player.talk(self) 
-  self:cancel()
-  pressa(2)
-  wait(30)
-  if not self:check_cursor(0,0) then
-    self:cancel()
-    return false
-  end
-  pressa(2)
-  return true
-end
-
-function Player.status(self) 
-  self:cancel()
-  pressa(2)
-  wait(30)
-  self:down(1)
-  wait(6)
-  if not self:check_cursor(0,1) then
-    self:cancel()
-    return false
-  end
-  pressa(2)
-  return true
-end
-
-
-function Player.stairs(self) 
-  self:cancel()
-  pressa(2)
-  wait(30)
-   self:down(2)
-  wait(6)
-  if not self:check_cursor(0,2) then
-    self:cancel()
-    return false
-  end
-  pressa(2)
-  return true
-end
-
-
-function Player.search(self) 
-  self:cancel()
-  pressa(2)
-  wait(30)
-  self:down(3)
-  wait(6)
-  if not self:check_cursor(0,3) then
-    self:cancel()
-    return false
-  end
-  pressa(2)
-  return true
-end
-
-
-function Player.spell(self, c) 
-  self:cancel()
-  if not in_battle then
-    pressa(2)
-  end
-  wait(30)
-  self:right()
-  wait(6)
-  if not self:check_cursor(1,0) then
-    self:cancel()
-    return false
-  end
-  pressa(2)
-  wait(30)
-  if c ~= nil then
-    for j=1,c-1 do
-      self:down()
-    end
-    if not self:check_cursor(0,c-1) then
-      self:cancel()
-      return false
-    end
-    wait(6)
-    pressa(2)
-  end
-  return true
-end
-
-
-function Player.item(self, c) 
-  self:cancel()
-  if not in_battle then
-    pressa(2)
-  end
-  wait(30)
-  self:down()
-  self:right()
-  wait(6)
-  if not self:check_cursor(1,1) then
-    self:cancel()
-    return false
-  end
-  pressa(2)
-  wait(30)
-  if c ~= nil then
-    for j=1,c-1 do
-      self:down()
-    end
-    if not self:check_cursor(0,c-1) then
-      self:cancel()
-      return false
-    end
-    wait(6)
-    pressa(2)
-  end
-  return true
-end
-
-
-function Player.door(self) 
-  self:cancel(5)
-  pressa(2)
-  wait(30)
-  self:down(2)
-  self:right()
-  wait(6)
-  if not self:check_cursor(1,2) then
-    self:cancel()
-    return false
-  end
-  pressa(2)
-  return true
-end
-
-
-function Player.take(self) 
-  self:cancel()
-  pressa(2)
-  wait(30)
-  self:down(3)
-  self:right()
-  wait(6)
-  if not self:check_cursor(1,3) then
-    self:cancel()
-    return false
-  end
-  pressa(2)
-  return true
-end
-
-function Player.fight(self) 
-  self:cancel()
-  if in_battle then
-    wait(30)
-    pressa(2)
-    return true
-  end
-  return false
-end
-
-function Player.run(self) 
-  self:cancel()
-  if in_battle then
-    wait(30)
-    self:down()
-    wait(6)
-    if not self:check_cursor(0,1) then
-      self:cancel()
-      return false
-    end
-    pressa(2)
-    return true
-  end
-  return false
-end
-
-function Player.heal(self)
-  if (AND(memory.readbyte(0xce), 0x1) > 0) then
-    if self.mp < 4 then
-      say("I do not have enough magic to cast heal")
-      return false
-    end
-    self:spell(1)
-  else
-    say("I do not yet have the heal spell")
-    return false
-  end 
-  return true
-end
-
-function Player.hurt(self)
-  if (AND(memory.readbyte(0xce), 0x2) > 0) then
-    if not in_battle then
-      say("Hurt is a battle spell. I am not fighting anything!")
-      return false
-    end
-    self:spell(2)
-  else
-    say("I do not yet have the hurt spell")
-    return false
-  end 
-  return true
-end
-
-function Player.sleep(self)
-  if (AND(memory.readbyte(0xce), 0x4) > 0) then
-    if not in_battle then
-      say("Sleep is a battle spell. I am not fighting anything!")
-      return false
-    end
-    self:spell(3)
-  else
-    say("I do not yet have the sleep spell")
-    return false
-  end 
-  return true
-end
-
-function Player.radiant(self)
-  if (AND(memory.readbyte(0xce), 0x8) > 0) then
-    self:spell(4)
-  else
-    say("I do not yet have the radiant spell")
-    return false
-  end 
-  return true
-end
-
-function Player.stopspell(self)
-  if (AND(memory.readbyte(0xce), 0x10) > 0) then
-    if not in_battle then
-      say("Stopspell is a battle spell. I am not fighting anything!")
-      return false
-    end
-    self:spell(5)
-  else
-    say("I do not yet have the stopspell spell")
-    return false
-  end 
-  return true
-end
-
-function Player.outside(self)
-  if (AND(memory.readbyte(0xce), 0x20) > 0) then
-    self:spell(6)
-  else
-    say("I do not yet have the outside spell")
-    return false
-  end 
-  return true
-end
-
-function Player.return_(self)
-  if (AND(memory.readbyte(0xce), 0x40) > 0) then
-    self:spell(7)
-  else
-    say("I do not yet have the return spell")
-    return false
-  end 
-  return true
-end
-
-function Player.repel(self)
-  if (AND(memory.readbyte(0xce), 0x80) > 0) then
-    self:spell(8)
-  else
-    say("I do not yet have the repel spell")
-    return false
-  end 
-  return true
-end
-
-function Player.healmore(self)
-  if (AND(memory.readbyte(0xcf), 0x1) > 0) then
-    if self.mp < 10 then
-      say("I do not have enough magic to cast healmore")
-      return false
-    end
-    self:spell(9)
-  else
-    say("I do not yet have the healmore spell")
-    return false
-  end 
-  return true
-end
-
-function Player.hurtmore(self)
-  if (AND(memory.readbyte(0xcf), 0x2) > 0) then
-    if not in_battle then
-      say("Hurtmore is a battle spell. I am not fighting anything!")
-      return false
-    end
-    self:spell(10)
-  else
-    say("I do not yet have the hurtmore spell")
-    return false
-  end 
-  return true
-end
-
-function Player.herb (self)
-  if self.herbs > 0 then
-    self:item(1)
-    return true
-  end
-  if features.herb_store then
-    if (self:add_gold(-self.level * self.level)) then 
-      local quiet = self.quiet
-      self.quiet = false
-      say(("I purchased an herb for %dG"):format(self.level * self.level))
-      self.quiet = quiet
-      self:add_herb()
-      self:item(1)
-      return true
-    end
-  end
-  if features.herb_store then
-    say("I don't have any herbs, and I'm broke fool!")
-  else
-    say("I don't have any herbs.")
-  end
-  return false
-end
-
-function Player.grind_move(self)
-  if self:mode_autonav() then
-    return self:follow_path(true)
-  end
-  if not in_battle then
-    self.grind_action = (self.grind_action + 1) % 4
-  end
-  if self.grind_action == 0 then
-    return self:up()
-  elseif self.grind_action == 1 then
-    return self:left()
-  elseif self.grind_action == 2 then
-    return self:down()
-  else
-    return self:right()
-  end
-end
-
-function Player.grind(self) 
-  if not in_battle and self.mode.grind then
-    if self:heal_thy_self() then
-      wait(120)
-    end
-    if not self:grind_move() then
-      self:cancel() -- maybe we're in a menu?
-    end
-  end
-  if in_battle then
-    if self.mode.grind or self.mode.auto_battle then
-      if self:heal_thy_self() then
-        wait(120)
-      end
-      self:fight()
-      self:cancel() -- in case the enemy runs immediately
-      wait(15)
-      self:grind_move()
-      wait(200)
-    end
-    if self.mode.fraidy_cat then
-      if not self:heal_thy_self() then
-        self:run()
-      end
-      wait(200)
-    end
-  end
-end
-
-
-function Player.set_mode(self, mode)
-  if mode == "autobattle" then
-    self.mode.grind = false
-    self.mode.auto_battle = true
-    self.mode.fraidy_cat = false
-    self.mode.explore    = false
-  elseif mode == "fraidycat" then
-    self.mode.grind = false
-    self.mode.auto_battle = false
-    self.mode.fraidy_cat = true
-    self.mode.explore    = false
-  elseif mode == "manual" then
-    self.mode.grind = false
-    self.mode.auto_battle = false
-    self.mode.fraidy_cat = false
-    self.mode.explore    = false
-    self.destination = nil
-    self.path = nil
-    self.destination_commands = nil
-    self.destination_callback = nil
-  elseif features.grind_mode and mode == "grind" then
-    self.mode.grind = true
-    self.mode.auto_battle = false
-    self.mode.fraidy_cat = false
-    self.mode.explore    = false
-  end
-end
-
-function Player.heal_thy_self(self)
-  self.quiet = true
-  local returnvalue = false
-  if self:get_hp() * 3 < self:max_hp() then
-    battle_message(strings.lowhp)
-    if self:healmore() then
-      returnvalue = true
-    elseif self:heal() then 
-      returnvalue = true
-    elseif self:herb() then
-      returnvalue = true
-    end
-  elseif not in_battle and self:get_hp() + 30 < self:max_hp() and (self:get_level() < 17) then
-    if self:heal() then
-      returnvalue = true
-    elseif self:herb() then
-      returnvalue = true
-    end
-  end
-  self.quiet = false
-  return returnvalue
-end
 
 Enemy = {
   hp = 0,
@@ -1070,35 +513,28 @@ end
 --  and debug info
 -- 
 function overlay()
-  if features.grind_mode and player.mode.grind then
-    gui.drawbox(0, 0, 60, 15, "black")
-    gui.text(8, 8, "Grind mode", "white", "black")
-  end
-  if player.mode.auto_battle then
-    gui.drawbox(0, 0, 82, 15, "black")
-    gui.text(8, 8, "Auto-battle mode", "white", "black")
-  end
-  if player.mode.fraidy_cat then
-    gui.drawbox(0, 0, 82, 15, "black")
-    gui.text(8, 8, "Fraidy-cat mode", "white", "black")
-  end
-
   if debug.hud then
     current_map = maps[memory.readbyte(0x45)]
     if current_map ~= nil then
-      gui.drawbox(0, 0, 120, 25, "black")
+      gui.drawbox(0, 0, 255, 16, "black")
       gui.text(8, 8, 
         string.format("%s (%3d,%3d)", current_map, memory.readbyte(0x8e), 
           memory.readbyte(0x8f)), 
         "white", "black")
       if in_battle then
         enemy:hud()
-      else
-        tile = tile_names[memory.readbyte(0xe0) + 1]
-        if player.valid_tile and tile ~= nil then
-          gui.text(8, 18, 
-            string.format( "Tile:  %s", tile), "white", "black")
+      end
+      if memory.readbyte(0x45) == 1 then
+        zone = math.floor(player.map_x / 15) + math.floor(player.map_y / 15) * 8
+        if zone % 2 == 1 then
+          zone = rom.readbyte(zone/2 + 0xf532)
+          zone = math.floor(zone % 16)
+        else
+         zone = rom.readbyte(zone/2 + 0xf532)
+         zone = math.floor(zone / 16)
         end
+        gui.text(215, 8,
+            string.format( "Zone %d", zone), "white", "black")
       end
     end
   else
@@ -1118,11 +554,6 @@ function update()
     if (emu.framecount() % 15 == 0) then
       player:update()
       enemy:update()
-    end
-
-    -- down + select => grind mode
-    if memory.readbyte(0x47) == 36 then
-      player.last_command = 0
     end
 
     if features.repulsive then
@@ -1181,9 +612,6 @@ function main()
   emu.registerafter(update)
 
   while(true) do
-    if player:get_hp() > 0 and player:get_map() > 0 then
-      player:grind()
-    end
     emu.frameadvance()
   end
 end

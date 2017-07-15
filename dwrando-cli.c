@@ -10,7 +10,7 @@
 
 static void print_usage(const char *command, char *default_flags)
 {
-    printf("Usage %s <rom_file> [[flags] seed] <output_dir>\n", command);
+    printf("Usage %s <rom_file> [flags [seed]] <output_dir>\n", command);
     printf("\n");
     printf("A randomizer for Dragon Warrior for NES\n");
     printf("\n");
@@ -54,14 +54,12 @@ int main(int argc, char **argv)
 
     input_file = argv[1];
     output_dir = argv[argc-1];
-    if (argc > 4) {
+    if (argc >= 4) {
         flags = argv[2];
     } else {
         flags = default_flags;
     }
-    if (argc > 3) {
-        sscanf(argv[argc-2], "%"PRIu64"", &seed);
-    } else {
+    if (argc <= 5 || sscanf(argv[argc-2], "%"PRIu64"", &seed) != 1) {
         srand(time(NULL));
         seed = ((uint64_t)rand() << 32) | ((uint64_t)rand() & 0xffffffffL);
     }

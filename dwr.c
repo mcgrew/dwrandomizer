@@ -1124,13 +1124,13 @@ void dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     dwr_token_dialogue(&rom);
     other_patches(&rom);
     crc = crc64(0, rom.data, ROM_SIZE);
-    printf("Checksum: %016"PRIX64"\n", crc);
+    printf("Checksum: %016"PRIx64"\n", crc);
 
     update_title_screen(&rom);
     randomize_music(&rom);
     disable_music(&rom);
     crc = crc64(0, rom.data, ROM_SIZE);
-//    printf("Final Checksum: %016"PRIX64"\n", crc);
+//    printf("Final Checksum: %016"PRIx64"\n", crc);
 
     dwr_write(&rom, output_file);
     free(rom.data);

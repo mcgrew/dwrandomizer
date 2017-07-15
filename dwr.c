@@ -886,7 +886,7 @@ static void dwr_menu_wrap(dw_rom *rom)
     printf("Enabling menu cursor wrap-around\n");
 
     /* implement up/down wraparound for most menus (from @gameboy9) */
-    vpatch(rom, 0x69f0, 3,
+    vpatch(rom, 0x69f0, 4,
         /* 69e0 */
         0x4c, 0xa0, 0xbe,  /* JMP $BEA0 */
         0xea               /* NOP */
@@ -960,7 +960,7 @@ static void dwr_menu_wrap(dw_rom *rom)
     vpatch(rom, 0x7f0b, 7,
         /* 7efb: */
         0xa5, 0xd9,        /* LDA $00D9 ; load map number */
-        0xf0, 0xfa,        /* BEQ $7EF8 ; if it's 0, branch to $7EF8 (return) */
+        0xf0, 0xfb,        /* BEQ $7EF8 ; if it's 0, branch to $7EF8 (return) */
         0x4c, 0xe4, 0xa9   /* JMP $A9E4 ; jump to $A9E4 */
     );
     vpatch(rom, 0x7f12, 8,

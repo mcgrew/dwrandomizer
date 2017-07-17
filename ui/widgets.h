@@ -6,6 +6,8 @@
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QLineEdit>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QMainWindow>
 
 #ifndef DWRANDOMIZER_WIDGETS_H
 #define DWRANDOMIZER_WIDGETS_H
@@ -13,14 +15,21 @@
 class CheckBox : public QCheckBox {
 
 public:
-    CheckBox(const QString &text, QWidget *parent = 0);
+    typedef QCheckBox super;
+    CheckBox(const char flag, const QString &text, QWidget *parent = 0);
     void stateChanged(int state);
+    char getFlag();
+    bool update(std::string &flags);
+
+private:
+    char flag;
 
 };
 
 class FileDialog : public QFileDialog {
 
 public:
+    typedef QFileDialog super;
     FileDialog(QWidget *parent = 0);
 
 };
@@ -28,32 +37,54 @@ public:
 class TextBox : public QLineEdit {
 
 public:
+    typedef QLineEdit super;
     TextBox(QWidget *parent = 0);
+};
+
+class Button : public QPushButton {
+
+public:
+    typedef QPushButton super;
+    Button(QWidget *parent = 0);
 
 };
 
-class MainWindow : public QWidget {
-
+class MainWindow : public QMainWindow {
+Q_OBJECT
 public:
+    typedef QWidget super;
     MainWindow(QWidget *parent = 0);
 
+private slots:
+    void handleCheckBox();
+    void handleFlags();
+
 private:
-    TextBox rom_file;
-    TextBox output_dir;
-    TextBox seed;
-    TextBox flags;
+    void layout();
+    void initSlots();
+    void initWidgets();
+    std::string getOptions();
+    void setOptions(std::string &flags);
+    std::string getFlags();
+    void setFlags(std::string &flags);
+
+private:
+    QWidget *mainWidget;
+    TextBox *romFile;
+    TextBox *outputDir;
+    TextBox *seed;
+    TextBox *flags;
     CheckBox *chests;
-    CheckBox *towns;
     CheckBox *shops;
-    CheckBox *death_necklace;
-    CheckBox *speed_hacks;
+    CheckBox *deathNecklace;
+    CheckBox *speedHacks;
     CheckBox *growth;
     CheckBox *spells;
     CheckBox *attack;
     CheckBox *zones;
-    CheckBox *music_shuffle;
-    CheckBox *music_disable;
-    CheckBox *copy_checksum;
+    CheckBox *musicShuffle;
+    CheckBox *musicDisable;
+    CheckBox *copyChecksum;
 };
 
 #ifdef __cplusplus

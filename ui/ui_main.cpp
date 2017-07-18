@@ -5,6 +5,7 @@
 
 #include "dwr.h"
 #include "widgets.h"
+#include "main-window.h"
 
 
 int main(int argc, char *argv[])

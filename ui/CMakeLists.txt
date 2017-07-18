@@ -9,7 +9,7 @@ include_directories(.. /usr/include/qt)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_TYPE Debug)
 
-set (SOURCE_FILES ui_main.cpp widgets.cpp)
+set (SOURCE_FILES ui_main.cpp main-window.cpp widgets.cpp)
 
 
 add_executable(ui_test ${SOURCE_FILES})

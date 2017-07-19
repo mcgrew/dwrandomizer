@@ -1,6 +1,9 @@
 
+#define __STDC_FORMAT_MACROS
+
 #include <QtWidgets/QHBoxLayout>
 #include <inttypes.h>
+#include <time.h>
 
 #include "widgets.h"
 
@@ -124,6 +127,7 @@ void DirEntry::handleButton()
 SeedEntry::SeedEntry(QWidget *parent) : ButtonEntry(parent)
 {
     this->button->setText("Random");
+    this->handleButton();
 }
 
 void SeedEntry::handleButton()

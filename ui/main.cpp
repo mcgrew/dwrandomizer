@@ -2,7 +2,6 @@
  * Created by mcgrew
  */
 
-
 #include "dwr.h"
 #include "widgets.h"
 #include "main-window.h"

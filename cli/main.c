@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     } else {
         flags = default_flags;
     }
-    if (argc <= 5 || sscanf(argv[argc-2], "%"PRIu64"", &seed) != 1) {
+    if (argc <= 5 || sscanf(argv[argc-2], "%"PRIu64, &seed) != 1) {
         srand(time(NULL));
         seed = ((uint64_t)rand() << 32) | ((uint64_t)rand() & 0xffffffffL);
     }

@@ -7,11 +7,12 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QComboBox>
 
 #ifndef DWRANDOMIZER_WIDGETS_H
 #define DWRANDOMIZER_WIDGETS_H
 
-#define NO_FLAG '\255'
+#define NO_FLAG '~'
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,10 +29,19 @@ public:
     CheckBox(const char flag, const QString &text, QWidget *parent = 0);
     void stateChanged(int state);
     char getFlag();
-    bool update(std::string &flags);
+    bool updateState(std::string &flags);
 
 private:
     char flag;
+
+};
+
+class LevelComboBox : public QComboBox {
+
+public:
+    LevelComboBox(QWidget *parent = 0);
+    bool updateState(std::string &flags);
+    char getFlag();
 
 };
 
@@ -58,18 +68,65 @@ public:
 
 };
 
-class FileEntry : public QWidget {
+class ButtonEntry : public QWidget {
     Q_OBJECT
 public:
     typedef QWidget super;
-    FileEntry(QWidget *parent = 0);
+    ButtonEntry(QWidget *parent = 0);
+    QString text();
+    void setText(QString text);
+
+signals:
+    void textEdited(QString);
 
 private slots:
-     void handleButton();
+    virtual void handleButton(){}
+    virtual void handleEdit(QString text){}
 
-private:
-    TextBox *textBox;
+protected:
+    QLineEdit *textBox;
     Button *button;
+};
+
+class FileEntry : public ButtonEntry {
+    Q_OBJECT
+public:
+    typedef ButtonEntry super;
+    FileEntry(QWidget *parent = 0);
+private slots:
+    void handleButton();
+};
+
+class DirEntry : public ButtonEntry {
+    Q_OBJECT
+
+public:
+    typedef ButtonEntry super;
+    DirEntry(QWidget *parent = 0);
+
+private slots:
+    void handleButton();
+};
+
+class SeedEntry : public ButtonEntry {
+    Q_OBJECT
+public:
+    typedef ButtonEntry super;
+    SeedEntry(QWidget *parent = 0);
+
+private slots:
+    void handleButton();
+};
+
+class FlagEntry : public ButtonEntry {
+    Q_OBJECT
+public:
+    typedef ButtonEntry super;
+    FlagEntry(QWidget *parent = 0);
+
+private slots:
+    void handleButton();
+    virtual void handleEdit(QString text);
 };
 
 #endif //DWRANDOMIZER_WIDGETS_H

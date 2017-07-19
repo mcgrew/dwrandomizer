@@ -7,6 +7,8 @@
 
 #include "widgets.h"
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QComboBox>
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,7 +27,9 @@ public:
 
 private slots:
     void handleCheckBox();
+    void handleComboBox(int index);
     void handleFlags();
+    void handleButton();
 
 private:
     void layout();
@@ -39,9 +43,9 @@ private:
 private:
     QWidget *mainWidget;
     FileEntry *romFile;
-    TextBox *outputDir;
-    TextBox *seed;
-    TextBox *flags;
+    DirEntry *outputDir;
+    SeedEntry *seed;
+    FlagEntry *flags;
     CheckBox *chests;
     CheckBox *shops;
     CheckBox *deathNecklace;
@@ -53,6 +57,8 @@ private:
     CheckBox *musicShuffle;
     CheckBox *musicDisable;
     CheckBox *copyChecksum;
+    LevelComboBox *levelSpeed;
+    QPushButton *goButton;
 };
 
 

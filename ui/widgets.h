@@ -1,4 +1,6 @@
 
+#define __STDC_FORMAT_MACROS
+
 #include <QtCore/QString>
 #include <QtCore/QTextStream>
 #include <QtGui/QFont>
@@ -8,6 +10,8 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QComboBox>
+#include <inttypes.h>
+
 
 #ifndef DWRANDOMIZER_WIDGETS_H
 #define DWRANDOMIZER_WIDGETS_H
@@ -113,6 +117,7 @@ class SeedEntry : public ButtonEntry {
 public:
     typedef ButtonEntry super;
     SeedEntry(QWidget *parent = 0);
+    uint64_t getSeed();
 
 private slots:
     void handleButton();

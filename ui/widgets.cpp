@@ -1,8 +1,5 @@
 
-#define __STDC_FORMAT_MACROS
-
 #include <QtWidgets/QHBoxLayout>
-#include <inttypes.h>
 #include <time.h>
 
 #include "widgets.h"
@@ -140,6 +137,13 @@ void SeedEntry::handleButton()
     this->textBox->setText(QString(seedString));
 }
 
+uint64_t SeedEntry::getSeed()
+{
+    uint64_t seed;
+    sscanf(this->textBox->text().toLatin1().constData(), "%"PRIu64, &seed);
+    return seed;
+}
+
 FlagEntry::FlagEntry(QWidget *parent) : ButtonEntry(parent)
 {
     this->button->setText("Defaults");
@@ -147,7 +151,7 @@ FlagEntry::FlagEntry(QWidget *parent) : ButtonEntry(parent)
 
 void FlagEntry::handleButton()
 {
-    this->setText("CDGIMPRWZf");
+    this->setText("CDGMPRWZf");
     this->textBox->textEdited(this->text());
 }
 

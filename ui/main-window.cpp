@@ -2,6 +2,7 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QGridLayout>
 
+#include "dwr.h"
 #include "main-window.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
@@ -163,5 +164,13 @@ void MainWindow::handleFlags()
 
 void MainWindow::handleButton()
 {
+    printf("Blorp");
+    char flags[64];
+    std::string flagStr = this->getFlags();
+    strncpy(flags, flagStr.c_str(), 64);
 
+    uint64_t seed = this->seed->getSeed();
+    std::string inputFile = this->romFile->text().toLatin1().constData();
+    std::string outputDir = this->outputDir->text().toLatin1().constData();
+    dwr_randomize(inputFile.c_str(), seed, flags, outputDir.c_str());
 }

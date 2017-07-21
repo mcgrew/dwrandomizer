@@ -133,7 +133,7 @@ void SeedEntry::handleButton()
     char seedString[21];
     srand(time(NULL));
     seed = ((uint64_t)rand() << 32) | ((uint64_t)rand() & 0xffffffffL);
-    snprintf(seedString, 64, "%" PRIu64, seed);
+    snprintf(seedString, 21, "%" PRIu64, seed);
     this->textBox->setText(QString(seedString));
 }
 

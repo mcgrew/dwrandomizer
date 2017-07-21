@@ -493,7 +493,7 @@ static void shuffle_searchables(dw_rom *rom)
 {
     dw_searchable searchables[3];
 
-    if (!(rom->flags & FLAG_I))
+    if (!(rom->flags & FLAG_C))
         return;
 
     printf("Shuffling searchable items\n");
@@ -704,6 +704,32 @@ static uint8_t *pvpatch(uint8_t *p, uint32_t size, ...)
 
 }
 
+static uint8_t *dwr_str_replace(dw_rom *rom,
+                                const char *text, const char *replacement)
+{
+    int len;
+    uint8_t *start, *end;
+    char dw_text[256], dw_repl[256];
+
+    len = strlen(text);
+    if (!len)
+        return NULL;
+    end = &rom->data[ROM_SIZE - len];
+
+    strncpy(dw_text, text, 256);
+    strncpy(dw_repl, replacement, 256);
+    ascii2dw(dw_text);
+    ascii2dw(dw_repl);
+
+    for (start = rom->data; start < end; start++) {
+        if (!memcmp(start, dw_text, len)) {
+            memcpy(start, dw_repl, len);
+            return start;
+        }
+    }
+    return NULL;
+}
+
 static uint8_t *center_title_text(uint8_t *pos, const char *text)
 {
     uint8_t len, space, dw_text[33];
@@ -874,8 +900,14 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0x18fe, 1, 0xa7); /* move the stupid old man from the item shop */
     vpatch(rom, 0x91f,  1, 0x6f); /* quit ignoring the customers */
     vpatch(rom, 0x94c,  1, 0x6f); /* quit ignoring the customers */
-    vpatch(rom, 0x17b2,  3, 0, 0, 0); /* roaming throne room guard */
-    
+    vpatch(rom, 0x17b2,  3, 0, 0, 0); /* delete roaming throne room guard */
+
+    /* I always hated this wording */
+    dwr_str_replace(rom, "The spell will not work", "The spell had no effect");
+
+//    if (mt_rand_double() < 0.1)
+//        dwr_str_replace(rom, "Red Dragon", "Fun Police");
+
 }
 
 static void dwr_menu_wrap(dw_rom *rom)

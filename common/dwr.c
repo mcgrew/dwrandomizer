@@ -1121,6 +1121,7 @@ static bool dwr_write(dw_rom *rom, const char *output_file)
     }
     fwrite(rom->data, 1, ROM_SIZE, output);
     fclose(output);
+    return true;
 }
 
 int dwr_randomize(const char* input_file, uint64_t seed, char *flags,

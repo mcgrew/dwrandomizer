@@ -1,6 +1,7 @@
 
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QGridLayout>
+#include <QtWidgets/QMessageBox>
 
 #include "dwr.h"
 #include "main-window.h"
@@ -182,5 +183,10 @@ void MainWindow::handleButton()
     std::string outputDir = this->outputDir->text().toLatin1().constData();
     if (dwr_randomize(inputFile.c_str(), seed, flags, outputDir.c_str())) {
         /* an error occurred */
+        QMessageBox::critical(this, "Failed", "An error occurred, "
+                              "the ROM could not be created.");
+    } else {
+        QMessageBox::information(this, "Success!",
+                                 "The new ROM has been created.");
     }
 }

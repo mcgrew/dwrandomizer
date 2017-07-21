@@ -15,14 +15,12 @@ static void print_usage(const char *command, char *default_flags)
     printf("A randomizer for Dragon Warrior for NES\n");
     printf("\n");
     printf("Flags:\n");
-    printf("    C  Randomize chest contents.\n");
+    printf("    C  Randomize chest and searchable item contents.\n");
     printf("    D  Enable Death Necklace functionality (+10 ATK -25%% HP)\n");
     printf("    f  Set XP requirements for each level to 75%% of normal.\n");
     printf("    F  Set XP requirements for each level to 50%% of normal.\n");
     printf("    G  Enable randomization of player stat growth.\n");
     printf("    H  Apply game speed hacks\n");
-    printf("    I  Randomize the locations of searchable items\n");
-    printf("       (Fairy Flute, Erdrick's Armor, Erdrick's Token).\n");
     printf("    K  Shuffle the game music. (beta)\n");
     printf("    M  Randomize the level spells are learned.\n");
     printf("    R  Enable menu wrap-around\n");
@@ -43,7 +41,7 @@ int main(int argc, char **argv)
 {
     uint64_t seed;
     char *flags;
-    char default_flags[] = "CDGIMPRWZf";
+    char default_flags[] = DEFAULT_FLAGS;
     char *input_file, *output_dir;
 
     printf("DWRandomizer version %s\n", VERSION);

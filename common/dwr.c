@@ -60,7 +60,7 @@ static uint64_t parse_flags(dw_rom *rom, char *flags)
     return rom->flags;
 }
 
-void dwr_init(dw_rom *rom, const char *input_file, char *flags)
+bool dwr_init(dw_rom *rom, const char *input_file, char *flags)
 {
     FILE *input;
     int read;
@@ -70,13 +70,13 @@ void dwr_init(dw_rom *rom, const char *input_file, char *flags)
     input = fopen(input_file, "rb");
     if (!input) {
         fprintf(stderr, "Unable to open ROM file '%s'", input_file);
-        exit(1);
+        return false;
     }
     read = fread(rom->data, 1, ROM_SIZE, input);
     if (read < ROM_SIZE) {
         fprintf(stderr, "File '%s' is too small and may be corrupt, aborting.",
                 input_file);
-        exit(1);
+        return false;
     }
     fclose(input);
 
@@ -1078,20 +1078,20 @@ static void dwr_token_dialogue(dw_rom *rom)
     patch(rom, 0xa252, 70, text2);
 }
 
-static void dwr_write(dw_rom *rom, const char *output_file)
+static bool dwr_write(dw_rom *rom, const char *output_file)
 {
     FILE *output;
 
     output = fopen(output_file, "wb");
     if (!output) {
         fprintf(stderr, "Unable to open file '%s' for writing", output_file);
-        exit(1);
+        return false;
     }
     fwrite(rom->data, 1, ROM_SIZE, output);
     fclose(output);
 }
 
-void dwr_randomize(const char* input_file, uint64_t seed, char *flags, 
+int dwr_randomize(const char* input_file, uint64_t seed, char *flags,
         const char* output_dir)
 {
     uint64_t crc;
@@ -1101,7 +1101,9 @@ void dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 
     mt_init(seed);
     dw_rom rom;
-    dwr_init(&rom, input_file, flags);
+    if (!dwr_init(&rom, input_file, flags)) {
+        return -1;
+    }
     rom.seed = seed;
 
     while(!map_generate_terrain(&rom)) {}
@@ -1132,7 +1134,9 @@ void dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     crc = crc64(0, rom.data, ROM_SIZE);
 //    printf("Final Checksum: %016"PRIx64"\n", crc);
 
-    dwr_write(&rom, output_file);
+    if (!dwr_write(&rom, output_file)) {
+        return -1;
+    }
     free(rom.data);
-
+    return 0;
 }

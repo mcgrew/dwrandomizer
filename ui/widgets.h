@@ -6,10 +6,9 @@
 #include <QtGui/QFont>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QCheckBox>
-#include <QtWidgets/QFileDialog>
-#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QComboBox>
+#include <QtWidgets/QLabel>
 #include <inttypes.h>
 
 
@@ -49,29 +48,6 @@ public:
 
 };
 
-class FileDialog : public QFileDialog {
-
-public:
-    typedef QFileDialog super;
-    FileDialog(QWidget *parent = 0);
-
-};
-
-class TextBox : public QLineEdit {
-
-public:
-    typedef QLineEdit super;
-    TextBox(QWidget *parent = 0);
-};
-
-class Button : public QPushButton {
-
-public:
-    typedef QPushButton super;
-    Button(const QString &text, QWidget *parent = 0);
-
-};
-
 class ButtonEntry : public QWidget {
     Q_OBJECT
 public:
@@ -89,7 +65,8 @@ private slots:
 
 protected:
     QLineEdit *textBox;
-    Button *button;
+    QPushButton *button;
+    QLabel *label;
 };
 
 class FileEntry : public ButtonEntry {

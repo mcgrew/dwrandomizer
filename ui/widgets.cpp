@@ -1,7 +1,11 @@
 
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QHBoxLayout>
 #include <time.h>
 
+#include "dwr.h"
 #include "widgets.h"
 
 CheckBox::CheckBox(const char flag, const QString &text, QWidget *parent) :
@@ -51,37 +55,32 @@ char LevelComboBox::getFlag()
 
 bool LevelComboBox::updateState(std::string &flags)
 {
-    bool checked = flags.find('f') != std::string::npos;
-    if (checked) {
-        this->setCurrentIndex(0);
-    } else {
-        bool checked = flags.find('F') != std::string::npos;
+    if (flags.find('f') != std::string::npos) {
         this->setCurrentIndex(1);
+        return true;
+    } else {
+        if (flags.find('F') != std::string::npos) {
+            this->setCurrentIndex(2);
+            return true;
+        }
     }
-    return checked;
-}
-
-Button::Button(const QString &text, QWidget *parent) : QPushButton(text, parent)
-{
-}
-
-FileDialog::FileDialog(QWidget *parent) : QFileDialog(parent)
-{
-}
-
-TextBox::TextBox(QWidget *parent) : QLineEdit(parent)
-{
+    this->setCurrentIndex(0);
+    return false;
 }
 
 ButtonEntry::ButtonEntry(QWidget *parent) :
         QWidget(parent)
 {
+    QVBoxLayout *vbox = new QVBoxLayout();
     QHBoxLayout *hbox = new QHBoxLayout();
-    this->textBox = new TextBox(this);
-    this->button = new Button("Click", this);
+    this->textBox = new QLineEdit(this);
+    this->button = new QPushButton("Click", this);
+    this->label = new QLabel("", this);
+    vbox->addWidget(this->label);
     hbox->addWidget(this->textBox);
     hbox->addWidget(this->button);
-    this->setLayout(hbox);
+    vbox->addLayout(hbox);
+    this->setLayout(vbox);
     connect(this->button, SIGNAL(clicked()), this, SLOT(handleButton()));
     connect(this->textBox, SIGNAL(textEdited(QString)), this, SLOT(handleEdit(QString)));
 }
@@ -100,30 +99,42 @@ void ButtonEntry::setText(QString text)
 FileEntry::FileEntry(QWidget *parent) : ButtonEntry(parent)
 {
     this->button->setText("Browse...");
+    this->label->setText("ROM File");
 }
 
 void FileEntry::handleButton()
 {
     QString filename = QFileDialog::getOpenFileName(
-           this, tr("Choose the ROM file"), "./", tr("NES ROM Files (*.nes)"));
+           this, "Choose the ROM file", "./", "NES ROM Files (*.nes)");
     this->textBox->setText(filename);
 }
 
 DirEntry::DirEntry(QWidget *parent) : ButtonEntry(parent)
 {
     this->button->setText("Browse...");
+#ifdef _WIN32
+    this->label->setText("Output Folder");
+#else
+    this->label->setText("Output Directory");
+#endif
 }
 
 void DirEntry::handleButton()
 {
     QString dirName = QFileDialog::getExistingDirectory(this,
-            tr("Choose the output directory"), "./");
+#ifdef _WIN32
+            "Choose the output folder",
+#else
+            "Choose the output directory",
+#endif
+            "./");
     this->textBox->setText(dirName);
 }
 
 SeedEntry::SeedEntry(QWidget *parent) : ButtonEntry(parent)
 {
     this->button->setText("Random");
+    this->label->setText("Seed");
     this->handleButton();
 }
 
@@ -147,11 +158,12 @@ uint64_t SeedEntry::getSeed()
 FlagEntry::FlagEntry(QWidget *parent) : ButtonEntry(parent)
 {
     this->button->setText("Defaults");
+    this->label->setText("Flags");
 }
 
 void FlagEntry::handleButton()
 {
-    this->setText("CDGMPRWZf");
+    this->setText(DEFAULT_FLAGS);
     this->textBox->textEdited(this->text());
 }
 

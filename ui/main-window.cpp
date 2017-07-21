@@ -69,29 +69,37 @@ void MainWindow::layout()
     vbox = new QVBoxLayout();
     grid = new QGridLayout();
 
-    vbox->addWidget(this->romFile);
-    vbox->addWidget(this->outputDir);
-    vbox->addWidget(this->seed);
-    vbox->addWidget(this->flags);
+    grid->addWidget(this->romFile,   0, 0, 0);
+    grid->addWidget(this->outputDir, 0, 1, 0);
+    grid->addWidget(this->seed,      1, 0, 0);
+    grid->addWidget(this->flags,     1, 1, 0);
 
     vbox->addLayout(grid);
-    grid->addWidget(this->chests,         0, 0, 0);
-    grid->addWidget(this->shops,          1, 0, 0);
-    grid->addWidget(this->zones,          2, 0, 0);
-    grid->addWidget(this->levelSpeed,     3, 0, 0);
+    grid = new QGridLayout();
+    vbox->addLayout(grid);
 
-    grid->addWidget(this->growth,         0, 1, 0);
-    grid->addWidget(this->spells,         1, 1, 0);
-    grid->addWidget(this->attack,         2, 1, 0);
-    grid->addWidget(this->musicShuffle,  3, 1, 0);
+    grid->addWidget(this->chests,        0, 0, 0);
+    grid->addWidget(this->shops,         1, 0, 0);
+    grid->addWidget(this->zones,         2, 0, 0);
+
+    grid->addWidget(this->growth,        0, 1, 0);
+    grid->addWidget(this->spells,        1, 1, 0);
+    grid->addWidget(this->attack,        2, 1, 0);
+    grid->addWidget(this->copyChecksum,  3, 1, 0);
 
     grid->addWidget(this->deathNecklace, 0, 2, 0);
     grid->addWidget(this->speedHacks,    1, 2, 0);
-    grid->addWidget(this->copyChecksum,  2, 2, 0);
+    grid->addWidget(this->musicShuffle,  2, 2, 0);
     grid->addWidget(this->musicDisable,  3, 2, 0);
 
-    grid->addWidget(this->goButton,      4, 2, 0);
+    grid->addWidget(new QLabel("Leveling Speed", this), 6, 0, 0);
+    grid->addWidget(this->levelSpeed,    7, 0, 0);
+
+    grid->addWidget(this->goButton,      8, 2, 0);
+
     this->mainWidget->setLayout(vbox);
+
+    this->copyChecksum->hide();
 }
 
 std::string MainWindow::getOptions()
@@ -172,5 +180,7 @@ void MainWindow::handleButton()
     uint64_t seed = this->seed->getSeed();
     std::string inputFile = this->romFile->text().toLatin1().constData();
     std::string outputDir = this->outputDir->text().toLatin1().constData();
-    dwr_randomize(inputFile.c_str(), seed, flags, outputDir.c_str());
+    if (dwr_randomize(inputFile.c_str(), seed, flags, outputDir.c_str())) {
+        /* an error occurred */
+    }
 }

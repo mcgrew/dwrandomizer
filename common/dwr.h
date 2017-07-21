@@ -8,6 +8,8 @@
 
 #define VERSION "2-alpha build " BUILD
 
+#define DEFAULT_FLAGS "CDGMPRWZf"
+
 #define FLAG_0 UINT64_C(0x0000000000000001)
 #define FLAG_1 UINT64_C(0x0000000000000002)
 #define FLAG_2 UINT64_C(0x0000000000000004)
@@ -75,7 +77,7 @@
 extern "C" {
 #endif
 
-void dwr_randomize(const char* input_file, uint64_t seed, char *flags, 
+int dwr_randomize(const char* input_file, uint64_t seed, char *flags,
         const char* output_dir);
 
 #ifdef __cplusplus

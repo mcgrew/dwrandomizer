@@ -41,6 +41,7 @@ private:
     void layout();
     void initSlots();
     void initWidgets();
+    void initStatus();
     QString getOptions();
     void setOptions(QString flags);
     QString getFlags();

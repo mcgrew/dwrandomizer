@@ -760,7 +760,7 @@ static void update_title_screen(dw_rom *rom)
     
     pos = &rom->data[0x3f36];
     end = &rom->data[0x3fc5];
-    text[33] = '\0';
+    text[32] = '\0';
     flags = rom->flags;
     f = text;
     fo = (char*)flag_order;
@@ -1124,7 +1124,7 @@ static bool dwr_write(dw_rom *rom, const char *output_file)
     return true;
 }
 
-int dwr_randomize(const char* input_file, uint64_t seed, char *flags,
+uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
         const char* output_dir)
 {
     uint64_t crc;
@@ -1135,7 +1135,7 @@ int dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     mt_init(seed);
     dw_rom rom;
     if (!dwr_init(&rom, input_file, flags)) {
-        return -1;
+        return 0;
     }
     rom.seed = seed;
 
@@ -1164,12 +1164,12 @@ int dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     update_title_screen(&rom);
     randomize_music(&rom);
     disable_music(&rom);
-    crc = crc64(0, rom.data, ROM_SIZE);
+//    crc = crc64(0, rom.data, ROM_SIZE);
 //    printf("Final Checksum: %016"PRIx64"\n", crc);
 
     if (!dwr_write(&rom, output_file)) {
-        return -1;
+        return 0;
     }
     free(rom.data);
-    return 0;
+    return crc;
 }

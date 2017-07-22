@@ -77,7 +77,7 @@
 extern "C" {
 #endif
 
-int dwr_randomize(const char* input_file, uint64_t seed, char *flags,
+uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
         const char* output_dir);
 
 #ifdef __cplusplus

@@ -2,10 +2,15 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QStatusBar>
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
 #include <QtCore/QIODevice>
+#include <QtGui/QPalette>
+#include <QtGui/QColor>
+#include <QtGui/QGuiApplication>
+#include <QtGui/QClipboard>
 
 #include "dwr.h"
 #include "main-window.h"
@@ -16,9 +21,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     this->setCentralWidget(this->mainWidget);
 
     this->initWidgets();
+    this->initStatus();
     this->layout();
     this->initSlots();
     this->loadConfig();
+}
+
+void MainWindow::initStatus() {
+    QStatusBar *status = this->statusBar();
+    status->showMessage("Ready");
+    QPalette palette = this->palette();
+    palette.setColor(QPalette::Background, Qt::lightGray);
+    palette.setColor(QPalette::Foreground, Qt::black);
+    status->setPalette(palette);
+    status->setAutoFillBackground(true);
 }
 
 void MainWindow::initWidgets()
@@ -178,20 +194,24 @@ void MainWindow::handleFlags()
 
 void MainWindow::handleButton()
 {
-    char flags[64];
+    char flags[64], checksum[64];
     QString flagStr = this->getFlags();
     strncpy(flags, flagStr.toLatin1().constData(), 64);
 
     uint64_t seed = this->seed->getSeed();
     std::string inputFile = this->romFile->text().toLatin1().constData();
     std::string outputDir = this->outputDir->text().toLatin1().constData();
-    if (dwr_randomize(inputFile.c_str(), seed, flags, outputDir.c_str())) {
-        /* an error occurred */
-        QMessageBox::critical(this, "Failed", "An error occurred, "
-                              "the ROM could not be created.");
-    } else {
+    uint64_t crc = dwr_randomize(inputFile.c_str(), seed,
+                                 flags, outputDir.c_str());
+    if (crc) {
+        sprintf(checksum, "Checksum: %016" PRIx64, crc);
+        QGuiApplication::clipboard()->setText(checksum);
+        this->statusBar()->showMessage("Checksum copied to clipboard", 3000);
         QMessageBox::information(this, "Success!",
                                  "The new ROM has been created.");
+    } else {
+        QMessageBox::critical(this, "Failed", "An error occurred and"
+                "the ROM could not be created.");
     }
     this->saveConfig();
 }
@@ -224,10 +244,16 @@ bool MainWindow::loadConfig()
     read = configFile.readLine(tmp, 1024);
     tmp[read - 1] = '\0';
     this->romFile->setText(tmp);
+    if (configFile.atEnd()) {
+        return false;
+    }
 
     read = configFile.readLine(tmp, 1024);
     tmp[read - 1] = '\0';
     this->outputDir->setText(tmp);
+    if (configFile.atEnd()) {
+        return false;
+    }
 
     read = configFile.readLine(tmp, 1024);
     tmp[read - 1] = '\0';

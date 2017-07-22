@@ -218,6 +218,11 @@ void MainWindow::handleButton()
 
 bool MainWindow::saveConfig()
 {
+    QDir configDir("");
+    if (!configDir.exists(QDir::homePath() + "/.config/")){
+        configDir.mkdir(QDir::homePath() + "/.config/");
+    }
+
     QFile configFile(QDir::homePath() + "/.config/dwrandomizer2.conf");
     if (!configFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         printf("Failed to save configuration.\n");

@@ -1006,14 +1006,15 @@ static void dwr_menu_wrap(dw_rom *rom)
 
 static void dwr_speed_hacks(dw_rom *rom)
 {
-    if (!(rom->flags & FLAG_H))
+    if (!(rom->flags & (FLAG_H || FLAG_h)))
         return;
 
     printf("Enabling speed hacks\n");
 
     /* Following are some speed hacks from @gameboy9 */
     /* speed up the text */
-    vpatch(rom, 0x7a43, 3, 0xea, 0xea, 0xea);
+	if (rom->flags & FLAG_H)
+		vpatch(rom, 0x7a43, 3, 0xea, 0xea, 0xea);
     /* speed up encounter intros */
     vpatch(rom, 0xe41a, 3, 0xea, 0xea, 0xea);
     vpatch(rom, 0xe44d, 3, 0xea, 0xea, 0xea);

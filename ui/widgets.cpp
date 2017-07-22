@@ -27,9 +27,9 @@ void CheckBox::stateChanged(int state)
     super::stateChanged(state);
 }
 
-bool CheckBox::updateState(std::string &flags)
+bool CheckBox::updateState(QString flags)
 {
-    bool checked = flags.find(this->flag) != std::string::npos;
+    bool checked = flags.indexOf(QChar(this->flag)) >= 0;
     this->setChecked(checked);
     return checked;
 }
@@ -53,13 +53,13 @@ char LevelComboBox::getFlag()
     }
 }
 
-bool LevelComboBox::updateState(std::string &flags)
+bool LevelComboBox::updateState(QString flags)
 {
-    if (flags.find('f') != std::string::npos) {
+    if (flags.indexOf(QChar('f')) >= 0) {
         this->setCurrentIndex(1);
         return true;
     } else {
-        if (flags.find('F') != std::string::npos) {
+        if (flags.indexOf(QChar('F')) >= 0) {
             this->setCurrentIndex(2);
             return true;
         }

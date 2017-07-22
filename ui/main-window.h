@@ -19,6 +19,12 @@ extern "C" {
 }
 #endif
 
+struct configuration {
+    char input_file[1024];
+    char output_dir[1024];
+    char flags[64];
+};
+
 class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
@@ -35,10 +41,12 @@ private:
     void layout();
     void initSlots();
     void initWidgets();
-    std::string getOptions();
-    void setOptions(std::string &flags);
-    std::string getFlags();
-    void setFlags(std::string &flags);
+    QString getOptions();
+    void setOptions(QString flags);
+    QString getFlags();
+    void setFlags(QString flags);
+    bool saveConfig();
+    bool loadConfig();
 
 private:
     QWidget *mainWidget;

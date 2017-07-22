@@ -32,7 +32,7 @@ public:
     CheckBox(const char flag, const QString &text, QWidget *parent = 0);
     void stateChanged(int state);
     char getFlag();
-    bool updateState(std::string &flags);
+    bool updateState(QString flags);
 
 private:
     char flag;
@@ -43,7 +43,7 @@ class LevelComboBox : public QComboBox {
 
 public:
     LevelComboBox(QWidget *parent = 0);
-    bool updateState(std::string &flags);
+    bool updateState(QString flags);
     char getFlag();
 
 };

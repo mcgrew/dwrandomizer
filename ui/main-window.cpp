@@ -2,6 +2,10 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QMessageBox>
+#include <QtCore/QDir>
+#include <QtCore/QFile>
+#include <QtCore/QTextStream>
+#include <QtCore/QIODevice>
 
 #include "dwr.h"
 #include "main-window.h"
@@ -14,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     this->initWidgets();
     this->layout();
     this->initSlots();
+    this->loadConfig();
 }
 
 void MainWindow::initWidgets()
@@ -103,7 +108,7 @@ void MainWindow::layout()
     this->copyChecksum->hide();
 }
 
-std::string MainWindow::getOptions()
+QString MainWindow::getOptions()
 {
     std::string flags = std::string() +
                         this->chests->getFlag() +
@@ -122,10 +127,10 @@ std::string MainWindow::getOptions()
 
     std::sort(flags.begin(), flags.end());
     std::replace(flags.begin(), flags.end(), NO_FLAG, '\0');
-    return std::string(flags.c_str());
+    return QString(flags.c_str());
 }
 
-void MainWindow::setOptions(std::string &flags)
+void MainWindow::setOptions(QString flags)
 {
     this->chests->updateState(flags);
     this->shops->updateState(flags);
@@ -142,21 +147,21 @@ void MainWindow::setOptions(std::string &flags)
     this->levelSpeed->updateState(flags);
 }
 
-std::string MainWindow::getFlags()
+QString MainWindow::getFlags()
 {
-    std::string flags = this->flags->text().toLatin1().constData();
+    std::string flags = this->flags->text().toStdString();
     std::sort(flags.begin(), flags.end());
-    return flags;
+    return QString::fromStdString(flags);
 }
 
-void MainWindow::setFlags(std::string &flags)
+void MainWindow::setFlags(QString flags)
 {
-    this->flags->setText(QString::fromStdString(flags));
+    this->flags->setText(flags);
 }
 
 void MainWindow::handleCheckBox()
 {
-    std::string flags = this->getOptions();
+    QString flags = this->getOptions();
     this->setFlags(flags);
 }
 
@@ -167,16 +172,15 @@ void MainWindow::handleComboBox(int index)
 
 void MainWindow::handleFlags()
 {
-    std::string flags = this->getFlags();
+    QString flags = this->getFlags();
     this->setOptions(flags);
 }
 
 void MainWindow::handleButton()
 {
-    printf("Blorp");
     char flags[64];
-    std::string flagStr = this->getFlags();
-    strncpy(flags, flagStr.c_str(), 64);
+    QString flagStr = this->getFlags();
+    strncpy(flags, flagStr.toLatin1().constData(), 64);
 
     uint64_t seed = this->seed->getSeed();
     std::string inputFile = this->romFile->text().toLatin1().constData();
@@ -189,4 +193,46 @@ void MainWindow::handleButton()
         QMessageBox::information(this, "Success!",
                                  "The new ROM has been created.");
     }
+    this->saveConfig();
+}
+
+bool MainWindow::saveConfig()
+{
+    QFile configFile(QDir::homePath() + "/.config/dwrandomizer2.conf");
+    if (!configFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        printf("Failed to save configuration.\n");
+        return false;
+    }
+    QTextStream out(&configFile);
+
+    out << this->romFile->text() << endl;
+    out << this->outputDir->text() << endl;
+    out << this->getFlags() << endl;
+
+    return true;
+}
+
+bool MainWindow::loadConfig()
+{
+    char tmp[1024];
+    qint64 read;
+    QFile configFile(QDir::homePath() + "/.config/dwrandomizer2.conf");
+    if (!configFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        printf("Failed to load configuration.\n");
+        return false;
+    }
+    read = configFile.readLine(tmp, 1024);
+    tmp[read - 1] = '\0';
+    this->romFile->setText(tmp);
+
+    read = configFile.readLine(tmp, 1024);
+    tmp[read - 1] = '\0';
+    this->outputDir->setText(tmp);
+
+    read = configFile.readLine(tmp, 1024);
+    tmp[read - 1] = '\0';
+    this->setFlags(tmp);
+    this->setOptions(tmp);
+
+    return true;
 }

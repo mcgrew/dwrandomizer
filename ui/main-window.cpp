@@ -52,9 +52,10 @@ void MainWindow::initWidgets()
     spells =        new CheckBox('M', "Randomize Spell Learning", this);
     attack =        new CheckBox('P', "Randomize Enemy Attacks", this);
     zones =         new CheckBox('Z', "Randomize Zones", this);
+    wrap =          new CheckBox('R', "Enable Menu Wrapping", this);
     musicShuffle =  new CheckBox('K', "Shuffle Music", this);
     musicDisable =  new CheckBox('Q', "Disable Music", this);
-    copyChecksum =  new CheckBox(NO_FLAG, "Copy Checksum to Clipboard", this);
+//    copyChecksum =  new CheckBox(NO_FLAG, "Copy Checksum to Clipboard", this);
 
     this->levelSpeed = new LevelComboBox(this);
 
@@ -73,9 +74,10 @@ void MainWindow::initSlots()
     connect(this->spells,       SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     connect(this->attack,       SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     connect(this->zones,        SIGNAL(clicked()), this, SLOT(handleCheckBox()));
+    connect(this->wrap,         SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     connect(this->musicShuffle, SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     connect(this->musicDisable, SIGNAL(clicked()), this, SLOT(handleCheckBox()));
-    connect(this->copyChecksum, SIGNAL(clicked()), this, SLOT(handleCheckBox()));
+//    connect(this->copyChecksum, SIGNAL(clicked()), this, SLOT(handleCheckBox()));
 
     connect(this->levelSpeed, SIGNAL(activated(int)),
             this, SLOT(handleCheckBox()));
@@ -107,7 +109,9 @@ void MainWindow::layout()
     grid->addWidget(this->growth,        0, 1, 0);
     grid->addWidget(this->spells,        1, 1, 0);
     grid->addWidget(this->attack,        2, 1, 0);
-    grid->addWidget(this->copyChecksum,  3, 1, 0);
+    grid->addWidget(this->wrap,          3, 1, 0);
+//    grid->addWidget(this->copyChecksum,  3, 1, 0);
+
 
     grid->addWidget(this->deathNecklace, 0, 2, 0);
     grid->addWidget(this->speedHacks,    1, 2, 0);
@@ -121,7 +125,7 @@ void MainWindow::layout()
 
     this->mainWidget->setLayout(vbox);
 
-    this->copyChecksum->hide();
+//    this->copyChecksum->hide();
 }
 
 QString MainWindow::getOptions()
@@ -135,9 +139,9 @@ QString MainWindow::getOptions()
                         this->spells->getFlag() +
                         this->attack->getFlag() +
                         this->zones->getFlag() +
+                        this->wrap->getFlag() +
                         this->musicShuffle->getFlag() +
                         this->musicDisable->getFlag() +
-                        this->copyChecksum->getFlag() +
 
                         this->levelSpeed->getFlag();
 
@@ -158,7 +162,7 @@ void MainWindow::setOptions(QString flags)
     this->zones->updateState(flags);
     this->musicShuffle->updateState(flags);
     this->musicDisable->updateState(flags);
-    this->copyChecksum->updateState(flags);
+//    this->copyChecksum->updateState(flags);
 
     this->levelSpeed->updateState(flags);
 }

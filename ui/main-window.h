@@ -63,6 +63,7 @@ private:
     CheckBox *spells;
     CheckBox *attack;
     CheckBox *zones;
+    CheckBox *wrap;
     CheckBox *musicShuffle;
     CheckBox *musicDisable;
     CheckBox *copyChecksum;

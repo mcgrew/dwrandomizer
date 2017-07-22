@@ -160,6 +160,7 @@ void MainWindow::setOptions(QString flags)
     this->spells->updateState(flags);
     this->attack->updateState(flags);
     this->zones->updateState(flags);
+    this->wrap->updateState(flags);
     this->musicShuffle->updateState(flags);
     this->musicDisable->updateState(flags);
 //    this->copyChecksum->updateState(flags);

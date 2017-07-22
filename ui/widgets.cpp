@@ -151,7 +151,7 @@ void SeedEntry::handleButton()
 uint64_t SeedEntry::getSeed()
 {
     uint64_t seed;
-    sscanf(this->textBox->text().toLatin1().constData(), "%"PRIu64, &seed);
+    sscanf(this->textBox->text().toLatin1().constData(), "%" PRIu64, &seed);
     return seed;
 }
 

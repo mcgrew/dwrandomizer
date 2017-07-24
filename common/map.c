@@ -194,8 +194,9 @@ static inline bool needs_bridge(uint8_t left, uint8_t right, int *lm_sizes)
 static bool add_bridges(dw_map *map, int *lm_sizes)
 {
     /* this could use more work */
-    uint8_t x, y, left, right;
-    bool added = false;
+    uint8_t x, y, left, right, x_candidate[50], y_candidate[50];
+    uint64_t which;
+    int count = 0;
 
     for (y=0; y < 120; y++) {
         for (x=2; x < 118; x++) {
@@ -203,13 +204,19 @@ static bool add_bridges(dw_map *map, int *lm_sizes)
                 left = map->walkable[x-1][y];
                 right = map->walkable[x+1][y];
                 if (needs_bridge(left, right, lm_sizes)){
-                    map->tiles[x][y] = TILE_BRIDGE;
-                    added = true;
+                    x_candidate[count]   = x;
+                    y_candidate[count++] = y;
                 }
             }
         }
     }
-    return added; 
+    if (count) {
+        which = mt_rand(0, count-1);
+        map->tiles[x_candidate[which]][y_candidate[which]] = TILE_BRIDGE;
+//        printf("Added bridge\n");
+        return true;
+    }
+    return false;
 }
 
 
@@ -396,8 +403,8 @@ static inline void find_largest_lm(dw_map *map, int *lm_sizes, int lm_count,
     if (lm_sizes[(*next)-1] < MAX_BLOB / 6) {
         *next = *largest;
     }
-    printf("Largest: %d(%d), Next: %d(%d)\n", *largest, lm_sizes[(*largest)-1],
-           *next, lm_sizes[(*next)-1]);
+//    printf("Largest: %d(%d), Next: %d(%d)\n", *largest, lm_sizes[(*largest)-1],
+//           *next, lm_sizes[(*next)-1]);
 }
 
 static int find_walkable_area(dw_map *map, int *lm_sizes, int *largest,
@@ -449,7 +456,7 @@ static bool place_landmarks(dw_map *map)
     charlock_lm = map->walkable[warp->x+3][warp->y];
 
     if (charlock_lm != largest && charlock_lm != next) {
-        printf("Charlock placement error\n");
+        printf("Charlock is obstructed, retrying...\n");
         return false;
     }
 
@@ -525,19 +532,19 @@ bool map_generate_terrain(dw_rom *rom)
     int largest, next, total_area;
 
     dw_tile tiles[16] = {
-            TILE_GRASS,  TILE_GRASS,  TILE_GRASS, TILE_SWAMP,
-            TILE_DESERT, TILE_DESERT, TILE_HILL,  TILE_MOUNTAIN,
-            TILE_TREES,  TILE_TREES,  TILE_TREES,  TILE_WATER,
-            TILE_WATER,  TILE_WATER,  TILE_WATER, TILE_SWAMP
+            TILE_GRASS, TILE_GRASS, TILE_GRASS, TILE_SWAMP,
+            TILE_DESERT, TILE_DESERT, TILE_HILL, TILE_MOUNTAIN,
+            TILE_TREES, TILE_TREES, TILE_TREES, TILE_WATER,
+            TILE_WATER, TILE_WATER, TILE_WATER, TILE_SWAMP
     };
 
     /* first fill the map with water */
     memset(rom->map.tiles, TILE_WATER, 120 * 120);
 
     /* now fill it in with some other tiles */
-    for (i=0; i < 57600 / MAX_BLOB; i++) {
+    for (i = 0; i < 57600 / MAX_BLOB; i++) {
         mt_shuffle(tiles, sizeof(tiles) / sizeof(dw_tile), sizeof(dw_tile));
-        for (j=0; j < 16 ; j++) {
+        for (j = 0; j < 16; j++) {
             map_fill(rom, tiles[j]);
         }
     }
@@ -547,16 +554,17 @@ bool map_generate_terrain(dw_rom *rom)
     /* zero out the walkability data */
     lm_count = find_walkable_area(&rom->map, lm_sizes, &largest, &next);
     /* make sure the walkable area is large enough */
-    total_area = lm_sizes[largest-1];
+    total_area = lm_sizes[largest - 1];
     if (largest != next)
-        total_area += lm_sizes[next-1];
+        total_area += lm_sizes[next - 1];
     if (total_area < 5000) {
-        printf("Total map area too small...");
+        printf("Total map area is too small, retrying...");
         return false;
     }
 
-    if (add_bridges(&rom->map, lm_sizes))
+    while (add_bridges(&rom->map, lm_sizes)) {
         lm_count = find_walkable_area(&rom->map, lm_sizes, &largest, &next);
+    }
     for (i=0; i < lm_count; i++) {
         if (lm_sizes[i] < 200)
             destroy_land_mass(&rom->map, i+1);

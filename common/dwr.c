@@ -113,6 +113,7 @@ bool dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->title_text = &rom->data[0x3f36];
 
     map_decode(&rom->map);
+    return true;
 }
 
 size_t ascii2dw(uint8_t *string)
@@ -180,7 +181,88 @@ size_t dw2ascii(uint8_t *string, size_t bufsize)
     return bufsize;
 }
 
-/* 
+static uint16_t vpatch(dw_rom *rom, uint16_t address, uint32_t size, ...)
+{
+    int i;
+    va_list arg;
+    uint8_t *p;
+
+    p = &rom->data[address];
+    va_start(arg, size);
+
+    for (i=0; i < size; i++) {
+        *(p++) = va_arg(arg, int);
+    }
+    va_end(arg);
+    return p - rom->data;
+
+}
+
+static uint16_t patch(dw_rom *rom, uint16_t address, uint32_t size, uint8_t *data)
+{
+    int i;
+    uint8_t *p;
+
+    p = &rom->data[address];
+
+    for (i=0; i < size; i++) {
+        *(p++) = data[i];
+    }
+    return p - rom->data;
+}
+
+static uint8_t *ppatch(uint8_t *p, uint32_t size, uint8_t *data)
+{
+    int i;
+
+    for (i=0; i < size; i++) {
+        *(p++) = data[i];
+    }
+    return p;
+}
+
+static uint8_t *pvpatch(uint8_t *p, uint32_t size, ...)
+{
+    int i;
+    va_list arg;
+
+    va_start(arg, size);
+
+    for (i=0; i < size; i++) {
+        *(p++) = va_arg(arg, int);
+    }
+    va_end(arg);
+    return p;
+
+}
+
+static uint8_t *dwr_str_replace(dw_rom *rom,
+                                const char *text, const char *replacement)
+{
+    int len;
+    uint8_t *start, *end;
+    char dw_text[256], dw_repl[256];
+
+    len = strlen(text);
+    if (!len)
+        return NULL;
+    end = &rom->data[ROM_SIZE - len];
+
+    strncpy(dw_text, text, 256);
+    strncpy(dw_repl, replacement, 256);
+    ascii2dw(dw_text);
+    ascii2dw(dw_repl);
+
+    for (start = rom->data; start < end; start++) {
+        if (!memcmp(start, dw_text, len)) {
+            memcpy(start, dw_repl, len);
+            return start;
+        }
+    }
+    return NULL;
+}
+
+/*
  * Returns a random index of a chest that is not in charlock
  */
 static inline int non_charlock_chest()
@@ -300,6 +382,41 @@ static void shuffle_chests(dw_rom *rom) {
     }
 
     check_quest_items(rom);
+
+    /* make sure the player can't get more than one token or flute */
+    vpatch(rom, 0xe2fa, 95,
+           0xc9, 0x08,        /* CMP #$08   ; If it's not the flute           */
+           0xd0, 0x0b,        /* BNE $E2F7  ; Jump to the next check          */
+           0xa9, 0x05,        /* LDA #$05   ; Load the flute inventory value  */
+           0x20, 0x55, 0xe0,  /* JSR $E055  ; Jump to inventory check         */
+           0xc9, 0xff,        /* CMP #$FF   ; If return value is $FF (found)  */
+           0xd0, 0xac,        /* BNE $E2A3  ; The chest is empty              */
+           0xa9, 0x08,        /* LDA #$08   ; Reset the flute chest value     */
+           0xc9, 0x0a,        /* CMP #$0A   ; If it's not the token           */
+           0xd0, 0x33,        /* BNE $E330  ; Jump to the next check          */
+           0xa9, 0x07,        /* LDA #$07   ; Load the token inventory value  */
+           0x20, 0x55, 0xe0,  /* JSR $E055  ; Jump to inventory check         */
+           0xc9, 0xff,        /* CMP #$FF   ; If return value is $FF (found)  */
+           0xd0, 0x9d,        /* BNE $E2A3  ; The chest is empty              */
+           0xa9, 0x0a,        /* LDA #$0A   ; Reset the token chest value     */
+           0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, /* NOP x 40 */
+           0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea,
+           0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea,
+           0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea,
+           0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea,
+           0xc9, 0x11,         /* CMP #$11  ; If value is >= $11              */
+           0xb0, 0x03,         /* BCS $E337 ; Jump to the next check          */
+           0x4c, 0x69, 0xe2,   /* JSR $E269 ; Add the item to inventory       */
+           0xc9, 0x17,         /* CMP #$17  ; If the value is greater >= $17  */
+           0xb0, 0x0e,         /* BCS $E349 ; It's the tablet                 */
+           0xa9, 0xff,         /* LDA #$FF  */
+           0x85, 0x3e,         /* STA $003E */
+           0xa9, 0xf4,         /* LDA #$F4  */
+           0x85, 0x00,         /* STA $0000 */
+           0xa9, 0x01,         /* LDA #$01  */
+           0x85, 0x01,         /* STA $0001 */
+           0xd0, 0x1c          /* BNE $E365 ; Add gold to the player          */
+    );
 
 }
 
@@ -647,87 +764,6 @@ static void update_enemy_hp(dw_rom *rom)
         rom->enemies[i].hp =   remake_hp[i];
     }
     rom->enemies[DRAGONLORD_2].hp -= mt_rand(0, 15);
-}
-
-static uint16_t vpatch(dw_rom *rom, uint16_t address, uint32_t size, ...)
-{
-    int i;
-    va_list arg;
-    uint8_t *p;
-
-    p = &rom->data[address];
-    va_start(arg, size);
-
-    for (i=0; i < size; i++) {
-        *(p++) = va_arg(arg, int);
-    }
-    va_end(arg);
-    return p - rom->data;
-
-}
-
-static uint16_t patch(dw_rom *rom, uint16_t address, uint32_t size, uint8_t *data)
-{
-    int i;
-    uint8_t *p;
-
-    p = &rom->data[address];
-
-    for (i=0; i < size; i++) {
-        *(p++) = data[i];
-    }
-    return p - rom->data;
-}
-
-static uint8_t *ppatch(uint8_t *p, uint32_t size, uint8_t *data)
-{
-    int i;
-
-    for (i=0; i < size; i++) {
-        *(p++) = data[i];
-    }
-    return p;
-}
-
-static uint8_t *pvpatch(uint8_t *p, uint32_t size, ...)
-{
-    int i;
-    va_list arg;
-
-    va_start(arg, size);
-
-    for (i=0; i < size; i++) {
-        *(p++) = va_arg(arg, int);
-    }
-    va_end(arg);
-    return p;
-
-}
-
-static uint8_t *dwr_str_replace(dw_rom *rom,
-                                const char *text, const char *replacement)
-{
-    int len;
-    uint8_t *start, *end;
-    char dw_text[256], dw_repl[256];
-
-    len = strlen(text);
-    if (!len)
-        return NULL;
-    end = &rom->data[ROM_SIZE - len];
-
-    strncpy(dw_text, text, 256);
-    strncpy(dw_repl, replacement, 256);
-    ascii2dw(dw_text);
-    ascii2dw(dw_repl);
-
-    for (start = rom->data; start < end; start++) {
-        if (!memcmp(start, dw_text, len)) {
-            memcpy(start, dw_repl, len);
-            return start;
-        }
-    }
-    return NULL;
 }
 
 static uint8_t *center_title_text(uint8_t *pos, const char *text)

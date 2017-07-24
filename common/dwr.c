@@ -87,7 +87,7 @@ bool dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->map.meta = (dw_map_meta*)&rom->data[0x2a];
     rom->map.warps_from = (dw_warp*)&rom->data[0xf3d8];
     rom->map.warps_to   = (dw_warp*)&rom->data[0xf471];
-    rom->map.love_calc = (dw_love_calc*)&rom->data[0xdf4a];
+    rom->map.love_calc = (dw_love_calc*)&rom->data[0xdf4b];
     rom->map.return_point = (dw_return_point*)&rom->data[0xdb11];
     rom->map.rainbow_drop = (dw_rainbow_drop*)&rom->data[0xde9b];
     rom->map.rainbow_bridge = (dw_rainbow_drop*)&rom->data[0x2c4b];

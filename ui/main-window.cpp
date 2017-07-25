@@ -211,7 +211,8 @@ void MainWindow::handleButton()
     if (crc) {
         sprintf(checksum, "Checksum: %016" PRIx64, crc);
         QGuiApplication::clipboard()->setText(checksum);
-        this->statusBar()->showMessage("Checksum copied to clipboard", 3000);
+        this->statusBar()->showMessage(
+                QString("%1 (copied to clipboard)").arg(checksum));
         QMessageBox::information(this, "Success!",
                                  "The new ROM has been created.");
     } else {

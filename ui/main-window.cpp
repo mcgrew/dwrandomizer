@@ -48,9 +48,12 @@ void MainWindow::initWidgets()
     shops =         new CheckBox('W', "Randomize Weapon Shops", this);
     deathNecklace = new CheckBox('D', "Enable Death Necklace", this);
     speedHacks =    new CheckBox('H', "Enable Speed Hacks", this);
+    speedHacksLow = new CheckBox('h', "Lesser Speed Hacks", this);
+    rainbowBridge = new CheckBox('b', "Bridge not required", this);
     growth =        new CheckBox('G', "Randomize Growth", this);
     spells =        new CheckBox('M', "Randomize Spell Learning", this);
     attack =        new CheckBox('P', "Randomize Enemy Attacks", this);
+    menuWrap =      new CheckBox('R', "Enable Menu Wrapping", this);
     zones =         new CheckBox('Z', "Randomize Zones", this);
     musicShuffle =  new CheckBox('K', "Shuffle Music", this);
     musicDisable =  new CheckBox('Q', "Disable Music", this);
@@ -69,9 +72,12 @@ void MainWindow::initSlots()
     connect(this->shops,        SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     connect(this->deathNecklace,SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     connect(this->speedHacks,   SIGNAL(clicked()), this, SLOT(handleCheckBox()));
+    connect(this->speedHacksLow,SIGNAL(clicked()), this, SLOT(handleCheckBox()));
+    connect(this->rainbowBridge,SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     connect(this->growth,       SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     connect(this->spells,       SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     connect(this->attack,       SIGNAL(clicked()), this, SLOT(handleCheckBox()));
+    connect(this->menuWrap,     SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     connect(this->zones,        SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     connect(this->musicShuffle, SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     connect(this->musicDisable, SIGNAL(clicked()), this, SLOT(handleCheckBox()));
@@ -107,12 +113,15 @@ void MainWindow::layout()
     grid->addWidget(this->growth,        0, 1, 0);
     grid->addWidget(this->spells,        1, 1, 0);
     grid->addWidget(this->attack,        2, 1, 0);
-    grid->addWidget(this->copyChecksum,  3, 1, 0);
+    grid->addWidget(this->menuWrap,      3, 1, 0);
+    grid->addWidget(this->copyChecksum,  4, 1, 0);
 
     grid->addWidget(this->deathNecklace, 0, 2, 0);
     grid->addWidget(this->speedHacks,    1, 2, 0);
-    grid->addWidget(this->musicShuffle,  2, 2, 0);
-    grid->addWidget(this->musicDisable,  3, 2, 0);
+    grid->addWidget(this->speedHacksLow, 2, 2, 0);
+    grid->addWidget(this->rainbowBridge, 3, 2, 0);
+    grid->addWidget(this->musicShuffle,  4, 2, 0);
+    grid->addWidget(this->musicDisable,  5, 2, 0);
 
     grid->addWidget(new QLabel("Leveling Speed", this), 6, 0, 0);
     grid->addWidget(this->levelSpeed,    7, 0, 0);
@@ -131,9 +140,12 @@ QString MainWindow::getOptions()
                         this->shops->getFlag() +
                         this->deathNecklace->getFlag() +
                         this->speedHacks->getFlag() +
+                        this->speedHacksLow->getFlag() +
+                        this->rainbowBridge->getFlag() +
                         this->growth->getFlag() +
                         this->spells->getFlag() +
                         this->attack->getFlag() +
+                        this->menuWrap->getFlag() +
                         this->zones->getFlag() +
                         this->musicShuffle->getFlag() +
                         this->musicDisable->getFlag() +
@@ -152,9 +164,12 @@ void MainWindow::setOptions(QString flags)
     this->shops->updateState(flags);
     this->deathNecklace->updateState(flags);
     this->speedHacks->updateState(flags);
+    this->speedHacksLow->updateState(flags);
+    this->rainbowBridge->updateState(flags);
     this->growth->updateState(flags);
     this->spells->updateState(flags);
     this->attack->updateState(flags);
+    this->menuWrap->updateState(flags);
     this->zones->updateState(flags);
     this->musicShuffle->updateState(flags);
     this->musicDisable->updateState(flags);

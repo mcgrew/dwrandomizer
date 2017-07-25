@@ -1006,7 +1006,7 @@ static void dwr_menu_wrap(dw_rom *rom)
 
 static void dwr_speed_hacks(dw_rom *rom)
 {
-    if (!(rom->flags & (FLAG_H || FLAG_h)))
+    if (!((rom->flags & FLAG_H) || (rom->flags & FLAG_h)))
         return;
 
     printf("Enabling speed hacks\n");
@@ -1019,8 +1019,8 @@ static void dwr_speed_hacks(dw_rom *rom)
     vpatch(rom, 0xe41a, 3, 0xea, 0xea, 0xea);
     vpatch(rom, 0xe44d, 3, 0xea, 0xea, 0xea);
     vpatch(rom, 0xc53f, 3, 0xea, 0xea, 0xea);
-    vpatch(rom, 0xef49, 3, 2);  /* speed up the player attack animation */
-    vpatch(rom, 0xed45, 3, 3);  /* speed up the enemy attack animation */
+    vpatch(rom, 0xef49, 1, 2);  /* speed up the player attack animation */
+    vpatch(rom, 0xed45, 1, 3);  /* speed up the enemy attack animation */
     /* speed up the death music */
     vpatch(rom, 0x4d38, 1, 0x1); 
     vpatch(rom, 0x4d3c, 1, 0x6); 

@@ -286,6 +286,9 @@ static void place_charlock(dw_map *map, int largest, int next)
             map->tiles[x-3+i][y+j] = TILE_SWAMP;
         }
     }
+    if (map->flags & FLAG_b) {
+        map->tiles[x-3+2][y] = TILE_BRIDGE;
+	}
     map->tiles[x-3][y] = TILE_CASTLE;
     map->rainbow_drop->x = warp->x + 3;
     map->rainbow_bridge->x = warp->x + 2;

@@ -59,9 +59,12 @@ private:
     CheckBox *shops;
     CheckBox *deathNecklace;
     CheckBox *speedHacks;
+    CheckBox *speedHacksLow;
+    CheckBox *rainbowBridge;
     CheckBox *growth;
     CheckBox *spells;
     CheckBox *attack;
+    CheckBox *menuWrap;
     CheckBox *zones;
     CheckBox *musicShuffle;
     CheckBox *musicDisable;

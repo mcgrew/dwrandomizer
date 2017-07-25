@@ -67,6 +67,7 @@ private:
     CheckBox *attack;
     CheckBox *menuWrap;
     CheckBox *zones;
+    CheckBox *wrap;
     CheckBox *musicShuffle;
     CheckBox *musicDisable;
     CheckBox *copyChecksum;

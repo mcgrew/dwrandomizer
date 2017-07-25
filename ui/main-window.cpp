@@ -56,9 +56,10 @@ void MainWindow::initWidgets()
     attack =        new CheckBox('P', "Randomize Enemy Attacks", this);
     menuWrap =      new CheckBox('R', "Enable Menu Wrapping", this);
     zones =         new CheckBox('Z', "Randomize Zones", this);
+    wrap =          new CheckBox('R', "Enable Menu Wrapping", this);
     musicShuffle =  new CheckBox('K', "Shuffle Music", this);
     musicDisable =  new CheckBox('Q', "Disable Music", this);
-    copyChecksum =  new CheckBox(NO_FLAG, "Copy Checksum to Clipboard", this);
+//    copyChecksum =  new CheckBox(NO_FLAG, "Copy Checksum to Clipboard", this);
 
     this->levelSpeed = new LevelComboBox(this);
 
@@ -81,9 +82,10 @@ void MainWindow::initSlots()
     connect(this->attack,       SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     connect(this->menuWrap,     SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     connect(this->zones,        SIGNAL(clicked()), this, SLOT(handleCheckBox()));
+    connect(this->wrap,         SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     connect(this->musicShuffle, SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     connect(this->musicDisable, SIGNAL(clicked()), this, SLOT(handleCheckBox()));
-    connect(this->copyChecksum, SIGNAL(clicked()), this, SLOT(handleCheckBox()));
+//    connect(this->copyChecksum, SIGNAL(clicked()), this, SLOT(handleCheckBox()));
 
     connect(this->levelSpeed, SIGNAL(activated(int)),
             this, SLOT(handleCheckBox()));
@@ -116,8 +118,9 @@ void MainWindow::layout()
     grid->addWidget(this->growth,        0, 1, 0);
     grid->addWidget(this->spells,        1, 1, 0);
     grid->addWidget(this->attack,        2, 1, 0);
-    grid->addWidget(this->menuWrap,      3, 1, 0);
-    grid->addWidget(this->copyChecksum,  4, 1, 0);
+
+    grid->addWidget(this->wrap,          3, 1, 0);
+//    grid->addWidget(this->copyChecksum,  3, 1, 0);
 
     grid->addWidget(this->deathNecklace, 0, 2, 0);
     grid->addWidget(this->speedHacks,    1, 2, 0);
@@ -133,7 +136,7 @@ void MainWindow::layout()
 
     this->mainWidget->setLayout(vbox);
 
-    this->copyChecksum->hide();
+//    this->copyChecksum->hide();
 }
 
 QString MainWindow::getOptions()
@@ -151,9 +154,9 @@ QString MainWindow::getOptions()
                         this->attack->getFlag() +
                         this->menuWrap->getFlag() +
                         this->zones->getFlag() +
+                        this->wrap->getFlag() +
                         this->musicShuffle->getFlag() +
                         this->musicDisable->getFlag() +
-                        this->copyChecksum->getFlag() +
 
                         this->levelSpeed->getFlag();
 
@@ -176,9 +179,10 @@ void MainWindow::setOptions(QString flags)
     this->attack->updateState(flags);
     this->menuWrap->updateState(flags);
     this->zones->updateState(flags);
+    this->wrap->updateState(flags);
     this->musicShuffle->updateState(flags);
     this->musicDisable->updateState(flags);
-    this->copyChecksum->updateState(flags);
+//    this->copyChecksum->updateState(flags);
 
     this->levelSpeed->updateState(flags);
 }
@@ -226,7 +230,8 @@ void MainWindow::handleButton()
     if (crc) {
         sprintf(checksum, "Checksum: %016" PRIx64, crc);
         QGuiApplication::clipboard()->setText(checksum);
-        this->statusBar()->showMessage("Checksum copied to clipboard", 3000);
+        this->statusBar()->showMessage(
+                QString("%1 (copied to clipboard)").arg(checksum));
         QMessageBox::information(this, "Success!",
                                  "The new ROM has been created.");
     } else {
@@ -238,6 +243,11 @@ void MainWindow::handleButton()
 
 bool MainWindow::saveConfig()
 {
+    QDir configDir("");
+    if (!configDir.exists(QDir::homePath() + "/.config/")){
+        configDir.mkdir(QDir::homePath() + "/.config/");
+    }
+
     QFile configFile(QDir::homePath() + "/.config/dwrandomizer2.conf");
     if (!configFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         printf("Failed to save configuration.\n");

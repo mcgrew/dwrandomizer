@@ -1078,6 +1078,42 @@ static void dwr_speed_hacks(dw_rom *rom)
     vpatch(rom, 0xdb54, 9, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea);
 }
 
+static void no_key_requirement(dw_rom *rom)
+{
+    if (!(rom->flags & FLAG_k))
+        return;
+
+    printf("Disabling magic key requirements...\n");
+
+    /* Forces keys to not be required - @gameboy9 */
+    vpatch(rom, 0xdcad, 2, 0xf0, 0x09);
+    vpatch(rom, 0xdcb8, 2, 0xea, 0xea);
+
+    /*
+    // Change key chests to 500 gold.
+    int i;
+    dw_chest *chest;
+    uint8_t *cont, contents[CHEST_COUNT-2];
+
+    cont = contents;
+    chest = rom->chests;
+
+    // load up the chest contents into an array
+    for (i=0; i < CHEST_COUNT; i++) {
+        switch((dw_chest_content)chest->item) {
+            case KEY:
+                *(cont++) = GOLD_500;
+                break;
+            default:
+                *(cont++) = chest->item;
+                break;
+        }
+        (chest++)->item = *(cont++);
+        chest++;
+    }
+    */
+}
+
 static void dwr_token_dialogue(dw_rom *rom)
 {
     dw_searchable *searchable;
@@ -1149,6 +1185,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     randomize_shops(&rom);
     randomize_growth(&rom);
     randomize_spells(&rom);
+    no_key_requirement(&rom);
     update_drops(&rom);
     update_mp_reqs(&rom);
     lower_xp_reqs(&rom);

@@ -57,6 +57,7 @@ private:
     FlagEntry *flags;
     CheckBox *chests;
     CheckBox *shops;
+    CheckBox *noKey;
     CheckBox *deathNecklace;
     CheckBox *speedHacks;
     CheckBox *speedHacksLow;

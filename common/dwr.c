@@ -26,6 +26,7 @@ const char *prg1sums[2] = {
       NULL
 };
 
+
 const char alphabet[] = "0123456789abcdefghijklmnopqrstuvwxyz"
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ\"\"'*>_:__.,-_?!;)(``_'___________  ";
 
@@ -271,6 +272,7 @@ static inline int non_charlock_chest()
 
     chest = (int)mt_rand(0, 22);
     /* avoid 11-16 and chest 24 (they are in charlock) */
+    if (chest >= 6) chest += 1; /* chest 6 is the throne room key */
     if (chest >= 11) chest += 6;
     if (chest >= 24) chest += 1;
     return chest;
@@ -297,23 +299,19 @@ static inline void check_quest_items(dw_rom *rom)
     int i, tmp_index;
     uint8_t tmp_item;
 
-    for (i=11; i <= 16; i++) {
-        if (is_quest_item(rom->chests[i].item)) {
-            do {
-                tmp_index = non_charlock_chest();
-            } while(is_quest_item(rom->chests[tmp_index].item));
-            tmp_item = rom->chests[tmp_index].item;
-            rom->chests[tmp_index].item = rom->chests[i].item;
-            rom->chests[i].item = tmp_item;
+    for (i=1; i <= 30; i++) {
+        if (rom->chests[i].map == CHARLOCK_THRONE_ROOM ||
+                rom->chests[i].map == CHARLOCK_CAVE_2) {
+
+            if (is_quest_item(rom->chests[i].item)) {
+                do {
+                    tmp_index = non_charlock_chest();
+                } while (is_quest_item(rom->chests[tmp_index].item));
+                tmp_item = rom->chests[tmp_index].item;
+                rom->chests[tmp_index].item = rom->chests[i].item;
+                rom->chests[i].item = tmp_item;
+            }
         }
-    }
-    if (is_quest_item(rom->chests[24].item)) {
-        do {
-            tmp_index = non_charlock_chest();
-        } while(is_quest_item(rom->chests[tmp_index].item));
-        tmp_item = rom->chests[tmp_index].item;
-        rom->chests[tmp_index].item = rom->chests[24].item;
-        rom->chests[24].item = tmp_item;
     }
 }
 

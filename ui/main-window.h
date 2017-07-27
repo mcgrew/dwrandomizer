@@ -57,11 +57,15 @@ private:
     FlagEntry *flags;
     CheckBox *chests;
     CheckBox *shops;
+    CheckBox *noKey;
     CheckBox *deathNecklace;
     CheckBox *speedHacks;
+    CheckBox *speedHacksLow;
+    CheckBox *rainbowBridge;
     CheckBox *growth;
     CheckBox *spells;
     CheckBox *attack;
+    CheckBox *menuWrap;
     CheckBox *zones;
     CheckBox *wrap;
     CheckBox *musicShuffle;

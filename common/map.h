@@ -5,6 +5,8 @@
 
 #include <stdint.h>
 
+#define FLAG_b UINT64_C(0x0000002000000000)
+
 typedef enum {
     TILE_NONE     = -1,
     TILE_GRASS    = 0x0,

@@ -15,6 +15,7 @@ typedef enum {
     true,
 } bool;
 
+/** In-game indexes for various maps. */
 typedef enum {
     NO_MAP,
     OVERWORLD,
@@ -48,6 +49,7 @@ typedef enum {
     ERDRICKS_CAVE_2
 } dw_map_index;
 
+/** In-game enemy indexes */
 typedef enum {
     SLIME,       /* 0 */
     RED_SLIME,
@@ -91,6 +93,7 @@ typedef enum {
     DRAGONLORD_2
 } dw_enemies;
 
+/** In-game indexes for chest content items */
 typedef enum {
     HERB = 0x2,
     KEY,
@@ -116,6 +119,7 @@ typedef enum {
     TABLET,
 } dw_chest_content;
 
+/** In-game indexes for weapon shop items */
 typedef enum {
     BAMBOO_POLE,
     CLUB,
@@ -137,12 +141,14 @@ typedef enum {
     SHOP_END = 0xfd,
 } dw_shop_item;
 
+/** Calculation code for Gwaelin's Love */
 typedef struct {
     uint8_t y;
     uint8_t code[27];
     uint8_t x;
 } dw_love_calc;
 
+/** Code for the 3 forced encounters in the game */
 typedef struct {
     uint8_t code1[3];
     uint8_t map;
@@ -152,6 +158,7 @@ typedef struct {
     uint8_t y;
 } dw_forced_encounter;
 
+/** Code for the 3 "search" items in the game (not including the trap door) */
 typedef struct {
     uint8_t code1[3];
     uint8_t map;
@@ -161,6 +168,7 @@ typedef struct {
     uint8_t y;
 } dw_searchable;
 
+/** A single in-game chest */
 typedef struct {
     uint8_t map;
     uint8_t x;
@@ -168,6 +176,7 @@ typedef struct {
     uint8_t item;
 } dw_chest;
 
+/** Statistics for an in-game enemy */
 typedef struct {
     uint8_t str;
     uint8_t agi;
@@ -180,6 +189,7 @@ typedef struct {
     uint64_t graphics;
 } dw_enemy;
 
+/** Statistics for a single player level */
 typedef struct {
     uint8_t str;
     uint8_t agi;
@@ -188,12 +198,14 @@ typedef struct {
     uint16_t spells;
 } dw_stats;
 
+/** The code for "thou has learned a new spell" message at each level */
 typedef struct {
     uint8_t code1;
     uint8_t level;
     uint8_t code2[2];
 } dw_new_spell;
 
+/** In-game map metadata */
 typedef struct {
     uint8_t pointer[2]; /* if we use uint16_t here it causes memalign issues */
     uint8_t width;      /* This causes the struct to be size 6 instead of 5, */
@@ -201,12 +213,14 @@ typedef struct {
     uint8_t border;
 } dw_map_meta;
 
+/** In-game warps for stairs and towns */
 typedef struct {
     uint8_t map;
     uint8_t x;
     uint8_t y;
 } dw_warp;
 
+/** Code for the return spell and wings */
 typedef struct {
     uint8_t map;
     uint8_t code1[3];
@@ -216,6 +230,7 @@ typedef struct {
 
 } dw_return_point;
 
+/** Code for usage of the rainbow drop */
 typedef struct {
     uint8_t code1[3];
     uint8_t map;
@@ -225,6 +240,7 @@ typedef struct {
     uint8_t y;
 } dw_rainbow_drop;
 
+/** A struct for the in-game map */
 typedef struct {
     uint16_t *pointers;
     uint8_t *encoded;
@@ -240,6 +256,7 @@ typedef struct {
     uint8_t walkable[120][120];
 } dw_map;
 
+/** A struct for the rom data */
 typedef struct {
     uint8_t *data;
     uint64_t flags;

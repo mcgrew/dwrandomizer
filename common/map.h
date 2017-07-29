@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 
+/** Map tile indexes */
 typedef enum {
     TILE_NONE     = -1,
     TILE_GRASS    = 0x0,
@@ -22,6 +23,7 @@ typedef enum {
     TILE_STAIRS   = 0xc
 } dw_tile;
 
+/** Town border tile indexes */
 typedef enum {
     BORDER_GRASS  = 0x0,
     BORDER_DESERT = 0x1,
@@ -32,6 +34,7 @@ typedef enum {
     BORDER_WATER  = 0xf,
 } dw_border_tile;
 
+/** Warp indices */
 typedef enum {
     WARP_GARINHAM,
     WARP_STAFF_SHRINE,
@@ -61,8 +64,19 @@ typedef enum {
 extern "C" {
 #endif
 
+/**
+ * Decodes the in-game map into a 2 dimentional array of tiles
+ *
+ * @param map The map struct
+ */
 void map_decode(dw_map *map);
 
+/**
+ * Generates a new in-game map.
+ *
+ * @param rom The rom struct
+ * @return A boolean indicating whether terrain generation was successful or not
+ */
 bool map_generate_terrain(dw_rom *rom);
 
 #ifdef __cplusplus

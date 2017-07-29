@@ -10,6 +10,13 @@
 #define MAP_ENCODED_SIZE 2294
 #define VIABLE_CONT 250 /* minimum size for a land_mass to use */
 
+/**
+ * Shifts bytes in memory 1 to the left. Shifts [start+1, end) to [start, end-1)
+ * This is used for map encoding optimization.
+ *
+ * @param start A pointer to the location of the new location of the bytes
+ * @param end A pointer to the end of the old bytes
+ */
 static void shift_bytes(uint8_t *start, uint8_t *end)
 {
     uint8_t *p;
@@ -20,6 +27,12 @@ static void shift_bytes(uint8_t *start, uint8_t *end)
     }
 }
 
+/**
+ * Optimizes the map encoding to remove unneeded bytes.
+ *
+ * @param map The map struct
+ * @return The number of bytes saved
+ */
 static int optimize_map(dw_map *map)
 {
     int i, j, saved = 0;
@@ -40,6 +53,12 @@ static int optimize_map(dw_map *map)
     return saved;
 }
 
+/**
+ * Encodes the newly generated map into one that can be used in-game.
+ *
+ * @param map The map struct
+ * @return A boolean indicating success or failure of map generation
+ */
 static bool map_encode(dw_map *map)
 {
     int x, y;
@@ -81,6 +100,11 @@ static bool map_encode(dw_map *map)
     return true;
 }
 
+/**
+ * Decodes the in-game map into a 2 dimentional array of tiles
+ *
+ * @param map The map struct
+ */
 void map_decode(dw_map *map)
 {
     uint8_t x, y, *e, current;
@@ -98,14 +122,12 @@ void map_decode(dw_map *map)
     }
 }
 
-/*
+/**
  * Smooths the map to clean it up and ensure better compression.
  *
- * Params:
- *  rom : dw_rom*
- *      The rom pointer.
+ * @param map The map struct
  */
-static void map_smooth(dw_rom *rom)
+static void map_smooth(dw_map *map)
 {
     uint8_t x, y;
 
@@ -113,13 +135,19 @@ static void map_smooth(dw_rom *rom)
        This will help the map compress (and look) better. */
     for (x=1; x < 119; x++) {
         for (y=0; y < 120; y++) {
-            if (rom->map.tiles[x-1][y] == rom->map.tiles[x+1][y]) {
-                rom->map.tiles[x][y] = rom->map.tiles[x-1][y];
+            if (map->tiles[x-1][y] == map->tiles[x+1][y]) {
+                map->tiles[x][y] = map->tiles[x-1][y];
             }
         }
     }
 }
 
+/**
+ * Determines whether or not an overworld tile can be walked on.
+ *
+ * @param tile The tile type to check
+ * @return A boolean indicating whether the tile can be walked on
+ */
 static bool tile_is_walkable(dw_tile tile)
 {
     switch(tile) {
@@ -132,6 +160,11 @@ static bool tile_is_walkable(dw_tile tile)
     }
 }
 
+/**
+ * Removes a land mass from the map, replacing it with water.
+ * @param map The map struct
+ * @param land_mass The number of the land mass to destroy.
+ */
 static void destroy_land_mass(dw_map *map, int land_mass)
 {
     uint8_t x, y;
@@ -145,19 +178,14 @@ static void destroy_land_mass(dw_map *map, int land_mass)
     }
 }
 
-/*
+/**
  * Finds the size of a land_mass given a point on it. Also fills in the 
  * walkable area array.
  *
- * Params:
- *  rom : dw_rom*
- *      The rom pointer.
- *  x : uint8_t
- *      The x coordinate of the tile to start mapping.
- *  y : uint8_t
- *      The y coordinate of the tile to start mapping.
- *  lm_index : int
- *      The index for this land_mass.
+ * @param rom The rom pointer.
+ * @param x The x coordinate of the tile to start mapping.
+ * @param y The y coordinate of the tile to start mapping.
+ * @param lm_index The index for this land_mass.
  */
 static int map_land_mass(dw_map *map, uint8_t x, uint8_t y,
         uint8_t lm_index)
@@ -182,6 +210,15 @@ static int map_land_mass(dw_map *map, uint8_t x, uint8_t y,
     return size;
 }
 
+/**
+ * Determines whether a bridge needs to be placed at this location in order to
+ * connect the land on each side.
+ *
+ * @param left The land mass on the left
+ * @param right The land mass on the right
+ * @param lm_sizes The sizes of all land masses
+ * @return A boolean indicating if a bridge is needed
+ */
 static inline bool needs_bridge(uint8_t left, uint8_t right, int *lm_sizes)
 {
     if (!left || !right || left == right)
@@ -191,6 +228,12 @@ static inline bool needs_bridge(uint8_t left, uint8_t right, int *lm_sizes)
     return true;
 }
 
+/**
+ * Adds bridges where necessary to connect continents
+ * @param map The map struct
+ * @param lm_sizes The sizes of all land masses on the map.
+ * @return A boolean indicating if a bridge was placed.
+ */
 static bool add_bridges(dw_map *map, int *lm_sizes)
 {
     /* this could use more work */
@@ -213,13 +256,21 @@ static bool add_bridges(dw_map *map, int *lm_sizes)
     if (count) {
         which = mt_rand(0, count-1);
         map->tiles[x_candidate[which]][y_candidate[which]] = TILE_BRIDGE;
-//        printf("Added bridge\n");
         return true;
     }
     return false;
 }
 
-
+/**
+ * Finds a land area where something can be placed and will be accessible.
+ *
+ * @param map The map struct
+ * @param one The first land mass that is acceptable.
+ * @param two The second land mass that is acceptable. May be the same as 'one',
+ *      or may be zero to indicate no mass.
+ * @param x A pointer to a uint8_t which will be filled with the x coordinate
+ * @param y A pointer to a uint8_t which will be filled with the y coordinate
+ */
 static void map_find_land(dw_map *map, int one, int two, uint8_t *x, uint8_t *y)
 {
     uint8_t cont;
@@ -233,6 +284,12 @@ static void map_find_land(dw_map *map, int one, int two, uint8_t *x, uint8_t *y)
     }
 }
 
+/**
+ * Translates an overworld map tile into a border tile for a town or dungeon.
+ *
+ * @param tile The overworld tile index
+ * @return The border tile index
+ */
 static dw_border_tile border_for(dw_tile tile)
 {
     switch(tile) {
@@ -244,6 +301,16 @@ static dw_border_tile border_for(dw_tile tile)
     }
 }
 
+/**
+ * Places a town or cave on the map.
+ *
+ * @param map The map struct
+ * @param warp_idx The index of the warp for this town or dungeon
+ * @param tile The tile type to place (town, castle, or cave)
+ * @param lm_one The first acceptable land mass for the location
+ * @param lm_two The second acceptable land mass for the location
+ * @return The tile type on the overworld which was replaced by the new tile
+ */
 static dw_border_tile place(dw_map *map, dw_warp_index warp_idx, dw_tile tile,
         int lm_one, int lm_two)
 {
@@ -266,6 +333,13 @@ static dw_border_tile place(dw_map *map, dw_warp_index warp_idx, dw_tile tile,
     return border_for(old_tile);
 }
 
+/**
+ * Places Charlock castle on the map and updates the rainbow drop code
+ *
+ * @param map The map struct
+ * @param largest The first acceptable land mass
+ * @param next The second acceptable land mass
+ */
 static void place_charlock(dw_map *map, int largest, int next)
 {
     uint8_t x = 0, y = 0;
@@ -299,6 +373,14 @@ static void place_charlock(dw_map *map, int largest, int next)
     map->rainbow_bridge->y = map->rainbow_drop->y = warp->y;
 }
 
+/**
+ * Places tantegel castle on the map and updates the appropriate code to match
+ * (return, wings, Gwaelin's Love, etc)
+ * @param map
+ * @param largest
+ * @param next
+ * @return
+ */
 static uint8_t place_tantegel(dw_map *map, int largest, int next)
 {
     int x, y;
@@ -330,7 +412,18 @@ static uint8_t place_tantegel(dw_map *map, int largest, int next)
     return map->walkable[x][y];
 }
 
-static int map_fill_point(dw_rom *rom, uint8_t *points, 
+/**
+ * Randomly fills a point of the map with a particular tile.
+ *
+ * @param map The map struct.
+ * @param points An array for points that have been filled.
+ * @param x The x coordinate to place the tile
+ * @param y The y coordinate to place the tile
+ * @param tile The type of tile to place.
+ * @return An integer indicating how many tiles to remove from remaining tiles
+ *      to place.
+ */
+static int map_fill_point(dw_map *map, uint8_t *points,
         uint8_t x, uint8_t y, dw_tile tile)
 {
     uint8_t *p = points;
@@ -344,13 +437,19 @@ static int map_fill_point(dw_rom *rom, uint8_t *points,
     }
     p[0] = x;
     p[1] = y;
-    rom->map.tiles[y][x] = (uint8_t)tile;
+    map->tiles[y][x] = (uint8_t)tile;
     if (tile == TILE_MOUNTAIN)
         return 2; /* not so many mountain tiles */
     return 1;
 }
 
-static void map_fill(dw_rom *rom, dw_tile tile)
+/**
+ * Fills an area of the map with a particular tile
+ *
+ * @param map The map struct
+ * @param tile The tile to fill the area with
+ */
+static void map_fill(dw_map *map, dw_tile tile)
 {
     uint8_t x, y, *points, *p;
     uint64_t directions;
@@ -366,16 +465,16 @@ static void map_fill(dw_rom *rom, dw_tile tile)
         x = p[0]; y=p[1];
         directions = mt_rand(0, 15);
         if (directions & 8) {
-            size -= map_fill_point(rom, points, x-1, y, tile);
+            size -= map_fill_point(map, points, x-1, y, tile);
         }
         if (directions & 4) {
-            size -= map_fill_point(rom, points, x+1, y, tile);
+            size -= map_fill_point(map, points, x+1, y, tile);
         }
         if (directions & 2) {
-            size -= map_fill_point(rom, points, x, y-1, tile);
+            size -= map_fill_point(map, points, x, y-1, tile);
         }
         if (directions & 1) {
-            size -= map_fill_point(rom, points, x, y+1, tile);
+            size -= map_fill_point(map, points, x, y+1, tile);
         }
         if (p[2] < 120) {
             p += 2;
@@ -385,6 +484,15 @@ static void map_fill(dw_rom *rom, dw_tile tile)
 
 }
 
+/**
+ * Finds the largest 2 land masses on the map.
+ *
+ * @param map The map struct
+ * @param lm_sizes An array containing the sizes of each land mass
+ * @param lm_count The number of land masses
+ * @param largest A pointer to fill with the largest land mass
+ * @param next A pointer to fill with the next largest land mass
+ */
 static inline void find_largest_lm(dw_map *map, int *lm_sizes, int lm_count,
                             int *largest, int *next)
 {
@@ -407,6 +515,15 @@ static inline void find_largest_lm(dw_map *map, int *lm_sizes, int lm_count,
 //           *next, lm_sizes[(*next)-1]);
 }
 
+/**
+ * Finds all land masses on the map along with their sizes.
+ *
+ * @param map The map struct
+ * @param lm_sizes An array to fill with the land mass sizes
+ * @param largest The index of the largest land mass
+ * @param next The index of the next larges land mass
+ * @return The total number of land masses found
+ */
 static int find_walkable_area(dw_map *map, int *lm_sizes, int *largest,
                                      int *next)
 {
@@ -427,6 +544,12 @@ static int find_walkable_area(dw_map *map, int *lm_sizes, int *largest,
     return (int)land_mass;
 }
 
+/**
+ * Places landmarks on the map (towns, castles, caves)
+ *
+ * @param map The map struct
+ * @return A boolean indicating success or failure
+ */
 static bool place_landmarks(dw_map *map)
 {
     int i, largest = 0, next = 0, lm_count, lm_sizes[256];
@@ -525,7 +648,12 @@ static bool place_landmarks(dw_map *map)
     return true;
 }
 
-
+/**
+ * Generates a new in-game map.
+ *
+ * @param rom The rom struct
+ * @return A boolean indicating whether terrain generation was successful or not
+ */
 bool map_generate_terrain(dw_rom *rom)
 {
     int i, j, lm_count, lm_sizes[256];
@@ -545,11 +673,11 @@ bool map_generate_terrain(dw_rom *rom)
     for (i = 0; i < 57600 / MAX_BLOB; i++) {
         mt_shuffle(tiles, sizeof(tiles) / sizeof(dw_tile), sizeof(dw_tile));
         for (j = 0; j < 16; j++) {
-            map_fill(rom, tiles[j]);
+            map_fill(&rom->map, tiles[j]);
         }
     }
 
-    map_smooth(rom);
+    map_smooth(&rom->map);
 
     /* zero out the walkability data */
     lm_count = find_walkable_area(&rom->map, lm_sizes, &largest, &next);

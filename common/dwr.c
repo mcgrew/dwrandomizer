@@ -38,12 +38,28 @@ const int CHEST_COUNT = 31;
 const char flag_order[] = 
         "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-/* for qsort() */
+/**
+ * A function to be passed to qsort for sorting uint8_t arrays
+ *
+ * @param a The first item to compare
+ * @param b The second item to compare
+ * @return An integer indicating the relationship between the 2 numbers. 0
+ *      indicates equality, a negative number indicates b > a, and a positive
+ *      number indicates b < a
+ */
 static int compare(const void *a, const void *b)
 {
     return *(uint8_t*)a - *(uint8_t*)b;
 }
 
+/**
+ * Parses the flags string into a 64-bit integer, one bit indicating the status
+ * of each flag.
+ *
+ * @param rom A dw_rom struct containing the rom data.
+ * @param flags The flags from the user
+ * @return A 64-bit integer containing the flags
+ */
 static uint64_t parse_flags(dw_rom *rom, char *flags)
 {
     int i, len;
@@ -61,6 +77,14 @@ static uint64_t parse_flags(dw_rom *rom, char *flags)
     return rom->flags;
 }
 
+/**
+ * Initializes the dw_rom struct
+ *
+ * @param rom An uninitialized dw_rom
+ * @param input_file The file to read the rom data from
+ * @param flags The flags received from the user.
+ * @return A boolean indicating whether initialization was sucessful
+ */
 bool dwr_init(dw_rom *rom, const char *input_file, char *flags)
 {
     FILE *input;
@@ -117,6 +141,12 @@ bool dwr_init(dw_rom *rom, const char *input_file, char *flags)
     return true;
 }
 
+/**
+ * Converts an ASCII string into one suitable for use in-game
+ *
+ * @param string The string to be converted.
+ * @return The number of characters converted.
+ */
 size_t ascii2dw(uint8_t *string)
 {
     uint8_t i, j;
@@ -137,6 +167,11 @@ size_t ascii2dw(uint8_t *string)
     return i;
 }
 
+/**
+ * Converts an ASCII string to uppercase
+ *
+ * @param string The string to convert
+ */
 void touppercase(uint8_t *string) {
     char *c = (char*)string;
     while (*c) {
@@ -145,6 +180,13 @@ void touppercase(uint8_t *string) {
     }
 }
 
+/**
+ * Converts an ASCII string into one suitable for use on the title screen or
+ * ending screen
+ *
+ * @param string The string to be converted.
+ * @return The number of characters converted.
+ */
 size_t ascii2dw_title(uint8_t *string)
 {
     uint8_t i, j;
@@ -167,6 +209,13 @@ size_t ascii2dw_title(uint8_t *string)
     return i;
 }
 
+/**
+ * Converts an in-game string to ASCII
+ *
+ * @param string The string to convert
+ * @param bufsize The size of the buffer to be converted
+ * @return The number of characters converted (normally the same as bufsize)
+ */
 size_t dw2ascii(uint8_t *string, size_t bufsize)
 {
     int i, alphalen;
@@ -182,6 +231,15 @@ size_t dw2ascii(uint8_t *string, size_t bufsize)
     return bufsize;
 }
 
+/**
+ * Patches the rom at the specified address with the specified bytes.
+ *
+ * @param rom The rom struct to be patched
+ * @param address The address inside the rom to apply the patch.
+ * @param size The size of the patch
+ * @param ... A series of uint8_t bytes, the patch data
+ * @return The address of the end of the patch
+ */
 static uint16_t vpatch(dw_rom *rom, uint16_t address, uint32_t size, ...)
 {
     int i;
@@ -199,7 +257,17 @@ static uint16_t vpatch(dw_rom *rom, uint16_t address, uint32_t size, ...)
 
 }
 
-static uint16_t patch(dw_rom *rom, uint16_t address, uint32_t size, uint8_t *data)
+/**
+ * Patches the rom at the specified address with the specified bytes.
+ *
+ * @param rom The rom struct to be patched
+ * @param address The address inside the rom to apply the patch
+ * @param size The size of the patch
+ * @param data An array of bytes to use for the patch.
+ * @return The address of the end of the patch
+ */
+static uint16_t patch(dw_rom *rom, uint16_t address, uint32_t size,
+                      uint8_t *data)
 {
     int i;
     uint8_t *p;
@@ -212,6 +280,14 @@ static uint16_t patch(dw_rom *rom, uint16_t address, uint32_t size, uint8_t *dat
     return p - rom->data;
 }
 
+/**
+ * Patches the data at the specified pointer
+ *
+ * @param p A pointer to the rom data to be patched
+ * @param size The size of the patch
+ * @param data An array of bytes to use for the patch.
+ * @return A pointer to the end of the patch
+ */
 static uint8_t *ppatch(uint8_t *p, uint32_t size, uint8_t *data)
 {
     int i;
@@ -222,6 +298,14 @@ static uint8_t *ppatch(uint8_t *p, uint32_t size, uint8_t *data)
     return p;
 }
 
+/**
+ * Patches the data at the specified pointer
+ *
+ * @param p A pointer to the rom data to be patched
+ * @param size The size of the patch.
+ * @param ... A series of uint8_t bytes to be used for the patchj
+ * @return A pointer to the end of the patch
+ */
 static uint8_t *pvpatch(uint8_t *p, uint32_t size, ...)
 {
     int i;
@@ -237,8 +321,17 @@ static uint8_t *pvpatch(uint8_t *p, uint32_t size, ...)
 
 }
 
-static uint8_t *dwr_str_replace(dw_rom *rom,
-                                const char *text, const char *replacement)
+/**
+ * Searches for a string inside the rom and replaces it with the new string
+ *
+ * @param rom The rom struct
+ * @param text An ASCII version of the string to be replaced
+ * @param replacement An ASCII version of the replacement string
+ * @return returns a pointer to the beginning of the string that was replaced,
+ *      or NULL if the string is not found.
+ */
+static uint8_t *dwr_str_replace(dw_rom *rom, const char *text,
+                                const char *replacement)
 {
     int len;
     uint8_t *start, *end;
@@ -263,8 +356,9 @@ static uint8_t *dwr_str_replace(dw_rom *rom,
     return NULL;
 }
 
-/*
- * Returns a random index of a chest that is not in charlock
+/**
+ * Returns a random index of a chest that is not in charlock. For simplicity,
+ * this function will also not return the starting throne room key chest.
  */
 static inline int non_charlock_chest()
 {
@@ -278,8 +372,12 @@ static inline int non_charlock_chest()
     return chest;
 }
 
-/*
+/**
  * Determines whether or not the chest item is a quest item.
+ *
+ * @param item The item member of a chest
+ * @return A boolean indicated whether or not the item is crucial for the quest
+ *      to obtain the rainbow drop.
  */
 static inline bool is_quest_item(uint8_t item)
 {
@@ -294,6 +392,12 @@ static inline bool is_quest_item(uint8_t item)
     }
 }
 
+/**
+ * Looks for quest items which may be in Charlock due to shuffling and moves
+ * them to a chest outside Charlock.
+ *
+ * @param rom The rom struct.
+ */
 static inline void check_quest_items(dw_rom *rom)
 {
     int i, tmp_index;
@@ -315,6 +419,12 @@ static inline void check_quest_items(dw_rom *rom)
     }
 }
 
+/**
+ * Shuffles the contents of all chests in the game with the exception of the
+ * starting throne room key and the staff of rain.
+ *
+ * @param rom The rom struct
+ */
 static void shuffle_chests(dw_rom *rom) {
     int i;
     dw_chest *chest;
@@ -407,17 +517,22 @@ static void shuffle_chests(dw_rom *rom) {
            0x4c, 0x69, 0xe2,   /* JSR $E269 ; Add the item to inventory       */
            0xc9, 0x17,         /* CMP #$17  ; If the value is greater >= $17  */
            0xb0, 0x0e,         /* BCS $E349 ; It's the tablet                 */
-           0xa9, 0xff,         /* LDA #$FF  */
-           0x85, 0x3e,         /* STA $003E */
-           0xa9, 0xf4,         /* LDA #$F4  */
-           0x85, 0x00,         /* STA $0000 */
-           0xa9, 0x01,         /* LDA #$01  */
-           0x85, 0x01,         /* STA $0001 */
+           0xa9, 0xff,         /* LDA #$FF                                    */
+           0x85, 0x3e,         /* STA $003E                                   */
+           0xa9, 0xf4,         /* LDA #$F4                                    */
+           0x85, 0x00,         /* STA $0000                                   */
+           0xa9, 0x01,         /* LDA #$01                                    */
+           0x85, 0x01,         /* STA $0001                                   */
            0xd0, 0x1c          /* BNE $E365 ; Add gold to the player          */
     );
 
 }
 
+/**
+ * Randomizes enemy attack patterns (spells)
+ *
+ * @param rom The rom struct
+ */
 static void randomize_attack_patterns(dw_rom *rom)
 {
     int i;
@@ -444,6 +559,11 @@ static void randomize_attack_patterns(dw_rom *rom)
 //{
 //}
 
+/**
+ * Randomizes the music of the game
+ *
+ * @param rom The rom struct
+ */
 static void randomize_music(dw_rom *rom)
 {
     int i;
@@ -463,6 +583,11 @@ static void randomize_music(dw_rom *rom)
     }
 }
 
+/**
+ * Disables most of the game music
+ *
+ * @param rom The rom struct
+ */
 static void disable_music(dw_rom *rom)
 {
     if (!(rom->flags & FLAG_Q))
@@ -473,6 +598,14 @@ static void disable_music(dw_rom *rom)
     memset(rom->music, 0, 29);
 }
 
+/**
+ * Sets an overworld zone to the specified zone
+ *
+ * @param rom The rom struct
+ * @param x The x index of the zone to set (max 7)
+ * @param y The y index of the zones to set (max 7)
+ * @param value The zone number to set the specified zone to
+ */
 static inline void set_ow_zone(dw_rom *rom, uint8_t x, uint8_t y, uint8_t value)
 {
     int zone_index;
@@ -490,6 +623,11 @@ static inline void set_ow_zone(dw_rom *rom, uint8_t x, uint8_t y, uint8_t value)
     }
 }
 
+/**
+ * Randomizes the zone layout of the overworld.
+ *
+ * @param rom The rom struct
+ */
 static void randomize_zone_layout(dw_rom *rom)
 {
     int i;
@@ -511,6 +649,11 @@ static void randomize_zone_layout(dw_rom *rom)
     set_ow_zone(rom, tantegel->x / 15, (tantegel->y) / 15 + 1, 2);
 }
 
+/**
+ * Randomizes the enemies present in each zone.
+ *
+ * @param rom The rom struct
+ */
 static void randomize_zones(dw_rom *rom)
 {
     int i, zone;
@@ -554,6 +697,14 @@ static void randomize_zones(dw_rom *rom)
     }
 }
 
+/**
+ * Determines whether a shop contains a certain item.
+ *
+ * @param shop_start A pointer to the beginning of the shop items.
+ * @param shop_end A pointer to the end of the shop items.
+ * @param item The item to search for.
+ * @return A boolean indicating whether the shop has the item or not.
+ */
 static bool shop_contains(uint8_t *shop_start, uint8_t *shop_end,
     dw_shop_item item)
 {
@@ -567,6 +718,11 @@ static bool shop_contains(uint8_t *shop_start, uint8_t *shop_end,
 
 }
 
+/**
+ * Randomizes the items in the weapon shops.
+ *
+ * @param rom The rom struct
+ */
 static void randomize_shops(dw_rom *rom)
 {
     uint8_t *shop_start, *shop_item;
@@ -604,6 +760,11 @@ static void randomize_shops(dw_rom *rom)
     }
 }
 
+/**
+ * Shuffles the 3 items which can be searched for.
+ *
+ * @param rom The rom struct
+ */
 static void shuffle_searchables(dw_rom *rom)
 {
     dw_searchable searchables[3];
@@ -630,6 +791,13 @@ static void shuffle_searchables(dw_rom *rom)
     rom->armor->y   = searchables[2].y;
 }
 
+/**
+ * Chooses random numbers on an inverted power curve
+ * @param min The minimum value
+ * @param max The maximum value
+ * @param power An exponent to use for the curve.
+ * @return The chosen random number.
+ */
 static uint8_t inverted_power_curve(uint8_t min, uint8_t max, double power)
 {
     double p_range;
@@ -638,6 +806,11 @@ static uint8_t inverted_power_curve(uint8_t min, uint8_t max, double power)
     return min + round(max - pow((mt_rand_double() * p_range), power));
 }
 
+/**
+ * Randomizes the player's stat growth
+ *
+ * @param rom The rom struct
+ */
 static void randomize_growth(dw_rom *rom)
 {
     int i;
@@ -672,6 +845,11 @@ static void randomize_growth(dw_rom *rom)
     }
 }
 
+/**
+ * Randomizes the order in which spells are learned.
+ *
+ * @param rom The rom struct
+ */
 static void randomize_spells(dw_rom *rom)
 {
     int i, j;
@@ -702,6 +880,12 @@ static void randomize_spells(dw_rom *rom)
     }
 }
 
+/**
+ * Changes the amount of experience and gold received from each enemy. Most
+ * values are taken from the SFC & GBC remakes.
+ *
+ * @param rom The rom struct
+ */
 static void update_drops(dw_rom *rom)
 {
     int i;
@@ -723,6 +907,10 @@ static void update_drops(dw_rom *rom)
     }
 }
 
+/**
+ * Changes the MP required for each spell to match the SFC & GBC remakes.
+ * @param rom The rom struct
+ */
 static void update_mp_reqs(dw_rom *rom)
 {
     int i;
@@ -733,6 +921,12 @@ static void update_mp_reqs(dw_rom *rom)
     }
 }
 
+/**
+ * Lowers the amount of XP required for each level, based on user specified
+ * flags
+ *
+ * @param rom The rom struct
+ */
 static void lower_xp_reqs(dw_rom *rom)
 {
     int i;
@@ -750,6 +944,12 @@ static void lower_xp_reqs(dw_rom *rom)
     }
 }
 
+/**
+ * Changes the max hit points of each enemy. Most of these values are taken from
+ * the SFC & GBC remakes.
+ *
+ * @param rom The rom struct
+ */
 static void update_enemy_hp(dw_rom *rom)
 {
     int i;
@@ -764,6 +964,15 @@ static void update_enemy_hp(dw_rom *rom)
     rom->enemies[DRAGONLORD_2].hp -= mt_rand(0, 15);
 }
 
+/**
+ * Centers new text on the title screen
+ *
+ * @param pos A pointer to the rom data where the patched in text should go.
+ *      This should be the beginning of a line.
+ * @param text The text to place on the screen. Keep in mind the title screen
+ *      character set does not contain lower case characters.
+ * @return A pointer to the end of the patch.
+ */
 static uint8_t *center_title_text(uint8_t *pos, const char *text)
 {
     uint8_t len, space, dw_text[33];
@@ -782,8 +991,10 @@ static uint8_t *center_title_text(uint8_t *pos, const char *text)
     return pos;
 }
 
-/*
- * Patches the ROM and returns the next address after the patch.
+/**
+ * Updates the title screen with the randomizer version, flags, and seed number.
+ *
+ * @param rom The rom struct
  */
 static void update_title_screen(dw_rom *rom)
 {
@@ -841,6 +1052,11 @@ static void update_title_screen(dw_rom *rom)
 }
 
 
+/**
+ * Patches in functionality for the fighter's ring (+2 ATK)
+ *
+ * @param rom The rom struct
+ */
 static void dwr_fighters_ring(dw_rom *rom)
 {
 
@@ -866,6 +1082,11 @@ static void dwr_fighters_ring(dw_rom *rom)
     );
 }
 
+/**
+ * Patches in functionality for the death necklace (+10ATK, -25%HP)
+ *
+ * @param rom The rom struct
+ */
 static void dwr_death_necklace(dw_rom *rom)
 {
 
@@ -899,6 +1120,12 @@ static void dwr_death_necklace(dw_rom *rom)
         );
 }
 
+/**
+ * Other various patches for gameplay, such as silver harp enemies, town and
+ * dungeon map changes and moving some NPCs.
+ *
+ * @param rom The rom struct
+ */
 static void other_patches(dw_rom *rom)
 {
     /* move the golem encounter to charlock */
@@ -944,6 +1171,11 @@ static void other_patches(dw_rom *rom)
 
 }
 
+/**
+ * Enables top to bottom wrapping of the menu cursor.
+ *
+ * @param rom The rom struct.
+ */
 static void dwr_menu_wrap(dw_rom *rom)
 {
     if (!(rom->flags & FLAG_R))
@@ -1038,6 +1270,11 @@ static void dwr_menu_wrap(dw_rom *rom)
     );
 }
 
+/**
+ * Enables various hacks to speed up gameplay, such as text and music changes.
+ *
+ * @param rom The rom struct.
+ */
 static void dwr_speed_hacks(dw_rom *rom)
 {
     if (!(rom->flags & FLAG_H))
@@ -1111,6 +1348,13 @@ static void dwr_speed_hacks(dw_rom *rom)
     vpatch(rom, 0xdb54, 9, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea);
 }
 
+/**
+ * Updates the Cantlin NPC dialogue to reveal the new overworld item location.
+ * If there is no overworld item to search for, the NPC will just give you
+ * encouragement.
+ *
+ * @param rom The rom struct.
+ */
 static void dwr_token_dialogue(dw_rom *rom)
 {
     dw_searchable *searchable;
@@ -1144,6 +1388,13 @@ static void dwr_token_dialogue(dw_rom *rom)
     patch(rom, 0xa252, 70, text2);
 }
 
+/**
+ * Writes the new rom out to disk.
+ *
+ * @param rom The rom struct
+ * @param output_file The name of the file to write to.
+ * @return A boolean indicating success or failure of rom creation.
+ */
 static bool dwr_write(dw_rom *rom, const char *output_file)
 {
     FILE *output;
@@ -1158,6 +1409,16 @@ static bool dwr_write(dw_rom *rom, const char *output_file)
     return true;
 }
 
+/**
+ * Randomizes a Dragon Warrior rom file
+ *
+ * @param input_file The name of the input file
+ * @param seed The seed number to use for the random number generator
+ * @param flags The flags to use for randomization options
+ * @param output_dir The directory to write the new file to
+ * @return A checksum for the new rom. This checksum is taken before certain
+ *      options which don't affect gameplay.
+ */
 uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
         const char* output_dir)
 {

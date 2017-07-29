@@ -10,6 +10,7 @@
 
 #define DEFAULT_FLAGS "CDGMPRWZf"
 
+/** 64 bit versions of the randomization flags */
 #define FLAG_0 UINT64_C(0x0000000000000001)
 #define FLAG_1 UINT64_C(0x0000000000000002)
 #define FLAG_2 UINT64_C(0x0000000000000004)
@@ -77,6 +78,16 @@
 extern "C" {
 #endif
 
+/**
+ * Randomizes a Dragon Warrior rom file
+ *
+ * @param input_file The name of the input file
+ * @param seed The seed number to use for the random number generator
+ * @param flags The flags to use for randomization options
+ * @param output_dir The directory to write the new file to
+ * @return A checksum for the new rom. This checksum is taken before certain
+ *      options which don't affect gameplay.
+ */
 uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
         const char* output_dir);
 

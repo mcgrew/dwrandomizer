@@ -1,6 +1,5 @@
 
 #include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QGridLayout>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QStatusBar>
 #include <QtCore/QDir>
@@ -43,45 +42,15 @@ void MainWindow::initWidgets()
     this->outputDir = new DirEntry(this);
     this->seed = new SeedEntry(this);
     this->flags = new FlagEntry(this);
-
-    chests =        new CheckBox('C', "Shuffle Chests && Search Items", this);
-    shops =         new CheckBox('W', "Randomize Weapon Shops", this);
-    deathNecklace = new CheckBox('D', "Enable Death Necklace", this);
-    speedHacks =    new CheckBox('H', "Enable Speed Hacks", this);
-    growth =        new CheckBox('G', "Randomize Growth", this);
-    spells =        new CheckBox('M', "Randomize Spell Learning", this);
-    attack =        new CheckBox('P', "Randomize Enemy Attacks", this);
-    zones =         new CheckBox('Z', "Randomize Zones", this);
-    wrap =          new CheckBox('R', "Enable Menu Wrapping", this);
-    musicShuffle =  new CheckBox('K', "Shuffle Music", this);
-    musicDisable =  new CheckBox('Q', "Disable Music", this);
-//    copyChecksum =  new CheckBox(NO_FLAG, "Copy Checksum to Clipboard", this);
-
     this->levelSpeed = new LevelComboBox(this);
-
     this->goButton = new QPushButton("Randomize!", this);
 }
 
 void MainWindow::initSlots()
 {
     connect(this->flags, SIGNAL(textEdited(QString)), this, SLOT(handleFlags()));
-
-    connect(this->chests,       SIGNAL(clicked()), this, SLOT(handleCheckBox()));
-    connect(this->shops,        SIGNAL(clicked()), this, SLOT(handleCheckBox()));
-    connect(this->deathNecklace,SIGNAL(clicked()), this, SLOT(handleCheckBox()));
-    connect(this->speedHacks,   SIGNAL(clicked()), this, SLOT(handleCheckBox()));
-    connect(this->growth,       SIGNAL(clicked()), this, SLOT(handleCheckBox()));
-    connect(this->spells,       SIGNAL(clicked()), this, SLOT(handleCheckBox()));
-    connect(this->attack,       SIGNAL(clicked()), this, SLOT(handleCheckBox()));
-    connect(this->zones,        SIGNAL(clicked()), this, SLOT(handleCheckBox()));
-    connect(this->wrap,         SIGNAL(clicked()), this, SLOT(handleCheckBox()));
-    connect(this->musicShuffle, SIGNAL(clicked()), this, SLOT(handleCheckBox()));
-    connect(this->musicDisable, SIGNAL(clicked()), this, SLOT(handleCheckBox()));
-//    connect(this->copyChecksum, SIGNAL(clicked()), this, SLOT(handleCheckBox()));
-
     connect(this->levelSpeed, SIGNAL(activated(int)),
             this, SLOT(handleCheckBox()));
-
     connect(this->goButton,     SIGNAL(clicked()), this, SLOT(handleButton()));
 }
 
@@ -89,61 +58,57 @@ void MainWindow::layout()
 {
     QVBoxLayout *vbox;
     QGridLayout *grid;
+    this->optionGrid = new QGridLayout();
 
     vbox = new QVBoxLayout();
     grid = new QGridLayout();
+    vbox->addLayout(grid);
+    vbox->addLayout(this->optionGrid);
 
     grid->addWidget(this->romFile,   0, 0, 0);
     grid->addWidget(this->outputDir, 0, 1, 0);
     grid->addWidget(this->seed,      1, 0, 0);
     grid->addWidget(this->flags,     1, 1, 0);
 
-    vbox->addLayout(grid);
-    grid = new QGridLayout();
-    vbox->addLayout(grid);
+    this->addOption('C', "Shuffle Chests && Search Items", 0, 0);
+    this->addOption('W', "Randomize Weapon Shops",         1, 0);
+    this->addOption('Z', "Randomize Zones",                2, 0);
 
-    grid->addWidget(this->chests,        0, 0, 0);
-    grid->addWidget(this->shops,         1, 0, 0);
-    grid->addWidget(this->zones,         2, 0, 0);
+    this->addOption('G', "Randomize Growth",               0, 1);
+    this->addOption('M', "Randomize Spell Learning",       2, 1);
+    this->addOption('P', "Randomize Enemy Attacks",        3, 1);
+    this->addOption('R', "Enable Menu Wrapping",           3, 1);
 
-    grid->addWidget(this->growth,        0, 1, 0);
-    grid->addWidget(this->spells,        1, 1, 0);
-    grid->addWidget(this->attack,        2, 1, 0);
-    grid->addWidget(this->wrap,          3, 1, 0);
-//    grid->addWidget(this->copyChecksum,  3, 1, 0);
+    this->addOption('D', "Enable Death Necklace",          0, 2);
+    this->addOption('H', "Enable Speed Hacks",             1, 2);
+    this->addOption('K', "Shuffle Music",                  2, 2);
+    this->addOption('Q', "Disable Music",                  3, 2);
 
 
-    grid->addWidget(this->deathNecklace, 0, 2, 0);
-    grid->addWidget(this->speedHacks,    1, 2, 0);
-    grid->addWidget(this->musicShuffle,  2, 2, 0);
-    grid->addWidget(this->musicDisable,  3, 2, 0);
+    this->optionGrid->addWidget(new QLabel("Leveling Speed", this), 6, 0, 0);
+    this->optionGrid->addWidget(this->levelSpeed,    7, 0, 0);
 
-    grid->addWidget(new QLabel("Leveling Speed", this), 6, 0, 0);
-    grid->addWidget(this->levelSpeed,    7, 0, 0);
-
-    grid->addWidget(this->goButton,      8, 2, 0);
+    this->optionGrid->addWidget(this->goButton,      8, 2, 0);
 
     this->mainWidget->setLayout(vbox);
+}
 
-//    this->copyChecksum->hide();
+void MainWindow::addOption(char flag, QString text, int x, int y)
+{
+    CheckBox *option = new CheckBox(flag, text, this);
+    connect(option, SIGNAL(clicked()), this, SLOT(handleCheckBox()));
+    this->options.append(option);
+    this->optionGrid->addWidget(option, x, y, 0);
 }
 
 QString MainWindow::getOptions()
 {
-    std::string flags = std::string() +
-                        this->chests->getFlag() +
-                        this->shops->getFlag() +
-                        this->deathNecklace->getFlag() +
-                        this->speedHacks->getFlag() +
-                        this->growth->getFlag() +
-                        this->spells->getFlag() +
-                        this->attack->getFlag() +
-                        this->zones->getFlag() +
-                        this->wrap->getFlag() +
-                        this->musicShuffle->getFlag() +
-                        this->musicDisable->getFlag() +
+    QList<CheckBox*>::const_iterator i;
 
-                        this->levelSpeed->getFlag();
+    std::string flags = std::string() + this->levelSpeed->getFlag();
+    for (i = this->options.begin(); i != this->options.end(); ++i) {
+        flags += (*i)->getFlag();
+    }
 
     std::sort(flags.begin(), flags.end());
     std::replace(flags.begin(), flags.end(), NO_FLAG, '\0');
@@ -152,18 +117,11 @@ QString MainWindow::getOptions()
 
 void MainWindow::setOptions(QString flags)
 {
-    this->chests->updateState(flags);
-    this->shops->updateState(flags);
-    this->deathNecklace->updateState(flags);
-    this->speedHacks->updateState(flags);
-    this->growth->updateState(flags);
-    this->spells->updateState(flags);
-    this->attack->updateState(flags);
-    this->zones->updateState(flags);
-    this->wrap->updateState(flags);
-    this->musicShuffle->updateState(flags);
-    this->musicDisable->updateState(flags);
-//    this->copyChecksum->updateState(flags);
+    QList<CheckBox*>::const_iterator i;
+
+    for (i = this->options.begin(); i != this->options.end(); ++i) {
+        flags += (*i)->updateState(flags);
+    }
 
     this->levelSpeed->updateState(flags);
 }

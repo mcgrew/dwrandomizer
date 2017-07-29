@@ -9,6 +9,7 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QComboBox>
+#include <QtWidgets/QGridLayout>
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,6 +49,7 @@ private:
     void setFlags(QString flags);
     bool saveConfig();
     bool loadConfig();
+    void addOption(char flag, QString text, int x, int y);
 
 private:
     QWidget *mainWidget;
@@ -55,20 +57,10 @@ private:
     DirEntry *outputDir;
     SeedEntry *seed;
     FlagEntry *flags;
-    CheckBox *chests;
-    CheckBox *shops;
-    CheckBox *deathNecklace;
-    CheckBox *speedHacks;
-    CheckBox *growth;
-    CheckBox *spells;
-    CheckBox *attack;
-    CheckBox *zones;
-    CheckBox *wrap;
-    CheckBox *musicShuffle;
-    CheckBox *musicDisable;
-    CheckBox *copyChecksum;
+    QList<CheckBox*> options;
     LevelComboBox *levelSpeed;
     QPushButton *goButton;
+    QGridLayout *optionGrid;
 };
 
 

@@ -7,6 +7,7 @@
 #include <ctype.h>
 
 #include "dwr.h"
+#include "chaos.h"
 #include "mt64.h"
 #include "crc64.h"
 #include "map.h"
@@ -430,7 +431,7 @@ static void shuffle_chests(dw_rom *rom) {
     dw_chest *chest;
     uint8_t *cont, contents[CHEST_COUNT-2];
 
-    if (!(rom->flags & FLAG_C))
+    if (!SHUFFLE_CHESTS(rom))
         return;
 
     printf("Shuffling chest contents...\n");
@@ -536,21 +537,23 @@ static void shuffle_chests(dw_rom *rom) {
 static void randomize_attack_patterns(dw_rom *rom)
 {
     int i;
+    dw_enemy *enemies;
 
-    if (!(rom->flags & FLAG_P))
+    if (!RANDOMIZE_PATTERNS(rom))
         return;
 
     printf("Randomizing enemy attack patterns\n");
+    enemies = rom->enemies;
 
-    for (i=SLIME; i < DRAGONLORD_1; i++) {
+    for (i=SLIME; i <= RED_DRAGON; i++) {
         if (mt_rand_bool()) {
-            rom->enemies[i].pattern = mt_rand(0, 255);
-            rom->enemies[i].s_ss_resist &= 0xf0;
-            rom->enemies[i].s_ss_resist |= mt_rand(0, i/3);
+            enemies[i].pattern = mt_rand(0, 255);
+            enemies[i].s_ss_resist &= 0xf0;
+            enemies[i].s_ss_resist |= mt_rand(0, i/3);
         } else {
-            rom->enemies[i].pattern = 0;
+            enemies[i].pattern = 0;
             /* no spells, max out resistance */
-            rom->enemies[i].s_ss_resist |= 0xf;
+            enemies[i].s_ss_resist |= 0xf;
         }
     }
 }
@@ -568,7 +571,7 @@ static void randomize_music(dw_rom *rom)
 {
     int i;
     
-    if (!(rom->flags & FLAG_K))
+    if (!RANDOMIZE_MUSIC(rom))
         return;
 
     printf("Randomizing game music\n");
@@ -590,7 +593,7 @@ static void randomize_music(dw_rom *rom)
  */
 static void disable_music(dw_rom *rom)
 {
-    if (!(rom->flags & FLAG_Q))
+    if (!DISABLE_MUSIC(rom))
         return;
 
     printf("Disabling game music\n");
@@ -660,29 +663,29 @@ static void randomize_zones(dw_rom *rom)
     const dw_enemies forced_enemies[6] = {AXE_KNIGHT, BLUE_DRAGON, STONEMAN,
             ARMORED_KNIGHT, RED_DRAGON, GOLEM };
 
-    if (!(rom->flags & FLAG_Z))
+    if (!RANDOMIZE_ZONES(rom))
         return;
 
     printf("Randomizing monsters in enemy zones\n");
 
-    zone = 0;  /* tantege zone */
+    zone = 0;  /* tantegel zone */
     for (i=0; i < 5; i++) { 
         rom->zones[zone * 5 + i] = mt_rand(SLIME, SCORPION);
     }
 
-    for (zone=1; zone < 2; zone++) { /* tantegel adjacent zones */
+    for (zone=1; zone <= 2; zone++) { /* tantegel adjacent zones */
         for (i=0; i < 5; i++) {
             rom->zones[zone * 5 + i] = mt_rand(SLIME, WOLF);
         }
     }
 
-    for (zone=3; zone < 15; zone++) { /* overworld/hybrid zones */
+    for (zone=3; zone <= 15; zone++) { /* overworld/hybrid zones */
         for (i=0; i < 5; i++) {
             rom->zones[zone * 5 + i] = mt_rand(SLIME, RED_DRAGON);
         }
     }
 
-    for (zone=16; zone < 18; zone++) { /* charlock */
+    for (zone=16; zone <= 18; zone++) { /* charlock */
         for (i=0; i < 5; i++) {
             rom->zones[zone * 5 + i] = mt_rand(WEREWOLF, RED_DRAGON);
         }
@@ -733,7 +736,7 @@ static void randomize_shops(dw_rom *rom)
             MAGIC_ARMOR, SMALL_SHIELD, LARGE_SHIELD, SILVER_SHIELD
     };
 
-    if (!(rom->flags & FLAG_W))
+    if (!RANDOMIZE_SHOPS(rom))
         return;
 
     printf("Randomizing weapon shop inventory\n");
@@ -769,7 +772,7 @@ static void shuffle_searchables(dw_rom *rom)
 {
     dw_searchable searchables[3];
 
-    if (!(rom->flags & FLAG_C))
+    if (!SHUFFLE_CHESTS(rom))
         return;
 
     printf("Shuffling searchable items\n");
@@ -820,7 +823,7 @@ static void randomize_growth(dw_rom *rom)
     uint8_t  mp[30];
     uint8_t  hp[30];
 
-    if (!(rom->flags & FLAG_G))
+    if (!RANDOMIZE_GROWTH(rom))
         return;
 
     printf("Randomizing stat growth\n");
@@ -855,10 +858,10 @@ static void randomize_spells(dw_rom *rom)
     int i, j;
     dw_stats *stats;
 
-    if (!(rom->flags & FLAG_M))
+    if (!RANDOMIZE_SPELLS(rom))
         return;
 
-    printf("Randomizing spell learning\n");
+    printf("Randomizing spell learning...\n");
 
     /* choose levels for each spell */
     for (i=0; i < 10; i++) {
@@ -881,6 +884,49 @@ static void randomize_spells(dw_rom *rom)
 }
 
 /**
+ * Go directly to the Dragonlord. Do not pass Go, do not collect 200 Gold.
+ *
+ * @param rom The rom struct.
+ */
+static void short_charlock(dw_rom *rom)
+{
+    if (!SHORT_CHARLOCK(rom))
+        return;
+
+    printf("Shortening Charlock Castle...\n");
+
+    rom->map.warps_to[WARP_CHARLOCK].map = CHARLOCK_THRONE_ROOM;
+    rom->map.warps_to[WARP_CHARLOCK].x = 10;
+    rom->map.warps_to[WARP_CHARLOCK].y = 29;
+    rom->map.warps_from[WARP_CHARLOCK_CHEST].map = CHARLOCK_THRONE_ROOM;
+    rom->map.warps_from[WARP_CHARLOCK_CHEST].x = 18;
+    rom->map.warps_from[WARP_CHARLOCK_CHEST].y = 9;
+    vpatch(rom, 0x4d4, 1, 0x76); /* Add some downward stairs near the chests */
+}
+
+/**
+ * Implements changes needed for when Charlock doesn't require the Rainbow Drop
+ * to enter.
+ *
+ * @param rom The rom struct.
+ */
+static void open_charlock(dw_rom *rom)
+{
+    int i;
+
+    if (!OPEN_CHARLOCK(rom))
+        return;
+
+    printf("Removing quest items...\n");
+    /* remove the quest items since we won't need them */
+    for (i=0; i <= 31; ++i) {
+        if (is_quest_item(rom->chests[i].item)) {
+            rom->chests[i].item = GOLD_500;
+        }
+    }
+}
+
+/**
  * Changes the amount of experience and gold received from each enemy. Most
  * values are taken from the SFC & GBC remakes.
  *
@@ -890,6 +936,7 @@ static void update_drops(dw_rom *rom)
 {
     int i;
 
+    printf("Modifying enemy drops...\n");
     const uint8_t remake_xp[DRAGONLORD_2+1] = {
               1,   2,   3,   4,   8,  12,  16,  14,  15,  18,  20,  25,  28,
              31,  40,  42, 255,  47,  52,  58,  58,  64,  70,  72, 255,   6,
@@ -916,6 +963,7 @@ static void update_mp_reqs(dw_rom *rom)
     int i;
     const uint8_t mp_reqs[10] = {3, 2, 2, 2, 2, 6, 8, 2, 8, 5};
 
+    printf("Changing MP requirements for spells...\n");
     for (i=0; i < 10; i++) {
         rom->mp_reqs[i] = mp_reqs[i];
     }
@@ -931,13 +979,13 @@ static void lower_xp_reqs(dw_rom *rom)
 {
     int i;
 
-    if (rom->flags & FLAG_f) {
-        printf("Changing required experience to 75%% of normal\n");
+    if (FAST_XP(rom)) {
+        printf("Changing required experience to 75%% of normal...\n");
         for (i=0; i < 30; i++) {
             rom->xp_reqs[i] = rom->xp_reqs[i] * 3 / 4;
         }
-    } else if (rom->flags & FLAG_F) {
-        printf("Changing required experience to 50%% of normal\n");
+    } else if (VERY_FAST_XP(rom)) {
+        printf("Changing required experience to 50%% of normal...\n");
         for (i=0; i < 30; i++) {
             rom->xp_reqs[i] = rom->xp_reqs[i] / 2;
         }
@@ -1065,20 +1113,20 @@ static void dwr_fighters_ring(dw_rom *rom)
     vpatch(rom, 0xf10c, 4, 0x20, 0x7d, 0xff, 0xea);
     vpatch(rom, 0xff8d, 17,
         /* ff7d: */
-        0x85, 0xcd,  /* STA $00CD  ; replaces code removed from $F00C */
-        0xa5, 0xcf,  /* LDA $00CF  ; load status bits */
-        0x29, 0x20,  /* AND #$20   ; check bit 6 (fighter's ring) */
-        0xf0, 0x06,  /* BEQ $FF8B */
-        0xa5, 0xcc,  /* LDA $00CC  ; load attack power */
-        0x69, 2,    /* ADC #$??   ; add fighter's ring power. */
-        0x85, 0xcc,  /* STA $00CC  ; store new attack power */
+        0x85, 0xcd,      /* STA $00CD  ; replaces code removed from $F00C     */
+        0xa5, 0xcf,      /* LDA $00CF  ; load status bits                     */
+        0x29, 0x20,      /* AND #$20   ; check bit 6 (fighter's ring)         */
+        0xf0, 0x06,      /* BEQ $FF8B                                         */
+        0xa5, 0xcc,      /* LDA $00CC  ; load attack power                    */
+        0x69, 2,         /* ADC #$??   ; add fighter's ring power.            */
+        0x85, 0xcc,      /* STA $00CC  ; store new attack power               */
         /* ff8b: */
-        0x4c, 0x54, 0xff  /* JMP $FF54  ; jump to next section */
+        0x4c, 0x54, 0xff /* JMP $FF54  ; jump to next section                 */
     );
     vpatch(rom, 0xff64, 3,
         /* ff54: */
-        0xa5, 0xcf,  /* LDA $00CF   ; replaces code removed from $F00E */
-        0x60   /* RTS */
+        0xa5, 0xcf,      /* LDA $00CF   ; replaces code removed from $F00E    */
+        0x60             /* RTS                                               */
     );
 }
 
@@ -1090,7 +1138,7 @@ static void dwr_fighters_ring(dw_rom *rom)
 static void dwr_death_necklace(dw_rom *rom)
 {
 
-    if (!(rom->flags & FLAG_D))
+    if (!DEATH_NECKLACE(rom))
         return;
 
     printf("Adding functionality to the death necklace\n");
@@ -1115,7 +1163,7 @@ static void dwr_death_necklace(dw_rom *rom)
             0x69, 0x0a,  /* ADD #$0A  ; add 10                             */
             0x85, 0xcc,  /* STA $00CC ; rewrite attack power               */
             /* ff71: */
-            0xa5, 0xcf,  /* LDA $00CF   ; replaces code removed from $F00E */
+            0xa5, 0xcf,  /* LDA $00CF ; replaces code removed from $F00E   */
             0x60         /* RTS                                            */
         );
 }
@@ -1178,7 +1226,7 @@ static void other_patches(dw_rom *rom)
  */
 static void dwr_menu_wrap(dw_rom *rom)
 {
-    if (!(rom->flags & FLAG_R))
+    if (!MENU_WRAP(rom))
         return;
 
     printf("Enabling menu cursor wrap-around\n");
@@ -1201,7 +1249,7 @@ static void dwr_menu_wrap(dw_rom *rom)
         0xf0, 0x57,        /* BEQ $7EFB ; if it's 0 (the title screen), jump to $7EFB */
         0xad, 0xe5, 0x64,  /* LDA $64E5 ; load ??? */
         0xc9, 0x04,        /* CMP #$04  ; compare to ??? */
-        0xf0, 0x1e,        /* BEQ $7ED7 ; if they are equal, branch to $7ED7 (return) */
+        0xf0, 0x1e,        /* BEQ $7ED7 ; if equal branch to $7ED7 (return) */
         0x20, 0x30, 0xab,  /* JMP $AB30 ; jump to $AB30 */
         0xa5, 0xd9,        /* LDA $00D9 ; load cursor y position */
         0xd0, 0x14,        /* BNE $7ED4 ; if it's not 0, jump to $7ED4 */
@@ -1265,7 +1313,7 @@ static void dwr_menu_wrap(dw_rom *rom)
         /* 7f02: */
         0x68,              /* PLA       ; pull A from stack */
         0xc5, 0xd9,        /* CMP $00D9 ; compare to map number */
-        0xf0, 0xf3,        /* BEQ $7EF8 ; if they are equal, jump to $7EF8 (return) */
+        0xf0, 0xf3,        /* BEQ $7EF8 ; if equal, jump to $7EF8 (return) */
         0x4c, 0x27, 0xaa   /* JMP $A9E4 ; jump to $A9E4 */
     );
 }
@@ -1277,14 +1325,19 @@ static void dwr_menu_wrap(dw_rom *rom)
  */
 static void dwr_speed_hacks(dw_rom *rom)
 {
-    if (!(rom->flags & FLAG_H))
+    if (FAST_TEXT(rom)) {
+        printf("Enabling fast text...\n");
+
+        /* speed up the text */
+        vpatch(rom, 0x7a43, 3, 0xea, 0xea, 0xea);
+    }
+
+    if (!SPEED_HACKS(rom))
         return;
 
-    printf("Enabling speed hacks\n");
+    printf("Enabling speed hacks...\n");
 
     /* Following are some speed hacks from @gameboy9 */
-    /* speed up the text */
-    vpatch(rom, 0x7a43, 3, 0xea, 0xea, 0xea);
     /* speed up encounter intros */
     vpatch(rom, 0xe41a, 3, 0xea, 0xea, 0xea);
     vpatch(rom, 0xe44d, 3, 0xea, 0xea, 0xea);
@@ -1453,15 +1506,16 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     dwr_speed_hacks(&rom);
     dwr_token_dialogue(&rom);
     other_patches(&rom);
+    chaos_mode(&rom);
+    open_charlock(&rom);
+    short_charlock(&rom);
     crc = crc64(0, rom.data, ROM_SIZE);
-    printf("Checksum: %016"PRIx64"\n", crc);
 
     update_title_screen(&rom);
     randomize_music(&rom);
     disable_music(&rom);
-//    crc = crc64(0, rom.data, ROM_SIZE);
-//    printf("Final Checksum: %016"PRIx64"\n", crc);
 
+    printf("Checksum: %016"PRIx64"\n", crc);
     if (!dwr_write(&rom, output_file)) {
         return 0;
     }

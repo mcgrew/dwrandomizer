@@ -45,9 +45,9 @@ char LevelComboBox::getFlag()
 {
     switch(this->currentIndex()) {
         case 1:
-           return 'f';
+           return 'F';
         case 2:
-            return 'F';
+            return 'V';
         default:
             return NO_FLAG;
     }

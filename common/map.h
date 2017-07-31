@@ -50,8 +50,12 @@ typedef enum {
     WARP_CANTLIN, 
     WARP_JERK_CAVE,
     WARP_ERDRICKS_CAVE,
-    WARP_TANTEGEL_BASEMENT = 17,
+    WARP_CHARLOCK_SURFACE_1,
+    WARP_CHARLOCK_SURFACE_2,
+    WARP_CHARLOCK_SURFACE_3,
+    WARP_TANTEGEL_BASEMENT,
     WARP_GARINS_GRAVE = 19,
+    WARP_CHARLOCK_CHEST = 21,
     WARP_CHARLOCK_POINTLESS_1 = 24,
     WARP_CHARLOCK_POINTLESS_2,
     WARP_MOUNTAIN_CAVE_POINTLESS = 39,
@@ -59,6 +63,7 @@ typedef enum {
 } dw_warp_index;
 
 #include "dwr_types.h"
+#include "dwr.h"
 
 #ifdef __cplusplus
 extern "C" {

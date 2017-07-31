@@ -1,6 +1,7 @@
-# 2.0 Complete rewrite - split continents & more #
+# 2.0 Complete rewrite - split continents and more #
 ###### Released Xxx XX, 2017 ######
 
+* From scratch rewrite using C, C++ and the Qt toolkit.
 * Split continents can now occur, causing the swamp cave to be required
 * Some NPCs have been moved or removed
    * The roving guard in the throne room has been sacked
@@ -8,6 +9,13 @@
    * The weapon shop in Cantlin now contains 4 counter tiles - the owner can no longer hide!
 * No more bridges to nowhere.
    * The islands the bridges lead to may be empty, but they won't be tiny.
+* Chaos mode
+    * Randomizes all anemy stats including Dragonlord form 1.
+    * Dragonlord form 2 will have between 100 and 230 HP.
+    * Dragonlord form 2 could have `SLEEP` or `HEAL`, but also is more susceptible to `STOPSPELL`.
+* More speed options
+    * Open Charlock - no Rainbow Drop required.
+    * Short Charlock - No need for torches because there's no dungeon, just straight to the Dragonlord's floor.
 
 # 1.3-rc1 - Lots of balance changes and improvements #
 ###### Pre-release - Released Dec 11, 2016 ######
@@ -32,7 +40,7 @@
   * Reduced Specter HP from 48 to 33
   * Reduced Goldman HP from 110 to 35
 * Some changes to zone randomization:
-  * Zones 1 & 2 will now have Wolf and below only.
+  * Zones 1 and 2 will now have Wolf and below only.
   * Tantegel will have 2 of each of these zones surrounding it
     * Zone 1 will be to the east and west
     * Zone 2 will be to the north and south
@@ -49,7 +57,7 @@
 
 
 
-# 1.2 - Speed hacks & maps are now more random! #
+# 1.2 - Speed hacks and maps are now more random! #
 ###### Released Aug 5, 2016 ######
 
 * A new option --speed-hacks (-H) has been added to speed up text and some other aspects of the game.
@@ -116,7 +124,7 @@ What's New?
 
 
 
-# 1.0-rc1 - 1.0 Release Candidate 1! Randomly Generated Map & More! #
+# 1.0-rc1 - 1.0 Release Candidate 1! Randomly Generated Map and More! #
 ###### Pre-release - Released Jan 12, 2016 ######
 
 Generated Overworld!
@@ -126,7 +134,7 @@ Generated Overworld!
 
 No more command line needed!
 
-* When the randomizer is run without options (or drag & drop), you will be prompted for options, removing the need to run from the command line to customize options.
+* When the randomizer is run without options (or drag and drop), you will be prompted for options, removing the need to run from the command line to customize options.
 
 Other stuff...
 

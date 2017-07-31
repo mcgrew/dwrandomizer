@@ -17,10 +17,9 @@ static void print_usage(const char *command, char *default_flags)
     printf("Flags:\n");
     printf("    C  Randomize chest and searchable item contents.\n");
     printf("    D  Enable Death Necklace functionality (+10 ATK -25%% HP)\n");
-    printf("    f  Set XP requirements for each level to 75%% of normal.\n");
+    printf("    V  Set XP requirements for each level to 75%% of normal.\n");
     printf("    F  Set XP requirements for each level to 50%% of normal.\n");
     printf("    G  Enable randomization of player stat growth.\n");
-    printf("    H  Apply game speed hacks\n");
     printf("    K  Shuffle the game music. (beta)\n");
     printf("    M  Randomize the level spells are learned.\n");
     printf("    R  Enable menu wrap-around\n");
@@ -30,7 +29,11 @@ static void print_usage(const char *command, char *default_flags)
     printf("       as the flute, death music, victory music, etc., still\n");
     printf("       play.\n");
     printf("    W  Randomize weapon shops.\n");
+    printf("    X  Chaos mode.\n");
     printf("    Z  Randomize enemy zones.\n");
+    printf("    h  Apply game speed hacks\n");
+    printf("    o  Open Charlock. No Rainbow Drop required.\n");
+    printf("    s  Shortened Charlock\n");
     printf("\n");
     printf("If flags are not specified, the flags \"%s\" will be used\n",
             default_flags);

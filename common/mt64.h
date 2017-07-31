@@ -57,6 +57,7 @@
 #define _MT64_H_
 
 #include <inttypes.h>
+#include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C" {

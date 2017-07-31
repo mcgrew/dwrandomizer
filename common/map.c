@@ -351,15 +351,15 @@ static void place_charlock(dw_map *map, int largest, int next)
     }
     warp->x = x-3;
     warp->y = y;
-    for (i=-3; i <= 3; i++) {
-        for (j=-3; j <= 3; j++) {
+    for (i = -3; i <= 3; i++) {
+        for (j = -3; j <= 3; j++) {
             if (i < 0 || j != 0)
-                map->tiles[x-3+i][y+j] = TILE_BLOCK;
+                map->tiles[x - 3 + i][y + j] = TILE_BLOCK;
         }
     }
-    for (i=-2; i <= 2; i++) {
-        for (j=-2; j <= 2; j++) {
-            map->tiles[x-3+i][y+j] = TILE_WATER;
+    for (i = -2; i <= 2; i++) {
+        for (j = -2; j <= 2; j++) {
+            map->tiles[x - 3 + i][y + j] = TILE_WATER;
         }
     }
     for (i=-1; i <= 1; i++) {
@@ -371,6 +371,12 @@ static void place_charlock(dw_map *map, int largest, int next)
     map->rainbow_drop->x = warp->x + 3;
     map->rainbow_bridge->x = warp->x + 2;
     map->rainbow_bridge->y = map->rainbow_drop->y = warp->y;
+
+    if (OPEN_CHARLOCK(map)) {
+        printf("Leaving Charlock open...");
+        map->tiles[x-1][y] = TILE_BRIDGE;
+    }
+
 }
 
 /**

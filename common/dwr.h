@@ -6,7 +6,7 @@
 
 #include "build.h"
 
-#define VERSION "2-alpha build " BUILD
+#define VERSION "2.0 beta " BUILD
 
 #define DEFAULT_FLAGS "CDGMPRWZf"
 
@@ -73,6 +73,24 @@
 #define FLAG_x UINT64_C(0x0800000000000000)
 #define FLAG_y UINT64_C(0x1000000000000000)
 #define FLAG_z UINT64_C(0x2000000000000000)
+
+#define FAST_XP(x)            (x->flags & (FLAG_f | FLAG_F))
+#define OPEN_CHARLOCK(x)      (x->flags & FLAG_o)
+#define SHORT_CHARLOCK(x)     (x->flags & FLAG_s)
+#define FAST_TEXT(x)          (x->flags & FLAG_t)
+#define SHUFFLE_CHESTS(x)     (x->flags & FLAG_C)
+#define DEATH_NECKLACE(x)     (x->flags & FLAG_D)
+#define VERY_FAST_XP(x)       (x->flags & FLAG_F)
+#define RANDOMIZE_GROWTH(x)   (x->flags & FLAG_G)
+#define SPEED_HACKS(x)        (x->flags & (FLAG_H | FLAG_h))
+#define RANDOMIZE_MUSIC(x)    (x->flags & FLAG_K)
+#define RANDOMIZE_SPELLS(x)   (x->flags & FLAG_M)
+#define RANDOMIZE_PATTERNS(x) (x->flags & FLAG_P)
+#define DISABLE_MUSIC(x)      (x->flags & FLAG_Q)
+#define MENU_WRAP(x)          (x->flags & FLAG_R)
+#define RANDOMIZE_SHOPS(x)    (x->flags & FLAG_W)
+#define CHAOS_MODE(x)         (x->flags & FLAG_X)
+#define RANDOMIZE_ZONES(x)    (x->flags & FLAG_Z)
 
 #ifdef __cplusplus
 extern "C" {

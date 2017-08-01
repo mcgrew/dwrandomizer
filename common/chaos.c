@@ -68,7 +68,7 @@ static void chaos_zones(dw_rom *rom)
         return;
 
     /* randomize zone layout with no limits */
-    for (i=0; i < 31; i++) {
+    for (i=0; i < CHEST_COUNT; i++) {
         rom->zone_layout[i] = 0;
         rom->zone_layout[i] |= mt_rand(0, 15) << 4;
         rom->zone_layout[i] |= mt_rand(0, 15);

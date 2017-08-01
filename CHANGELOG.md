@@ -1,4 +1,4 @@
-# 2.0 Complete rewrite - split continents and more #
+# 2.0 - Complete rewrite, split continents and more #
 ###### Released Xxx XX, 2017 ######
 
 * From scratch rewrite using C, C++ and the Qt toolkit.
@@ -187,8 +187,8 @@ This version also includes minor tweaks to zone randomization in normal mode.
 ###### Pre-release - Released Dec 6, 2015 ######
 
 * Weaon shops are now randomized! (Except for Kol, which will be fixed next release)
-* REPEL will now be learned at level 8.
-* HEAL will now have a range of 10-25 instead of 10-17.
+* `REPEL` will now be learned at level 8.
+* `HEAL` will now have a range of 10-25 instead of 10-17.
 * Shortened the output filename for better readability on Everdrive.
 * Removed the possibility of Axe Knight having strong fire breath
 * Several tweaks to avoid a few potentially unwinnable situations.

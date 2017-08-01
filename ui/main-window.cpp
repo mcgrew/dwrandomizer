@@ -87,6 +87,7 @@ void MainWindow::layout()
     this->addOption('h', "Speed Hacks",                    2, 2);
     this->addOption('o', "Open Charlock",                  3, 2);
     this->addOption('s', "Short Charlock",                 4, 2);
+    this->addOption('k', "Don't Require Magic Keys",       5, 2);
 
 
     this->optionGrid->addWidget(new QLabel("Leveling Speed", this), 6, 0, 0);

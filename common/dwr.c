@@ -34,9 +34,7 @@ const char alphabet[] = "0123456789abcdefghijklmnopqrstuvwxyz"
 const char title_alphabet[] = "0123456789__________________________"
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ__________________________________!.c-     ";
 
-const int CHEST_COUNT = 31;
-
-const char flag_order[] = 
+const char flag_order[] =
         "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 /**
@@ -1209,7 +1207,9 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0x18fe, 1, 0xa7); /* move the stupid old man from the item shop */
     vpatch(rom, 0x91f,  1, 0x6f); /* quit ignoring the customers */
     vpatch(rom, 0x94c,  1, 0x6f); /* quit ignoring the customers */
-    vpatch(rom, 0x17b2,  3, 0, 0, 0); /* delete roaming throne room guard */
+    vpatch(rom, 0x17b2, 3, 0, 0, 0); /* delete roaming throne room guard */
+    /* Change the player sprite color for fun */
+    vpatch(rom, 0x1a9d, 1, mt_rand(0,1) << 4 | mt_rand(1,12));
 
     /* I always hated this wording */
     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");
@@ -1401,6 +1401,32 @@ static void dwr_speed_hacks(dw_rom *rom)
     vpatch(rom, 0xdb54, 9, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea);
 }
 
+static void no_keys(dw_rom *rom)
+{
+    int i;
+    dw_chest *chest;
+
+    if (!NO_KEYS(rom))
+        return;
+
+    printf("Removing the need for keys...\n");
+    /* Don't require keys to open the door */
+    vpatch(rom, 0xdca9, 2, 0xa9, 0x01);
+    vpatch(rom, 0xdcb8, 2, 0xea, 0xea);
+
+    chest = rom->chests;
+    for (i=0; i < CHEST_COUNT; i++) {
+        if (chest->item == KEY)
+            chest->item = GOLD_500;
+        chest++;
+    }
+
+    /* remove the key shopkeepers */
+    vpatch(rom, 0x1793, 3, 0, 0, 0);
+    vpatch(rom, 0x186c, 3, 0, 0, 0);
+    vpatch(rom, 0x182b, 3, 0, 0, 0);
+}
+
 /**
  * Updates the Cantlin NPC dialogue to reveal the new overworld item location.
  * If there is no overworld item to search for, the NPC will just give you
@@ -1505,10 +1531,11 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     dwr_menu_wrap(&rom);
     dwr_speed_hacks(&rom);
     dwr_token_dialogue(&rom);
-    other_patches(&rom);
     chaos_mode(&rom);
     open_charlock(&rom);
     short_charlock(&rom);
+    no_keys(&rom);
+    other_patches(&rom);
     crc = crc64(0, rom.data, ROM_SIZE);
 
     update_title_screen(&rom);

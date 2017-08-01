@@ -9,6 +9,7 @@
 #define VERSION "2.0 beta " BUILD
 
 #define DEFAULT_FLAGS "CDGMPRWZf"
+#define CHEST_COUNT 31
 
 /** 64 bit versions of the randomization flags */
 #define FLAG_0 UINT64_C(0x0000000000000001)
@@ -75,6 +76,7 @@
 #define FLAG_z UINT64_C(0x2000000000000000)
 
 #define FAST_XP(x)            (x->flags & (FLAG_f | FLAG_F))
+#define NO_KEYS(x)            (x->flags & FLAG_k)
 #define OPEN_CHARLOCK(x)      (x->flags & FLAG_o)
 #define SHORT_CHARLOCK(x)     (x->flags & FLAG_s)
 #define FAST_TEXT(x)          (x->flags & FLAG_t)

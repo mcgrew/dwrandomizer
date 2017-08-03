@@ -16,6 +16,9 @@
 * More speed options
     * Open Charlock - no Rainbow Drop required.
     * Short Charlock - No need for torches because there's no dungeon, just straight to the Dragonlord's floor.
+    * Added an option to not require keys for opening doors.
+* Fixed an issue where the player could obtain multiple flutes/tokens if they were in a chest.
+    * This would clutter the inventory since they are unable to be discarded.
 
 # 1.3-rc1 - Lots of balance changes and improvements #
 ###### Pre-release - Released Dec 11, 2016 ######

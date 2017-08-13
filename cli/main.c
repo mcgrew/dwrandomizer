@@ -35,6 +35,7 @@ static void print_usage(const char *command, char *default_flags)
     printf("    k  Don't require keys to open doors\n");
     printf("    o  Open Charlock. No Rainbow Drop required.\n");
     printf("    s  Shortened Charlock\n");
+    printf("    t  Enable faster text\n");
     printf("\n");
     printf("If flags are not specified, the flags \"%s\" will be used\n",
             default_flags);

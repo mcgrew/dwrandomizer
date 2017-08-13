@@ -8,10 +8,31 @@
 #include "mt64.h"
 #include "chaos.h"
 
-static inline uint8_t approx_squared(int x, int max)
+/**
+ * Squares a number and with some variance.
+ *
+ * @param x The number to square.
+ * @param max The maximum return value.
+ * @return The calculation result.
+ */
+static inline int approx_squared(int x, int max)
 {
     x =  x * x - x + mt_rand(0, 2*x);
-    return (uint8_t)MIN(max, x);
+    return MIN(max, x);
+}
+
+/**
+ * A function to be passed to qsort for sorting uint16_t arrays
+ *
+ * @param a The first item to compare
+ * @param b The second item to compare
+ * @return An integer indicating the relationship between the 2 numbers. 0
+ *      indicates equality, a negative number indicates b > a, and a positive
+ *      number indicates b < a
+ */
+static int compare_16(const void *a, const void *b)
+{
+    return *(uint16_t*)a - *(uint16_t*)b;
 }
 
 /**
@@ -23,9 +44,6 @@ static void chaos_enemies(dw_rom *rom)
 {
     int i;
     dw_enemy *enemies;
-
-    if (!CHAOS_MODE(rom))
-        return;
 
     enemies = rom->enemies;
 
@@ -64,9 +82,6 @@ static void chaos_zones(dw_rom *rom)
 {
     int i, zone;
 
-    if (!CHAOS_MODE(rom))
-        return;
-
     /* randomize zone layout with no limits */
     for (i=0; i < CHEST_COUNT; i++) {
         rom->zone_layout[i] = 0;
@@ -82,6 +97,29 @@ static void chaos_zones(dw_rom *rom)
     }
 }
 
+static void chaos_xp(dw_rom *rom)
+{
+    int i, x;
+
+    if (FAST_XP(rom)) {
+        for (i=1; i < 30; i++) {
+            x = mt_rand(2, 36);
+            rom->xp_reqs[i] = x * approx_squared(x, 1820);
+        }
+    } else if (VERY_FAST_XP(rom)) {
+        for (i=1; i < 30; i++) {
+            x = mt_rand(2, 32);
+            rom->xp_reqs[i] = x * approx_squared(x, 2048);
+        }
+    } else {
+        for (i=1; i < 30; i++) {
+            x = mt_rand(2, 40);
+            rom->xp_reqs[i] = x * approx_squared(x, 1638);
+        }
+    }
+    qsort(rom->xp_reqs, 30, sizeof(uint16_t), &compare_16);
+}
+
 /**
  * Sets up chaos mode options if they are enabled.
  *
@@ -89,8 +127,12 @@ static void chaos_zones(dw_rom *rom)
  */
 void chaos_mode(dw_rom *rom)
 {
+    if (!CHAOS_MODE(rom))
+        return;
+
     chaos_enemies(rom);
     chaos_zones(rom);
+    chaos_xp(rom);
 }
 
 

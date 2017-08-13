@@ -258,7 +258,7 @@ typedef struct {
 
 /** A struct for the rom data */
 typedef struct {
-    uint8_t *data;
+    uint8_t *raw;
     uint64_t flags;
     uint64_t seed;
     dw_map map;
@@ -280,6 +280,7 @@ typedef struct {
     uint8_t *weapon_shops;
     uint8_t *music;
     uint8_t *title_text;
+    uint16_t *sprites;
 } dw_rom;
 
 #endif

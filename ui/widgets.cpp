@@ -55,11 +55,11 @@ char LevelComboBox::getFlag()
 
 bool LevelComboBox::updateState(QString flags)
 {
-    if (flags.indexOf(QChar('f')) >= 0) {
+    if (flags.indexOf(QChar('F')) >= 0) {
         this->setCurrentIndex(1);
         return true;
     } else {
-        if (flags.indexOf(QChar('F')) >= 0) {
+        if (flags.indexOf(QChar('V')) >= 0) {
             this->setCurrentIndex(2);
             return true;
         }

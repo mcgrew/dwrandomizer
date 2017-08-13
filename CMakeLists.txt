@@ -18,6 +18,7 @@ set(CLI_SOURCE_FILES
         common/dwr.c
         common/map.c
         common/mt19937-64.c
+        common/chaos.c
         cli/main.c)
 
 add_executable(dwrandomizer-cli ${CLI_SOURCE_FILES})
@@ -29,6 +30,7 @@ set (UI_SOURCE_FILES
         common/dwr.c
         common/map.c
         common/mt19937-64.c
+        common/chaos.c
         ui/main-window.cpp
         ui/widgets.cpp
         ui/main.cpp)

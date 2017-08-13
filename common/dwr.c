@@ -89,14 +89,14 @@ bool dwr_init(dw_rom *rom, const char *input_file, char *flags)
     FILE *input;
     int read;
 
-    rom->data = malloc(ROM_SIZE);
-    memset(rom->data, 0, ROM_SIZE);
+    rom->raw = malloc(ROM_SIZE);
+    memset(rom->raw, 0, ROM_SIZE);
     input = fopen(input_file, "rb");
     if (!input) {
         fprintf(stderr, "Unable to open ROM file '%s'", input_file);
         return false;
     }
-    read = fread(rom->data, 1, ROM_SIZE, input);
+    read = fread(rom->raw, 1, ROM_SIZE, input);
     if (read < ROM_SIZE) {
         fprintf(stderr, "File '%s' is too small and may be corrupt, aborting.",
                 input_file);
@@ -106,35 +106,36 @@ bool dwr_init(dw_rom *rom, const char *input_file, char *flags)
 
     rom->map.flags = parse_flags(rom, flags);
     /* subtract 0x9d5d from these pointers */
-    rom->map.pointers = (uint16_t*)&rom->data[0x2663];
-    rom->map.encoded = &rom->data[0x1d6d];
-    rom->map.meta = (dw_map_meta*)&rom->data[0x2a];
-    rom->map.warps_from = (dw_warp*)&rom->data[0xf3d8];
-    rom->map.warps_to   = (dw_warp*)&rom->data[0xf471];
-    rom->map.love_calc = (dw_love_calc*)&rom->data[0xdf4b];
-    rom->map.return_point = (dw_return_point*)&rom->data[0xdb11];
-    rom->map.rainbow_drop = (dw_rainbow_drop*)&rom->data[0xde9b];
-    rom->map.rainbow_bridge = (dw_rainbow_drop*)&rom->data[0x2c4b];
-    rom->stats = (dw_stats*)&rom->data[0x60dd];
-    rom->new_spells = (dw_new_spell*)&rom->data[0xeaf8];
-    rom->mp_reqs = &rom->data[0x1d63];
-    rom->xp_reqs = (uint16_t*)&rom->data[0xf36b];
-    rom->enemies = (dw_enemy*)&rom->data[0x5e5b];
-    rom->zones = &rom->data[0xf55f];
-    rom->zone_layout = &rom->data[0xf532];
-    rom->chests = (dw_chest*)&rom->data[0x5ddd];
-    rom->axe_knight = (dw_forced_encounter*)&rom->data[0xcd61];
-    rom->green_dragon = (dw_forced_encounter*)&rom->data[0xcd78];
-    rom->golem = (dw_forced_encounter*)&rom->data[0xcd95];
-    rom->encounter_types[0] = &rom->data[0xcd74];
-    rom->encounter_types[1] = &rom->data[0xcd91];
-    rom->encounter_types[2] = &rom->data[0xcdae];
-    rom->token = (dw_searchable*)&rom->data[0xe11b];
-    rom->flute = (dw_searchable*)&rom->data[0xe15a];
-    rom->armor = (dw_searchable*)&rom->data[0xe170];
-    rom->weapon_shops = &rom->data[0x19a1];
-    rom->music = &rom->data[0x31bf];
-    rom->title_text = &rom->data[0x3f36];
+    rom->map.pointers = (uint16_t*)&rom->raw[0x2663];
+    rom->map.encoded = &rom->raw[0x1d6d];
+    rom->map.meta = (dw_map_meta*)&rom->raw[0x2a];
+    rom->map.warps_from = (dw_warp*)&rom->raw[0xf3d8];
+    rom->map.warps_to   = (dw_warp*)&rom->raw[0xf471];
+    rom->map.love_calc = (dw_love_calc*)&rom->raw[0xdf4b];
+    rom->map.return_point = (dw_return_point*)&rom->raw[0xdb11];
+    rom->map.rainbow_drop = (dw_rainbow_drop*)&rom->raw[0xde9b];
+    rom->map.rainbow_bridge = (dw_rainbow_drop*)&rom->raw[0x2c4b];
+    rom->stats = (dw_stats*)&rom->raw[0x60dd];
+    rom->new_spells = (dw_new_spell*)&rom->raw[0xeaf8];
+    rom->mp_reqs = &rom->raw[0x1d63];
+    rom->xp_reqs = (uint16_t*)&rom->raw[0xf36b];
+    rom->enemies = (dw_enemy*)&rom->raw[0x5e5b];
+    rom->zones = &rom->raw[0xf55f];
+    rom->zone_layout = &rom->raw[0xf532];
+    rom->chests = (dw_chest*)&rom->raw[0x5ddd];
+    rom->axe_knight = (dw_forced_encounter*)&rom->raw[0xcd61];
+    rom->green_dragon = (dw_forced_encounter*)&rom->raw[0xcd78];
+    rom->golem = (dw_forced_encounter*)&rom->raw[0xcd95];
+    rom->encounter_types[0] = &rom->raw[0xcd74];
+    rom->encounter_types[1] = &rom->raw[0xcd91];
+    rom->encounter_types[2] = &rom->raw[0xcdae];
+    rom->token = (dw_searchable*)&rom->raw[0xe11b];
+    rom->flute = (dw_searchable*)&rom->raw[0xe15a];
+    rom->armor = (dw_searchable*)&rom->raw[0xe170];
+    rom->weapon_shops = &rom->raw[0x19a1];
+    rom->music = &rom->raw[0x31bf];
+    rom->title_text = &rom->raw[0x3f36];
+    rom->sprites = &rom->raw[0x10010];
 
     map_decode(&rom->map);
     return true;
@@ -245,14 +246,14 @@ static uint16_t vpatch(dw_rom *rom, uint16_t address, uint32_t size, ...)
     va_list arg;
     uint8_t *p;
 
-    p = &rom->data[address];
+    p = &rom->raw[address];
     va_start(arg, size);
 
     for (i=0; i < size; i++) {
         *(p++) = va_arg(arg, int);
     }
     va_end(arg);
-    return p - rom->data;
+    return p - rom->raw;
 
 }
 
@@ -271,12 +272,12 @@ static uint16_t patch(dw_rom *rom, uint16_t address, uint32_t size,
     int i;
     uint8_t *p;
 
-    p = &rom->data[address];
+    p = &rom->raw[address];
 
     for (i=0; i < size; i++) {
         *(p++) = data[i];
     }
-    return p - rom->data;
+    return p - rom->raw;
 }
 
 /**
@@ -339,14 +340,14 @@ static uint8_t *dwr_str_replace(dw_rom *rom, const char *text,
     len = strlen(text);
     if (!len)
         return NULL;
-    end = &rom->data[ROM_SIZE - len];
+    end = &rom->raw[ROM_SIZE - len];
 
     strncpy(dw_text, text, 256);
     strncpy(dw_repl, replacement, 256);
     ascii2dw(dw_text);
     ascii2dw(dw_repl);
 
-    for (start = rom->data; start < end; start++) {
+    for (start = rom->raw; start < end; start++) {
         if (!memcmp(start, dw_text, len)) {
             memcpy(start, dw_repl, len);
             return start;
@@ -1045,8 +1046,8 @@ static void update_title_screen(dw_rom *rom)
     uint64_t flags;
     uint8_t *pos, *end;
     
-    pos = &rom->data[0x3f36];
-    end = &rom->data[0x3fc5];
+    pos = &rom->raw[0x3f36];
+    end = &rom->raw[0x3fc5];
     text[32] = '\0';
     flags = rom->flags;
     f = text;
@@ -1480,7 +1481,7 @@ static bool dwr_write(dw_rom *rom, const char *output_file)
         fprintf(stderr, "Unable to open file '%s' for writing", output_file);
         return false;
     }
-    fwrite(rom->data, 1, ROM_SIZE, output);
+    fwrite(rom->raw, 1, ROM_SIZE, output);
     fclose(output);
     return true;
 }
@@ -1533,7 +1534,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     short_charlock(&rom);
     no_keys(&rom);
     other_patches(&rom);
-    crc = crc64(0, rom.data, ROM_SIZE);
+    crc = crc64(0, rom.raw, ROM_SIZE);
 
     update_title_screen(&rom);
     randomize_music(&rom);
@@ -1543,6 +1544,6 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     if (!dwr_write(&rom, output_file)) {
         return 0;
     }
-    free(rom.data);
+    free(rom.raw);
     return crc;
 }

@@ -633,7 +633,7 @@ static void randomize_zone_layout(dw_rom *rom)
 
     printf("Randomizing enemy zone layout\n");
 
-    for (i=0; i < 31; i++) {
+    for (i=0; i < 32; i++) {
         rom->zone_layout[i] = 0;
         rom->zone_layout[i] |= mt_rand(3, 15) << 4;
         rom->zone_layout[i] |= mt_rand(3, 15);
@@ -655,8 +655,9 @@ static void randomize_zone_layout(dw_rom *rom)
 static void randomize_zones(dw_rom *rom)
 {
     int i, zone;
-    const dw_enemies forced_enemies[6] = {AXE_KNIGHT, BLUE_DRAGON, STONEMAN,
-            ARMORED_KNIGHT, RED_DRAGON, GOLEM };
+    const dw_enemies charlock_enemies[10] = { WEREWOLF, GREEN_DRAGON, STARWYVERN,
+            WIZARD, AXE_KNIGHT, BLUE_DRAGON, STONEMAN, ARMORED_KNIGHT,
+            RED_DRAGON, GOLEM };
 
     if (!RANDOMIZE_ZONES(rom))
         return;
@@ -682,7 +683,7 @@ static void randomize_zones(dw_rom *rom)
 
     for (zone=16; zone <= 18; zone++) { /* charlock */
         for (i=0; i < 5; i++) {
-            rom->zones[zone * 5 + i] = mt_rand(WEREWOLF, RED_DRAGON);
+            rom->zones[zone * 5 + i] = charlock_enemies[mt_rand(0, 9)];
         }
     }
     zone = 19;  /* swamp cave */
@@ -691,7 +692,7 @@ static void randomize_zones(dw_rom *rom)
     }
 
     for (i=0; i < 3; i++) { /* randomize the forced encounters */
-        *rom->encounter_types[i] = forced_enemies[mt_rand(0, 5)];
+        *rom->encounter_types[i] = charlock_enemies[mt_rand(4, 9)];
     }
 }
 

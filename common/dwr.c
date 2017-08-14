@@ -133,6 +133,7 @@ bool dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->flute = (dw_searchable*)&rom->raw[0xe15a];
     rom->armor = (dw_searchable*)&rom->raw[0xe170];
     rom->weapon_shops = &rom->raw[0x19a1];
+    rom->weapon_prices = &rom->raw[0x7e20];
     rom->music = &rom->raw[0x31bf];
     rom->title_text = &rom->raw[0x3f36];
     rom->sprites = &rom->raw[0x10010];
@@ -460,7 +461,7 @@ static void shuffle_chests(dw_rom *rom) {
                 *(cont++) = KEY;
                 break;
             case GOLD_5:
-                *(cont++) = DRAGONS_SCALE;
+                *(cont++) = DRAGON_SCALE;
                 break;
             case GOLD_6:
                 *(cont++) = GOLD_500;

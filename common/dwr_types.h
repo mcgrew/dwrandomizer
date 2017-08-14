@@ -100,7 +100,7 @@ typedef enum {
     TORCH,
     FAIRY_WATER, /* 5 */
     WINGS,
-    DRAGONS_SCALE,
+    DRAGON_SCALE,
     FLUTE,
     RING,
     TOKEN, /* 10 */
@@ -138,6 +138,10 @@ typedef enum {
     SMALL_SHIELD,
     LARGE_SHIELD,
     SILVER_SHIELD,
+    SHOP_HERB,
+    SHOP_TORCH = 0x13,
+    SHOP_WINGS = 0x15,
+    SHOP_DRAGON_SCALE,
     SHOP_END = 0xfd,
 } dw_shop_item;
 
@@ -278,6 +282,7 @@ typedef struct {
     dw_searchable *flute;
     dw_searchable *armor;
     uint8_t *weapon_shops;
+    uint16_t *weapon_prices;
     uint8_t *music;
     uint8_t *title_text;
     uint16_t *sprites;

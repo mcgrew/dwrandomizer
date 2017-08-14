@@ -19,6 +19,8 @@
  */
 static inline int approx_squared(int x, int max)
 {
+    if (!x) return 1;
+
     x =  x * x - x + mt_rand(0, 2*x);
     return MIN(max, x);
 }
@@ -168,6 +170,21 @@ static void chaos_zones(dw_rom *rom)
 }
 
 /**
+ * Randomizes weapon and item prices
+ *
+ * @param rom The rom struct
+ */
+static void chaos_weapon_prices(dw_rom *rom)
+{
+    int i;
+
+    for (i=0; i < 19; i++) {
+        rom->weapon_prices[i] =
+                approx_squared(approx_squared(mt_rand(2, 13), 255), 65535);
+    }
+}
+
+/**
  * Randomizes XP requirements for each level
  *
  * @param rom The rom struct
@@ -208,6 +225,7 @@ void chaos_mode(dw_rom *rom)
     chaos_enemies(rom);
     chaos_zones(rom);
     chaos_xp(rom);
+    chaos_weapon_prices(rom);
 }
 
 

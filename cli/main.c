@@ -32,6 +32,7 @@ static void print_usage(const char *command, char *default_flags)
     printf("    X  Chaos mode.\n");
     printf("    Z  Randomize enemy zones.\n");
     printf("    h  Apply game speed hacks\n");
+    printf("    b  Make a larger portion of the terrain swamp\n");
     printf("    k  Don't require keys to open doors\n");
     printf("    o  Open Charlock. No Rainbow Drop required.\n");
     printf("    s  Shortened Charlock\n");

@@ -76,6 +76,7 @@
 #define FLAG_z UINT64_C(0x2000000000000000)
 
 #define FAST_XP(x)            (x->flags & (FLAG_f | FLAG_F))
+#define BIG_SWAMP(x)          (x->flags & FLAG_b)
 #define NO_KEYS(x)            (x->flags & FLAG_k)
 #define OPEN_CHARLOCK(x)      (x->flags & FLAG_o)
 #define SHORT_CHARLOCK(x)     (x->flags & FLAG_s)

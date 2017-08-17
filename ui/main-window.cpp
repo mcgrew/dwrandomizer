@@ -74,15 +74,16 @@ void MainWindow::layout()
     this->addOption('W', "Randomize Weapon Shops",         1, 0);
     this->addOption('G', "Randomize Growth",               2, 0);
     this->addOption('M', "Randomize Spell Learning",       3, 0);
-    this->addOption('K', "Shuffle Music",                  4, 0);
+    this->addOption('X', "Chaos Mode",                     4, 0);
 
     this->addOption('P', "Randomize Enemy Attacks",        0, 1);
     this->addOption('Z', "Randomize Enemy Zones",          1, 1);
     this->addOption('R', "Enable Menu Wrapping",           2, 1);
     this->addOption('D', "Enable Death Necklace",          3, 1);
-    this->addOption('Q', "Disable Music",                  4, 1);
+    this->addOption('K', "Shuffle Music",                  4, 1);
+    this->addOption('Q', "Disable Music",                  5, 1);
 
-    this->addOption('X', "Chaos Mode",                     0, 2);
+    this->addOption('b', "Big Swamp",                      0, 2);
     this->addOption('t', "Fast Text",                      1, 2);
     this->addOption('h', "Speed Hacks",                    2, 2);
     this->addOption('o', "Open Charlock",                  3, 2);

@@ -672,6 +672,10 @@ bool map_generate_terrain(dw_rom *rom)
             TILE_WATER, TILE_WATER, TILE_WATER, TILE_SWAMP
     };
 
+    if (BIG_SWAMP(rom)) {
+        tiles[0] = tiles[1] = tiles[4] = tiles[8] = tiles[9] = TILE_SWAMP;
+    }
+
     /* first fill the map with water */
     memset(rom->map.tiles, TILE_WATER, 120 * 120);
 

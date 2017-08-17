@@ -223,8 +223,8 @@ static inline bool needs_bridge(uint8_t left, uint8_t right, int *lm_sizes)
 {
     if (!left || !right || left == right)
         return false;
-    if (lm_sizes[left-1] < 100 || lm_sizes[right-1] < 100)
-        return false;
+//    if (lm_sizes[left-1] < 100 || lm_sizes[right-1] < 100)
+//        return false;
     return true;
 }
 
@@ -699,10 +699,10 @@ bool map_generate_terrain(dw_rom *rom)
     while (add_bridges(&rom->map, lm_sizes)) {
         lm_count = find_walkable_area(&rom->map, lm_sizes, &largest, &next);
     }
-    for (i=0; i < lm_count; i++) {
-        if (lm_sizes[i] < 200)
-            destroy_land_mass(&rom->map, i+1);
-    }
+//    for (i=0; i < lm_count; i++) {
+//        if (lm_sizes[i] < 200)
+//            destroy_land_mass(&rom->map, i+1);
+//    }
     lm_count = find_walkable_area(&rom->map, lm_sizes, &largest, &next);
     if (!place_landmarks(&rom->map)) {
         return false;

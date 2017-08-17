@@ -429,7 +429,16 @@ static inline void check_quest_items(dw_rom *rom)
 static void shuffle_chests(dw_rom *rom) {
     int i;
     dw_chest *chest;
-    uint8_t *cont, contents[CHEST_COUNT-2];
+    uint8_t *cont, contents[CHEST_COUNT-2] = {
+            CURSED_BELT, CURSED_BELT,
+            GOLD_500, GOLD_500, GOLD_500, GOLD_500, GOLD_500, GOLD_500, GOLD_500,
+            WINGS, WINGS,
+            KEY, KEY, KEY,
+            HERB, HERB, HERB, HERB,
+            TORCH, TORCH,
+            FAIRY_WATER, FAIRY_WATER,
+            STONES, DRAGON_SCALE, HARP, SWORD, NECKLACE, TORCH, RING
+    };
 
     if (!SHUFFLE_CHESTS(rom))
         return;
@@ -440,43 +449,14 @@ static void shuffle_chests(dw_rom *rom) {
 
     if (!mt_rand(0, 2)) { /* 33% chance */
         rom->token->map = NO_MAP; /* remove flute */
-        rom->chests[15].item = TOKEN; /* replace cursed belt in a chest */
+        contents[0] = TOKEN; /* replace cursed belt in a chest */
     }
     if (!mt_rand(0, 2)) { /* 33% chance */
         rom->flute->map = NO_MAP; /* remove flute */
-        rom->chests[22].item = FLUTE; /* replace cursed belt in a chest */
+        contents[1] = FLUTE; /* replace cursed belt in a chest */
     }
     
-    /* load up the chest contents into an array */
-    for (i=0; i < CHEST_COUNT; i++) {
-        /* don't move the staff or starting key*/
-        if ((chest->map == TANTEGEL_THRONE_ROOM && chest->item == KEY) ||
-                    chest->item == STAFF) { 
-            chest++;
-            continue;
-        }
-        switch((dw_chest_content)chest->item) {
-            case TABLET:
-            case GOLD_120:
-                *(cont++) = KEY;
-                break;
-            case GOLD_5:
-                *(cont++) = DRAGON_SCALE;
-                break;
-            case GOLD_6:
-                *(cont++) = GOLD_500;
-                break;
-            case GOLD_10:
-                *(cont++) = FAIRY_WATER;
-                break;
-            default:
-                *(cont++) = chest->item;
-                break;
-        }
-        chest++;
-    }
-
-    /* shuffle the contents and place them back in chests */
+    /* shuffle the contents and place them in chests */
     mt_shuffle(contents, CHEST_COUNT-2, sizeof(uint8_t));
     chest = rom->chests;
     cont = contents;

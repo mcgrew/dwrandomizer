@@ -6,7 +6,7 @@
 #include "mt64.h"
 #include "map.h"
 
-#define MAX_BLOB 3600
+#define MAX_BLOB 4800
 #define MAP_ENCODED_SIZE 2294
 #define VIABLE_CONT 250 /* minimum size for a land_mass to use */
 
@@ -514,7 +514,7 @@ static inline void find_largest_lm(dw_map *map, int *lm_sizes, int lm_count,
         }
     }
 
-    if (lm_sizes[(*next)-1] < MAX_BLOB / 6) {
+    if (lm_sizes[(*next)-1] < 200) {
         *next = *largest;
     }
 //    printf("Largest: %d(%d), Next: %d(%d)\n", *largest, lm_sizes[(*largest)-1],

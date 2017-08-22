@@ -1516,7 +1516,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     short_charlock(&rom);
     no_keys(&rom);
     other_patches(&rom);
-    crc = crc64(0, rom.raw, ROM_SIZE);
+    crc = crc64(0, rom.raw, 0x10010);
 
     update_title_screen(&rom);
     randomize_music(&rom);

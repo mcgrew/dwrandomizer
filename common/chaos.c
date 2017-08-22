@@ -10,6 +10,8 @@
 #include "mt64.h"
 #include "chaos.h"
 
+static dw_enemy **global_enemy;
+
 /**
  * Squares a number and with some variance.
  *
@@ -74,7 +76,7 @@ static inline int64_t enemy_pwr(dw_enemy *enemy)
 }
 
 /**
- * A compare function for enemies for use with qsort_r
+ * A compare function for enemies for use with qsort
  *
  * @param a The first enemy index
  * @param b The second enemy index
@@ -83,12 +85,12 @@ static inline int64_t enemy_pwr(dw_enemy *enemy)
  *      enemies. 0 indicates equality, a negative number indicates b > a, and a
  *      positive number indicates b < a
  */
-static int compare_enemies(const void *a, const void *b, void *enemy)
+static int compare_enemies(const void *a, const void *b)
 {
     dw_enemy *enemy_a, *enemy_b;
 
-    enemy_a = &((dw_enemy*)enemy)[*(dw_enemies*)a];
-    enemy_b = &((dw_enemy*)enemy)[*(dw_enemies*)b];
+    enemy_a = &(*global_enemy)[*(dw_enemies*)a];
+    enemy_b = &(*global_enemy)[*(dw_enemies*)b];
 
     return enemy_pwr(enemy_a) - enemy_pwr(enemy_b);
 }
@@ -148,8 +150,8 @@ static void chaos_zones(dw_rom *rom)
     for (i=SLIME; i <= RED_DRAGON; i++) {
         enemies[i] = i;
     }
-    qsort_r(enemies, RED_DRAGON+1, sizeof(dw_enemies), &compare_enemies,
-            rom->enemies);
+    global_enemy = &rom->enemies;
+    qsort(enemies, RED_DRAGON+1, sizeof(dw_enemies), &compare_enemies);
 
     /* randomize zones 0-2 again with weaker monsters */
     for (zone=0; zone <= 2; zone++) {

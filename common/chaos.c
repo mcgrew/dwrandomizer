@@ -195,8 +195,9 @@ static void chaos_weapon_prices(dw_rom *rom)
 {
     int i;
 
-    for (i=0; i < 19; i++) {
-        rom->weapon_prices[i] = rand_power_curve(2, 13, 4.0);
+    for (i=0; i < 17; i++) {
+        rom->weapon_price_display[i] = rom->weapon_prices[i] =
+                rand_power_curve(1, 11, 4.0);
     }
 }
 

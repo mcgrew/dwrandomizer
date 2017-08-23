@@ -283,6 +283,7 @@ typedef struct {
     dw_searchable *armor;
     uint8_t *weapon_shops;
     uint16_t *weapon_prices;
+    uint16_t *weapon_price_display;
     uint8_t *music;
     uint8_t *title_text;
     uint16_t *sprites;

@@ -133,7 +133,8 @@ bool dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->flute = (dw_searchable*)&rom->raw[0xe15a];
     rom->armor = (dw_searchable*)&rom->raw[0xe170];
     rom->weapon_shops = &rom->raw[0x19a1];
-    rom->weapon_prices = &rom->raw[0x7e20];
+    rom->weapon_prices = &rom->raw[0x1957];
+    rom->weapon_price_display = &rom->raw[0x7e20];
     rom->music = &rom->raw[0x31bf];
     rom->title_text = &rom->raw[0x3f36];
     rom->sprites = &rom->raw[0x10010];

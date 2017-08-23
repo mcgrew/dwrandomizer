@@ -5,6 +5,7 @@
 #define _GNU_SOURCE /* for qsort_r */
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "dwr.h"
 #include "mt64.h"
@@ -19,12 +20,9 @@ static dw_enemy **global_enemy;
  * @param max The maximum return value.
  * @return The calculation result.
  */
-static inline int approx_squared(int x, int max)
+static inline int rand_power_curve(int min, int max, double power)
 {
-    if (!x) return 1;
-
-    x =  x * x - x + mt_rand(0, 2*x);
-    return MIN(max, x);
+    return (int)floor(pow(mt_rand_double() * (max - min) + min, power));
 }
 
 /**
@@ -47,32 +45,35 @@ static int compare_16(const void *a, const void *b)
  * @param enemy The enemy struct
  * @return  A difficulty index
  */
-static inline int64_t enemy_pwr(dw_enemy *enemy)
+static inline uint64_t enemy_pwr(dw_enemy *enemy)
 {
-    int64_t pwr;
+    uint64_t pwr, multiplier = 0;
 
-    pwr = enemy->str * enemy->str * enemy->agi * enemy->hp;
+    pwr = enemy->str * enemy->agi * enemy->hp;
+    if (enemy->hp > 64)
+        pwr *= enemy->hp;
+    if (enemy->str > 64)
+        pwr *= enemy->str;
+    if (enemy->agi > 64)
+        pwr *= enemy->agi;
     /* has healmore or sleep */
     if (enemy->pattern & 0x30) {
         if ((enemy->pattern & 0xc0) == 0) { /* sleep */
-            pwr *= 4;
+            multiplier += 32;
         } else if ((enemy->pattern & 0xc0) == 0xc0) { /* healmore */
-            pwr += pwr/2;
+            multiplier += 16;
         }
     }
+    /* has DL breath or hurtmore */
     if (enemy->pattern & 0x3) {
         if ((enemy->pattern & 0xc) == 0xc) { /* DL breath */
-            pwr *= 4;
+            multiplier += 32;
         } else if ((enemy->pattern & 0xc) == 0x4) { /* hurtmore */
-            pwr *= 2;
+            multiplier += 24;
         }
 
     }
-    /* has hurtmore or DL breath */
-    if (enemy->pattern & 0x4 && enemy->pattern & 0x3) {
-        pwr *= 2;
-    }
-    return pwr;
+    return pwr * MAX(multiplier, 1);
 }
 
 /**
@@ -92,7 +93,11 @@ static int compare_enemies(const void *a, const void *b)
     enemy_a = &(*global_enemy)[*(dw_enemies*)a];
     enemy_b = &(*global_enemy)[*(dw_enemies*)b];
 
-    return enemy_pwr(enemy_a) - enemy_pwr(enemy_b);
+    if (enemy_pwr(enemy_a) > enemy_pwr(enemy_b))
+        return 1;
+    if (enemy_pwr(enemy_a) < enemy_pwr(enemy_b))
+        return -1;
+    return 0;
 }
 
 /**
@@ -108,18 +113,19 @@ static void chaos_enemies(dw_rom *rom)
     enemies = rom->enemies;
 
     for (i=SLIME; i <= DRAGONLORD_1; i++) {
-        enemies[i].hp =   approx_squared(mt_rand(2, 12), 255);
-        enemies[i].str =  approx_squared(mt_rand(2, 11), 255);
-        enemies[i].agi =  approx_squared(mt_rand(2, 16), 255);
-        enemies[i].xp =   approx_squared(mt_rand(2, 16), 255);
-        enemies[i].gold = approx_squared(mt_rand(2, 16), 255);
+        enemies[i].hp =   rand_power_curve(2, 12, 2.0);
+        enemies[i].str =  rand_power_curve(2, 11, 2.0);
+        enemies[i].agi =  rand_power_curve(2, 16, 2.0);
+        enemies[i].xp =   rand_power_curve(2, 16, 2.0);
+        enemies[i].gold = rand_power_curve(2, 16, 2.0);
 
-        enemies[i].s_ss_resist = approx_squared(mt_rand(0, 4), 15) << 4 |
-                                 approx_squared(mt_rand(0, 4), 15);
-        enemies[i].hr_dodge    = approx_squared(mt_rand(0, 4), 15) << 4 |
-                                 approx_squared(mt_rand(0, 4), 15);
+        enemies[i].s_ss_resist = rand_power_curve(0, 4, 2.0) << 4 |
+                                 rand_power_curve(0, 4, 2.0);
+        enemies[i].hr_dodge    = rand_power_curve(0, 4, 2.0) << 4 |
+                                 rand_power_curve(0, 4, 2.0);
     }
 
+    enemies[DRAGONLORD_1].str = rand_power_curve(9, 16, 2.0);
     enemies[DRAGONLORD_1].xp = 0;
     enemies[DRAGONLORD_1].gold = 0;
     enemies[DRAGONLORD_1].pattern = mt_rand(0, 255);
@@ -132,7 +138,7 @@ static void chaos_enemies(dw_rom *rom)
     }
     /* Maybe STOPSPELL Will work on him... MWAHAHAHA */
     enemies[DRAGONLORD_2].s_ss_resist &= 0xf0;
-    enemies[DRAGONLORD_2].s_ss_resist |= 15 - approx_squared(mt_rand(0, 4), 15);
+    enemies[DRAGONLORD_2].s_ss_resist |= 15 - rand_power_curve(0, 4, 2.0);
     enemies[DRAGONLORD_2].hp = mt_rand(100, 230);
 }
 
@@ -152,6 +158,15 @@ static void chaos_zones(dw_rom *rom)
     }
     global_enemy = &rom->enemies;
     qsort(enemies, RED_DRAGON+1, sizeof(dw_enemies), &compare_enemies);
+
+//    printf("  HP  STR  AGI\n");
+//    for (i=SLIME; i <= RED_DRAGON; i++) {
+//        printf("%4d %4d %4d %16lld\n",
+//               rom->enemies[enemies[i]].hp,
+//               rom->enemies[enemies[i]].str,
+//               rom->enemies[enemies[i]].agi,
+//               enemy_pwr(&rom->enemies[enemies[i]]));
+//    }
 
     /* randomize zones 0-2 again with weaker monsters */
     for (zone=0; zone <= 2; zone++) {
@@ -181,8 +196,7 @@ static void chaos_weapon_prices(dw_rom *rom)
     int i;
 
     for (i=0; i < 19; i++) {
-        rom->weapon_prices[i] =
-                approx_squared(approx_squared(mt_rand(2, 13), 255), 65535);
+        rom->weapon_prices[i] = rand_power_curve(2, 13, 4.0);
     }
 }
 
@@ -193,22 +207,19 @@ static void chaos_weapon_prices(dw_rom *rom)
  */
 static void chaos_xp(dw_rom *rom)
 {
-    int i, x;
+    int i;
 
     if (FAST_XP(rom)) {
         for (i=1; i < 30; i++) {
-            x = mt_rand(2, 36);
-            rom->xp_reqs[i] = x * approx_squared(x, 1820);
+            rom->xp_reqs[i] = rand_power_curve(2, 36, 3.0);
         }
     } else if (VERY_FAST_XP(rom)) {
         for (i=1; i < 30; i++) {
-            x = mt_rand(2, 32);
-            rom->xp_reqs[i] = x * approx_squared(x, 2048);
+            rom->xp_reqs[i] = rand_power_curve(2, 32, 3.0);
         }
     } else {
         for (i=1; i < 30; i++) {
-            x = mt_rand(2, 40);
-            rom->xp_reqs[i] = x * approx_squared(x, 1638);
+            rom->xp_reqs[i] = rand_power_curve(2, 40, 3.0);
         }
     }
     qsort(rom->xp_reqs, 30, sizeof(uint16_t), &compare_16);

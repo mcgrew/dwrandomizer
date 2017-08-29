@@ -1096,7 +1096,7 @@ static void dwr_fighters_ring(dw_rom *rom)
         0x29, 0x20,      /* AND #$20   ; check bit 6 (fighter's ring)         */
         0xf0, 0x06,      /* BEQ $FF8B                                         */
         0xa5, 0xcc,      /* LDA $00CC  ; load attack power                    */
-        0x69, 2,         /* ADC #$??   ; add fighter's ring power.            */
+        0x69, 2,         /* ADC #$02   ; add fighter's ring power.            */
         0x85, 0xcc,      /* STA $00CC  ; store new attack power               */
         /* ff8b: */
         0x4c, 0x54, 0xff /* JMP $FF54  ; jump to next section                 */

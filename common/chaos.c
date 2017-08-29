@@ -49,7 +49,13 @@ static inline uint64_t enemy_pwr(dw_enemy *enemy)
 {
     uint64_t pwr, multiplier = 0;
 
-    pwr = enemy->str * enemy->agi * enemy->hp;
+    pwr = 1;
+    if (enemy->hp > 16)
+        pwr *= enemy->hp;
+    if (enemy->str > 16)
+        pwr *= enemy->str;
+    if (enemy->agi > 16)
+        pwr *= enemy->agi;
     if (enemy->hp > 64)
         pwr *= enemy->hp;
     if (enemy->str > 64)

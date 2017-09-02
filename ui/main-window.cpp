@@ -216,6 +216,7 @@ bool MainWindow::saveConfig()
     out << this->romFile->text() << endl;
     out << this->outputDir->text() << endl;
     out << this->getFlags() << endl;
+    out << this->spriteSelect->currentIndex() << endl;
 
     return true;
 }
@@ -224,29 +225,42 @@ bool MainWindow::loadConfig()
 {
     char tmp[1024];
     qint64 read;
+
     QFile configFile(QDir::homePath() + "/.config/dwrandomizer2.conf");
     if (!configFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         printf("Failed to load configuration.\n");
         return false;
     }
     read = configFile.readLine(tmp, 1024);
-    tmp[read - 1] = '\0';
-    this->romFile->setText(tmp);
-    if (configFile.atEnd()) {
-        return false;
+    if (read) {
+        tmp[read - 1] = '\0';
+        this->romFile->setText(tmp);
+        if (configFile.atEnd()) {
+            return false;
+        }
     }
 
     read = configFile.readLine(tmp, 1024);
-    tmp[read - 1] = '\0';
-    this->outputDir->setText(tmp);
-    if (configFile.atEnd()) {
-        return false;
+    if (read) {
+        tmp[read - 1] = '\0';
+        this->outputDir->setText(tmp);
+        if (configFile.atEnd()) {
+            return false;
+        }
     }
 
     read = configFile.readLine(tmp, 1024);
-    tmp[read - 1] = '\0';
-    this->setFlags(tmp);
-    this->setOptions(tmp);
+    if (read) {
+        tmp[read - 1] = '\0';
+        this->setFlags(tmp);
+        this->setOptions(tmp);
+    }
+
+    read = configFile.readLine(tmp, 1024);
+    if (read) {
+        int spriteIndex = atoi(tmp);
+        this->spriteSelect->setCurrentIndex(spriteIndex);
+    }
 
     return true;
 }

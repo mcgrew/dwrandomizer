@@ -1161,6 +1161,8 @@ static void other_patches(dw_rom *rom)
     rom->golem_run->x = rom->golem->x = 25;
     rom->golem_run->y = rom->golem->y = 22;
     vpatch(rom, 0xcdab, 2, 0xea, 0xea); /* make sure he always appears */
+    /* make swamp cave encounter always appear */
+    vpatch(rom, 0xcd8e, 2, 0xea, 0xea);
 
     vpatch(rom, 0xde33, 10,  /* Changes the enemies summoned by the harp. */
         /* de23: */

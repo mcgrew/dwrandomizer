@@ -277,6 +277,9 @@ typedef struct {
     dw_forced_encounter *axe_knight;
     dw_forced_encounter *green_dragon;
     dw_forced_encounter *golem;
+    dw_forced_encounter *axe_knight_run;
+    dw_forced_encounter *green_dragon_run;
+    dw_forced_encounter *golem_run;
     uint8_t *encounter_types[3];
     dw_searchable *token;
     dw_searchable *flute;
@@ -286,7 +289,6 @@ typedef struct {
     uint16_t *weapon_price_display;
     uint8_t *music;
     uint8_t *title_text;
-    uint16_t *sprites;
 } dw_rom;
 
 #endif

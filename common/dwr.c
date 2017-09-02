@@ -126,6 +126,9 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->axe_knight = (dw_forced_encounter*)&rom->raw[0xcd61];
     rom->green_dragon = (dw_forced_encounter*)&rom->raw[0xcd78];
     rom->golem = (dw_forced_encounter*)&rom->raw[0xcd95];
+    rom->axe_knight_run = (dw_forced_encounter*)&rom->raw[0xe8e4];
+    rom->green_dragon_run = (dw_forced_encounter*)&rom->raw[0xe90b];
+    rom->golem_run = (dw_forced_encounter*)&rom->raw[0xe938];
     rom->encounter_types[0] = &rom->raw[0xcd74];
     rom->encounter_types[1] = &rom->raw[0xcd91];
     rom->encounter_types[2] = &rom->raw[0xcdae];
@@ -133,11 +136,10 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->flute = (dw_searchable*)&rom->raw[0xe15a];
     rom->armor = (dw_searchable*)&rom->raw[0xe170];
     rom->weapon_shops = &rom->raw[0x19a1];
-    rom->weapon_prices = &rom->raw[0x1957];
-    rom->weapon_price_display = &rom->raw[0x7e20];
+    rom->weapon_prices = (uint16_t*)&rom->raw[0x1957];
+    rom->weapon_price_display = (uint16_t*)&rom->raw[0x7e20];
     rom->music = &rom->raw[0x31bf];
     rom->title_text = &rom->raw[0x3f36];
-    rom->sprites = &rom->raw[0x10010];
 
     map_decode(&rom->map);
     return TRUE;
@@ -1155,9 +1157,9 @@ static void dwr_death_necklace(dw_rom *rom)
 static void other_patches(dw_rom *rom)
 {
     /* move the golem encounter to charlock */
-    rom->golem->map = CHARLOCK_THRONE_ROOM;
-    rom->golem->x = 25;
-    rom->golem->y = 22;
+    rom->golem_run->map = rom->golem->map = CHARLOCK_THRONE_ROOM;
+    rom->golem_run->x = rom->golem->x = 25;
+    rom->golem_run->y = rom->golem->y = 22;
     vpatch(rom, 0xcdab, 2, 0xea, 0xea); /* make sure he always appears */
 
     vpatch(rom, 0xde33, 10,  /* Changes the enemies summoned by the harp. */

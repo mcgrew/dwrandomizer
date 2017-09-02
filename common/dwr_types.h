@@ -11,9 +11,9 @@
 #define MIN(x,y) ((x < y) ? x : y)
 
 typedef enum {
-    false,
-    true,
-} bool;
+    FALSE,
+    TRUE,
+} BOOL;
 
 /** In-game indexes for various maps. */
 typedef enum {

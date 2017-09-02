@@ -59,6 +59,7 @@ private:
     FlagEntry *flags;
     QList<CheckBox*> options;
     LevelComboBox *levelSpeed;
+    QComboBox *spriteSelect;
     QPushButton *goButton;
     QGridLayout *optionGrid;
 };

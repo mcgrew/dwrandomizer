@@ -8,9 +8,9 @@
 
 #include "dwr.h"
 #include "chaos.h"
-#include "mt64.h"
-#include "crc64.h"
 #include "map.h"
+#include "crc64.h"
+#include "mt64.h"
 
 const char *prg0sums[8] = {
       "6a50ce57097332393e0e8751924fd56456ef083c", /* Dragon Warrior (U) (PRG0) [!].nes      */
@@ -84,7 +84,7 @@ static uint64_t parse_flags(dw_rom *rom, char *flags)
  * @param flags The flags received from the user.
  * @return A boolean indicating whether initialization was sucessful
  */
-bool dwr_init(dw_rom *rom, const char *input_file, char *flags)
+BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
 {
     FILE *input;
     int read;
@@ -94,13 +94,13 @@ bool dwr_init(dw_rom *rom, const char *input_file, char *flags)
     input = fopen(input_file, "rb");
     if (!input) {
         fprintf(stderr, "Unable to open ROM file '%s'", input_file);
-        return false;
+        return FALSE;
     }
     read = fread(rom->raw, 1, ROM_SIZE, input);
     if (read < ROM_SIZE) {
         fprintf(stderr, "File '%s' is too small and may be corrupt, aborting.",
                 input_file);
-        return false;
+        return FALSE;
     }
     fclose(input);
 
@@ -140,7 +140,7 @@ bool dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->sprites = &rom->raw[0x10010];
 
     map_decode(&rom->map);
-    return true;
+    return TRUE;
 }
 
 /**
@@ -242,7 +242,7 @@ size_t dw2ascii(uint8_t *string, size_t bufsize)
  * @param ... A series of uint8_t bytes, the patch data
  * @return The address of the end of the patch
  */
-static uint16_t vpatch(dw_rom *rom, uint16_t address, uint32_t size, ...)
+static uint16_t vpatch(dw_rom *rom, uint32_t address, uint32_t size, ...)
 {
     int i;
     va_list arg;
@@ -268,7 +268,7 @@ static uint16_t vpatch(dw_rom *rom, uint16_t address, uint32_t size, ...)
  * @param data An array of bytes to use for the patch.
  * @return The address of the end of the patch
  */
-static uint16_t patch(dw_rom *rom, uint16_t address, uint32_t size,
+static uint16_t patch(dw_rom *rom, uint32_t address, uint32_t size,
                       uint8_t *data)
 {
     int i;
@@ -381,16 +381,16 @@ static inline int non_charlock_chest()
  * @return A boolean indicated whether or not the item is crucial for the quest
  *      to obtain the rainbow drop.
  */
-static inline bool is_quest_item(uint8_t item)
+static inline BOOL is_quest_item(uint8_t item)
 {
     switch(item) {
         case TOKEN:
         case STONES:
         case HARP:
         case STAFF:
-            return true;
+            return TRUE;
         default:
-            return false;
+            return FALSE;
     }
 }
 
@@ -686,16 +686,16 @@ static void randomize_zones(dw_rom *rom)
  * @param item The item to search for.
  * @return A boolean indicating whether the shop has the item or not.
  */
-static bool shop_contains(uint8_t *shop_start, uint8_t *shop_end,
+static BOOL shop_contains(uint8_t *shop_start, uint8_t *shop_end,
     dw_shop_item item)
 {
     while (shop_start < shop_end) {
         if (*shop_start == item) {
-            return true;
+            return TRUE;
         }
         shop_start++;
     }
-    return false;
+    return FALSE;
 
 }
 
@@ -1189,8 +1189,8 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0x94c,  1, 0x6f); /* quit ignoring the customers */
     vpatch(rom, 0x17b2, 3, 0, 0, 0); /* delete roaming throne room guard */
     /* Change the player sprite color for fun */
-    vpatch(rom, 0x1a9d, 1, mt_rand(0,1) << 4 | mt_rand(1,0xd));
-    vpatch(rom, 0x1a9c, 1, mt_rand(0x30,0x3d));
+//    vpatch(rom, 0x1a9d, 1, mt_rand(0,1) << 4 | mt_rand(1,0xd));
+//    vpatch(rom, 0x1a9c, 1, mt_rand(0x30,0x3d));
 
     /* I always hated this wording */
     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");
@@ -1418,7 +1418,7 @@ static void no_keys(dw_rom *rom)
 static void dwr_token_dialogue(dw_rom *rom)
 {
     dw_searchable *searchable;
-    uint8_t text1[24], text2[72];
+    uint8_t text1[24], text2[75];
     int dx, dy;
 
     searchable = rom->token;
@@ -1439,7 +1439,7 @@ static void dwr_token_dialogue(dw_rom *rom)
         dx = searchable->x - rom->map.warps_from[WARP_TANTEGEL].x;
         dy = searchable->y - rom->map.warps_from[WARP_TANTEGEL].y;
 //        strcpy((char*)text1, "Thou may go and search.");
-        snprintf((char*)text2, 72, "From Tantegel Castle travel %2d leagues "
+        snprintf((char*)text2, 73, "From Tantegel Castle travel %2d leagues "
                 "to the %s and %2d to the %s",
                 ABS(dy), (dy < 0) ? "north" : "south", 
                 ABS(dx), (dx < 0) ? "west" : "east");
@@ -1455,18 +1455,18 @@ static void dwr_token_dialogue(dw_rom *rom)
  * @param output_file The name of the file to write to.
  * @return A boolean indicating success or failure of rom creation.
  */
-static bool dwr_write(dw_rom *rom, const char *output_file)
+static BOOL dwr_write(dw_rom *rom, const char *output_file)
 {
     FILE *output;
 
     output = fopen(output_file, "wb");
     if (!output) {
         fprintf(stderr, "Unable to open file '%s' for writing", output_file);
-        return false;
+        return FALSE;
     }
     fwrite(rom->raw, 1, ROM_SIZE, output);
     fclose(output);
-    return true;
+    return TRUE;
 }
 
 /**
@@ -1480,7 +1480,7 @@ static bool dwr_write(dw_rom *rom, const char *output_file)
  *      options which don't affect gameplay.
  */
 uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
-        const char* output_dir)
+        const char *sprite_name, const char* output_dir)
 {
     uint64_t crc;
     char output_file[1024];
@@ -1519,6 +1519,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     other_patches(&rom);
     crc = crc64(0, rom.raw, 0x10010);
 
+    sprite(&rom, sprite_name);
     update_title_screen(&rom);
     randomize_music(&rom);
     disable_music(&rom);

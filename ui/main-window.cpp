@@ -12,7 +12,9 @@
 #include <QtGui/QClipboard>
 
 #include "dwr.h"
+#include "sprites.h"
 #include "main-window.h"
+
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -44,6 +46,10 @@ void MainWindow::initWidgets()
     this->flags = new FlagEntry(this);
     this->levelSpeed = new LevelComboBox(this);
     this->goButton = new QPushButton("Randomize!", this);
+    this->spriteSelect = new QComboBox(this);
+    for (int i=0; i < sizeof(dwr_sprite_names)/sizeof(char*); ++i) {
+       spriteSelect->addItem(dwr_sprite_names[i]);
+    }
 }
 
 void MainWindow::initSlots()
@@ -91,10 +97,15 @@ void MainWindow::layout()
     this->addOption('k', "Don't Require Magic Keys",       5, 2);
 
 
-    this->optionGrid->addWidget(new QLabel("Leveling Speed", this), 6, 0, 0);
-    this->optionGrid->addWidget(this->levelSpeed,    7, 0, 0);
+    /* Add an empty label for padding */
+    this->optionGrid->addWidget(new QLabel("", this), 6, 1, 0);
 
-    this->optionGrid->addWidget(this->goButton,      8, 2, 0);
+    this->optionGrid->addWidget(new QLabel("Leveling Speed", this), 7, 0, 0);
+    this->optionGrid->addWidget(this->levelSpeed,    8, 0, 0);
+    this->optionGrid->addWidget(new QLabel("Player Sprite", this), 7, 1, 0);
+    this->optionGrid->addWidget(this->spriteSelect,    8, 1, 0);
+
+    this->optionGrid->addWidget(this->goButton,      9, 2, 0);
 
     this->mainWidget->setLayout(vbox);
 }
@@ -170,8 +181,10 @@ void MainWindow::handleButton()
     uint64_t seed = this->seed->getSeed();
     std::string inputFile = this->romFile->text().toLatin1().constData();
     std::string outputDir = this->outputDir->text().toLatin1().constData();
-    uint64_t crc = dwr_randomize(inputFile.c_str(), seed,
-                                 flags, outputDir.c_str());
+    std::string spriteName =
+                this->spriteSelect->currentText().toLatin1().constData();
+    uint64_t crc = dwr_randomize(inputFile.c_str(), seed, flags,
+                                 spriteName.c_str(), outputDir.c_str());
     if (crc) {
         sprintf(checksum, "Checksum: %016" PRIx64, crc);
         QGuiApplication::clipboard()->setText(checksum);

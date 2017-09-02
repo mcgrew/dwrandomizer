@@ -59,7 +59,7 @@ static int optimize_map(dw_map *map)
  * @param map The map struct
  * @return A boolean indicating success or failure of map generation
  */
-static bool map_encode(dw_map *map)
+static BOOL map_encode(dw_map *map)
 {
     int x, y;
     uint8_t *e, encoded[120 * 120]; 
@@ -90,14 +90,14 @@ static bool map_encode(dw_map *map)
 
     if (e - encoded > MAP_ENCODED_SIZE) {
         printf("Compressed map is too large (%d)\n", (int)(e - encoded));
-        return false;
+        return FALSE;
     } else {
         printf("Compressed map size: %d\n", (int)(e - encoded));
     }
     memcpy(map->encoded, encoded, MAP_ENCODED_SIZE);
     memcpy(map->pointers, pointers, 240);
     optimize_map(map);
-    return true;
+    return TRUE;
 }
 
 /**
@@ -148,15 +148,15 @@ static void map_smooth(dw_map *map)
  * @param tile The tile type to check
  * @return A boolean indicating whether the tile can be walked on
  */
-static bool tile_is_walkable(dw_tile tile)
+static BOOL tile_is_walkable(dw_tile tile)
 {
     switch(tile) {
         case TILE_WATER:
         case TILE_MOUNTAIN:
         case TILE_BLOCK:
-            return false;
+            return FALSE;
         default:
-            return true;
+            return TRUE;
     }
 }
 
@@ -219,13 +219,13 @@ static int map_land_mass(dw_map *map, uint8_t x, uint8_t y,
  * @param lm_sizes The sizes of all land masses
  * @return A boolean indicating if a bridge is needed
  */
-static inline bool needs_bridge(uint8_t left, uint8_t right, int *lm_sizes)
+static inline BOOL needs_bridge(uint8_t left, uint8_t right, int *lm_sizes)
 {
     if (!left || !right || left == right)
-        return false;
+        return FALSE;
 //    if (lm_sizes[left-1] < 100 || lm_sizes[right-1] < 100)
-//        return false;
-    return true;
+//        return FALSE;
+    return TRUE;
 }
 
 /**
@@ -234,7 +234,7 @@ static inline bool needs_bridge(uint8_t left, uint8_t right, int *lm_sizes)
  * @param lm_sizes The sizes of all land masses on the map.
  * @return A boolean indicating if a bridge was placed.
  */
-static bool add_bridges(dw_map *map, int *lm_sizes)
+static BOOL add_bridges(dw_map *map, int *lm_sizes)
 {
     /* this could use more work */
     uint8_t x, y, left, right, x_candidate[50], y_candidate[50];
@@ -256,9 +256,9 @@ static bool add_bridges(dw_map *map, int *lm_sizes)
     if (count) {
         which = mt_rand(0, count-1);
         map->tiles[x_candidate[which]][y_candidate[which]] = TILE_BRIDGE;
-        return true;
+        return TRUE;
     }
-    return false;
+    return FALSE;
 }
 
 /**
@@ -556,12 +556,12 @@ static int find_walkable_area(dw_map *map, int *lm_sizes, int *largest,
  * @param map The map struct
  * @return A boolean indicating success or failure
  */
-static bool place_landmarks(dw_map *map)
+static BOOL place_landmarks(dw_map *map)
 {
     int i, largest = 0, next = 0, lm_count, lm_sizes[256];
     uint8_t tantegel_lm, charlock_lm;
     dw_map_index swamp_north, swamp_south;
-    bool swamp_placed = false;
+    BOOL swamp_placed = FALSE;
     dw_warp *warp;
     dw_warp_index caves[8] = {
             WARP_SWAMP_NORTH,
@@ -586,7 +586,7 @@ static bool place_landmarks(dw_map *map)
 
     if (charlock_lm != largest && charlock_lm != next) {
         printf("Charlock is obstructed, retrying...\n");
-        return false;
+        return FALSE;
     }
 
     mt_shuffle(caves, 8, sizeof(dw_warp_index));
@@ -607,7 +607,7 @@ static bool place_landmarks(dw_map *map)
         if (caves[i] == WARP_SWAMP_NORTH || caves[i] == WARP_SWAMP_SOUTH) {
             if (!swamp_placed) {
                 place(map, caves[i], TILE_CAVE, next, 0);
-                swamp_placed = true;
+                swamp_placed = TRUE;
             } else {
                 place(map, caves[i], TILE_CAVE, largest, 0);
             }
@@ -651,7 +651,7 @@ static bool place_landmarks(dw_map *map)
     map->meta[CANTLIN].border =
             place(map, WARP_CANTLIN, TILE_TOWN, largest, next);
 
-    return true;
+    return TRUE;
 }
 
 /**
@@ -660,7 +660,7 @@ static bool place_landmarks(dw_map *map)
  * @param rom The rom struct
  * @return A boolean indicating whether terrain generation was successful or not
  */
-bool map_generate_terrain(dw_rom *rom)
+BOOL map_generate_terrain(dw_rom *rom)
 {
     int i, j, lm_count, lm_sizes[256];
     int largest, next, total_area;
@@ -696,8 +696,8 @@ bool map_generate_terrain(dw_rom *rom)
     if (largest != next)
         total_area += lm_sizes[next - 1];
     if (total_area < 5000) {
-        printf("Total map area is too small, retrying...");
-        return false;
+        printf("Total map area is too small, retrying...\n");
+        return FALSE;
     }
 
     while (add_bridges(&rom->map, lm_sizes)) {
@@ -709,7 +709,7 @@ bool map_generate_terrain(dw_rom *rom)
 //    }
     lm_count = find_walkable_area(&rom->map, lm_sizes, &largest, &next);
     if (!place_landmarks(&rom->map)) {
-        return false;
+        return FALSE;
     }
     /* place the token */
     lm_count = find_walkable_area(&rom->map, lm_sizes, &largest, &next);

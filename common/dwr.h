@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "build.h"
+#include "sprites.h"
 
 #define VERSION "2.0 beta " BUILD
 
@@ -110,7 +111,7 @@ extern "C" {
  *      options which don't affect gameplay.
  */
 uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
-        const char* output_dir);
+        const char *sprite_name, const char* output_dir);
 
 #ifdef __cplusplus
 }

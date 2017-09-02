@@ -7,10 +7,14 @@
 #include "dwr.h"
 #include "dwr_types.h"
 #include "map.h"
+#include "sprites.h"
+
 
 static void print_usage(const char *command, char *default_flags)
 {
-    printf("Usage %s <rom_file> [flags [seed]] <output_dir>\n", command);
+    int i;
+
+    printf("Usage %s <rom_file> [flags [seed [sprite]]] <output_dir>\n", command);
     printf("\n");
     printf("A randomizer for Dragon Warrior for NES\n");
     printf("\n");
@@ -41,11 +45,18 @@ static void print_usage(const char *command, char *default_flags)
     printf("If flags are not specified, the flags \"%s\" will be used\n",
             default_flags);
     printf("If the seed is not specified, a random seed will be chosen\n");
+    printf("\n");
+    printf("Sprite should be one of: ");
+    for(i=0; i < sizeof(dwr_sprite_names) / sizeof(char *); i++) {
+        printf("%s ", dwr_sprite_names[i]);
+    }
+    printf("\n");
 }
 
 int main(int argc, char **argv)
 {
     uint64_t seed;
+    int i, sprite = 0;
     char *flags;
     char default_flags[] = DEFAULT_FLAGS;
     char *input_file, *output_dir;
@@ -63,13 +74,20 @@ int main(int argc, char **argv)
     } else {
         flags = default_flags;
     }
-    if (argc < 5 || sscanf(argv[argc-2], "%"PRIu64, &seed) != 1) {
+    if (argc < 5 || sscanf(argv[3], "%"PRIu64, &seed) != 1) {
         srand(time(NULL));
         seed = ((uint64_t)rand() << 32) | ((uint64_t)rand() & 0xffffffffL);
     }
+    if (argc > 5) {
+        for (i = 0; i < sizeof(dwr_sprite_names) / sizeof(char *); i++) {
+            if (!strcmp(dwr_sprite_names[i], argv[4]))
+                sprite = i;
+        }
+    }
+
     printf("Randomizing using seed: %"PRIu64" with flags %s\n", seed, flags);
 
-    dwr_randomize(input_file, seed, flags, output_dir);
+    dwr_randomize(input_file, seed, flags, sprite, output_dir);
 
     return 0;
 }

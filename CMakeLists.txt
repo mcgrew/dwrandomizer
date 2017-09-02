@@ -15,6 +15,7 @@ include_directories(common /usr/include/qt)
 
 set(CLI_SOURCE_FILES
         common/crc64.c
+        common/sprites.c
         common/dwr.c
         common/map.c
         common/mt19937-64.c
@@ -27,6 +28,7 @@ target_link_libraries(dwrandomizer-cli m)
 
 set (UI_SOURCE_FILES
         common/crc64.c
+        common/sprites.c
         common/dwr.c
         common/map.c
         common/mt19937-64.c

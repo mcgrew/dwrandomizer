@@ -3,7 +3,9 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QHBoxLayout>
-#include <time.h>
+#include <ctime>
+#define __STDC_FORMAT_MACROS
+#include <cinttypes>
 
 #include "dwr.h"
 #include "widgets.h"

@@ -5,11 +5,12 @@
 #ifndef DWRANDOMIZER_MAIN_WINDOW_H
 #define DWRANDOMIZER_MAIN_WINDOW_H
 
-#include "widgets.h"
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QGridLayout>
+
+#include "widgets.h"
 
 #ifdef __cplusplus
 extern "C" {

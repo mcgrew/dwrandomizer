@@ -11,10 +11,12 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QClipboard>
 
+#define __STDC_FORMAT_MACROS
+#include <cinttypes>
+
 #include "dwr.h"
 #include "sprites.h"
 #include "main-window.h"
-
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {

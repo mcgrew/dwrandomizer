@@ -1,6 +1,4 @@
 
-#define __STDC_FORMAT_MACROS
-
 #include <QtCore/QString>
 #include <QtCore/QTextStream>
 #include <QtGui/QFont>
@@ -9,7 +7,6 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QLabel>
-#include <inttypes.h>
 
 
 #ifndef DWRANDOMIZER_WIDGETS_H

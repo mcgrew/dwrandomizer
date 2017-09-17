@@ -1193,15 +1193,10 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0x94c,  1, 0x6f); /* quit ignoring the customers */
     vpatch(rom, 0x17b2, 3, 0, 0, 0); /* delete roaming throne room guard */
     /* Change the player sprite color for fun */
-//    vpatch(rom, 0x1a9d, 1, mt_rand(0,1) << 4 | mt_rand(1,0xd));
-//    vpatch(rom, 0x1a9c, 1, mt_rand(0x30,0x3d));
+    vpatch(rom, 0xf141, 2, 0x69, 0x03); /* Lock the stat build modifier at 3 */
 
     /* I always hated this wording */
     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");
-
-//    if (mt_rand_double() < 0.1)
-//        dwr_str_replace(rom, "Red Dragon", "Fun Police");
-
 }
 
 /**

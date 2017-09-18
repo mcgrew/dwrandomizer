@@ -56,7 +56,8 @@ static void print_usage(const char *command, char *default_flags)
 int main(int argc, char **argv)
 {
     uint64_t seed;
-    int i, sprite = 0;
+    int i;
+    const char *sprite;
     char *flags;
     char default_flags[] = DEFAULT_FLAGS;
     char *input_file, *output_dir;
@@ -79,10 +80,9 @@ int main(int argc, char **argv)
         seed = ((uint64_t)rand() << 32) | ((uint64_t)rand() & 0xffffffffL);
     }
     if (argc > 5) {
-        for (i = 0; i < sizeof(dwr_sprite_names) / sizeof(char *); i++) {
-            if (!strcmp(dwr_sprite_names[i], argv[4]))
-                sprite = i;
-        }
+        sprite = argv[4];
+    } else {
+        sprite = "";
     }
 
     printf("Randomizing using seed: %"PRIu64" with flags %s\n", seed, flags);

@@ -1125,24 +1125,23 @@ static void dwr_death_necklace(dw_rom *rom)
 
     vpatch(rom, 0xff64, 32,
             /* ff54: */
-            0xa5, 0xcf,  /* LDA $00CF ; load status bits                   */
-            0x29, 0x80,  /* AND #$80  ; check bit 8 (death necklace)       */
-            0xf0, 0x17,  /* BEQ $FF71                                      */
+            0x24, 0xcf,  /* AND #$80  ; check bit 8 (death necklace)       */
+            0x10, 0x18,  /* BPL $FF71                                      */
             0xa5, 0xca,  /* LDA $00CA ; load max HP                        */
             0x46, 0xca,  /* LSR $00CA ; divide max HP by 4                 */
             0x46, 0xca,  /* LSR $00CA                                      */
-            /* ff60: */
+            0x18,        /* CLC       ; Clear the carry bit                */
             0xe5, 0xca,  /* SBC $00CA ; subtract the result                */
             0x85, 0xca,  /* STA $00CA ; rewrite max HP                     */
             0xc5, 0xc5,  /* CMP $00C5 ; compare to current HP              */
-            0xb0, 0x02,  /* BCS $FF6A                                      */
+            0xb0, 0x02,  /* BCS $FF69                                      */
             0x85, 0xc5,  /* STA $00C5 ; set current HP to max HP           */
-            /* ff6a: */
+            /* ff69: */
             0x18,        /* CLC       ; Clear the carry bit                */
             0xa5, 0xcc,  /* LDA $00CC ; load attack power                  */
             0x69, 0x0a,  /* ADD #$0A  ; add 10                             */
             0x85, 0xcc,  /* STA $00CC ; rewrite attack power               */
-            /* ff71: */
+            /* ff70: */
             0xa5, 0xcf,  /* LDA $00CF ; replaces code removed from $F00E   */
             0x60         /* RTS                                            */
         );

@@ -525,7 +525,7 @@ static void randomize_attack_patterns(dw_rom *rom)
     if (!RANDOMIZE_PATTERNS(rom))
         return;
 
-    printf("Randomizing enemy attack patterns\n");
+    printf("Randomizing enemy attack patterns...\n");
     enemies = rom->enemies;
 
     for (i=SLIME; i <= RED_DRAGON; i++) {
@@ -553,7 +553,7 @@ static void randomize_music(dw_rom *rom)
     if (!RANDOMIZE_MUSIC(rom))
         return;
 
-    printf("Randomizing game music\n");
+    printf("Randomizing game music...\n");
 
     uint8_t choices[] = {0x1, 0x1, 0x1, 0x2, 0x2, 0x2, 0x3, 0x3, 0x3, 0x4, 0x4, 
                          0x4, 0x5, 0x5, 0x5, 0xf, 0xf, 0xf, 0x10, 0x10, 0x10,
@@ -615,7 +615,7 @@ static void randomize_zone_layout(dw_rom *rom)
     int i;
     dw_warp *tantegel = &rom->map.warps_from[WARP_TANTEGEL];
 
-    printf("Randomizing enemy zone layout\n");
+    printf("Randomizing enemy zone layout...\n");
 
     for (i=0; i < 32; i++) {
         rom->zone_layout[i] = 0;
@@ -646,7 +646,7 @@ static void randomize_zones(dw_rom *rom)
     if (!RANDOMIZE_ZONES(rom))
         return;
 
-    printf("Randomizing monsters in enemy zones\n");
+    printf("Randomizing monsters in enemy zones...\n");
 
     zone = 0;  /* tantegel zone */
     for (i=0; i < 5; i++) { 
@@ -719,7 +719,7 @@ static void randomize_shops(dw_rom *rom)
     if (!RANDOMIZE_SHOPS(rom))
         return;
 
-    printf("Randomizing weapon shop inventory\n");
+    printf("Randomizing weapon shop inventory...\n");
     
     six_item_shop = mt_rand(0, 6);
     shop_item = rom->weapon_shops;
@@ -755,7 +755,7 @@ static void shuffle_searchables(dw_rom *rom)
     if (!SHUFFLE_CHESTS(rom))
         return;
 
-    printf("Shuffling searchable items\n");
+    printf("Shuffling searchable items...\n");
 
     searchables[0] = *(rom->token);
     searchables[1] = *(rom->flute);
@@ -806,7 +806,7 @@ static void randomize_growth(dw_rom *rom)
     if (!RANDOMIZE_GROWTH(rom))
         return;
 
-    printf("Randomizing stat growth\n");
+    printf("Randomizing stat growth...\n");
 
     for (i=0; i < 30; i++) {
         str[i] = inverted_power_curve(4, 155, 1.18);
@@ -897,7 +897,7 @@ static void open_charlock(dw_rom *rom)
     if (!OPEN_CHARLOCK(rom))
         return;
 
-    printf("Removing quest items...\n");
+    printf("Opening Charlock and removing quest items...\n");
     /* remove the quest items since we won't need them */
     for (i=0; i <= 31; ++i) {
         if (is_quest_item(rom->chests[i].item)) {
@@ -1088,7 +1088,7 @@ static void update_title_screen(dw_rom *rom)
 static void dwr_fighters_ring(dw_rom *rom)
 {
 
-    printf("Fixing the fighter's ring\n");
+    printf("Fixing the fighter's ring...\n");
     /* fighter's ring fix */
     vpatch(rom, 0xf10c, 4, 0x20, 0x7d, 0xff, 0xea);
     vpatch(rom, 0xff8d, 17,
@@ -1121,7 +1121,7 @@ static void dwr_death_necklace(dw_rom *rom)
     if (!DEATH_NECKLACE(rom))
         return;
 
-    printf("Adding functionality to the death necklace\n");
+    printf("Adding functionality to the death necklace...\n");
 
     vpatch(rom, 0xff64, 32,
             /* ff54: */
@@ -1155,6 +1155,8 @@ static void dwr_death_necklace(dw_rom *rom)
  */
 static void other_patches(dw_rom *rom)
 {
+    printf("Applying various other patches...\n");
+
     /* move the golem encounter to charlock */
     rom->golem_run->map = rom->golem->map = CHARLOCK_THRONE_ROOM;
     rom->golem_run->x = rom->golem->x = 25;
@@ -1200,6 +1202,8 @@ static void other_patches(dw_rom *rom)
 
 static void credits(dw_rom *rom)
 {
+    printf("Patching credits...\n");
+
     /* patch the credits a bit */
     vpatch(rom, 0x5844, 162,
            /* dwrandomizer */
@@ -1228,7 +1232,7 @@ static void credits(dw_rom *rom)
            0xfc, 0xd7, 0x21,
                0x30, 0x26, 0x2a, 0x35, 0x28, 0x3a,
 
-           /* special thanks */
+           /* promotion */
            0xfc, 0x23, 0x22,
                0x33, 0x35, 0x32, 0x30, 0x32, 0x37, 0x2c, 0x32, 0x31,
            0xfc, 0x6f, 0x22,
@@ -1261,7 +1265,7 @@ static void dwr_menu_wrap(dw_rom *rom)
     if (!MENU_WRAP(rom))
         return;
 
-    printf("Enabling menu cursor wrap-around\n");
+    printf("Enabling menu cursor wrap-around...\n");
 
     /* implement up/down wraparound for most menus (from @gameboy9) */
     vpatch(rom, 0x69f0, 4,

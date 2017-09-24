@@ -2,6 +2,7 @@
 // Created by mcgrew on 8/30/17.
 //
 
+#include <string.h>
 #include <stdarg.h>
 
 #include "sprites.h"
@@ -28,7 +29,7 @@ const char *dwr_sprite_names[7] = {
  */
 static uint16_t vpatch(dw_rom *rom, uint32_t address, uint32_t size, ...)
 {
-    int i;
+    uint32_t i;
     va_list arg;
     uint8_t *p;
 
@@ -224,8 +225,8 @@ static void gwaelin_sprite(dw_rom *rom)
 
 void sprite(dw_rom *rom, const char *sprite_name)
 {
-    void (*sprite_func[16])(dwr_rom);
-    int i=1;
+    void (*sprite_func[16])(dw_rom *rom);
+    size_t i=1;
 
     sprite_func[i++] = &dw4_heroine_sprite;
     sprite_func[i++] = &gwaelin_sprite;

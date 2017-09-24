@@ -222,7 +222,7 @@ size_t ascii2dw_title(uint8_t *string)
  */
 size_t dw2ascii(uint8_t *string, size_t bufsize)
 {
-    int i, alphalen;
+    size_t i, alphalen;
 
     alphalen = strlen(alphabet);
     for (i=0; i < bufsize; i++) {
@@ -246,7 +246,7 @@ size_t dw2ascii(uint8_t *string, size_t bufsize)
  */
 static uint16_t vpatch(dw_rom *rom, uint32_t address, uint32_t size, ...)
 {
-    int i;
+    uint32_t i;
     va_list arg;
     uint8_t *p;
 
@@ -273,7 +273,7 @@ static uint16_t vpatch(dw_rom *rom, uint32_t address, uint32_t size, ...)
 static uint16_t patch(dw_rom *rom, uint32_t address, uint32_t size,
                       uint8_t *data)
 {
-    int i;
+    uint32_t i;
     uint8_t *p;
 
     p = &rom->raw[address];
@@ -294,7 +294,7 @@ static uint16_t patch(dw_rom *rom, uint32_t address, uint32_t size,
  */
 static uint8_t *ppatch(uint8_t *p, uint32_t size, uint8_t *data)
 {
-    int i;
+    uint32_t i;
 
     for (i=0; i < size; i++) {
         *(p++) = data[i];
@@ -312,7 +312,7 @@ static uint8_t *ppatch(uint8_t *p, uint32_t size, uint8_t *data)
  */
 static uint8_t *pvpatch(uint8_t *p, uint32_t size, ...)
 {
-    int i;
+    uint32_t i;
     va_list arg;
 
     va_start(arg, size);
@@ -348,8 +348,8 @@ static uint8_t *dwr_str_replace(dw_rom *rom, const char *text,
 
     strncpy(dw_text, text, 256);
     strncpy(dw_repl, replacement, 256);
-    ascii2dw(dw_text);
-    ascii2dw(dw_repl);
+    ascii2dw((unsigned char *)dw_text);
+    ascii2dw((unsigned char *)dw_repl);
 
     for (start = rom->raw; start < end; start++) {
         if (!memcmp(start, dw_text, len)) {

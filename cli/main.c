@@ -12,7 +12,7 @@
 
 static void print_usage(const char *command, char *default_flags)
 {
-    int i;
+    size_t i;
 
     printf("Usage %s <rom_file> [flags [seed [sprite]]] <output_dir>\n", command);
     printf("\n");
@@ -56,7 +56,6 @@ static void print_usage(const char *command, char *default_flags)
 int main(int argc, char **argv)
 {
     uint64_t seed;
-    int i;
     const char *sprite;
     char *flags;
     char default_flags[] = DEFAULT_FLAGS;

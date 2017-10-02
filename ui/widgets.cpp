@@ -108,7 +108,8 @@ void FileEntry::handleButton()
 {
     QString filename = QFileDialog::getOpenFileName(
            this, "Choose the ROM file", "./", "NES ROM Files (*.nes)");
-    this->textBox->setText(filename);
+    if (filename.size())
+        this->textBox->setText(filename);
 }
 
 DirEntry::DirEntry(QWidget *parent) : ButtonEntry(parent)
@@ -130,7 +131,8 @@ void DirEntry::handleButton()
             "Choose the output directory",
 #endif
             "./");
-    this->textBox->setText(dirName);
+    if (dirName.size())
+        this->textBox->setText(dirName);
 }
 
 SeedEntry::SeedEntry(QWidget *parent) : ButtonEntry(parent)

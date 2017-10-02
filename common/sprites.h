@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-extern const char *dwr_sprite_names[7];
+extern const char *dwr_sprite_names[9];
 
 void sprite(dw_rom *rom, const char *sprite_name);
 

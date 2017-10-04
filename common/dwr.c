@@ -1195,6 +1195,8 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0x17b2, 3, 0, 0, 0); /* delete roaming throne room guard */
     /* Change the player sprite color for fun */
     vpatch(rom, 0xf141, 2, 0x69, 0x03); /* Lock the stat build modifier at 3 */
+    /* Embed the randomizer version in the ROM */
+    vpatch(rom, 0xfff0, 16, "DWRANDOMIZER " BUILD);
 
     /* I always hated this wording */
     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");

@@ -7,7 +7,7 @@
 #include "build.h"
 #include "sprites.h"
 
-#define VERSION "2.0 beta " BUILD
+#define VERSION "2.0" // beta " BUILD
 
 #define DEFAULT_FLAGS "CDFGMPRWZ"
 #define CHEST_COUNT 31

@@ -1020,6 +1020,31 @@ static uint8_t *center_title_text(uint8_t *pos, const char *text)
 }
 
 /**
+ * Adds extra padding to the title screen if needed to make sure we fill the
+ * space.
+ *
+ * @param pos The current position of the title screen pointer.
+ * @param end The end of the title screen space.
+ * @param reserved Space to reserve for other text.
+ * @return
+ */
+static uint8_t *pad_title_screen(uint8_t *pos, uint8_t *end, int reserved)
+{
+    char text[32];
+    int needed;
+
+    needed = MIN(end - pos - reserved, 32);
+    memset(text, 0x5f, needed);
+    pos = ppatch(pos, needed, (uint8_t*)text);
+    if (needed == 32) {
+        pos = pvpatch(pos, 1, 0xfc);
+    } else {
+        pos = pvpatch(pos, 4, 0xf7, 32 - needed, 0x5f, 0xfc);
+    }
+    return pos;
+}
+
+/**
  * Updates the title screen with the randomizer version, flags, and seed number.
  *
  * @param rom The rom struct
@@ -1039,9 +1064,9 @@ static void update_title_screen(dw_rom *rom)
     fo = (char*)flag_order;
 
     pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
-    pos = center_title_text(pos, "RANDOMIZER");
+    pos = center_title_text(pos, "RANDOMIZER");  /* RANDOMIZER text */
     pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
-    pos = center_title_text(pos, VERSION);
+    pos = center_title_text(pos, VERSION);       /* version number */
 
     pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
     pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
@@ -1057,19 +1082,21 @@ static void update_title_screen(dw_rom *rom)
     }
     *f = '\0';
 
-    pos = center_title_text(pos, text);
-    pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
+    pos = center_title_text(pos, text);          /* flags */
+//    pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
     snprintf((char *)text, 33, "%"PRIu64, rom->seed);
-    pos = center_title_text(pos, text);
+    pos = pad_title_screen(pos, end, 15 + strlen(text)); /* blank line */
+    pos = center_title_text(pos, text);         /* seed number */
 
-    needed = MIN(end - pos - 8, 32);
-    memset(text, 0x5f, needed);
-    pos = ppatch(pos, needed, (uint8_t*)text);
-    if (needed == 32) {
-        pos = pvpatch(pos, 1, 0xfc);
-    } else {
-        pos = pvpatch(pos, 4, 0xf7, 32 - needed, 0x5f, 0xfc);
-    }
+    pos = pad_title_screen(pos, end, 8); /* blank line */
+//    needed = MIN(end - pos - 8, 32);
+//    memset(text, 0x5f, needed);
+//    pos = ppatch(pos, needed, (uint8_t*)text);
+//    if (needed == 32) {
+//        pos = pvpatch(pos, 1, 0xfc);
+//    } else {
+//        pos = pvpatch(pos, 4, 0xf7, 32 - needed, 0x5f, 0xfc);
+//    }
 
     needed = MAX(end - pos - 4, 0);
     if (needed > 0)
@@ -1196,7 +1223,7 @@ static void other_patches(dw_rom *rom)
     /* Change the player sprite color for fun */
     vpatch(rom, 0xf141, 2, 0x69, 0x03); /* Lock the stat build modifier at 3 */
     /* Embed the randomizer version in the ROM */
-    vpatch(rom, 0xfff0, 16, "DWRANDOMIZER " BUILD);
+//    vpatch(rom, 0xfff0, 16, "DWRANDOMIZER " BUILD);
 
     /* I always hated this wording */
     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");

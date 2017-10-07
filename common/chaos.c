@@ -135,6 +135,8 @@ static void chaos_enemies(dw_rom *rom)
     enemies[DRAGONLORD_1].xp = 0;
     enemies[DRAGONLORD_1].gold = 0;
     enemies[DRAGONLORD_1].pattern = mt_rand(0, 255);
+    enemies[DRAGONLORD_1].s_ss_resist &= 0xf0;
+    enemies[DRAGONLORD_1].s_ss_resist |= 15 - rand_power_curve(0, 2, 2.0);
 
     /* Dragonlord with heal or sleep? That's just evil */
     enemies[DRAGONLORD_2].pattern |= (mt_rand(0, 255) & 0xb0);

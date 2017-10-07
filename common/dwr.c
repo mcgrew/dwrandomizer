@@ -1184,6 +1184,9 @@ static void other_patches(dw_rom *rom)
 {
     printf("Applying various other patches...\n");
 
+    /* convert PRG1 to PRG0 */
+    vpatch(rom, 0xaf7c, 1,  0xef);
+
     /* move the golem encounter to charlock */
     rom->golem_run->map = rom->golem->map = CHARLOCK_THRONE_ROOM;
     rom->golem_run->x = rom->golem->x = 25;

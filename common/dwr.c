@@ -451,7 +451,7 @@ static void shuffle_chests(dw_rom *rom) {
     chest = rom->chests;
 
     if (!mt_rand(0, 2)) { /* 33% chance */
-        rom->token->map = NO_MAP; /* remove flute */
+        rom->token->map = NO_MAP; /* remove token */
         contents[0] = TOKEN; /* replace cursed belt in a chest */
     }
     if (!mt_rand(0, 2)) { /* 33% chance */
@@ -896,6 +896,8 @@ static void open_charlock(dw_rom *rom)
 
     if (!OPEN_CHARLOCK(rom))
         return;
+
+    rom->token->map = NO_MAP; /* remove token from the map */
 
     printf("Opening Charlock and removing quest items...\n");
     /* remove the quest items since we won't need them */

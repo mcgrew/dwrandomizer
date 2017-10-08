@@ -112,7 +112,11 @@ using your favorite emulator or flash cart.
 * Randomize Weapon Shops: Randomizes what items are available in all weapon shops.
 * Randomize Growth: Randomize the stat changes you receive on each level up.
 * Randomize Spell Learning: Randomizes the level at which you learn each spell.
-* Chaos Mode: All enemy stats (STR,AGI,etc.) are randomized. In addition, weapon & armor prices are randomized. Dragonlord form 2 may have HEAL or SLEEP.
+* Chaos Mode
+  * All enemy stats (STR,AGI,etc.) are randomized.
+  * Weapon & armor prices are randomized.
+  * Experience requirements for levels are randomized. They are still affected by leveling speed.
+  * Dragonlord form 2 may have HEAL or SLEEP.
 * Randomize Enemy Attacks: Enemy spells and abilities are randomized.
 * Randomize Enemy Zones: Enemy locations are random.
 * Enable Menu Wrapping: Enable wrapping of the cursor from top to bottom in menus.

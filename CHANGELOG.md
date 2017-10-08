@@ -1,5 +1,5 @@
 # 2.0 - Complete rewrite, split continents and more #
-###### Released Xxx XX, 2017 ######
+###### Released Oct 7, 2017 ######
 
 * From scratch rewrite using C, C++ and the Qt toolkit.
 * Split continents can now occur, causing the swamp cave to be required
@@ -7,16 +7,18 @@
    * The roving guard in the throne room has been sacked
    * The old man in the Garinam item ahop has been moved
    * The weapon shop in Cantlin now contains 4 counter tiles - the owner can no longer hide!
-* No more bridges to nowhere.
-   * The islands the bridges lead to may be empty, but they won't be tiny.
 * Chaos mode
-    * Randomizes all anemy stats including Dragonlord form 1.
+    * Randomizes all enemy stats including Dragonlord form 1.
+    * Randomizes experience requirements for levels.
     * Dragonlord form 2 will have between 100 and 230 HP.
     * Dragonlord form 2 could have `SLEEP` or `HEAL`, but also is more susceptible to `STOPSPELL`.
 * More speed options
+    * Fast Text and Speed Hacks are now separate options
     * Open Charlock - no Rainbow Drop required.
     * Short Charlock - No need for torches because there's no dungeon, just straight to the Dragonlord's floor.
     * Added an option to not require keys for opening doors.
+* Big Swamp option - most of the overworld will be filled with swamp.
+* Added player sprite options. The player sprite can be changed when generating a ROM.
 * Fixed an issue where the player could obtain multiple flutes/tokens if they were in a chest.
     * This would clutter the inventory since they are unable to be discarded.
 

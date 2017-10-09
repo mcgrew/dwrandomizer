@@ -5,7 +5,7 @@
 * Split continents can now occur, causing the swamp cave to be required
 * Some NPCs have been moved or removed
    * The roving guard in the throne room has been sacked
-   * The old man in the Garinam item ahop has been moved
+   * The old man in the Garinam item shop has been moved
    * The weapon shop in Cantlin now contains 4 counter tiles - the owner can no longer hide!
 * Chaos mode
     * Randomizes all enemy stats including Dragonlord form 1.

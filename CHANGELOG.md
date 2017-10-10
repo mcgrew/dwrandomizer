@@ -1,3 +1,11 @@
+# 2.0.1 - Bugfix #
+###### Released Oct 10, 2017 ######
+
+* Fixed a read overrun in death_necklace()
+  * This was causing a rom difference and checksum mismatch.
+  * Bug did not affect gameplay.
+
+
 # 2.0 - Complete rewrite, split continents and more #
 ###### Released Oct 7, 2017 ######
 

@@ -7,7 +7,15 @@
 #include "build.h"
 #include "sprites.h"
 
-#define VERSION "2.1 beta " BUILD
+#define DWR_VERSION "2.0.1"
+
+#ifdef  DWR_RELEASE
+#define VERSION DWR_VERSION
+#elif DWR_ALPHA
+#define VERSION DWR_VERSION " alpha " BUILD
+#else
+#define VERSION DWR_VERSION " beta " BUILD
+#endif
 
 #define DEFAULT_FLAGS "CDFGMPRWZ"
 #define CHEST_COUNT 31

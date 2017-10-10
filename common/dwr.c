@@ -897,7 +897,7 @@ static void open_charlock(dw_rom *rom)
     if (!OPEN_CHARLOCK(rom))
         return;
 
-    rom->token->map = NO_MAP; /* remove token from the map */
+    rom->token->map = NO_MAP; /* remove token */
 
     printf("Opening Charlock and removing quest items...\n");
     /* remove the quest items since we won't need them */
@@ -1152,7 +1152,7 @@ static void dwr_death_necklace(dw_rom *rom)
 
     printf("Adding functionality to the death necklace...\n");
 
-    vpatch(rom, 0xff64, 32,
+    vpatch(rom, 0xff64, 31,
             /* ff54: */
             0x24, 0xcf,  /* AND #$80  ; check bit 8 (death necklace)       */
             0x10, 0x18,  /* BPL $FF71                                      */

@@ -786,7 +786,7 @@ static uint8_t inverted_power_curve(uint8_t min, uint8_t max, double power)
     double p_range;
     
     p_range= pow((double)(max - min), 1 / power);
-    return min + round(max - pow((mt_rand_double() * p_range), power));
+    return min + round((max - min) - pow((mt_rand_double() * p_range), power));
 }
 
 /**
@@ -809,10 +809,23 @@ static void randomize_growth(dw_rom *rom)
     printf("Randomizing stat growth...\n");
 
     for (i=0; i < 30; i++) {
-        str[i] = inverted_power_curve(4, 155, 1.18);
-        agi[i] = inverted_power_curve(4, 145, 1.32);
-        hp[i] =  inverted_power_curve(10, 230, 0.98);
-        mp[i] =  inverted_power_curve(0, 220, 0.95);
+        if (CHAOS_MODE(rom)) {
+            str[i] = inverted_power_curve(20, 200, 1.0);
+            agi[i] = inverted_power_curve(16, 200, 1.0);
+            if (&rom->raw[0x42] == 0x06) // If Tantegel is surrounded by swamp... (map is randomized before this function)
+                hp[i] =  inverted_power_curve(30, 250, 0.95);
+            else
+                hp[i] =  inverted_power_curve(25, 250, 0.95);
+            mp[i] =  inverted_power_curve(0, 250, 0.93);
+        } else {
+            str[i] = inverted_power_curve(8, 155, 1.16);
+            agi[i] = inverted_power_curve(4, 155, 1.28);
+            if (&rom->raw[0x42] == 0x06) // If Tantegel is surrounded by swamp... (map is randomized before this function)
+                hp[i] =  inverted_power_curve(25, 230, 0.85);
+            else
+                hp[i] =  inverted_power_curve(15, 230, 0.94);
+            mp[i] =  inverted_power_curve(0, 220, 0.95);
+        }
     }
     qsort(str, 30, sizeof(uint8_t), &compare);
     qsort(agi, 30, sizeof(uint8_t), &compare);

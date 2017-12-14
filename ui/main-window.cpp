@@ -97,17 +97,18 @@ void MainWindow::layout()
     this->addOption('o', "Open Charlock",                  3, 2);
     this->addOption('s', "Short Charlock",                 4, 2);
     this->addOption('k', "Don't Require Magic Keys",       5, 2);
+    this->addOption('e', "No Equipment",                   6, 2);
 
 
     /* Add an empty label for padding */
-    this->optionGrid->addWidget(new QLabel("", this), 6, 1, 0);
+    this->optionGrid->addWidget(new QLabel("", this), 7, 1, 0);
 
-    this->optionGrid->addWidget(new QLabel("Leveling Speed", this), 7, 0, 0);
-    this->optionGrid->addWidget(this->levelSpeed,    8, 0, 0);
-    this->optionGrid->addWidget(new QLabel("Player Sprite", this), 7, 1, 0);
-    this->optionGrid->addWidget(this->spriteSelect,    8, 1, 0);
+    this->optionGrid->addWidget(new QLabel("Leveling Speed", this), 8, 0, 0);
+    this->optionGrid->addWidget(this->levelSpeed,    9, 0, 0);
+    this->optionGrid->addWidget(new QLabel("Player Sprite", this), 8, 1, 0);
+    this->optionGrid->addWidget(this->spriteSelect,    9, 1, 0);
 
-    this->optionGrid->addWidget(this->goButton,      9, 2, 0);
+    this->optionGrid->addWidget(this->goButton,      10, 2, 0);
 
     this->mainWidget->setLayout(vbox);
 }

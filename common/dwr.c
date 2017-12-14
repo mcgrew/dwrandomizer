@@ -809,7 +809,11 @@ static void randomize_growth(dw_rom *rom)
     printf("Randomizing stat growth...\n");
 
     for (i=0; i < 30; i++) {
-        if (CHAOS_MODE(rom)) {
+        str[i] = inverted_power_curve(4, 155, 1.18);
+        agi[i] = inverted_power_curve(4, 145, 1.32);
+        hp[i] =  inverted_power_curve(10, 230, 0.98);
+        mp[i] =  inverted_power_curve(0, 220, 0.95);
+        /*if (CHAOS_MODE(rom)) {
             str[i] = inverted_power_curve(20, 200, 1.0);
             agi[i] = inverted_power_curve(16, 200, 1.0);
             if (&rom->raw[0x42] == 0x06) // If Tantegel is surrounded by swamp... (map is randomized before this function)
@@ -825,7 +829,7 @@ static void randomize_growth(dw_rom *rom)
             else
                 hp[i] =  inverted_power_curve(15, 230, 0.94);
             mp[i] =  inverted_power_curve(0, 220, 0.95);
-        }
+        } */
     }
     qsort(str, 30, sizeof(uint8_t), &compare);
     qsort(agi, 30, sizeof(uint8_t), &compare);
@@ -1510,6 +1514,43 @@ static void no_keys(dw_rom *rom)
     vpatch(rom, 0x182b, 3, 0, 0, 0);
 }
 
+static void no_equipment(dw_rom *rom)
+{
+    int i;
+    dw_chest *chest;
+
+    if (!NO_EQUIPMENT(rom))
+        return;
+
+    printf("Removing the need for keys...\n");
+    /* Don't require keys to open the door */
+    chest = rom->chests;
+    for (i=0; i < CHEST_COUNT; i++) {
+        if (chest->item == SWORD || chest->item == DRAGON_SCALE || chest->item == RING || chest->item == NECKLACE)
+            chest->item = GOLD_500;
+        chest++;
+    }
+
+    /* remove the equipment shopkeepers */
+    vpatch(rom, 0x18a4, 3, 0, 0, 0); // Brecconary
+    vpatch(rom, 0x1920, 3, 0, 0, 0); // Garinham
+    vpatch(rom, 0x1837, 3, 0, 0, 0); // Cantlin - behind key door
+    vpatch(rom, 0x1843, 3, 0, 0, 0); // Cantlin - South
+    vpatch(rom, 0x1815, 3, 0, 0, 0); // Cantlin - Facebook guy
+    vpatch(rom, 0x18e8, 3, 0, 0, 0); // Kol
+    vpatch(rom, 0x186f, 3, 0, 0, 0); // Rimuldar
+
+    // Remove Dragon's Scale from stores
+    vpatch(rom, 0x19ce, 13, 0x15, 0xfd,
+           0x11, 0x13, 0xfd,
+           0x11, 0x13, 0xfd,
+           0x11, 0x13, 0xfd,
+           0x15, 0xfd);
+
+    // Remove Erdrick's Armor from drop spot
+    rom->armor->map = NO_MAP;
+}
+
 /**
  * Updates the Cantlin NPC dialogue to reveal the new overworld item location.
  * If there is no overworld item to search for, the NPC will just give you
@@ -1618,6 +1659,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     open_charlock(&rom);
     short_charlock(&rom);
     no_keys(&rom);
+    no_equipment(&rom);
     other_patches(&rom);
     credits(&rom);
     crc = crc64(0, rom.raw, 0x10010);

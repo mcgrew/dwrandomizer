@@ -424,6 +424,15 @@ static inline void check_quest_items(dw_rom *rom)
 }
 
 /**
+ * In random%, determines whether that function will be randomized or not.  This will be determined using a 0-100% model.
+ *
+ * @param Percentage chance of randomizing that function.
+ */
+static BOOL random_percent(dw_rom *rom, unsigned int chance) {
+    return RANDOM_PCT(rom) && (mt_rand(0, 99) < chance);
+}
+
+/**
  * Shuffles the contents of all chests in the game with the exception of the
  * starting throne room key and the staff of rain.
  *
@@ -443,7 +452,7 @@ static void shuffle_chests(dw_rom *rom) {
             STONES, DRAGON_SCALE, HARP, SWORD, NECKLACE, TORCH, RING
     };
 
-    if (!SHUFFLE_CHESTS(rom))
+    if (!SHUFFLE_CHESTS(rom) && !random_percent(rom, 67))
         return;
 
     printf("Shuffling chest contents...\n");
@@ -522,7 +531,7 @@ static void randomize_attack_patterns(dw_rom *rom)
     int i;
     dw_enemy *enemies;
 
-    if (!RANDOMIZE_PATTERNS(rom))
+    if (!RANDOMIZE_PATTERNS(rom) && !random_percent(rom, 67))
         return;
 
     printf("Randomizing enemy attack patterns...\n");
@@ -612,23 +621,34 @@ static inline void set_ow_zone(dw_rom *rom, uint8_t x, uint8_t y, uint8_t value)
  */
 static void randomize_zone_layout(dw_rom *rom)
 {
-    int i;
-    dw_warp *tantegel = &rom->map.warps_from[WARP_TANTEGEL];
+    BOOL zones_randomized = FALSE;
 
-    printf("Randomizing enemy zone layout...\n");
+    if (rom->randomized_map || RANDOMIZE_ZONES(rom) || random_percent(rom, 67)) {
+        zones_randomized = TRUE;
+        int i;
 
-    for (i=0; i < 32; i++) {
-        rom->zone_layout[i] = 0;
-        rom->zone_layout[i] |= mt_rand(3, 15) << 4;
-        rom->zone_layout[i] |= mt_rand(3, 15);
+        printf("Randomizing enemy zone layout...\n");
+
+        for (i=0; i < 32; i++) {
+            rom->zone_layout[i] = 0;
+            rom->zone_layout[i] |= mt_rand(3, 15) << 4;
+            rom->zone_layout[i] |= mt_rand(3, 15);
+        }
     }
 
-    /* set up zones around tantegel */
-    set_ow_zone(rom, tantegel->x / 15, tantegel->y / 15, 0);
-    set_ow_zone(rom, (tantegel->x) / 15 - 1, tantegel->y / 15, 1);
-    set_ow_zone(rom, (tantegel->x) / 15 + 1, tantegel->y / 15, 1);
-    set_ow_zone(rom, tantegel->x / 15, (tantegel->y) / 15 - 1, 2);
-    set_ow_zone(rom, tantegel->x / 15, (tantegel->y) / 15 + 1, 2);
+    // Ensure that something easy is hanging out near Tantegel.
+    if (rom->randomized_map || zones_randomized) {
+        dw_warp *tantegel = &rom->map.warps_from[WARP_TANTEGEL];
+
+        /* set up zones around tantegel */
+        set_ow_zone(rom, tantegel->x / 15, tantegel->y / 15, 0);
+        if (!STAT_OLDSCHOOL(rom) && random_percent(rom, 90)) {
+            set_ow_zone(rom, (tantegel->x) / 15 - 1, tantegel->y / 15, 1);
+            set_ow_zone(rom, (tantegel->x) / 15 + 1, tantegel->y / 15, 1);
+            set_ow_zone(rom, tantegel->x / 15, (tantegel->y) / 15 - 1, 2);
+            set_ow_zone(rom, tantegel->x / 15, (tantegel->y) / 15 + 1, 2);
+        }
+    }
 }
 
 /**
@@ -643,7 +663,7 @@ static void randomize_zones(dw_rom *rom)
             WIZARD, AXE_KNIGHT, BLUE_DRAGON, STONEMAN, ARMORED_KNIGHT,
             RED_DRAGON, GOLEM };
 
-    if (!RANDOMIZE_ZONES(rom))
+    if (!RANDOMIZE_ZONES(rom) && !random_percent(rom, 67))
         return;
 
     printf("Randomizing monsters in enemy zones...\n");
@@ -653,15 +673,23 @@ static void randomize_zones(dw_rom *rom)
         rom->zones[zone * 5 + i] = mt_rand(SLIME, SCORPION);
     }
 
-    for (zone=1; zone <= 2; zone++) { /* tantegel adjacent zones */
-        for (i=0; i < 5; i++) {
-            rom->zones[zone * 5 + i] = mt_rand(SLIME, WOLF);
+    if (!STAT_OLDSCHOOL(rom) && !random_percent(rom, 90)) {
+        for (zone=1; zone <= 2; zone++) { /* tantegel adjacent zones */
+            for (i=0; i < 5; i++) {
+                rom->zones[zone * 5 + i] = mt_rand(SLIME, WOLF);
+            }
         }
-    }
 
-    for (zone=3; zone <= 15; zone++) { /* overworld/hybrid zones */
-        for (i=0; i < 5; i++) {
-            rom->zones[zone * 5 + i] = mt_rand(SLIME, RED_DRAGON);
+        for (zone=3; zone <= 15; zone++) { /* overworld/hybrid zones */
+            for (i=0; i < 5; i++) {
+                rom->zones[zone * 5 + i] = mt_rand(SLIME, RED_DRAGON);
+            }
+        }
+    } else {
+        for (zone=1; zone <= 15; zone++) { /* overworld/hybrid zones */
+            for (i=0; i < 5; i++) {
+                rom->zones[zone * 5 + i] = mt_rand(SLIME, RED_DRAGON);
+            }
         }
     }
 
@@ -716,7 +744,7 @@ static void randomize_shops(dw_rom *rom)
             MAGIC_ARMOR, SMALL_SHIELD, LARGE_SHIELD, SILVER_SHIELD
     };
 
-    if (!RANDOMIZE_SHOPS(rom))
+    if (!RANDOMIZE_SHOPS(rom) && !random_percent(rom, 67))
         return;
 
     printf("Randomizing weapon shop inventory...\n");
@@ -752,7 +780,7 @@ static void shuffle_searchables(dw_rom *rom)
 {
     dw_searchable searchables[3];
 
-    if (!SHUFFLE_CHESTS(rom))
+    if (!SHUFFLE_CHESTS(rom) && !random_percent(rom, 67))
         return;
 
     printf("Shuffling searchable items...\n");
@@ -803,33 +831,57 @@ static void randomize_growth(dw_rom *rom)
     uint8_t  mp[30];
     uint8_t  hp[30];
 
-    if (!RANDOMIZE_GROWTH(rom))
+    if (!RANDOMIZE_GROWTH(rom) && !random_percent(rom, 67))
         return;
 
     printf("Randomizing stat growth...\n");
+    unsigned int random_stat = 0;
+    if (RANDOM_PCT(rom)) {
+        // If "no equipment" was randomly selected,
+        // Force SuperWarrior or God stat growth
+        // so the game can end at a reasonable hour
+        if (&rom->raw[0x18a4] == 0x00)
+            if (random_percent(rom, 75))
+                random_stat = 4;
+            else
+                random_stat = 5;
+        else
+            if (random_percent(rom, 50))
+                random_stat = mt_rand(0, 5);
+    }
 
     for (i=0; i < 30; i++) {
-        str[i] = inverted_power_curve(4, 155, 1.18);
-        agi[i] = inverted_power_curve(4, 145, 1.32);
-        hp[i] =  inverted_power_curve(10, 230, 0.98);
-        mp[i] =  inverted_power_curve(0, 220, 0.95);
-        /*if (CHAOS_MODE(rom)) {
-            str[i] = inverted_power_curve(20, 200, 1.0);
-            agi[i] = inverted_power_curve(16, 200, 1.0);
-            if (&rom->raw[0x42] == 0x06) // If Tantegel is surrounded by swamp... (map is randomized before this function)
-                hp[i] =  inverted_power_curve(30, 250, 0.95);
-            else
-                hp[i] =  inverted_power_curve(25, 250, 0.95);
-            mp[i] =  inverted_power_curve(0, 250, 0.93);
-        } else {
-            str[i] = inverted_power_curve(8, 155, 1.16);
-            agi[i] = inverted_power_curve(4, 155, 1.28);
-            if (&rom->raw[0x42] == 0x06) // If Tantegel is surrounded by swamp... (map is randomized before this function)
-                hp[i] =  inverted_power_curve(25, 230, 0.85);
-            else
-                hp[i] =  inverted_power_curve(15, 230, 0.94);
+        if (STAT_STRONG(rom) || random_stat == 1) {
+            str[i] = inverted_power_curve(8, 165, 1.15);
+            agi[i] = inverted_power_curve(4, 155, 1.50);
+            hp[i] =  inverted_power_curve(10, 230, 0.8);
+            mp[i] =  inverted_power_curve(0, 220, 0.7);
+        } else if (STAT_WEAK(rom) || random_stat == 2) {
+            str[i] = inverted_power_curve(4, 155, 0.90);
+            agi[i] = inverted_power_curve(4, 145, 1.32);
+            hp[i] =  inverted_power_curve(10, 250, 0.98);
+            mp[i] =  inverted_power_curve(0, 240, 0.98);
+        } else if (STAT_OLDSCHOOL(rom) || random_stat == 3) {
+            str[i] = inverted_power_curve(4, 155, 1.00);
+            agi[i] = inverted_power_curve(4, 145, 1.00);
+            hp[i] =  inverted_power_curve(10, 230, 1.00);
+            mp[i] =  inverted_power_curve(0, 220, 1.00);
+        } else if (STAT_SUPERWAR(rom) || random_stat == 4) {
+            str[i] = inverted_power_curve(4, 175, 1.8);
+            agi[i] = inverted_power_curve(4, 165, 1.32);
+            hp[i] =  inverted_power_curve(10, 250, 1.18);
+            mp[i] =  inverted_power_curve(0, 250, 1.08);
+        } else if (STAT_GOD(rom) || random_stat == 5) {
+            str[i] = inverted_power_curve(4, 255, 2);
+            agi[i] = inverted_power_curve(0, 255, 1.92);
+            hp[i] =  inverted_power_curve(2, 255, 1.84);
+            mp[i] =  inverted_power_curve(0, 255, 1.76);
+        } else { // normal
+            str[i] = inverted_power_curve(4, 155, 1.18);
+            agi[i] = inverted_power_curve(4, 145, 1.32);
+            hp[i] =  inverted_power_curve(10, 230, 0.98);
             mp[i] =  inverted_power_curve(0, 220, 0.95);
-        } */
+        }
     }
     qsort(str, 30, sizeof(uint8_t), &compare);
     qsort(agi, 30, sizeof(uint8_t), &compare);
@@ -855,14 +907,19 @@ static void randomize_spells(dw_rom *rom)
     int i, j;
     dw_stats *stats;
 
-    if (!RANDOMIZE_SPELLS(rom))
+    if (!RANDOMIZE_SPELLS(rom) && !random_percent(rom, 67))
         return;
 
     printf("Randomizing spell learning...\n");
 
+    // If you use random percent, spell levels can be
+    // 20(10%), or the normal 16(80%).
+    // If you use Old School stats, the max level is 20.
+    int maxSpellLevel = (STAT_OLDSCHOOL(rom) ||
+                         random_percent(rom, 10) ? 20 : 16);
     /* choose levels for each spell */
     for (i=0; i < 10; i++) {
-        rom->new_spells[i].level = mt_rand(1, 16);
+        rom->new_spells[i].level = mt_rand(1, maxSpellLevel);
     }
 
     for (i=0; i < 30; i++) {
@@ -887,7 +944,7 @@ static void randomize_spells(dw_rom *rom)
  */
 static void short_charlock(dw_rom *rom)
 {
-    if (!SHORT_CHARLOCK(rom))
+    if (!SHORT_CHARLOCK(rom) && !random_percent(rom, 67))
         return;
 
     printf("Shortening Charlock Castle...\n");
@@ -911,7 +968,10 @@ static void open_charlock(dw_rom *rom)
 {
     int i;
 
-    if (!OPEN_CHARLOCK(rom))
+    if (rom->randomized_map && !rom->open_charlock)
+        return;
+
+    if (!OPEN_CHARLOCK(rom) && !random_percent(rom, 33))
         return;
 
     rom->token->map = NO_MAP; /* remove token */
@@ -920,8 +980,12 @@ static void open_charlock(dw_rom *rom)
     /* remove the quest items since we won't need them */
     for (i=0; i <= 31; ++i) {
         if (is_quest_item(rom->chests[i].item)) {
-            rom->chests[i].item = GOLD_500;
+            rom->chests[i].item = HERB;
         }
+    }
+
+    if (!RANDOMIZE_MAP(rom)) {
+        rom->raw[0x20fe] = 0xb0;
     }
 }
 
@@ -1164,7 +1228,7 @@ static void dwr_fighters_ring(dw_rom *rom)
 static void dwr_death_necklace(dw_rom *rom)
 {
 
-    if (!DEATH_NECKLACE(rom))
+    if (!DEATH_NECKLACE(rom) && !random_percent(rom, 67))
         return;
 
     printf("Adding functionality to the death necklace...\n");
@@ -1493,7 +1557,7 @@ static void no_keys(dw_rom *rom)
     int i;
     dw_chest *chest;
 
-    if (!NO_KEYS(rom))
+    if (!NO_KEYS(rom) && !random_percent(rom, 67))
         return;
 
     printf("Removing the need for keys...\n");
@@ -1504,7 +1568,7 @@ static void no_keys(dw_rom *rom)
     chest = rom->chests;
     for (i=0; i < CHEST_COUNT; i++) {
         if (chest->item == KEY)
-            chest->item = GOLD_500;
+            chest->item = GOLD_120;
         chest++;
     }
 
@@ -1519,10 +1583,10 @@ static void no_equipment(dw_rom *rom)
     int i;
     dw_chest *chest;
 
-    if (!NO_EQUIPMENT(rom))
+    if (!NO_EQUIPMENT(rom) && !random_percent(rom, 33))
         return;
 
-    printf("Removing the need for keys...\n");
+    printf("Removing all equipment...\n");
     /* Don't require keys to open the door */
     chest = rom->chests;
     for (i=0; i < CHEST_COUNT; i++) {
@@ -1640,6 +1704,10 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     while(!map_generate_terrain(&rom)) {}
     shuffle_searchables(&rom);
     shuffle_chests(&rom);
+    no_equipment(&rom);
+    open_charlock(&rom);
+    short_charlock(&rom);
+    no_keys(&rom);
     randomize_attack_patterns(&rom);
     randomize_zone_layout(&rom);
     randomize_zones(&rom);
@@ -1656,10 +1724,6 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     dwr_speed_hacks(&rom);
     dwr_token_dialogue(&rom);
     chaos_mode(&rom);
-    open_charlock(&rom);
-    short_charlock(&rom);
-    no_keys(&rom);
-    no_equipment(&rom);
     other_patches(&rom);
     credits(&rom);
     crc = crc64(0, rom.raw, 0x10010);

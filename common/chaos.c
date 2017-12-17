@@ -235,13 +235,22 @@ static void chaos_xp(dw_rom *rom)
 }
 
 /**
+ * In random%, determines whether that function will be randomized or not.  This will be determined using a 0-100% model.
+ *
+ * @param Percentage chance of randomizing that function.
+ */
+static BOOL random_percent(dw_rom *rom, unsigned int chance) {
+    return RANDOM_PCT(rom) && (mt_rand(0, 99) < chance);
+}
+
+/**
  * Sets up chaos mode options if they are enabled.
  *
  * @param rom The rom struct
  */
 void chaos_mode(dw_rom *rom)
 {
-    if (!CHAOS_MODE(rom))
+    if (!CHAOS_MODE(rom) || !random_percent(rom, 10))
         return;
 
     chaos_enemies(rom);

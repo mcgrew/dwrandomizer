@@ -61,6 +61,7 @@ private:
     QList<CheckBox*> options;
     LevelComboBox *levelSpeed;
     QComboBox *spriteSelect;
+    StatComboBox *statgrowth;
     QPushButton *goButton;
     QGridLayout *optionGrid;
 };

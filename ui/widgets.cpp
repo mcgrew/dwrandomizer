@@ -70,6 +70,56 @@ bool LevelComboBox::updateState(QString flags)
     return false;
 }
 
+StatComboBox::StatComboBox(QWidget *parent) : QComboBox(parent)
+{
+    this->addItem("Normal");
+    this->addItem("Strong but flimsy");
+    this->addItem("Weak but resilient");
+    this->addItem("Old School Struggle");
+    this->addItem("SuperWarrior");
+    this->addItem("God?");
+}
+
+char StatComboBox::getFlag()
+{
+    switch(this->currentIndex()) {
+        case 1:
+           return '0';
+        case 2:
+            return '1';
+        case 3:
+            return '2';
+        case 4:
+            return '3';
+        case 5:
+            return '4';
+        default:
+            return NO_FLAG;
+    }
+}
+
+bool StatComboBox::updateState(QString flags)
+{
+    if (flags.indexOf(QChar('0')) >= 0) {
+        this->setCurrentIndex(1);
+        return true;
+    } else if (flags.indexOf(QChar('1')) >= 0) {
+        this->setCurrentIndex(2);
+        return true;
+    } else if (flags.indexOf(QChar('2')) >= 0) {
+        this->setCurrentIndex(3);
+        return true;
+    } else if (flags.indexOf(QChar('3')) >= 0) {
+        this->setCurrentIndex(4);
+        return true;
+    } else if (flags.indexOf(QChar('4')) >= 0) {
+        this->setCurrentIndex(5);
+        return true;
+    } else
+        this->setCurrentIndex(0);
+    return false;
+}
+
 ButtonEntry::ButtonEntry(QWidget *parent) :
         QWidget(parent)
 {

@@ -47,6 +47,7 @@ void MainWindow::initWidgets()
     this->seed = new SeedEntry(this);
     this->flags = new FlagEntry(this);
     this->levelSpeed = new LevelComboBox(this);
+    this->statgrowth = new StatComboBox(this);
     this->goButton = new QPushButton("Randomize!", this);
     this->spriteSelect = new QComboBox(this);
     for (int i=0; i < sizeof(dwr_sprite_names)/sizeof(char*); ++i) {
@@ -58,6 +59,8 @@ void MainWindow::initSlots()
 {
     connect(this->flags, SIGNAL(textEdited(QString)), this, SLOT(handleFlags()));
     connect(this->levelSpeed, SIGNAL(activated(int)),
+            this, SLOT(handleCheckBox()));
+    connect(this->statgrowth, SIGNAL(activated(int)),
             this, SLOT(handleCheckBox()));
     connect(this->goButton,     SIGNAL(clicked()), this, SLOT(handleButton()));
 }
@@ -82,7 +85,9 @@ void MainWindow::layout()
     this->addOption('W', "Randomize Weapon Shops",         1, 0);
     this->addOption('G', "Randomize Growth",               2, 0);
     this->addOption('M', "Randomize Spell Learning",       3, 0);
-    this->addOption('X', "Chaos Mode",                     4, 0);
+    this->addOption('w', "Randomize World Map",            4, 0);
+    this->addOption('X', "Chaos Mode",                     5, 0);
+    this->addOption('r', "Random%",                        6, 0);
 
     this->addOption('P', "Randomize Enemy Attacks",        0, 1);
     this->addOption('Z', "Randomize Enemy Zones",          1, 1);
@@ -106,7 +111,9 @@ void MainWindow::layout()
     this->optionGrid->addWidget(new QLabel("Leveling Speed", this), 8, 0, 0);
     this->optionGrid->addWidget(this->levelSpeed,    9, 0, 0);
     this->optionGrid->addWidget(new QLabel("Player Sprite", this), 8, 1, 0);
-    this->optionGrid->addWidget(this->spriteSelect,    9, 1, 0);
+    this->optionGrid->addWidget(this->spriteSelect,  9, 1, 0);
+    this->optionGrid->addWidget(new QLabel("Stat Growth", this), 8, 2, 0);
+    this->optionGrid->addWidget(this->statgrowth,    9, 2, 0);
 
     this->optionGrid->addWidget(this->goButton,      10, 2, 0);
 
@@ -126,8 +133,32 @@ QString MainWindow::getOptions()
     QList<CheckBox*>::const_iterator i;
 
     std::string flags = std::string() + this->levelSpeed->getFlag();
+    flags += this->statgrowth->getFlag();
     for (i = this->options.begin(); i != this->options.end(); ++i) {
         flags += (*i)->getFlag();
+    }
+
+    if (QString(flags.c_str()).indexOf(QChar('r')) != -1) // May want to option this out or disable all of the relevant checkboxes.
+    {
+        std::replace(flags.begin(), flags.end(), 'C', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), 'W', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), 'G', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), 'M', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), 'w', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), 'X', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), 'P', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), 'Z', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), 'D', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), 'b', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), 'o', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), 's', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), 'k', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), 'e', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), '0', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), '1', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), '2', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), '3', NO_FLAG);
+        std::replace(flags.begin(), flags.end(), '4', NO_FLAG);
     }
 
     std::sort(flags.begin(), flags.end());
@@ -144,6 +175,7 @@ void MainWindow::setOptions(QString flags)
     }
 
     this->levelSpeed->updateState(flags);
+    this->statgrowth->updateState(flags);
 }
 
 QString MainWindow::getFlags()

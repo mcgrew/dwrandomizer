@@ -36,6 +36,15 @@ private:
 
 };
 
+class StatComboBox : public QComboBox {
+
+public:
+    StatComboBox(QWidget *parent = 0);
+    bool updateState(QString flags);
+    char getFlag();
+
+};
+
 class LevelComboBox : public QComboBox {
 
 public:

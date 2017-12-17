@@ -7,7 +7,7 @@
 #include "build.h"
 #include "sprites.h"
 
-#define DWR_VERSION "2.0.2"
+#define DWR_VERSION "2.1"
 
 #ifdef  DWR_RELEASE
 #define VERSION DWR_VERSION
@@ -104,6 +104,13 @@
 #define RANDOMIZE_SHOPS(x)    (x->flags & FLAG_W)
 #define CHAOS_MODE(x)         (x->flags & FLAG_X)
 #define RANDOMIZE_ZONES(x)    (x->flags & FLAG_Z)
+#define RANDOMIZE_MAP(x)      (x->flags & FLAG_w)
+#define RANDOM_PCT(x)         (x->flags & FLAG_r)
+#define STAT_STRONG(x)        (x->flags & FLAG_0)
+#define STAT_WEAK(x)          (x->flags & FLAG_1)
+#define STAT_OLDSCHOOL(x)     (x->flags & FLAG_2)
+#define STAT_SUPERWAR(x)      (x->flags & FLAG_3)
+#define STAT_GOD(x)           (x->flags & FLAG_4)
 
 #ifdef __cplusplus
 extern "C" {

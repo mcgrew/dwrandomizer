@@ -11,6 +11,15 @@
 #define VIABLE_CONT 250 /* minimum size for a land_mass to use */
 
 /**
+ * In random%, determines whether that function will be randomized or not.  This will be determined using a 0-100% model.
+ *
+ * @param Percentage chance of randomizing that function.
+ */
+static BOOL random_percent(dw_rom *rom, int chance) {
+    return RANDOM_PCT(rom) && (mt_rand(0, 99) < chance);
+}
+
+/**
  * Shifts bytes in memory 1 to the left. Shifts [start+1, end) to [start, end-1)
  * This is used for map encoding optimization.
  *
@@ -370,11 +379,13 @@ static void place_charlock(dw_map *map, int largest, int next)
     map->rainbow_bridge->x = warp->x + 2;
     map->rainbow_bridge->y = map->rainbow_drop->y = warp->y;
 
-    if (OPEN_CHARLOCK(map)) {
+    if (OPEN_CHARLOCK(map) || random_percent(map, 33)) {
         printf("Leaving Charlock open...");
         map->tiles[x-1][y] = TILE_BRIDGE;
+        map->open_charlock = TRUE;
+    } else {
+        map->open_charlock = FALSE;
     }
-
 }
 
 /**
@@ -660,6 +671,12 @@ static BOOL place_landmarks(dw_map *map)
  */
 BOOL map_generate_terrain(dw_rom *rom)
 {
+    rom->randomized_map = FALSE;
+    if (!RANDOMIZE_MAP(rom) && !random_percent(rom, 75))
+        return TRUE;
+
+    rom->randomized_map = TRUE;
+
     int i, j, lm_sizes[256];
     int largest, next, total_area;
 
@@ -670,7 +687,7 @@ BOOL map_generate_terrain(dw_rom *rom)
             TILE_WATER, TILE_WATER, TILE_WATER, TILE_SWAMP
     };
 
-    if (BIG_SWAMP(rom)) {
+    if (BIG_SWAMP(rom) || random_percent(rom, 25)) {
         tiles[0] = tiles[1] = tiles[4] = tiles[8] = tiles[9] = TILE_SWAMP;
     }
 
@@ -709,6 +726,6 @@ BOOL map_generate_terrain(dw_rom *rom)
     find_walkable_area(&rom->map, lm_sizes, &largest, &next);
     map_find_land(&rom->map, largest, next, &rom->token->x, &rom->token->y);
 
+    rom->open_charlock = &rom->map.open_charlock;
     return map_encode(&rom->map);
 }
-

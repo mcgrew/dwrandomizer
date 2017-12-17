@@ -258,6 +258,7 @@ typedef struct {
     dw_rainbow_drop *rainbow_bridge;
     uint8_t tiles[120][120];
     uint8_t walkable[120][120];
+    BOOL open_charlock;
 } dw_map;
 
 /** A struct for the rom data */
@@ -289,6 +290,8 @@ typedef struct {
     uint16_t *weapon_price_display;
     uint8_t *music;
     uint8_t *title_text;
+    BOOL *open_charlock;
+    BOOL *randomized_map;
 } dw_rom;
 
 #endif

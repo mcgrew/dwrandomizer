@@ -4,7 +4,8 @@
 
 #include <inttypes.h>
 
-#define ROM_SIZE 81936
+#define OLD_ROM_SIZE 81936 // (16384 * (4+1)) = 81920 + 16
+#define ROM_SIZE 147472 // (16384 * (8+1)) = 147456 + 16
 
 #define ABS(x) ((x < 0) ? -x : x)
 #define MAX(x,y) ((x > y) ? x : y)

@@ -104,6 +104,7 @@
 #define RANDOMIZE_SHOPS(x)    (x->flags & FLAG_W)
 #define CHAOS_MODE(x)         (x->flags & FLAG_X)
 #define RANDOMIZE_ZONES(x)    (x->flags & FLAG_Z)
+#define PROG_ENC_RUN_RATE(x)  (x->flags & FLAG_p)
 #define RANDOMIZE_MAP(x)      (x->flags & FLAG_w)
 #define RANDOM_PCT(x)         (x->flags & FLAG_r)
 #define STAT_STRONG(x)        (x->flags & FLAG_0)

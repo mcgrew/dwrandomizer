@@ -179,9 +179,26 @@ static void chaos_zones(dw_rom *rom)
     /* randomize zones 0-2 again with weaker monsters */
     for (zone=0; zone <= 2; zone++) {
         for (i=0; i < 5; i++) {
-            rom->zones[zone * 5 + i] = enemies[mt_rand(0, 14)];
+            rom->zones[zone * 5 + i] = enemies[mt_rand(0, (i == 0 ? 7 : 14))];
         }
     }
+    // Modify strength attribute here
+    // Determine what strength is required to defeat the easiest zone 0 monster in 3 rounds or less.
+    dw_enemy *enemyStats = rom->enemies;
+    int minStr = 255;
+    for (i=0; i < 5; i++) {
+        int strReq = ((enemyStats[rom->zones[i]].hp * 16) + (enemyStats[rom->zones[i]].agi * 9)) / 18;
+        minStr = (strReq < minStr ? strReq : minStr);
+    }
+    minStr += 4;
+
+    dw_stats *stats;
+    for (i=0; i < 30; i++) {
+        stats = &rom->stats[i];
+        if (stats->str < minStr)
+            stats->str = minStr;
+    }
+
     /* randomize Charlock Zones */
     for (zone=16; zone <= 18; zone++) {
         for (i=0; i < 5; i++) {
@@ -250,7 +267,7 @@ static BOOL random_percent(dw_rom *rom, unsigned int chance) {
  */
 void chaos_mode(dw_rom *rom)
 {
-    if (!CHAOS_MODE(rom) || !random_percent(rom, 10))
+    if (!CHAOS_MODE(rom) && !random_percent(rom, 10))
         return;
 
     chaos_enemies(rom);

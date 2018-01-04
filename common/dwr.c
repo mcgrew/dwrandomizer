@@ -923,8 +923,8 @@ static void randomize_spells(dw_rom *rom)
     // If you use random percent, spell levels can be
     // 20(10%), or the normal 16(80%).
     // If you use Old School stats, the max level is 20.
-    int maxSpellLevel = (STAT_OLDSCHOOL(rom) ||
-                         random_percent(rom, 10) ? 20 : 16);
+    int maxSpellLevel = (STAT_OLDSCHOOL(rom) &&
+                         !random_percent(rom, 10) ? 20 : 16);
     /* choose levels for each spell */
     for (i=0; i < 10; i++) {
         rom->new_spells[i].level = mt_rand(1, maxSpellLevel);
@@ -952,7 +952,7 @@ static void randomize_spells(dw_rom *rom)
  */
 static void short_charlock(dw_rom *rom)
 {
-    if (!SHORT_CHARLOCK(rom) && !random_percent(rom, 67))
+    if (!SHORT_CHARLOCK(rom) && !random_percent(rom, 33))
         return;
 
     printf("Shortening Charlock Castle...\n");
@@ -1570,7 +1570,7 @@ static void no_keys(dw_rom *rom)
     int i;
     dw_chest *chest;
 
-    if (!NO_KEYS(rom) && !random_percent(rom, 67))
+    if (!NO_KEYS(rom) && !random_percent(rom, 33))
         return;
 
     printf("Removing the need for keys...\n");
@@ -2041,12 +2041,12 @@ static void statistics(dw_rom *rom) {
                0xC9, 0x23,
                0x90, 0x05,
                0xA5, 0x95, // (11)
-               0x4C, 0xC7, 0xEE,
+               0x4C, 0x36, 0x84,
                0xC9, 0x1E,
                0x90, 0x07,
                0xA5, 0x95,
                0x29, 0x7F, // (22)
-               0x4C, 0xC7, 0xEE,
+               0x4C, 0x36, 0x84,
                0xC9, 0x14,
                0x90, 0x12,
                0xA5, 0x95,
@@ -2056,7 +2056,7 @@ static void statistics(dw_rom *rom) {
                0xA5, 0x95,
                0x29, 0x1F,
                0x65, 0x3E, // (44)
-               0x4C, 0xC7, 0xEE,
+               0x4C, 0x36, 0x84,
                0x20, 0x5B, 0xC5,
                0xA5, 0x95,
                0x29, 0x3F, // (54)

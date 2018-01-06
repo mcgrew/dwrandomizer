@@ -109,6 +109,16 @@ extern "C" {
 #endif
 
 /**
+ * Initializes the dw_rom struct
+ *
+ * @param rom An uninitialized dw_rom
+ * @param input_file The file to read the rom data from
+ * @param flags The flags received from the user.
+ * @return A boolean indicating whether initialization was sucessful
+ */
+BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags);
+
+/**
  * Randomizes a Dragon Warrior rom file
  *
  * @param input_file The name of the input file

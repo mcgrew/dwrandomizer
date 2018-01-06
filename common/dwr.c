@@ -786,7 +786,7 @@ static uint8_t inverted_power_curve(uint8_t min, uint8_t max, double power)
     double p_range;
     
     p_range= pow((double)(max - min), 1 / power);
-    return min + round(max - pow((mt_rand_double() * p_range), power));
+    return round(max - pow((mt_rand_double() * p_range), power));
 }
 
 /**

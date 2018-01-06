@@ -1035,14 +1035,19 @@ static uint8_t *pad_title_screen(uint8_t *pos, uint8_t *end, int reserved)
     char text[32];
     int needed;
 
-    needed = MIN(end - pos - reserved, 32);
-    memset(text, 0x5f, needed);
-    pos = ppatch(pos, needed, (uint8_t*)text);
-    if (needed == 32) {
-        pos = pvpatch(pos, 1, 0xfc);
-    } else {
-        pos = pvpatch(pos, 4, 0xf7, 32 - needed, 0x5f, 0xfc);
+    needed = MIN(end - pos - reserved - 1, 32);
+    printf("Needed: %d, Available: %d, Reserved: %d\n", needed, end - pos, reserved);
+    if (needed < 0) {
+        printf("An unexpected error occurred while updating the title "
+                       "screen!\n");
     }
+    memset(text, 0x5f, 32);
+    if (needed < 32) {
+        needed -= 3;
+        pos = pvpatch(pos, 3, 0xf7, 32 - needed, 0x5f);
+    }
+    pos = ppatch(pos, needed, (uint8_t*)text);
+    pos = pvpatch(pos, 1, 0xfc);
     return pos;
 }
 
@@ -1065,6 +1070,7 @@ static void update_title_screen(dw_rom *rom)
     f = text;
     fo = (char*)flag_order;
 
+    printf("Updating title screen...\n");
     pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
     pos = center_title_text(pos, "RANDOMIZER");  /* RANDOMIZER text */
     pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
@@ -1085,25 +1091,13 @@ static void update_title_screen(dw_rom *rom)
     *f = '\0';
 
     pos = center_title_text(pos, text);          /* flags */
-//    pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
     snprintf((char *)text, 33, "%"PRIu64, rom->seed);
+    printf("Seed text length: %d\n", strlen(text));
+
     pos = pad_title_screen(pos, end, 15 + strlen(text)); /* blank line */
     pos = center_title_text(pos, text);         /* seed number */
-
-    pos = pad_title_screen(pos, end, 8); /* blank line */
-//    needed = MIN(end - pos - 8, 32);
-//    memset(text, 0x5f, needed);
-//    pos = ppatch(pos, needed, (uint8_t*)text);
-//    if (needed == 32) {
-//        pos = pvpatch(pos, 1, 0xfc);
-//    } else {
-//        pos = pvpatch(pos, 4, 0xf7, 32 - needed, 0x5f, 0xfc);
-//    }
-
-    needed = MAX(end - pos - 4, 0);
-    if (needed > 0)
-        pos = ppatch(pos, needed, (uint8_t*)text);
-    pos = pvpatch(pos, 4, 0xf7, 32 - needed, 0x5f, 0xfc);
+    pos = pad_title_screen(pos, end, 4); /* blank line */
+    pos = pad_title_screen(pos, end, 0); /* blank line */
 
     // 0x3fc5
 }

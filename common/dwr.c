@@ -575,7 +575,7 @@ static void disable_music(dw_rom *rom)
     if (!DISABLE_MUSIC(rom))
         return;
 
-    printf("Disabling game music\n");
+    printf("Disabling game music...\n");
 
     memset(rom->music, 0, 29);
 }
@@ -1036,7 +1036,6 @@ static uint8_t *pad_title_screen(uint8_t *pos, uint8_t *end, int reserved)
     int needed;
 
     needed = MIN(end - pos - reserved - 1, 32);
-    printf("Needed: %d, Available: %d, Reserved: %d\n", needed, end - pos, reserved);
     if (needed < 0) {
         printf("An unexpected error occurred while updating the title "
                        "screen!\n");
@@ -1092,7 +1091,6 @@ static void update_title_screen(dw_rom *rom)
 
     pos = center_title_text(pos, text);          /* flags */
     snprintf((char *)text, 33, "%"PRIu64, rom->seed);
-    printf("Seed text length: %d\n", strlen(text));
 
     pos = pad_title_screen(pos, end, 15 + strlen(text)); /* blank line */
     pos = center_title_text(pos, text);         /* seed number */

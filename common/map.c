@@ -556,7 +556,8 @@ static int find_walkable_area(dw_map *map, int *lm_sizes, int *largest,
  */
 static BOOL place_landmarks(dw_map *map)
 {
-    int i, largest = 0, next = 0, lm_sizes[256];
+    int i, largest = 0, next = 0, lm_sizes[256],
+            rimuldar_lm1, rimuldar_lm2;
     uint8_t tantegel_lm, charlock_lm;
     dw_map_index swamp_north, swamp_south;
     BOOL swamp_placed = FALSE;
@@ -599,9 +600,10 @@ static BOOL place_landmarks(dw_map *map)
     warp->x = 19;
     warp->y = 0;
 
-    
+
     /* place the remaining caves */
     for (i=2; i < 8; i++) {
+        /* make sure the swamp cave entrances are on different land masses */
         if (caves[i] == WARP_SWAMP_NORTH || caves[i] == WARP_SWAMP_SOUTH) {
             if (!swamp_placed) {
                 place(map, caves[i], TILE_CAVE, next, 0);
@@ -615,29 +617,39 @@ static BOOL place_landmarks(dw_map *map)
     }
     swamp_north = map->warps_from[WARP_SWAMP_NORTH].map;
     swamp_south = map->warps_from[WARP_SWAMP_SOUTH].map;
-    
+
+    rimuldar_lm1 = largest;
+    rimuldar_lm2 = next;
+
     /* check for swamp cave to be in tantegel and/or garinham */
     if (swamp_north == TANTEGEL || swamp_south == TANTEGEL) {
-        if (!swamp_placed) {
-            tantegel_lm = place_tantegel(map, next, 0);
-        } else {
+        if (swamp_placed) {
             tantegel_lm = place_tantegel(map, largest, 0);
+        } else {
+            tantegel_lm = place_tantegel(map, next, 0);
         }
-        map->meta[RIMULDAR].border =
-                place(map, WARP_RIMULDAR, TILE_TOWN, tantegel_lm, 0);
+        /* rimuldar needs to be on the same land mass as tantegel (for keys) */
+        rimuldar_lm1 = rimuldar_lm2 = (int)tantegel_lm;
     } else {
-        place_tantegel(map, largest, next);
-        map->meta[RIMULDAR].border =
-                place(map, WARP_RIMULDAR, TILE_TOWN, largest, next);
+        tantegel_lm = place_tantegel(map, largest, next);
     }
 
     if (swamp_north == GARINHAM || swamp_south == GARINHAM) {
-        map->meta[GARINHAM].border =
-                place(map, WARP_GARINHAM, TILE_TOWN, largest, 0);
+        if (swamp_placed) {
+            map->meta[GARINHAM].border =
+                    place(map, WARP_GARINHAM, TILE_TOWN, largest, 0);
+        } else {
+            map->meta[GARINHAM].border =
+                    place(map, WARP_GARINHAM, TILE_TOWN, next, 0);
+        }
+        /* rimuldar needs to be on the same land mass as tantegel (for keys) */
+        rimuldar_lm1 = rimuldar_lm2 = tantegel_lm;
     } else {
         map->meta[GARINHAM].border =
                 place(map, WARP_GARINHAM, TILE_TOWN, largest, next);
     }
+    map->meta[RIMULDAR].border =
+            place(map, WARP_RIMULDAR, TILE_TOWN, rimuldar_lm1, rimuldar_lm2);
 
 
     map->meta[KOL].border =

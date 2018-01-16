@@ -1057,7 +1057,6 @@ static uint8_t *pad_title_screen(uint8_t *pos, uint8_t *end, int reserved)
  */
 static void update_title_screen(dw_rom *rom)
 {
-    int  needed;
     char *f, *fo, text[33];
     uint64_t flags;
     uint8_t *pos, *end;

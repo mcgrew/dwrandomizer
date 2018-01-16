@@ -253,7 +253,16 @@ static BOOL add_bridges(dw_map *map)
     }
     if (count) {
         which = mt_rand(0, count-1);
-        map->tiles[x_candidate[which]][y_candidate[which]] = TILE_BRIDGE;
+        x = x_candidate[which];
+        y = y_candidate[which];
+        if (tile_is_walkable(map->tiles[x][y-1])) {
+            map->tiles[x][y] = map->tiles[x][y-1];
+
+        } else if (tile_is_walkable(map->tiles[x][y+1])) {
+            map->tiles[x][y] = map->tiles[x][y+1];
+        } else {
+            map->tiles[x][y] = TILE_BRIDGE;
+        }
         return TRUE;
     }
     return FALSE;

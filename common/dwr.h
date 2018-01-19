@@ -3,6 +3,7 @@
 #define _DWR_H_
 
 #include <stdint.h>
+#include <stdarg.h>
 
 #include "build.h"
 #include "sprites.h"
@@ -130,6 +131,8 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags);
  */
 uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
         const char *sprite_name, const char* output_dir);
+
+uint16_t vpatch(dw_rom *rom, uint32_t address, uint32_t size, ...);
 
 #ifdef __cplusplus
 }

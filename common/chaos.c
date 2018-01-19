@@ -167,15 +167,6 @@ static void chaos_zones(dw_rom *rom)
     global_enemy = &rom->enemies;
     qsort(enemies, RED_DRAGON+1, sizeof(dw_enemies), &compare_enemies);
 
-//    printf("  HP  STR  AGI\n");
-//    for (i=SLIME; i <= RED_DRAGON; i++) {
-//        printf("%4d %4d %4d %16lld\n",
-//               rom->enemies[enemies[i]].hp,
-//               rom->enemies[enemies[i]].str,
-//               rom->enemies[enemies[i]].agi,
-//               enemy_pwr(&rom->enemies[enemies[i]]));
-//    }
-
     /* randomize zones 0-2 again with weaker monsters */
     for (zone=0; zone <= 2; zone++) {
         for (i=0; i < 5; i++) {
@@ -235,6 +226,48 @@ static void chaos_xp(dw_rom *rom)
 }
 
 /**
+ * Changes to the code which determines the chances of running. It will now be
+ * based on which map you are on in chaos mode as opposed to enemy index, since
+ * enemy index is fairly meaningless in this mode.
+ *
+ * @param rom The rom struct
+ */
+void chaos_running(dw_rom *rom)
+{
+    vpatch(rom, 0xeea4, 53,
+      /*EE94*/ 0xa5, 0x45,       /* LDA $00E0    Load the current map.   */
+      /*EE96*/ 0xc9, 0x14,       /* CMP #$01     If it's greater than 20. */
+      /*EE98*/ 0x90, 0x07,       /* BCC $EEA1 */
+      /*EE9A*/ 0xa5, 0x95,       /* LDA $0095 */
+      /*EE9C*/ 0x29, 0x7f,       /* AND #$7F     ...use a random number limited to 0-127. */
+      /*EE9E*/ 0x4c, 0xc7, 0xee, /* JMP $EEC7 */
+
+      /*EEA1*/ 0xc9, 0x06,       /* CMP #$06     Otherwise if it's greater or equal to 6... */
+      /*EEA3*/ 0x90, 0x05,       /* BCC $EEAA */
+      /*EEA5*/ 0xa5, 0x95,       /* LDA $0095    */
+      /*EEA7*/ 0x4c, 0xc7, 0xee, /* JMP $EEC7    use a plain random number 0-255. */
+
+      /*EEAA*/ 0xc9, 0x02,       /* CMP #$02     Otherwise if it's greater or equal to 2... */
+      /*EEAC*/ 0x90, 0x12,       /* BCC $EEB2 */
+      /*EEAE*/ 0xa5, 0x95,       /* LDA $0095 */
+      /*EEB0*/ 0x29, 0x3f,       /* AND #$3F */
+      /*EEB2*/ 0x85, 0x3e,       /* STA $003E    ...put a random number limited to 0-63 at $3E. */
+      /*EEB4*/ 0x20, 0x5b, 0xc5, /* JSR $C55B */
+      /*EEB7*/ 0xa5, 0x95,       /* LDA $0095 */
+      /*EEB9*/ 0x29, 0x1f,       /* AND #$1F */
+      /*EEBB*/ 0x65, 0x3e,       /* ADC $003E    Add another random number limited to 0-31 to $3E. */
+      /*EEBD*/ 0x4c, 0xc7, 0xee, /* JMP $EEC7    This effectively makes the random number 0-94. */
+
+      /*EEC0*/ 0x20, 0x5b, 0xc5, /* JSR $C55B */
+      /*EEC3*/ 0xa5, 0x95,       /* LDA $0095    If the map is 1 (overworld) load a random */
+      /*EEC5*/ 0x29, 0x3f,       /* AND #$3F     number and limit it to 0-63. */
+      /*EEC7*/ 0x85, 0x3c        /* STA $003C    Store whatever the limited random number is at $3C */
+
+    );
+
+}
+
+/**
  * Sets up chaos mode options if they are enabled.
  *
  * @param rom The rom struct
@@ -248,6 +281,7 @@ void chaos_mode(dw_rom *rom)
     chaos_zones(rom);
     chaos_xp(rom);
     chaos_weapon_prices(rom);
+    chaos_running(rom);
 }
 
 

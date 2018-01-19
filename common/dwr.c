@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 #include <math.h>
 #include <ctype.h>
 
@@ -244,7 +243,7 @@ size_t dw2ascii(uint8_t *string, size_t bufsize)
  * @param ... A series of uint8_t bytes, the patch data
  * @return The address of the end of the patch
  */
-static uint16_t vpatch(dw_rom *rom, uint32_t address, uint32_t size, ...)
+uint16_t vpatch(dw_rom *rom, uint32_t address, uint32_t size, ...)
 {
     uint32_t i;
     va_list arg;
@@ -258,7 +257,6 @@ static uint16_t vpatch(dw_rom *rom, uint32_t address, uint32_t size, ...)
     }
     va_end(arg);
     return p - rom->raw;
-
 }
 
 /**

@@ -157,8 +157,9 @@ static void chaos_enemies(dw_rom *rom)
  */
 static void chaos_zones(dw_rom *rom)
 {
-    int i, zone;
+    int i, zone, index;
     dw_enemies enemies[RED_DRAGON+1];
+    dw_enemy *low_str_enemy = NULL;
 
     /* set up an array to sort enemies by difficulty */
     for (i=SLIME; i <= RED_DRAGON; i++) {
@@ -170,9 +171,19 @@ static void chaos_zones(dw_rom *rom)
     /* randomize zones 0-2 again with weaker monsters */
     for (zone=0; zone <= 2; zone++) {
         for (i=0; i < 5; i++) {
-            rom->zones[zone * 5 + i] = enemies[mt_rand(0, 14)];
+            index = mt_rand(0, 14);
+            rom->zones[zone * 5 + i] = enemies[index];
+            /* Find the enemy in zones 0-2 with the lowest strength */
+            if (!low_str_enemy ||
+                    rom->enemies[enemies[index]].str < low_str_enemy->str) {
+                low_str_enemy = &rom->enemies[enemies[index]];
+            }
         }
     }
+    /* set the lowest strength enemy's HP to a max of 5. */
+    /* this will ensure that at least one enemy is beatable */
+    low_str_enemy->hp = MIN(low_str_enemy->hp, 5);
+
     /* randomize Charlock Zones */
     for (zone=16; zone <= 18; zone++) {
         for (i=0; i < 5; i++) {

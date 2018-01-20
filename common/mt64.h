@@ -67,6 +67,8 @@ void mt_init(uint64_t seed);
 
 uint64_t mt_rand(uint64_t min, uint64_t max);
 
+uint64_t mt_rand64();
+
 int mt_rand_bool();
 
 double mt_rand_double();

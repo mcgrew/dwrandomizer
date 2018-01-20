@@ -199,6 +199,7 @@ void MainWindow::handleButton()
                 "the ROM could not be created.");
     }
     this->saveConfig();
+    this->seed->random();
 }
 
 bool MainWindow::saveConfig()

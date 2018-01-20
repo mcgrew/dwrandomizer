@@ -129,6 +129,11 @@ uint64_t mt_rand(uint64_t min, uint64_t max)
     return min + (genrand64_int64() % (max - min + 1));
 }
 
+uint64_t mt_rand64()
+{
+    return genrand64_int64();
+}
+
 double mt_rand_double()
 {
     return (genrand64_int64() >> 11) * (1.0/9007199254740992.0);

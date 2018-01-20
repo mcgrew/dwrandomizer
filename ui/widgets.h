@@ -92,6 +92,7 @@ public:
     typedef ButtonEntry super;
     SeedEntry(QWidget *parent = 0);
     uint64_t getSeed();
+    void random();
 
 private slots:
     void handleButton();

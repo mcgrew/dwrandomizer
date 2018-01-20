@@ -8,6 +8,7 @@
 #include <cinttypes>
 
 #include "dwr.h"
+#include "mt64.h"
 #include "widgets.h"
 
 CheckBox::CheckBox(const char flag, const QString &text, QWidget *parent) :
@@ -142,14 +143,21 @@ SeedEntry::SeedEntry(QWidget *parent) : ButtonEntry(parent)
     this->handleButton();
 }
 
-void SeedEntry::handleButton()
+void SeedEntry::random()
 {
     uint64_t seed;
     char seedString[21];
     srand(time(NULL));
     seed = ((uint64_t)rand() << 32) | ((uint64_t)rand() & 0xffffffffL);
+    mt_init(seed);
+    seed = mt_rand64();
     snprintf(seedString, 21, "%" PRIu64, seed);
     this->textBox->setText(QString(seedString));
+}
+
+void SeedEntry::handleButton()
+{
+    this->random();
 }
 
 uint64_t SeedEntry::getSeed()

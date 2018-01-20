@@ -812,10 +812,19 @@ static void randomize_growth(dw_rom *rom)
         hp[i] =  inverted_power_curve(10, 230, 0.98);
         mp[i] =  inverted_power_curve(0, 220, 0.95);
     }
+
     qsort(str, 30, sizeof(uint8_t), &compare);
     qsort(agi, 30, sizeof(uint8_t), &compare);
     qsort(hp,  30, sizeof(uint8_t), &compare);
     qsort(mp,  30, sizeof(uint8_t), &compare);
+
+    /* Give a little hp boost for swamp mode */
+    if (BIG_SWAMP(rom)) {
+        hp[0] += 10;
+        for (i=1; i < 10; i++) {
+            hp[i] = MAX(hp[i-1], hp[i] + 10 - i);
+        }
+    }
 
     for (i=0; i < 30; i++) {
         stats = &rom->stats[i];

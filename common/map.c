@@ -636,6 +636,7 @@ static BOOL place_landmarks(dw_map *map)
             tantegel_lm = place_tantegel(map, largest, 0);
         } else {
             tantegel_lm = place_tantegel(map, next, 0);
+            swamp_placed = TRUE;
         }
         /* rimuldar needs to be on the same land mass as tantegel (for keys) */
         rimuldar_lm1 = rimuldar_lm2 = (int)tantegel_lm;

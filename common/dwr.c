@@ -252,7 +252,7 @@ size_t dw2ascii(uint8_t *string, size_t bufsize)
  * @param ... A series of uint8_t bytes, the patch data
  * @return The address of the end of the patch
  */
-static uint16_t vpatch(dw_rom *rom, uint32_t address, uint32_t size, ...)
+uint16_t vpatch(dw_rom *rom, uint32_t address, uint32_t size, ...)
 {
     uint32_t i;
     va_list arg;
@@ -1749,7 +1749,7 @@ static void progressive_encounter_rate(dw_rom *rom)
                0xa8, // Also transfer to Y
                0xbd, 0xf0, 0x81, // Load encounter rate to accumulator based on X.
                0xae, 0xff, 0x6f, // Load step encounter since last encounter to X. (30)
-               0xe0, 0x07, // Compare step counter to 7 steps.
+               0xe0, 0x09, // Compare step counter to 9 steps.  If it's less than that...
                0xb0, 0x0b,
                0x4a, // Reduce encounter rate by 1/2.
                0xe0, 0x05, // Now 5 steps...
@@ -1758,17 +1758,17 @@ static void progressive_encounter_rate(dw_rom *rom)
                0xe0, 0x03, // Now 3 steps...
                0xb0, 0x01,
                0x4a, // Reduce encounter rate by 7/8.
-               0xe0, 0x24, // Now compare to 36 steps.
+               0xe0, 0x18, // Now compare to 24 steps.  If it's greater than that...
                0x90, 0x07,
                0x18,
                0x0a, // NEXT 2 LINES:  Triple encounter rate. (51)
                0x79, 0xf0, 0x81,
                0xd0, 0x10, // Go straight to final check with a BNE; the add will never result in a zero.
-               0xe0, 0x18, // Now compare to 24 steps.
+               0xe0, 0x10, // Now compare to 16 steps.  If it's greater than that...
                0x90, 0x03,
                0x0a, // Double encounter rate (61)
                0xd0, 0x09,
-               0xe0, 0x0c, // Finally, compare with 12 steps.
+               0xe0, 0x0c, // Finally, compare with 12 steps.  If it's greater than that...
                0x90, 0x05,
                0x18,
                0x4a, // NEXT 2 LINES:  Increase encounter rate by 50%. (70)

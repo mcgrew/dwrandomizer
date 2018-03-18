@@ -39,6 +39,16 @@ static int compare_16(const void *a, const void *b)
     return *(uint16_t*)a - *(uint16_t*)b;
 }
 
+
+/**
+ * In random%, determines whether that function will be randomized or not.  This will be determined using a 0-100% model.
+ *
+ * @param Percentage chance of randomizing that function.
+ */
+static BOOL random_percent(dw_rom *rom, unsigned int chance) {
+    return RANDOM_PCT(rom) && (mt_rand(0, 99) < chance);
+}
+
 /**
  * Gives an index for enemy difficulty
  *
@@ -77,7 +87,6 @@ static inline uint64_t enemy_pwr(dw_enemy *enemy)
         } else if ((enemy->pattern & 0xc) == 0x4) { /* hurtmore */
             multiplier += 24;
         }
-
     }
     return pwr * MAX(multiplier, 1);
 }
@@ -119,11 +128,11 @@ static void chaos_enemies(dw_rom *rom)
     enemies = rom->enemies;
 
     for (i=SLIME; i <= DRAGONLORD_1; i++) {
-        enemies[i].hp =   rand_power_curve(2, 12, 2.0);
-        enemies[i].str =  rand_power_curve(2, 11, 2.0);
-        enemies[i].agi =  rand_power_curve(2, 16, 2.0);
-        enemies[i].xp =   rand_power_curve(2, 16, 2.0);
-        enemies[i].gold = rand_power_curve(2, 16, 2.0);
+        enemies[i].hp =   1+rand_power_curve(1, 12, 2.0);
+        enemies[i].str =  1+rand_power_curve(1, 12, 2.0);
+        enemies[i].agi =  1+rand_power_curve(1, 11, 2.0);
+        enemies[i].xp =   rand_power_curve(1, 16, 2.0);
+        enemies[i].gold = rand_power_curve(1, 16, 2.0);
 
         enemies[i].s_ss_resist = rand_power_curve(0, 4, 2.0) << 4 |
                                  rand_power_curve(0, 4, 2.0);
@@ -157,8 +166,9 @@ static void chaos_enemies(dw_rom *rom)
  */
 static void chaos_zones(dw_rom *rom)
 {
-    int i, zone;
+    int i, zone, index;
     dw_enemies enemies[RED_DRAGON+1];
+    dw_enemy *low_str_enemy = NULL;
 
     /* set up an array to sort enemies by difficulty */
     for (i=SLIME; i <= RED_DRAGON; i++) {
@@ -167,37 +177,21 @@ static void chaos_zones(dw_rom *rom)
     global_enemy = &rom->enemies;
     qsort(enemies, RED_DRAGON+1, sizeof(dw_enemies), &compare_enemies);
 
-//    printf("  HP  STR  AGI\n");
-//    for (i=SLIME; i <= RED_DRAGON; i++) {
-//        printf("%4d %4d %4d %16lld\n",
-//               rom->enemies[enemies[i]].hp,
-//               rom->enemies[enemies[i]].str,
-//               rom->enemies[enemies[i]].agi,
-//               enemy_pwr(&rom->enemies[enemies[i]]));
-//    }
-
     /* randomize zones 0-2 again with weaker monsters */
     for (zone=0; zone <= 2; zone++) {
         for (i=0; i < 5; i++) {
-            rom->zones[zone * 5 + i] = enemies[mt_rand(0, (i == 0 ? 7 : 14))];
+            index = mt_rand(0, 14);
+            rom->zones[zone * 5 + i] = enemies[index];
+            /* Find the enemy in zones 0-2 with the lowest strength */
+            if (!low_str_enemy ||
+                    rom->enemies[enemies[index]].str < low_str_enemy->str) {
+                low_str_enemy = &rom->enemies[enemies[index]];
+            }
         }
     }
-    // Modify strength attribute here
-    // Determine what strength is required to defeat the easiest zone 0 monster in 3 rounds or less.
-    dw_enemy *enemyStats = rom->enemies;
-    int minStr = 255;
-    for (i=0; i < 5; i++) {
-        int strReq = ((enemyStats[rom->zones[i]].hp * 16) + (enemyStats[rom->zones[i]].agi * 9)) / 18;
-        minStr = (strReq < minStr ? strReq : minStr);
-    }
-    minStr += 4;
-
-    dw_stats *stats;
-    for (i=0; i < 30; i++) {
-        stats = &rom->stats[i];
-        if (stats->str < minStr)
-            stats->str = minStr;
-    }
+    /* set the lowest strength enemy's HP to a max of 5. */
+    /* this will ensure that at least one enemy is beatable */
+    low_str_enemy->hp = MIN(low_str_enemy->hp, 5);
 
     /* randomize Charlock Zones */
     for (zone=16; zone <= 18; zone++) {
@@ -252,12 +246,45 @@ static void chaos_xp(dw_rom *rom)
 }
 
 /**
- * In random%, determines whether that function will be randomized or not.  This will be determined using a 0-100% model.
+ * Changes to the code which determines the chances of running. It will now be
+ * based on which map you are on in chaos mode as opposed to enemy index, since
+ * enemy index is fairly meaningless in this mode.
  *
- * @param Percentage chance of randomizing that function.
+ * @param rom The rom struct
  */
-static BOOL random_percent(dw_rom *rom, unsigned int chance) {
-    return RANDOM_PCT(rom) && (mt_rand(0, 99) < chance);
+void chaos_running(dw_rom *rom)
+{
+    vpatch(rom, 0xeea4, 53,
+      /*EE94*/ 0xa5, 0x45,       /* LDA $00E0 ; Load the current map.         */
+      /*EE96*/ 0xc9, 0x14,       /* CMP #$01  ; If it's greater than 20.      */
+      /*EE98*/ 0x90, 0x07,       /* BCC $EEA1 ;                               */
+      /*EE9A*/ 0xa5, 0x95,       /* LDA $0095 ;                               */
+      /*EE9C*/ 0x29, 0x7f,       /* AND #$7F  ; ...use a random number 0-127  */
+      /*EE9E*/ 0x4c, 0xc7, 0xee, /* JMP $EEC7                                 */
+
+      /*EEA1*/ 0xc9, 0x06,       /* CMP #$06  ; therwise if it's >= 6...      */
+      /*EEA3*/ 0x90, 0x05,       /* BCC $EEAA                                 */
+      /*EEA5*/ 0xa5, 0x95,       /* LDA $0095                                 */
+      /*EEA7*/ 0x4c, 0xc7, 0xee, /* JMP $EEC7 ; use a random number 0-255.    */
+
+      /*EEAA*/ 0xc9, 0x02,       /* CMP #$02  ; Otherwise if it's >= 2...     */
+      /*EEAC*/ 0x90, 0x12,       /* BCC $EEB2                                 */
+      /*EEAE*/ 0xa5, 0x95,       /* LDA $0095                                 */
+      /*EEB0*/ 0x29, 0x3f,       /* AND #$3F                                  */
+      /*EEB2*/ 0x85, 0x3e,       /* STA $003E ; put a number 0-63 at $3E.     */
+      /*EEB4*/ 0x20, 0x5b, 0xc5, /* JSR $C55B                                 */
+      /*EEB7*/ 0xa5, 0x95,       /* LDA $0095                                 */
+      /*EEB9*/ 0x29, 0x1f,       /* AND #$1F                                  */
+      /*EEBB*/ 0x65, 0x3e,       /* ADC $003E ; Add another number 0-31       */
+      /*EEBD*/ 0x4c, 0xc7, 0xee, /* JMP $EEC7 ; This makes the number 0-94.   */
+
+      /*EEC0*/ 0x20, 0x5b, 0xc5, /* JSR $C55B                                 */
+      /*EEC3*/ 0xa5, 0x95,       /* LDA $0095 ; If the map is 1 (overworld)   */
+      /*EEC5*/ 0x29, 0x3f,       /* AND #$3F  ; load a number 0-63.           */
+      /*EEC7*/ 0x85, 0x3c        /* STA $003C ; Store the random number @ $3C */
+
+    );
+
 }
 
 /**
@@ -274,7 +301,5 @@ void chaos_mode(dw_rom *rom)
     chaos_zones(rom);
     chaos_xp(rom);
     chaos_weapon_prices(rom);
+    chaos_running(rom);
 }
-
-
-

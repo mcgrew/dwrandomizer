@@ -130,6 +130,8 @@ extern "C" {
 uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
         const char *sprite_name, const char* output_dir);
 
+uint16_t vpatch(dw_rom *rom, uint32_t address, uint32_t size, ...);
+
 #ifdef __cplusplus
 }
 #endif

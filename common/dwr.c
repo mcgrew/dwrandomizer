@@ -89,6 +89,7 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     FILE *input;
     int read;
 
+    // Allocate space for twice the ROM Size as before.
     rom->raw = malloc(ROM_SIZE);
     memset(rom->raw, 0, ROM_SIZE);
     input = fopen(input_file, "rb");
@@ -96,6 +97,7 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
         fprintf(stderr, "Unable to open ROM file '%s'", input_file);
         return FALSE;
     }
+    // Read the old ROM into the array
     read = fread(rom->raw, 1, OLD_ROM_SIZE, input);
     if (read < OLD_ROM_SIZE) {
         fprintf(stderr, "File '%s' is too small and may be corrupt, aborting.",
@@ -105,15 +107,18 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     fclose(input);
 
     // Move everything from 0xc010 to 0x14010 -> 0x1c010 to 0x24010
+    // This moves the last bank and the character ROM to the end of the ROM.  The last bank is always C000-FFFF.
     int i = 0xc010;
     for (i = 0xc010; i < 0x14010; i++) {
         rom->raw[i+0x10000] = rom->raw[i];
         rom->raw[i] = 0xff;
     }
+    // Change the header to 8 banks instead of 4
     rom->raw[0x4] = 8;
 
     rom->map.flags = parse_flags(rom, flags);
     /* subtract 0x9d5d from these pointers */
+    // Anything that was 0xc010+ needs to add 0x10000 to it thanks to the ROM resizing
     rom->map.pointers = (uint16_t*)&rom->raw[0x2663];
     rom->map.encoded = &rom->raw[0x1d6d];
     rom->map.meta = (dw_map_meta*)&rom->raw[0x2a];
@@ -460,6 +465,7 @@ static void shuffle_chests(dw_rom *rom) {
             STONES, DRAGON_SCALE, HARP, SWORD, NECKLACE, TORCH, RING
     };
 
+    // 67 percent chance of shuffling chests in random% mode
     if (!SHUFFLE_CHESTS(rom) && !random_percent(rom, 67))
         return;
 
@@ -539,6 +545,7 @@ static void randomize_attack_patterns(dw_rom *rom)
     int i;
     dw_enemy *enemies;
 
+    // 67 percent chance of shuffling chests in random% mode
     if (!RANDOMIZE_PATTERNS(rom) && !random_percent(rom, 67))
         return;
 
@@ -631,6 +638,7 @@ static void randomize_zone_layout(dw_rom *rom)
 {
     BOOL zones_randomized = FALSE;
 
+    // If the map is randomized, randomized monster zones is checked, or a 67% random% chance hits, then randomize the monster zone layout so it's not like the vanilla world map.
     if (rom->randomized_map || RANDOMIZE_ZONES(rom) || random_percent(rom, 67)) {
         zones_randomized = TRUE;
         int i;
@@ -644,7 +652,7 @@ static void randomize_zone_layout(dw_rom *rom)
         }
     }
 
-    // Ensure that something easy is hanging out near Tantegel.
+    // If the map is randomized or the zones were randomized above, ensure that something easy is hanging out near Tantegel.
     if (rom->randomized_map || zones_randomized) {
         dw_warp *tantegel = &rom->map.warps_from[WARP_TANTEGEL];
 
@@ -671,6 +679,7 @@ static void randomize_zones(dw_rom *rom)
             WIZARD, AXE_KNIGHT, BLUE_DRAGON, STONEMAN, ARMORED_KNIGHT,
             RED_DRAGON, GOLEM };
 
+    // Give a 67% chance of randomizing monster zones.
     if (!RANDOMIZE_ZONES(rom) && !random_percent(rom, 67))
         return;
 
@@ -681,6 +690,7 @@ static void randomize_zones(dw_rom *rom)
         rom->zones[zone * 5 + i] = mt_rand(SLIME, SCORPION);
     }
 
+    // If "old school stat growth" is checked, or a 10% random% chance hits, do NOT make zones 1 or 2 easier.  (Version 1.2.1 or earlier)
     if (!STAT_OLDSCHOOL(rom) && !random_percent(rom, 90)) {
         for (zone=1; zone <= 2; zone++) { /* tantegel adjacent zones */
             for (i=0; i < 5; i++) {
@@ -693,7 +703,7 @@ static void randomize_zones(dw_rom *rom)
                 rom->zones[zone * 5 + i] = mt_rand(SLIME, RED_DRAGON);
             }
         }
-    } else {
+    } else { // ... instead, randomize zones 1-15 completely.
         for (zone=1; zone <= 15; zone++) { /* overworld/hybrid zones */
             for (i=0; i < 5; i++) {
                 rom->zones[zone * 5 + i] = mt_rand(SLIME, RED_DRAGON);
@@ -752,6 +762,7 @@ static void randomize_shops(dw_rom *rom)
             MAGIC_ARMOR, SMALL_SHIELD, LARGE_SHIELD, SILVER_SHIELD
     };
 
+    // 67 percent chance of randomizing shops in random% mode
     if (!RANDOMIZE_SHOPS(rom) && !random_percent(rom, 67))
         return;
 
@@ -788,6 +799,7 @@ static void shuffle_searchables(dw_rom *rom)
 {
     dw_searchable searchables[3];
 
+    // 67 percent chance of shuffling treasures in random% mode
     if (!SHUFFLE_CHESTS(rom) && !random_percent(rom, 67))
         return;
 
@@ -839,6 +851,7 @@ static void randomize_growth(dw_rom *rom)
     uint8_t  mp[30];
     uint8_t  hp[30];
 
+    // 67 percent chance of randomizing stat growth in random% mode
     if (!RANDOMIZE_GROWTH(rom) && !random_percent(rom, 67))
         return;
 
@@ -853,33 +866,38 @@ static void randomize_growth(dw_rom *rom)
                 random_stat = 4;
             else
                 random_stat = 5;
-        else
+        else // Otherwise, 50% chance that the stat growth will be different from the standard randomized growth in random% mode.
             if (random_percent(rom, 50))
                 random_stat = mt_rand(0, 5);
     }
 
     for (i=0; i < 30; i++) {
         if (STAT_STRONG(rom) || random_stat == 1) {
+            // Adds strength and agility via a higher maximum limit, reduces HP and MP.
             str[i] = inverted_power_curve(8, 165, 1.15);
             agi[i] = inverted_power_curve(4, 155, 1.50);
             hp[i] =  inverted_power_curve(10, 230, 0.8);
             mp[i] =  inverted_power_curve(0, 220, 0.7);
         } else if (STAT_WEAK(rom) || random_stat == 2) {
+            // Reduces strength, adds HP and MP via a higher maximum limit.
             str[i] = inverted_power_curve(4, 155, 0.90);
             agi[i] = inverted_power_curve(4, 145, 1.32);
             hp[i] =  inverted_power_curve(10, 250, 0.98);
             mp[i] =  inverted_power_curve(0, 240, 0.98);
         } else if (STAT_OLDSCHOOL(rom) || random_stat == 3) {
+            // This is the old stat growth from DWR 1.2.1 or earlier
             str[i] = inverted_power_curve(4, 155, 1.00);
             agi[i] = inverted_power_curve(4, 145, 1.00);
             hp[i] =  inverted_power_curve(10, 230, 1.00);
             mp[i] =  inverted_power_curve(0, 220, 1.00);
         } else if (STAT_SUPERWAR(rom) || random_stat == 4) {
+            // This is the suggested stat growth for the "no equipment" option, so the game ends at a reasonable hour.
             str[i] = inverted_power_curve(4, 175, 1.8);
             agi[i] = inverted_power_curve(4, 165, 1.32);
             hp[i] =  inverted_power_curve(10, 250, 1.18);
             mp[i] =  inverted_power_curve(0, 250, 1.08);
         } else if (STAT_GOD(rom) || random_stat == 5) {
+            // This is a crazy stat growth.  Don't let your strength grow too big... or else!
             str[i] = inverted_power_curve(4, 255, 2);
             agi[i] = inverted_power_curve(0, 255, 1.92);
             hp[i] =  inverted_power_curve(2, 255, 1.84);
@@ -915,6 +933,7 @@ static void randomize_spells(dw_rom *rom)
     int i, j;
     dw_stats *stats;
 
+    // 67% chance of randomizing spells in random% mode
     if (!RANDOMIZE_SPELLS(rom) && !random_percent(rom, 67))
         return;
 
@@ -952,6 +971,7 @@ static void randomize_spells(dw_rom *rom)
  */
 static void short_charlock(dw_rom *rom)
 {
+    // 33% chance of having a short charlock.
     if (!SHORT_CHARLOCK(rom) && !random_percent(rom, 33))
         return;
 
@@ -976,9 +996,11 @@ static void open_charlock(dw_rom *rom)
 {
     int i;
 
+    // If the map is randomized and open charlock is not checked, don't bother. (?)
     if (rom->randomized_map && !rom->open_charlock)
         return;
 
+    // 33% chance of an open Charlock.
     if (!OPEN_CHARLOCK(rom) && !random_percent(rom, 33))
         return;
 
@@ -986,12 +1008,14 @@ static void open_charlock(dw_rom *rom)
 
     printf("Opening Charlock and removing quest items...\n");
     /* remove the quest items since we won't need them */
+    // Replace 500+ gold with an herb instead to make things a little harder.
     for (i=0; i <= 31; ++i) {
         if (is_quest_item(rom->chests[i].item)) {
             rom->chests[i].item = HERB;
         }
     }
 
+    // If the map is NOT randomized, change one byte in the map to a bridge.
     if (!RANDOMIZE_MAP(rom)) {
         rom->raw[0x20fe] = 0xb0;
     }
@@ -1122,17 +1146,22 @@ static uint8_t *center_title_text(uint8_t *pos, const char *text)
 static uint8_t *pad_title_screen(uint8_t *pos, uint8_t *end, int reserved)
 {
     char text[32];
-    int needed;
+     int needed;
 
-    needed = MIN(end - pos - reserved, 32);
-    memset(text, 0x5f, needed);
-    pos = ppatch(pos, needed, (uint8_t*)text);
-    if (needed == 32) {
-        pos = pvpatch(pos, 1, 0xfc);
-    } else {
-        pos = pvpatch(pos, 4, 0xf7, 32 - needed, 0x5f, 0xfc);
-    }
-    return pos;
+     needed = MIN(end - pos - reserved - 1, 32);
+     if (needed < 0) {
+         printf("An unexpected error occurred while updating the title "
+                        "screen!\n");
+     }
+     memset(text, 0x5f, 32);
+     if (needed < 32) {
+         needed -= 3;
+         pos = pvpatch(pos, 3, 0xf7, 32 - needed, 0x5f);
+     }
+     if (needed < 0) needed = 0; // Temporary
+     pos = ppatch(pos, needed, (uint8_t*)text);
+     pos = pvpatch(pos, 1, 0xfc);
+     return pos;
 }
 
 /**
@@ -1235,7 +1264,7 @@ static void dwr_fighters_ring(dw_rom *rom)
  */
 static void dwr_death_necklace(dw_rom *rom)
 {
-
+    // 67% chance of death necklace being a thing in random% mode.
     if (!DEATH_NECKLACE(rom) && !random_percent(rom, 67))
         return;
 
@@ -1570,6 +1599,7 @@ static void no_keys(dw_rom *rom)
     int i;
     dw_chest *chest;
 
+    // 33% chance of having keys NOT required.
     if (!NO_KEYS(rom) && !random_percent(rom, 33))
         return;
 
@@ -1596,12 +1626,14 @@ static void no_equipment(dw_rom *rom)
     int i;
     dw_chest *chest;
 
+    // 33% chance of this being a no equipment seed.
     if (!NO_EQUIPMENT(rom) && !random_percent(rom, 33))
         return;
 
     printf("Removing all equipment...\n");
     /* Don't require keys to open the door */
     chest = rom->chests;
+    // Change all equipment related chests to 500 gold.  Like you really need that gold... mwhahahaha!
     for (i=0; i < CHEST_COUNT; i++) {
         if (chest->item == SWORD || chest->item == DRAGON_SCALE || chest->item == RING || chest->item == NECKLACE)
             chest->item = GOLD_500;
@@ -1616,6 +1648,7 @@ static void no_equipment(dw_rom *rom)
     vpatch(rom, 0x1815, 3, 0, 0, 0); // Cantlin - Facebook guy
     vpatch(rom, 0x18e8, 3, 0, 0, 0); // Kol
     vpatch(rom, 0x186f, 3, 0, 0, 0); // Rimuldar
+    // ^ This creates an invisible block on the upper left part of the map you can run into.  Might want to change the coordinates a bit.
 
     // Remove Dragon's Scale from stores
     vpatch(rom, 0x19ce, 13, 0x15, 0xfd,
@@ -1631,90 +1664,90 @@ static void no_equipment(dw_rom *rom)
 static void progressive_encounter_rate(dw_rom *rom)
 {
     vpatch(rom, 0xc010, 177,
-           0xa5, 0xe0,
-           0xc9, 0x06, // Compare current tile, 0xe0, with 0x06, a swamp
-           0xd0, 0x46,
-           0xa5, 0xbe, // NEXT 4 LINES:  Are you wearing Erdrick's Armor?
-           0x29, 0x1c,
-           0xc9, 0x1c,
-           0xf0, 0x40, // If so, skip the bad swamp stuff
-           0xa9, 0x84, // LDA immediate 0x84
+           0xa5, 0xe0, // LDA $00E0
+           0xc9, 0x06, // CMP 0x06 (Compare current tile, 0xe0, with 0x06, a swamp)
+           0xd0, 0x46, // BNE $804C - Jump to next code block, below
+           0xa5, 0xbe, // LDA $00BE (NEXT 4 LINES:  Are you wearing Erdrick's Armor?)
+           0x29, 0x1c, // AND #$1C
+           0xc9, 0x1c, // CMP #$1C
+           0xf0, 0x3e, // BEQ $804C (If so, skip the bad swamp stuff)
+           0xa9, 0x84, // LDA #$84
            0x00, // Break
            0x04, 0x17, // Undefined?
-           0x20, 0x14, 0xee, // Swamp effect
-           0x20, 0x74, 0xff, // Pause one frame
-           0xad, 0x01, 0x70, // Load tile damage stat
-           0x18, // Clear carry
-           0x69, 0x02,
-           0x8d, 0x01, 0x70,
-           0xad, 0x02, 0x70,
-           0x69, 0x00, // Add zero, but if the carry flag is set, it adds 1 instead.
-           0x8d, 0x02, 0x70,
-           0xa5, 0xc5, // Load HP
-           0x38, // Set carry
-           0xe9, 0x02, // Lose 2 HP to swamp
-           0xb0, 0x02, // If the carry is still set (HP >= 0, skip next command)
-           0xa9, 0x00, // HP = 0
-           0x85, 0xc5, // Store HP
-           0x20, 0x74, 0xff, // Pause one frame
-           0x20, 0x28, 0xee,
-           0xa5, 0xc5, // Load HP
-           0xd0, 0x0a, // If HP != 0, skip the death stuff
-           0xee, 0x00, 0x70, // Increase newly created death counter, 0x7000, by one.
-           0x20, 0xf0, 0xc6,
-           0x00,
-           0x4c, 0x02, 0xce, // Jump to you're dead
-           0x4c, 0x00, 0x81, // Jump to encounter stuff, temporarily 8100
+           0x20, 0x14, 0xee, // JSR $EE14 - Swamp effect
+           0x20, 0x74, 0xff, // JSR $FF74 - Pause one frame
+           0xad, 0x01, 0x70, // LDA $7001 - Load tile damage stat
+           0x18, // CLC - Clear carry
+           0x69, 0x02, // ADC #$02
+           0x8d, 0x01, 0x70, // STA $7001
+           0xad, 0x02, 0x70, // LDA $7002
+           0x69, 0x00, // ADC #$00 - Add zero, but if the carry flag is set, it adds 1 instead.
+           0x8d, 0x02, 0x70, // STA $7002
+           0xa5, 0xc5, // LDA $00C5 - Load HP
+           0x38, // SEC - Set carry
+           0xe9, 0x02, // SBC #$02 - Lose 2 HP to swamp
+           0xb0, 0x02, // BCS $8033 - If the carry is still set (HP >= 0, skip next command)
+           0xa9, 0x00, // LDA $00A9 - HP = 0
+           0x85, 0xc5, // STA $00C5 - Store HP
+           0x20, 0x74, 0xff, // JSR $FF74 - Pause one frame
+           0x20, 0x28, 0xee, // JSR $EE28 - Flash the screen red briefly, I believe.
+           0xa5, 0xc5, // LDA $00A9 - Load HP
+           0xd0, 0x0a, // BNE $8049 - If HP != 0, skip the death stuff
+           0xee, 0x00, 0x70, // INC $7000 - Increase newly created death counter, 0x7000, by one.
+           0x20, 0xf0, 0xc6, // JSR $C6F0
+           0x00, // BRK
+           0x4c, 0x02, 0xce, // JMP $CE02 - Jump to you're dead
+           0x4c, 0x00, 0x81, // JMP $8100 - Jump to encounter stuff, temporarily 8100
 
-           0xc9, 0x0d, // Compare current tile, 0xe0, with 0x0d, a barrier
-           0xd0, 0x51,
-           0xa5, 0xbe, // NEXT 4 LINES:  Are you wearing Erdrick's Armor?
-           0x29, 0x1c,
-           0xc9, 0x1c,
-           0xf0, 0x46, // If so, skip the bad barrier stuff
-           0xa9, 0x80,
+           0xc9, 0x0d, // CMP #$0D - Compare current tile, 0xe0, with 0x0d, a barrier
+           0xd0, 0x51, // BNE $80A1 - Jump to next code block, below
+           0xa5, 0xbe, // LDA $00BE - NEXT 4 LINES:  Are you wearing Erdrick's Armor?
+           0x29, 0x1c, // AND #$1C
+           0xc9, 0x1c, // CMP #$1C
+           0xf0, 0x49, // BEQ $80A1 - If so, skip the bad barrier stuff
+           0xa9, 0x80, // LDA #$80
            0x00, // Break
            0x04, 0x17, // Undefined?
-           0xa9, 0x03, // Load 3 flashes
-           0x85, 0x42,
-           0x20, 0x74, 0xff,
-           0x20, 0x14, 0xee,
-           0x20, 0x74, 0xff,
-           0x20, 0x28, 0xee,
-           0xc6, 0x42,
-           0xd0, 0xf0,
-           0xad, 0x01, 0x70, // Load tile damage stat
-           0x18, // Clear carry
-           0x69, 0x0f, // Add 15 damage
-           0x8d, 0x01, 0x70,
-           0xad, 0x02, 0x70,
-           0x69, 0x00, // Add zero, but if the carry flag is set, it adds 1 instead.
-           0x8d, 0x02, 0x70,
-           0xa5, 0xc5, // Load HP
-           0x38, // Set carry
-           0xe9, 0x0f, // Lose 15 HP to swamp
-           0xb0, 0x02, // If the carry is still set (HP >= 0, skip next command)
-           0xa9, 0x00, // HP = 0
-           0x85, 0xc5, // Store HP
-           0xc9, 0x00,
-           0xd0, 0x0d,
-           0x20, 0x28, 0xee,
-           0x20, 0xf0, 0xc6,
-           0x00,
-           0xee, 0x00, 0x70, // Increase newly created death counter, 0x7000, by one.
-           0x4c, 0x02, 0xce, // Jump to you're dead
-           0x4c, 0x00, 0x81, // Jump to encounter stuff, temporarily 8100
+           0xa9, 0x03, // LDA #$03 - Load 3 flashes
+           0x85, 0x42, // STA $0042
+           0x20, 0x74, 0xff, // JSR $FF74
+           0x20, 0x14, 0xee, // JSR $EE14
+           0x20, 0x74, 0xff, // JSR $FF74
+           0x20, 0x28, 0xee, // JSR $EE28
+           0xc6, 0x42, // DEC $0042
+           0xd0, 0xf0, // BNE $8061
+           0xad, 0x01, 0x70, // LDA $7001 - Load tile damage stat
+           0x18, // CLC - Clear carry
+           0x69, 0x0f, // ADC #$0F - Add 15 damage
+           0x8d, 0x01, 0x70, // STA $7001
+           0xad, 0x02, 0x70, // LDA $7002
+           0x69, 0x00, // ADC #$00 - Add zero, but if the carry flag is set, it adds 1 instead.
+           0x8d, 0x02, 0x70, // STA $7002
+           0xa5, 0xc5, // LDA $00C5 - Load HP
+           0x38, // SEC - Set carry
+           0xe9, 0x0f, // SBC #$0F - Lose 15 HP to swamp
+           0xb0, 0x02, // BCS $808B - If the carry is still set (HP >= 0, skip next command)
+           0xa9, 0x00, // LDA #$00 - HP = 0
+           0x85, 0xc5, // STA $00C5 - Store HP
+           0xc9, 0x00, // CMP #$00
+           0xd0, 0x0d, // BNE $809E
+           0x20, 0x28, 0xee, // JSR $EE28
+           0x20, 0xf0, 0xc6, // JSR C6F0
+           0x00, // BRK
+           0xee, 0x00, 0x70, // INC $7000 - Increase newly created death counter, 0x7000, by one.
+           0x4c, 0x02, 0xce, // JMP $CE02 - Jump to you're dead
+           0x4c, 0x00, 0x81, // JMP $8100 - Jump to encounter stuff, temporarily 8100
 
-           0xc9, 0x02, // Compare current tile with 0x02, a mountain
-           0xd0, 0x09,
-           0x20, 0x74, 0xff, // Wait 3 frames
+           0xc9, 0x02, // CMP #$02 - Compare current tile with 0x02, a mountain
+           0xd0, 0x09, // BNE $80AE
+           0x20, 0x74, 0xff, // JSR $FF74 x 3 - Wait 3 frames
            0x20, 0x74, 0xff,
            0x20, 0x74, 0xff,
-           0x4c, 0x00, 0x81 // Jump to encounter stuff, temporarily 8100
+           0x4c, 0x00, 0x81 // JMP $8100 - Jump to encounter stuff, temporarily 8100
            );
 
     // Encounter rate patch
-    if (!PROG_ENC_RUN_RATE(rom)) {
+    if (!PROG_ENC_RUN_RATE(rom)) { // Full comments below - this part is similar
         vpatch(rom, 0xc110, 41,
                0xad, 0x03, 0x70, // Add one to the overall steps
                0x18,
@@ -1736,57 +1769,57 @@ static void progressive_encounter_rate(dw_rom *rom)
                );
     } else {
         vpatch(rom, 0xc110, 94,
-               0xad, 0x03, 0x70, // Add one to the overall steps
-               0x18,
-               0x69, 0x01,
-               0x8d, 0x03, 0x70,
-               0xad, 0x04, 0x70,
-               0x69, 0x00, // This could add 1 if 7003 overflowed. (14)
-               0x8d, 0x04, 0x70,
-               0xee, 0xff, 0x6f, // Add one to step counter since last encounter
-               0xa5, 0xe0, // Load current tile
-               0xaa, // Transfer to X
-               0xa8, // Also transfer to Y
-               0xbd, 0xf0, 0x81, // Load encounter rate to accumulator based on X.
-               0xae, 0xff, 0x6f, // Load step encounter since last encounter to X. (30)
-               0xe0, 0x09, // Compare step counter to 9 steps.  If it's less than that...
-               0xb0, 0x0b,
-               0x4a, // Reduce encounter rate by 1/2.
-               0xe0, 0x05, // Now 5 steps...
-               0xb0, 0x06,
-               0x4a, // Reduce encounter rate by 3/4. (40)
-               0xe0, 0x03, // Now 3 steps...
-               0xb0, 0x01,
-               0x4a, // Reduce encounter rate by 7/8.
-               0xe0, 0x18, // Now compare to 24 steps.  If it's greater than that...
-               0x90, 0x07,
-               0x18,
-               0x0a, // NEXT 2 LINES:  Triple encounter rate. (51)
-               0x79, 0xf0, 0x81,
-               0xd0, 0x10, // Go straight to final check with a BNE; the add will never result in a zero.
-               0xe0, 0x10, // Now compare to 16 steps.  If it's greater than that...
-               0x90, 0x03,
-               0x0a, // Double encounter rate (61)
-               0xd0, 0x09,
-               0xe0, 0x0c, // Finally, compare with 12 steps.  If it's greater than that...
-               0x90, 0x05,
-               0x18,
-               0x4a, // NEXT 2 LINES:  Increase encounter rate by 50%. (70)
-               0x79, 0xf0, 0x81,
-               0x8d, 0xfe, 0x6f, // Store final result into 6FFE
-               0xa5, 0x95, // Load RNG
-               0xcd, 0xfe, 0x6f, // Compare to 6FFE (81)
-               0xb0, 0x08, // If RNG >= encounter rate, skip encounter sequence
-               0xa9, 0x00, // Reset step counter back to 0.
-               0x8d, 0xff, 0x6f,
-               0x4c, 0x0d, 0xce, // Engage encounter sequence
-               0x4c, 0xf9, 0xcd // Jump back to the original program.
+               0xad, 0x03, 0x70, // LDA $7003 Add one to the overall steps
+               0x18, // CLC
+               0x69, 0x01, // ADC #$01
+               0x8d, 0x03, 0x70, // STA $7003
+               0xad, 0x04, 0x70, // LDA $7004
+               0x69, 0x00, // ADC #$00 - This could add 1 if 7003 overflowed. (14)
+               0x8d, 0x04, 0x70, // STA $7004
+               0xee, 0xff, 0x6f, // INC $6FFF - Add one to step counter since last encounter
+               0xa5, 0xe0, // LDA $00E0 - Load current tile
+               0xaa, // TAX - Transfer to X
+               0xa8, // TAY - Also transfer to Y
+               0xbd, 0xf0, 0x81, // LDA $81F0,X - Load encounter rate to accumulator based on X.
+               0xae, 0xff, 0x6f, // LDX $6FFF - Load step encounter since last encounter to X. (30)
+               0xe0, 0x09, // CPX #$09 - Compare step counter to 9 steps.  If it's less than that...
+               0xb0, 0x0b, // BCS $812D
+               0x4a, // LSR - Reduce encounter rate by 1/2.
+               0xe0, 0x05, // CPX #$05 - Now 5 steps...
+               0xb0, 0x06, // BCS $812D
+               0x4a, // LSR - Reduce encounter rate by 3/4. (40)
+               0xe0, 0x03, // CPX #$03 - Now 3 steps...
+               0xb0, 0x01, // BCS $812D
+               0x4a, // LSR - Reduce encounter rate by 7/8.
+               0xe0, 0x18, // CPX #$18 - Now compare to 24 steps.  If it's greater than that...
+               0x90, 0x07, // BCC $8138
+               0x18, // CLC
+               0x0a, // ASL - NEXT 2 LINES:  Triple encounter rate. (51)
+               0x79, 0xf0, 0x81, // ADC $81F0,Y - add encounter rate based on tile you're on
+               0xd0, 0x10, // BNE $8148 - Go straight to final check with a BNE; the add will never result in a zero.
+               0xe0, 0x10, // CPX #$10 - Now compare to 16 steps.  If it's greater than that...
+               0x90, 0x03, // BCC $813F
+               0x0a, // ASL - Double encounter rate (61)
+               0xd0, 0x09, // BNE $8148
+               0xe0, 0x0c, // CPX #$0C - Finally, compare with 12 steps.  If it's greater than that...
+               0x90, 0x05, // BCC $8148
+               0x18, // CLC
+               0x4a, // LSR - NEXT 2 LINES:  Increase encounter rate by 50%. (70)
+               0x79, 0xf0, 0x81, // ADC $81F0,Y - add encounter rate based on tile you're on
+               0x8d, 0xfe, 0x6f, // STA $6FFE - Store final result into 6FFE
+               0xa5, 0x95, // LDA $0095 - Load RNG
+               0xcd, 0xfe, 0x6f, // CMP $6FFE - Compare to 6FFE (81)
+               0xb0, 0x08, // BCS $815A - If RNG >= encounter rate, skip encounter sequence
+               0xa9, 0x00, // LDA #$00 - Reset step counter back to 0.
+               0x8d, 0xff, 0x6f, // STA $6FFF
+               0x4c, 0x0d, 0xce, // JMP $CE0D - Engage encounter sequence
+               0x4c, 0xf9, 0xcd // JMP $CDF9 - Jump back to the original program.
                );
     }
 
     // Encounter rates; they should be the same as in the original game
-    // Except the plains; they are now a consistent encounter rate;
-    // The average of 1/16 if Y is odd and 1/32 if Y is even, or 12/256.
+    // Except the plains; they are now a consistent encounter rate.
+    // This is the average of 1/16 if Y is odd and 1/32 if Y is even, or 12/256.
     vpatch(rom, 0xc200, 16,
            0x0c, 0x20, 0x20, 0x10,
            0x10, 0x10, 0x10, 0x10,
@@ -1796,30 +1829,30 @@ static void progressive_encounter_rate(dw_rom *rom)
     // Go to specialized code - This ultimately replaces CDC6-CE7B
     // First patch is CDC6-CDD0
     vpatch(rom, 0x1cdd6, 11,
-           0xa9, 0x03,
-           0x8d, 0x04, 0x60,
-           0x20, 0x91, 0xff,
-           0x4c, 0x00, 0x80);
+           0xa9, 0x03, // LDA #$03 - Place bank 3 into $6004 - This holds the current bank used when an interupt fires.  The interupt temporarily goes to bank 0 to do stuff before going back to bank $6004.
+           0x8d, 0x04, 0x60, // STA $6004
+           0x20, 0x91, 0xff, // JSR $FF91
+           0x4c, 0x00, 0x80); // JMP $8000
 
     // Return from encounter bit.  CDF9-CE00
     vpatch(rom, 0x1ce09, 8,
-           0xa9, 0x00,
-           0x8d, 0x04, 0x60,
-           0x20, 0x91, 0xff); // -> 0x60, RTS
+           0xa9, 0x00, // LDA #$00
+           0x8d, 0x04, 0x60, // STA $6004
+           0x20, 0x91, 0xff); // JSR $FF91
 
     // You're dead.  :(  CE02-CE0C
     vpatch(rom, 0x1ce12, 11,
-           0xa9, 0x00,
-           0x8d, 0x04, 0x60,
-           0x20, 0x91, 0xff,
-           0x4c, 0xa7, 0xed);
+           0xa9, 0x00, // LDA #$00
+           0x8d, 0x04, 0x60, // STA $6004
+           0x20, 0x91, 0xff, // JSR $FF91
+           0x4c, 0xa7, 0xed); // JMP $EDA7
 
     // Engage encounter sequence.  CE0D-CE17
     vpatch(rom, 0x1ce1d, 11,
-           0xa9, 0x00,
-           0x8d, 0x04, 0x60,
-           0x20, 0x91, 0xff,
-           0x4c, 0x7c, 0xce); // -> 0x60, RTS
+           0xa9, 0x00, // LDA #$00
+           0x8d, 0x04, 0x60, // STA $6004
+           0x20, 0x91, 0xff, // JSR $FF91
+           0x4c, 0x7c, 0xce); // JMP $CE7C
 
     // Clear out CE18-CE7B; no longer in use.
     vpatch(rom, 0x1ce28, 100,
@@ -1836,6 +1869,8 @@ static void progressive_encounter_rate(dw_rom *rom)
            );
 
     // Update graphics with swamp, barrier, and regular backgrounds (mandatory to maintain relative effects)
+    // This was in a different bank, but since we're using bank 3 due to the ROM expansion, we have to put this in
+    // very specific spots in the new bank 3.
     vpatch(rom, 0xda32, 2, 0x7f, 0x9a);
     vpatch(rom, 0xda8f, 12, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16);
     vpatch(rom, 0xda2a, 2, 0x46, 0x9a);
@@ -1846,196 +1881,205 @@ static void progressive_encounter_rate(dw_rom *rom)
 static void statistics(dw_rom *rom) {
     // Damage delivered from monsters.  Setup transition to page 3.
     vpatch(rom, 0x1ed39, 23,
-           0xa9, 0x03,
-           0x8d, 0x04, 0x60,
-           0x20, 0x91, 0xff,
-           0x4c, 0x00, 0x82,
-           0xa9, 0x00, // Return at ED34
-           0x8d, 0x04, 0x60,
-           0x20, 0x91, 0xff,
+           0xa9, 0x03, // LDA #$03
+           0x8d, 0x04, 0x60, // STA $6004
+           0x20, 0x91, 0xff, // JSR $FF91
+           0x4c, 0x00, 0x82, // JMP $8200
+           0xa9, 0x00, // LDA #$00 - Return at ED34
+           0x8d, 0x04, 0x60, // STA $6004
+           0x20, 0x91, 0xff, // JSR $FF91
            0xea, 0xea, 0xea, 0xea); // -> JSR FF74
 
     vpatch(rom, 0xc210, 60,
-           0xa5, 0xc5, // The code that had to be moved...
-           0x38,
-           0xe5, 0x00,
-           0xb0, 0x02,
-           0xa9, 0x00,
-           0x85, 0xc5,
-           0xa9, 0x03,
-           0x85, 0x42,
-           0xa5, 0x05,
-           0x85, 0x0f,
-           0xa5, 0x07,
-           0x85, 0x10, // (23)
-           0xad, 0x05, 0x70, // Statistics start here - Load damage taken, add to 2 byte memory starting at 7005.
-           0x18,
-           0x65, 0x00,
-           0x8d, 0x05, 0x70,
-           0xad, 0x06, 0x70, // (35)
-           0x69, 0x00,
-           0x8d, 0x06, 0x70,
-           0xa5, 0xc5, // If HP == 0...
-           0xd0, 0x0d,
-           0xa9, 0x00, // Clear run counter.
-           0x8d, 0xfc, 0x6f,
-           0xee, 0x00, 0x70, // Increase death counter by 1.
-           0xa6, 0xe0, // Also give the monster credit for the kill.  Load Enemy ID -> X.
-           0xfe, 0x40, 0x71,
-           0x4c, 0x34, 0xed);
+           0xa5, 0xc5, // LDA $00C5 - The code that had to be moved...
+           0x38, // SEC
+           0xe5, 0x00, // SBC $0000 (the variable $0000)
+           0xb0, 0x02, // BCS $8209
+           0xa9, 0x00, // LDA #$03
+           0x85, 0xc5, // STA $00C5
+           0xa9, 0x03, // LDA #$03
+           0x85, 0x42, // STA $0042
+           0xa5, 0x05, // LDA $0005
+           0x85, 0x0f, // STA $000F
+           0xa5, 0x07, // LDA $0007
+           0x85, 0x10, // STA $0010 (23)
+           0xad, 0x05, 0x70, // LDA $7005 - Statistics start here - Load damage taken, add to 2 byte memory starting at 7005.
+           0x18, // CLC
+           0x65, 0x00, // ADC $0000
+           0x8d, 0x05, 0x70, // STA $7005
+           0xad, 0x06, 0x70, // LDA $7006 (35)
+           0x69, 0x00, // ADC #$00 (possibly 1 if carried)
+           0x8d, 0x06, 0x70, // STA $7006
+           0xa5, 0xc5, // LDA $00C5 - If HP == 0...
+           0xd0, 0x0d, // BNE $8239
+           0xa9, 0x00, // LDA #$00 - Clear run counter.
+           0x8d, 0xfc, 0x6f, // STA $6FFC
+           0xee, 0x00, 0x70, // INC $7000 - Increase death counter by 1.
+           0xa6, 0xe0, // LDX $00E0 - Also give the monster credit for the kill.  Load Enemy ID -> X.
+           0xfe, 0x40, 0x71, // INC $7140,X
+           0x4c, 0x34, 0xed); // JMP $ED34
 
-    // Dealing damage to monsters.
+    // Dealing damage to monsters.  This uses code that was NOPed out previously.
     vpatch(rom, 0x1ce28, 46,
-           0xad, 0x07, 0x70,
-           0x65, 0x00, // Add damage given to 2 byte memory starting at 7007.
-           0x8d, 0x07, 0x70,
-           0xad, 0x08, 0x70,
-           0x69, 0x00,
-           0x8d, 0x08, 0x70,
-           0xa5, 0xe2,
-           0x38,
-           0xe5, 0x00,
-           0x85, 0xe2,
-           0x90, 0x05,
-           0xf0, 0x03,
-           0x4c, 0x1b, 0xeb,
-           0xa9, 0x00, // Clear run counter.
-           0x8d, 0xfc, 0x6f,
-           0xee, 0x09, 0x70, // Increase kill counter by 1.
-           0xa6, 0xe0, // Load Enemy ID -> X.
-           0xfe, 0x00, 0x71, // Add 1 based on enemy ID.
-           0x4c, 0x6b, 0xe9
+           0xad, 0x07, 0x70, // LDA $7007
+           0x65, 0x00, // ADC $0000 - Add damage given to 2 byte memory starting at 7007.
+           0x8d, 0x07, 0x70, // STA $7007
+           0xad, 0x08, 0x70, // LDA $7008
+           0x69, 0x00, // ADC #$00 (could be 1 due to carry)
+           0x8d, 0x08, 0x70, // STA $7008
+           0xa5, 0xe2, // LDA $00E2 - Load HP
+           0x38, // SEC
+           0xe5, 0x00, // SBC $0000 - Subtract by damage
+           0x85, 0xe2, // STA $00E2
+           0x90, 0x05, // BCC $CE36
+           0xf0, 0x03, // BEQ $CE36
+           0x4c, 0x1b, 0xeb, // JMP $EB1B (carry on with the fight)
+           0xa9, 0x00, // LDA #$00 - Clear run counter.
+           0x8d, 0xfc, 0x6f, // STA $6FFC
+           0xee, 0x09, 0x70, // INC $7009 - Increase kill counter by 1.
+           0xa6, 0xe0, // LDX $00E0 - Load Enemy ID -> X.
+           0xfe, 0x00, 0x71, // INC $7100,X - Add 1 based on enemy ID.
+           0x4c, 0x6b, 0xe9 // JMP $E96B
            );
 
     vpatch(rom, 0x1e96d, 11,
-           0x4c, 0x18, 0xce,
-           0xea, 0xea,
+           0x4c, 0x18, 0xce, // JMP $CE18
+           0xea, 0xea, // NOP the rest
            0xea, 0xea,
            0xea, 0xea,
            0xea, 0xea);
 
     // Monsters running away - Most of this is copied code.
-    /*vpatch(rom, 0xc310, 61,
-           0xA5, 0xC8,
-           0x4A,
-           0xCD, 0x00, 0x01,
-           0x90, 0x32,
-           0x20, 0x5B, 0xC5,
-           0xA5, 0x95,
-           0x29, 0x03,
-           0xD0, 0x29,
+    vpatch(rom, 0xc310, 61,
+           0xA5, 0xC8, // LDA $00C8
+           0x4A, // LSR
+           0xCD, 0x00, 0x01, // CMP $0100
+           0x90, 0x32, // BCC $833A
+           0x20, 0x5B, 0xC5, // JSR $C55B - Generate next RNG number
+           0xA5, 0x95, // LDA $0095 - Load RNG
+           0x29, 0x03, // AND #$03
+           0xD0, 0x29, // BNE $833A
            // (17) Enemy runs away here.  Record statistic here.
-           0xa9, 0x00, // Clear run counter.
-           0x8d, 0xfc, 0x6f,
-           0xee, 0x0a, 0x70, // Increase monster wimps out counter by 1.
-           0xa6, 0xe0, // Load Enemy ID -> X.
-           0xfe, 0x80, 0x71, // Add 1 to monster forfeits based on enemy ID.
-           0x20, 0xBB, 0xC6,
-           0xA9, 0x83, // (30)
-           0x00,
-           0x04,
-           0x17,
-           0x20, 0xE4, 0xDB,
-           0x20, 0xCB, 0xC7, // (39)
-           0xE3,
-           0xA6, 0x45,
-           0xBD, 0xAE, 0xB1,
-           0x00,
-           0x04,
-           0x17,
-           0x68,
-           0x68,
-           0x4C, 0xC2, 0xEF,
-           0x4C, 0xCD, 0xEF);
+           0xa9, 0x00, // LDA #$00 - Clear run counter.
+           0x8d, 0xfc, 0x6f, // STA $6FFC
+           0xee, 0x0a, 0x70, // INC $700A - Increase monster wimps out counter by 1.
+           0xa6, 0xe0, // LDX $00E0 - Load Enemy ID -> X.
+           0xfe, 0x80, 0x71, // INC $7180,X - Add 1 to monster forfeits based on enemy ID.
+           0x20, 0xBB, 0xC6, // JSR $C6BB
+           0xA9, 0x83, // LDA #$83 - (30)
+           0x00, // BRK
+           0x04, // Undefined?
+           0x17, // Undefined?
+           0x20, 0xE4, 0xDB, // JSR $DBE4
+           0x20, 0xCB, 0xC7, // JSR $C7CB (39)
+           0xE3, // Undefined?
+           0xA6, 0x45, // LDX $0045 - Reset music part 1
+           0xBD, 0xAE, 0xB1, // LDA $B1AE,X - Reset music part 2
+           0x00, // BRK
+           0x04, // Undefined
+           0x17, // Undefined
+           0x68, // PLA
+           0x68, // PLA
+           0x4C, 0xC2, 0xEF, // JMP $EFC2
+           0x4C, 0xCD, 0xEF); // JMP $EFCD (done)
 
     vpatch(rom, 0x1efc7, 31, // EFB7
-           0xa9, 0x03,
-           0x8d, 0x04, 0x60,
-           0x20, 0x91, 0xff,
-           0x4c, 0x00, 0x83,
-           0xa9, 0x00, // Return at EFC2 (13)
-           0x8d, 0x04, 0x60,
-           0x20, 0x91, 0xff,
-           0x4c, 0x54, 0xee,
-           0xa9, 0x00, // Return at EFCD (24)
-           0x8d, 0x04, 0x60,
-           0x20, 0x91, 0xff,
-           0x60); */
+           0xa9, 0x03, // LDA #$03
+           0x8d, 0x04, 0x60, // STA $6004
+           0x20, 0x91, 0xff, // JSR $FF91
+           0x4c, 0x00, 0x83, // JMP $8300
+           0xa9, 0x00, // LDA #$00 - Return at EFC2 (13)
+           0x8d, 0x04, 0x60, // STA $6004
+           0x20, 0x91, 0xff, // JSR $FF91
+           0x4c, 0x54, 0xee, // JMP $EE54
+           0xa9, 0x00, // LDA #$00 - Return at EFCD (24)
+           0x8d, 0x04, 0x60, // STA $6004
+           0x20, 0x91, 0xff, // JSR $FF91
+           0x60); // JSR
+
+    // The runaway routine recalls the overworld music.  It uses bank 0 in the vanilla music,
+    // but since bank 3 is the active bank, we will have to plugin those numbers into the appropriate place in bank 3.
+    vpatch(rom, 0xf1be, 30,
+           0x00, 0x05, 0x06, 0x09, 0x03, 0x02, 0x0d, 0x04,
+           0x04, 0x04, 0x04, 0x04, 0x03, 0x03, 0x03, 0x07,
+           0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x06, 0x06, 0x07,
+           0x06, 0x07, 0x08, 0x09, 0x06, 0x07);
 
     // You running away
     if (PROG_ENC_RUN_RATE(rom)) {
         vpatch(rom, 0xc410, 155,
-               0x20, 0x5B, 0xC5,
-               0xA5, 0xE0,
-               0xC9, 0x23,
-               0x90, 0x05,
-               0xA5, 0x95, // (11)
-               0x4C, 0x36, 0x84,
-               0xC9, 0x1E,
-               0x90, 0x07,
-               0xA5, 0x95,
-               0x29, 0x7F, // (22)
-               0x4C, 0x36, 0x84,
-               0xC9, 0x14,
-               0x90, 0x12,
-               0xA5, 0x95,
-               0x29, 0x3F,
-               0x85, 0x3E, // (35)
-               0x20, 0x5B, 0xC5,
-               0xA5, 0x95,
-               0x29, 0x1F,
-               0x65, 0x3E, // (44)
-               0x4C, 0x36, 0x84,
-               0x20, 0x5B, 0xC5,
-               0xA5, 0x95,
-               0x29, 0x3F, // (54)
-               0x85, 0x3C, // Store randomized number into 3C.
-               0xee, 0xfc, 0x6f, // Increase run counter by 1.
-               0xad, 0xfc, 0x6f, // Load run counter (62)
-               0xc9, 0x03, // If this is your 3rd attempt...
-               0x90, 0x0e,
-               0x46, 0x3c, // Reduce enemy run roll by 1/2.
-               0xc9, 0x04, // If this is your 4th attempt...
-               0x90, 0x08, // (72)
-               0x46, 0x3c, // Reduce enemy run roll by 3/4.
-               0xc9, 0x05, // If this is your 5th or subsequent attempt...
-               0x90, 0x02,
-               0x46, 0x3c, // Reduce enemy run roll by 7/8.
-               0xAD, 0x01, 0x01,
-               0x85, 0x3E, // (85)
-               0xA9, 0x00,
-               0x85, 0x3D,
-               0x85, 0x3F,
-               0x20, 0xC9, 0xC1, // (94)
-               0xA5, 0x40,
-               0x85, 0x42,
-               0xA5, 0x41,
-               0x85, 0x43,
-               0x20, 0x5B, 0xC5, // (105)
-               0xA5, 0x95,
-               0x85, 0x3C,
-               0xA5, 0xC9,
-               0x85, 0x3E,
-               0xA9, 0x00,
-               0x85, 0x3D,
-               0x85, 0x3F,
-               0x20, 0xC9, 0xC1, // (122)
-               0xA5, 0x40,
-               0x38,
-               0xE5, 0x42,
-               0xA5, 0x41,
-               0xE5, 0x43, // (131)
-               0xb0, 0x06, // If 0043 < 0, successful run.  Reflect in the statistics.
-               0xee, 0x0a, 0x70, // Increase failed run by 1.
-               0x4c, 0x9c, 0xee,
-               0xa9, 0x00, // Clear run counter.
-               0x8d, 0xfc, 0x6f,
-               0xee, 0x0b, 0x70, // Increase successful run by 1.
-               0xa6, 0xe0, // Load Enemy ID -> X.
-               0xfe, 0xc0, 0x71, // Add 1 to hero forfeits based on enemy ID.
-               0x4c, 0x9c, 0xee // (150)
+               0x20, 0x5B, 0xC5, // JSR $C55B - Get next number in RNG sequence
+               0xA5, 0xE0, // LDA $00E0 // Load enemy #
+               0xC9, 0x23, // CMP #$23
+               0x90, 0x05, // BCC $840E
+               0xA5, 0x95, // LDA $0095 - Load RNG (11)
+               0x4C, 0x36, 0x84, // JMP $8436
+               0xC9, 0x1E, // CMP #$1E
+               0x90, 0x07, // BCC $8419
+               0xA5, 0x95, // LDA $0095 - Load RNG
+               0x29, 0x7F, // AND #$7F - Reduce in half (22)
+               0x4C, 0x36, 0x84, // JMP $8436
+               0xC9, 0x14, // CMP #$14
+               0x90, 0x12, // BCC $842F
+               0xA5, 0x95, // LDA $0095 - Load RNG - ULTIMATE GOAL:  0-95
+               0x29, 0x3F, // AND #$3F
+               0x85, 0x3E, // STA $003E (35)
+               0x20, 0x5B, 0xC5, // JSR $C55B - Get next number in RNG sequence
+               0xA5, 0x95, // LDA $0095 - Load RNG
+               0x29, 0x1F, // AND #$1F
+               0x65, 0x3E, // ADC $003E (44)
+               0x4C, 0x36, 0x84, // JMP $8436
+               0x20, 0x5B, 0xC5, // JSR $C55B - Get next number in RNG sequence
+               0xA5, 0x95, // LDA $0095
+               0x29, 0x3F, // AND #$3F (54)
+               0x85, 0x3C, // STA $003C - Store randomized number, enemy's runaway roll, into 3C.
+               0xee, 0xfc, 0x6f, // INC $6FFC - Increase run counter by 1.
+               0xad, 0xfc, 0x6f, // LDA $6FFC - Load run counter (62)
+               0xc9, 0x03, // CMP #$03 - If this is your 3rd attempt...
+               0x90, 0x0e, // BCC $8450
+               0x46, 0x3c, // LSR $003C - Reduce enemy run roll by 1/2.
+               0xc9, 0x04, // CMP #$04 - If this is your 4th attempt...
+               0x90, 0x08, // BCC $8450 (72)
+               0x46, 0x3c, // LSR $003C - Reduce enemy run roll by 3/4.
+               0xc9, 0x05, // CMP #$05 - If this is your 5th or subsequent attempt...
+               0x90, 0x02, // BCC $8450
+               0x46, 0x3c, // LSR $003C - Reduce enemy run roll by 7/8.
+               0xAD, 0x01, 0x01, // LDA $0101 - $8450 is here
+               0x85, 0x3E, // STA $003E (85)
+               0xA9, 0x00, // LDA #$00
+               0x85, 0x3D, // STA $003D
+               0x85, 0x3F, // STA $003F
+               0x20, 0xC9, 0xC1, // JSR $C1C9 (94)
+               0xA5, 0x40, // LDA $0040
+               0x85, 0x42, // STA $0042
+               0xA5, 0x41, // LDA $0041
+               0x85, 0x43, // STA $0043
+               0x20, 0x5B, 0xC5, // JSR $C55B - Get next RNG number (105)
+               0xA5, 0x95, // LDA $0095
+               0x85, 0x3C, // STA $003C
+               0xA5, 0xC9, // LDA $00C9
+               0x85, 0x3E, // STA $003E
+               0xA9, 0x00, // LDA #$00
+               0x85, 0x3D, // STA $003D
+               0x85, 0x3F, // STA $003F
+               0x20, 0xC9, 0xC1, // JSR $C1C9 (122)
+               0xA5, 0x40, // LDA $0040
+               0x38, // SEC
+               0xE5, 0x42, // SBC $0042
+               0xA5, 0x41, // LDA $0041
+               0xE5, 0x43, // SBC $0043 (131)
+               0xb0, 0x06, // BCS $848B - If 0043 < 0, successful run.  Reflect in the statistics.
+               0xee, 0x0a, 0x70, // INC $700A - Increase failed run by 1.
+               0x4c, 0x9c, 0xee, // JMP $EE9C
+               0xa9, 0x00, // LDA #$00 - Clear run counter.
+               0x8d, 0xfc, 0x6f, // STA $6FFC
+               0xee, 0x0b, 0x70, // INC $700B - Increase successful run by 1.
+               0xa6, 0xe0, // LDX $00E0 - Load Enemy ID -> X.
+               0xfe, 0xc0, 0x71, // INC $71C0,X - Add 1 to hero forfeits based on enemy ID.
+               0x4c, 0x9c, 0xee // JMP $EE9C (150)
                );
     } else {
+        // This is the same as above, without the progressive run rate.  Please read the above for full comments.
         vpatch(rom, 0xc410, 134,
                0x20, 0x5B, 0xC5,
                0xA5, 0xE0,
@@ -2100,102 +2144,103 @@ static void statistics(dw_rom *rom) {
     }
 
     vpatch(rom, 0x1eea1, 24,
-           0xa9, 0x03,
-           0x8d, 0x04, 0x60,
-           0x20, 0x91, 0xff,
-           0x4c, 0x00, 0x84,
-           0xa9, 0x00,
-           0x8d, 0x04, 0x60,
-           0x20, 0x91, 0xff,
-           0xa5, 0x41,
-           0xe5, 0x43,
-           0x60
+           0xa9, 0x03, // LDA #$03
+           0x8d, 0x04, 0x60, // STA $6004
+           0x20, 0x91, 0xff, // JSR $FF91
+           0x4c, 0x00, 0x84, // JMP $8400
+           0xa9, 0x00, // LDA #$00
+           0x8d, 0x04, 0x60, // STA $6004
+           0x20, 0x91, 0xff, // JSR $FF91
+           0xa5, 0x41, // LDA $0041
+           0xe5, 0x43, // SBC $0043
+           0x60 // RTS
            );
 }
 
 static void stat_limiting(dw_rom *rom) {
     vpatch(rom, 0xc510, 107,
-           0xad, 0xf9, 0x6f,
-           0x85, 0x42,
-           0x29, 0x03,
-           0x85, 0x43,
-           0xa5, 0x42,
-           0x4a,
-           0x4a,
-           0x29, 0x03,
-           0x85, 0x42,
-           0xa5, 0x43,
-           0x4a,
-           0xb0, 0x14,
-           0xa9, 0x09, // NEXT 6 LINES:  Multiply strength by 9/10 (21)
-           0x8d, 0xfa, 0x6f,
-           0xa9, 0x0a,
-           0x8d, 0xfb, 0x6f,
-           0xa5, 0xc8,
-           0x20, 0x80, 0x85, // Limit Strength (34)
-           0x85, 0xc8,
-           0x4c, 0x3a, 0x85,
-           0xa9, 0x09, // NEXT 6 LINES:  Multiply MP by 9/10
-           0x8d, 0xfa, 0x6f,
-           0xa9, 0x0a,
-           0x8d, 0xfb, 0x6f,
-           0xa5, 0xcb,
-           0xf0, 0x05,
-           0x20, 0x80, 0x85, // Limit MP (56)
-           0x85, 0xcb,
-           0xa5, 0x43, // End jump here (60, 0x3c)
-           0x29, 0x02,
-           0xd0, 0x14,
-           0xa9, 0x09, // NEXT 6 LINES:  Multiply agility by 9/10
-           0x8d, 0xfa, 0x6f,
-           0xa9, 0x0a,
-           0x8d, 0xfb, 0x6f,
-           0xa5, 0xc9,
-           0x20, 0x80, 0x85, // Limit agility (79)
-           0x85, 0xc9,
-           0x4c, 0x9e, 0xf0, // MUST CHANGE - Back to calling routine
-           0xa9, 0x09, // NEXT 6 LINES:  Multiply HP by 9/10
-           0x8d, 0xfa, 0x6f,
-           0xa9, 0x0a,
-           0x8d, 0xfb, 0x6f,
-           0xa5, 0xca,
-           0x20, 0x80, 0x85, // Limit HP (99)
-           0x85, 0xca,
-           0x4c, 0x9e, 0xf0 // MUST CHANGE - Back to calling routine
+           0xad, 0xf9, 0x6f, // LDA $6FF9
+           0x85, 0x42,  // STA $0042
+           0x29, 0x03,  // AND #$03
+           0x85, 0x43,  // STA $0043
+           0xa5, 0x42,  // LDA $0042
+           0x4a,    // LSR - Divide by 4
+           0x4a,    // LSR
+           0x29, 0x03,  // AND #$03
+           0x85, 0x42,  // STA $0042
+           0xa5, 0x43,  // LDA $0043
+           0x4a,    // LSR
+           0xb0, 0x14,  // BCS $852A
+           0xa9, 0x09, // LDA #$09 - NEXT 6 LINES:  Multiply strength by 9/10 (21)
+           0x8d, 0xfa, 0x6f, // STA $6FFA
+           0xa9, 0x0a, // LDA #$0A
+           0x8d, 0xfb, 0x6f, // STA $6FFB
+           0xa5, 0xc8, // LDA $00C8
+           0x20, 0x80, 0x85, // JSR $8580 - Limit Strength (34)
+           0x85, 0xc8, // STA $00C8
+           0x4c, 0x3d, 0x85, // JMP $853B
+           0xa9, 0x09, // LDA #$09 - NEXT 6 LINES:  Multiply MP by 9/10
+           0x8d, 0xfa, 0x6f, // STA $6FFA
+           0xa9, 0x0a, // LDA #$0A
+           0x8d, 0xfb, 0x6f, // STA $6FFB
+           0xa5, 0xcb, // LDA $00CB
+           0xf0, 0x05, // BEQ $853D
+           0x20, 0x80, 0x85, // JSR $8580 - Limit MP (56)
+           0x85, 0xcb, // STA $00CB
+           0xa5, 0x43, // LDA $0043 - End jump here (60, 0x3c)
+           0x29, 0x02, // AND #$02
+           0xd0, 0x14, // BNE $8557
+           0xa9, 0x09, // LDA #$09 - NEXT 6 LINES:  Multiply agility by 9/10
+           0x8d, 0xfa, 0x6f, // STA $6FFA
+           0xa9, 0x0a, // LDA #$0A
+           0x8d, 0xfb, 0x6f, // STA $6FFB
+           0xa5, 0xc9, // LDA $00C9
+           0x20, 0x80, 0x85, // JSR $8580 - Limit agility (79)
+           0x85, 0xc9, // STA $00C9
+           0x4c, 0x9e, 0xf0, // JMP $F09E - MUST CHANGE - Back to calling routine
+           0xa9, 0x09, // LDA #$09 - NEXT 6 LINES:  Multiply HP by 9/10
+           0x8d, 0xfa, 0x6f, // STA $6FFA
+           0xa9, 0x0a, // LDA #$0A
+           0x8d, 0xfb, 0x6f, // STA $6FFB
+           0xa5, 0xca, // LDA $00CA
+           0x20, 0x80, 0x85, // JSR $8580 - Limit HP (99)
+           0x85, 0xca, // STA $00CB
+           0x4c, 0x9e, 0xf0 // JMP $F09E - MUST CHANGE - Back to calling routine
            );
 
+    // Meanwhile, at the often called $8580...
     vpatch(rom, 0xc590, 42,
-           0x85, 0x3c,
-           0xad, 0xfa, 0x6f,
-           0x85, 0x3e,
-           0xa9, 0x00,
-           0x85, 0x3d,
-           0x85, 0x3f,
-           0x20, 0xc9, 0xc1,
-           0xa5, 0x40,
-           0x85, 0x3c,
-           0xa5, 0x41,
-           0x85, 0x3d,
-           0xad, 0xfb, 0x6f,
-           0x85, 0x3e,
-           0xa9, 0x00,
-           0x85, 0x3f,
-           0x20, 0xf4, 0xc1,
-           0xa5, 0x3c,
-           0x18,
-           0x65, 0x42,
-           0x60);
+           0x85, 0x3c, // STA $003C
+           0xad, 0xfa, 0x6f, // LDA $6FFA (instead of 0x09 in the original)
+           0x85, 0x3e, // STA $003E
+           0xa9, 0x00, // LDA #$00
+           0x85, 0x3d, // STA $003D
+           0x85, 0x3f, // STA $003F
+           0x20, 0xc9, 0xc1, // JSR $C1C9 (multiply 3C and 3E together)
+           0xa5, 0x40, // LDA $0040 (the first part of the result)
+           0x85, 0x3c, // STA $003C
+           0xa5, 0x41, // STA $0041 (the second part of the result)
+           0x85, 0x3d, // STA $003D
+           0xad, 0xfb, 0x6f, // LDA #$6FFB (instead of 0x0A in the original)
+           0x85, 0x3e, // STA $003E
+           0xa9, 0x00, // LDA #$00
+           0x85, 0x3f, // STA $003F
+           0x20, 0xf4, 0xc1, // Divide by $6FFB
+           0xa5, 0x3c, // LDA $003C (the result)
+           0x18, // CLC
+           0x65, 0x42, // ADC $0042 (always 0x03)
+           0x60); // JSR
 
     vpatch (rom, 0x1f0a0, 25,
-            0x8d, 0xf9, 0x6f,
-            0xa9, 0x03,
-            0x8d, 0x04, 0x60,
-            0x20, 0x91, 0xff,
-            0x4c, 0x00, 0x85,
-            0xa9, 0x00,
-            0x8d, 0x04, 0x60,
-            0x20, 0x91, 0xff,
-            0x4c, 0xcd, 0xf0);
+            0x8d, 0xf9, 0x6f, // STA $6FF9
+            0xa9, 0x03, // LDA #$03
+            0x8d, 0x04, 0x60, // STA $6004
+            0x20, 0x91, 0xff, // JSR $FF91
+            0x4c, 0x00, 0x85, // JMP $8500
+            0xa9, 0x00, // LDA #$09
+            0x8d, 0x04, 0x60, // STA $6004
+            0x20, 0x91, 0xff, // JSR $FF91
+            0x4c, 0xcd, 0xf0); // JMP $F0CD
 }
 
 /**

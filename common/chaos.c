@@ -128,6 +128,10 @@ static void chaos_enemies(dw_rom *rom)
     enemies = rom->enemies;
 
     for (i=SLIME; i <= DRAGONLORD_1; i++) {
+        // HP from 4-144 to 2-145
+        // Strength from 4-121 to 2-145
+        // Agility from 4-256 to 2-122
+        // XP/GP from 4-256 to 1-256 (higher chance of lower values)
         enemies[i].hp =   1+rand_power_curve(1, 12, 2.0);
         enemies[i].str =  1+rand_power_curve(1, 12, 2.0);
         enemies[i].agi =  1+rand_power_curve(1, 11, 2.0);
@@ -140,6 +144,8 @@ static void chaos_enemies(dw_rom *rom)
                                  rand_power_curve(0, 4, 2.0);
     }
 
+    // DL's HP from 4-144 to 64-196
+    enemies[DRAGONLORD_1].hp = rand_power_curve(8, 14, 2.0);
     enemies[DRAGONLORD_1].str = rand_power_curve(9, 16, 2.0);
     enemies[DRAGONLORD_1].xp = 0;
     enemies[DRAGONLORD_1].gold = 0;
@@ -294,6 +300,7 @@ void chaos_running(dw_rom *rom)
  */
 void chaos_mode(dw_rom *rom)
 {
+    // Give a 10 percent chance that Chaos Mode goes into effect
     if (!CHAOS_MODE(rom) && !random_percent(rom, 10))
         return;
 

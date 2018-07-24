@@ -134,6 +134,7 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->token = (dw_searchable*)&rom->raw[0xe11b];
     rom->flute = (dw_searchable*)&rom->raw[0xe15a];
     rom->armor = (dw_searchable*)&rom->raw[0xe170];
+    rom->repel_table = &rom->raw[0xf50a];
     rom->weapon_shops = &rom->raw[0x19a1];
     rom->weapon_prices = (uint16_t*)&rom->raw[0x1957];
     rom->weapon_price_display = (uint16_t*)&rom->raw[0x7e20];
@@ -1191,9 +1192,9 @@ static void other_patches(dw_rom *rom)
     rom->golem_run->map = rom->golem->map = CHARLOCK_THRONE_ROOM;
     rom->golem_run->x = rom->golem->x = 25;
     rom->golem_run->y = rom->golem->y = 22;
-    vpatch(rom, 0xcdab, 2, 0xea, 0xea); /* make sure he always appears */
-    /* make swamp cave encounter always appear */
-    vpatch(rom, 0xcd8e, 2, 0xea, 0xea);
+    /* make sure all forced encounters are never marked defeated */
+    vpatch(rom, 0xe99d, 2, 0xea, 0xea);
+    vpatch(rom, 0xe98b, 2, 0xea, 0xea);
 
     vpatch(rom, 0xde33, 10,  /* Changes the enemies summoned by the harp. */
         /* de23: */

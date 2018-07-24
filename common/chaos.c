@@ -1,8 +1,4 @@
-//
-// Created by mcgrew on 7/29/17.
-//
 
-#define _GNU_SOURCE /* for qsort_r */
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -131,6 +127,7 @@ static void chaos_enemies(dw_rom *rom)
                                  rand_power_curve(0, 4, 2.0);
     }
 
+    enemies[DRAGONLORD_1].hp  = rand_power_curve(9, 14, 2.0);
     enemies[DRAGONLORD_1].str = rand_power_curve(9, 16, 2.0);
     enemies[DRAGONLORD_1].xp = 0;
     enemies[DRAGONLORD_1].gold = 0;
@@ -148,6 +145,11 @@ static void chaos_enemies(dw_rom *rom)
     enemies[DRAGONLORD_2].s_ss_resist &= 0xf0;
     enemies[DRAGONLORD_2].s_ss_resist |= 15 - rand_power_curve(0, 4, 2.0);
     enemies[DRAGONLORD_2].hp = mt_rand(100, 230);
+
+    /* update the repel table */
+    for (i=SLIME; i <= RED_DRAGON; i++) {
+        rom->repel_table[i] = enemies[i].str;
+    }
 }
 
 /**
@@ -180,9 +182,13 @@ static void chaos_zones(dw_rom *rom)
             }
         }
     }
+    /* ensure that at least one enemy is beatable */
     /* set the lowest strength enemy's HP to a max of 5. */
-    /* this will ensure that at least one enemy is beatable */
     low_str_enemy->hp = MIN(low_str_enemy->hp, 5);
+    /* remove any abilities */
+    low_str_enemy->pattern = 0;
+    /* constrict the xp value so it can't be abused */
+    low_str_enemy->xp =   rand_power_curve(4, 8, 2.0);
 
     /* randomize Charlock Zones */
     for (zone=16; zone <= 18; zone++) {

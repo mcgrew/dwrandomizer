@@ -284,6 +284,7 @@ typedef struct {
     dw_searchable *token;
     dw_searchable *flute;
     dw_searchable *armor;
+    uint8_t *repel_table;
     uint8_t *weapon_shops;
     uint16_t *weapon_prices;
     uint16_t *weapon_price_display;

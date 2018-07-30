@@ -407,16 +407,16 @@ static uint8_t place_tantegel(dw_map *map, int largest, int next)
 
     map->love_calc->x = x;
     map->love_calc->y = y;
-    if (tile_is_walkable(map->tiles[x][y+1])) { 
+    if (y < 119 && tile_is_walkable(map->tiles[x][y+1])) { 
         map->return_point->x = x;
         map->return_point->y = y+1;
-    } else if (tile_is_walkable(map->tiles[x][y-1])) { 
+    } else if (y > 0 && tile_is_walkable(map->tiles[x][y-1])) { 
         map->return_point->x = x;
         map->return_point->y = y-1;
-    } else if (tile_is_walkable(map->tiles[x-1][y])) { 
+    } else if (x > 0 && tile_is_walkable(map->tiles[x-1][y])) { 
         map->return_point->x = x-1;
         map->return_point->y = y;
-    } else if (tile_is_walkable(map->tiles[x+1][y])) { 
+    } else if (x < 119 && tile_is_walkable(map->tiles[x+1][y])) { 
         map->return_point->x = x+1;
         map->return_point->y = y;
     }

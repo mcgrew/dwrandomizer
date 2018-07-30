@@ -48,7 +48,11 @@ static void print_usage(const char *command, char *default_flags)
     printf("\n");
     printf("Sprite should be one of: ");
     for(i=0; i < sizeof(dwr_sprite_names) / sizeof(char *); i++) {
-        printf("%s ", dwr_sprite_names[i]);
+        if (i) {
+            printf(", %s", dwr_sprite_names[i]);
+        } else {
+            printf("%s", dwr_sprite_names[i]);
+        }
     }
     printf("\n");
 }

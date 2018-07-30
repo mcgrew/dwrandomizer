@@ -178,7 +178,7 @@ void MainWindow::handleButton()
 {
     char flags[64], checksum[64];
     QString flagStr = this->getFlags();
-    strncpy(flags, flagStr.toLatin1().constData(), 64);
+    strncpy(flags, flagStr.toLatin1().constData(), 63);
 
     uint64_t seed = this->seed->getSeed();
     std::string inputFile = this->romFile->text().toLatin1().constData();
@@ -199,7 +199,7 @@ void MainWindow::handleButton()
                 "the ROM could not be created.");
     }
     this->saveConfig();
-    this->seed->random();
+    // this->seed->random();
 }
 
 bool MainWindow::saveConfig()

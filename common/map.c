@@ -566,7 +566,7 @@ static int find_walkable_area(dw_map *map, int *lm_sizes, int *largest,
 static BOOL place_landmarks(dw_map *map)
 {
     int i, largest = 0, next = 0, lm_sizes[256],
-            rimuldar_lm1, rimuldar_lm2;
+            rimuldar_lm1, rimuldar_lm2, brecc_lm1, brecc_lm2;
     uint8_t tantegel_lm, charlock_lm;
     dw_map_index swamp_north, swamp_south;
     BOOL swamp_placed = FALSE;
@@ -627,8 +627,8 @@ static BOOL place_landmarks(dw_map *map)
     swamp_north = map->warps_from[WARP_SWAMP_NORTH].map;
     swamp_south = map->warps_from[WARP_SWAMP_SOUTH].map;
 
-    rimuldar_lm1 = largest;
-    rimuldar_lm2 = next;
+    rimuldar_lm1 = brecc_lm1 = largest;
+    rimuldar_lm2 = brecc_lm1 = next;
 
     /* check for swamp cave to be in tantegel and/or garinham */
     if (swamp_north == TANTEGEL || swamp_south == TANTEGEL) {
@@ -639,7 +639,8 @@ static BOOL place_landmarks(dw_map *map)
             swamp_placed = TRUE;
         }
         /* rimuldar needs to be on the same land mass as tantegel (for keys) */
-        rimuldar_lm1 = rimuldar_lm2 = (int)tantegel_lm;
+        /* brecconary on the same land mass as tantegel (for uncursing) */
+        rimuldar_lm1 = rimuldar_lm2 = brecc_lm1 = brecc_lm2 = (int)tantegel_lm;
     } else {
         tantegel_lm = place_tantegel(map, largest, next);
     }
@@ -660,12 +661,11 @@ static BOOL place_landmarks(dw_map *map)
     }
     map->meta[RIMULDAR].border =
             place(map, WARP_RIMULDAR, TILE_TOWN, rimuldar_lm1, rimuldar_lm2);
-
+    map->meta[BRECCONARY].border =
+            place(map, WARP_BRECCONARY, TILE_TOWN, brecc_lm1, brecc_lm2);
 
     map->meta[KOL].border =
             place(map, WARP_KOL, TILE_TOWN, largest, next);
-    map->meta[BRECCONARY].border =
-            place(map, WARP_BRECCONARY, TILE_TOWN, largest, next);
     map->meta[HAUKSNESS].border =
             place(map, WARP_HAUKSNESS, TILE_TOWN, largest, next);
     map->meta[CANTLIN].border =

@@ -1158,7 +1158,7 @@ static void dwr_death_necklace(dw_rom *rom)
             0xa5, 0xca,  /* LDA $00CA ; load max HP                        */
             0x46, 0xca,  /* LSR $00CA ; divide max HP by 4                 */
             0x46, 0xca,  /* LSR $00CA                                      */
-            0x18,        /* CLC       ; Clear the carry bit                */
+            0x38,        /* SEC       ; Set the carry bit (no borrow)      */
             0xe5, 0xca,  /* SBC $00CA ; subtract the result                */
             0x85, 0xca,  /* STA $00CA ; rewrite max HP                     */
             0xc5, 0xc5,  /* CMP $00C5 ; compare to current HP              */

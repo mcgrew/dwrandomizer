@@ -17,4 +17,6 @@ SOURCES += ui/main.cpp ui/main-window.cpp ui/widgets.cpp
 SOURCES += common/mt19937-64.c common/map.c common/dwr.c
 SOURCES += common/crc64.c common/chaos.c common/sprites.c
 
+RC_ICONS = resources/icons/dwrandomizer.ico
+
 QT += widgets

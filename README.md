@@ -70,7 +70,9 @@ fast leveling and very fast leveling options. These require 75% and 50% of the
 normal requirements for the game, respectively.
 
 #### Other changes ####
-The Death Necklace is always available in a chest. The Fighter's Ring works (+2 ATK).
+The Death Necklace is always available in a chest. Putting it on gives you 
++10 attack power at the cost of 25% of your max HP and being cursed. The
+Fighter's Ring works (+2 ATK).
 
 ## Running the randomizer ##
 

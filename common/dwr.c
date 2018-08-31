@@ -1186,7 +1186,11 @@ static void other_patches(dw_rom *rom)
     printf("Applying various other patches...\n");
 
     /* convert PRG1 to PRG0 */
-    vpatch(rom, 0xaf7c, 1,  0xef);
+    vpatch(rom, 0x03fae, 2,  0x37,  0x32);
+    vpatch(rom, 0x0af7c, 1,  0xef);
+
+    /* make search actually open a chest */
+    vpatch(rom, 0xe1ec, 2, 0xfd, 0xe1);
 
     /* move the golem encounter to charlock */
     rom->golem_run->map = rom->golem->map = CHARLOCK_THRONE_ROOM;

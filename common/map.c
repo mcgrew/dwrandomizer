@@ -628,7 +628,7 @@ static BOOL place_landmarks(dw_map *map)
     swamp_south = map->warps_from[WARP_SWAMP_SOUTH].map;
 
     rimuldar_lm1 = brecc_lm1 = largest;
-    rimuldar_lm2 = brecc_lm1 = next;
+    rimuldar_lm2 = brecc_lm2 = next;
 
     /* check for swamp cave to be in tantegel and/or garinham */
     if (swamp_north == TANTEGEL || swamp_south == TANTEGEL) {

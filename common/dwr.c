@@ -1013,7 +1013,7 @@ static void update_enemy_hp(dw_rom *rom)
  */
 static uint8_t *center_title_text(uint8_t *pos, const char *text)
 {
-    uint8_t len, space, dw_text[33];
+    uint8_t len, space, dw_text[34];
 
     strncpy((char*)dw_text, text, 33);
 

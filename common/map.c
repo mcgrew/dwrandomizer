@@ -6,9 +6,16 @@
 #include "mt64.h"
 #include "map.h"
 
-#define MAX_BLOB 4800
+#define FILL_ITERATIONS 12
+#define MAX_FILL_BLOB   7000
+#define MIN_LM_SIZE     400   /* minimum size for a land_mass to use */
+#define RIVER_COUNT     25
+#define MIN_WALKABLE    5000
 #define MAP_ENCODED_SIZE 2294
-#define VIABLE_CONT 250 /* minimum size for a land_mass to use */
+
+static inline int map_ob(int x) {
+    return (x < 0 || x > 119);
+}
 
 /**
  * Shifts bytes in memory 1 to the left. Shifts [start+1, end) to [start, end-1)
@@ -238,10 +245,12 @@ static BOOL add_bridges(dw_map *map)
     uint8_t x, y, left, right, x_candidate[50], y_candidate[50];
     uint64_t which;
     int count = 0;
+    dw_tile tile;
 
     for (y=0; y < 120; y++) {
         for (x=2; x < 118; x++) {
-            if (map->tiles[x][y] == TILE_WATER) {
+            tile = map->tiles[x][y];
+            if (tile == TILE_WATER) {
                 left = map->walkable[x-1][y];
                 right = map->walkable[x+1][y];
                 if (needs_bridge(left, right)){
@@ -468,11 +477,11 @@ static void map_fill(dw_map *map, dw_tile tile)
     uint64_t directions;
     int size;
 
-    p = points = malloc(MAX_BLOB * 4 + 1);
-    memset(p, 0xff, MAX_BLOB * 4 + 1);
+    p = points = malloc(MAX_FILL_BLOB * 4 + 1);
+    memset(p, 0xff, MAX_FILL_BLOB * 4 + 1);
     p[0] = mt_rand(0, 119);
     p[1] = mt_rand(0, 119);
-    size = mt_rand(MAX_BLOB/4, MAX_BLOB);
+    size = mt_rand(MAX_FILL_BLOB/4, MAX_FILL_BLOB);
 
     while (size > 0) {
         x = p[0]; y=p[1];
@@ -521,7 +530,7 @@ static inline void find_largest_lm(dw_map *map, int *lm_sizes, int lm_count,
         }
     }
 
-    if (lm_sizes[(*next)-1] < 200) {
+    if (lm_sizes[(*next)-1] < MIN_LM_SIZE) {
         *next = *largest;
     }
 //    printf("Largest: %d(%d), Next: %d(%d)\n", *largest, lm_sizes[(*largest)-1],
@@ -674,6 +683,52 @@ static BOOL place_landmarks(dw_map *map)
     return TRUE;
 }
 
+static void map_add_river(dw_map *map) {
+    uint8_t cont;
+    int x, y, maindir, lastdir, dir;
+
+    do {
+        x = mt_rand(0, 119);
+        y = mt_rand(0, 119);
+    } while (map->tiles[x][y] != TILE_WATER);
+
+    lastdir = maindir = mt_rand(0, 3);
+    while (map->tiles[x][y] == TILE_WATER) {
+
+        if (maindir == 0) /* north */
+            --y;
+        else if (maindir == 1) /* south */
+            ++y;
+        else if (maindir == 2) /* west */
+            --x;
+        else if (maindir == 3) /* east */
+            ++x;
+    }
+    if (map_ob(x) || map_ob(y)) {
+        return;
+    }
+    while (map->walkable[x][y] || map->tiles[x][y] != TILE_WATER) {
+        map->tiles[x][y] = TILE_WATER;
+            dir = mt_rand(0, 3);
+         /* keep the general direction */
+        if (dir == (maindir ^ 1)) {
+            dir ^= 1;
+        }
+        if (dir == 0) /* north */
+            --y;
+        else if (dir == 1) /* south */
+            ++y;
+        else if (dir == 2) /* west */
+            --x;
+        else if (dir == 3) /* east */
+            ++x;
+
+        if (map_ob(x) || map_ob(y)) {
+            break;
+        }
+    }
+}
+
 /**
  * Generates a new in-game map.
  *
@@ -700,7 +755,7 @@ BOOL map_generate_terrain(dw_rom *rom)
     memset(rom->map.tiles, TILE_WATER, 120 * 120);
 
     /* now fill it in with some other tiles */
-    for (i = 0; i < 57600 / MAX_BLOB; i++) {
+    for (i = 0; i < FILL_ITERATIONS; i++) {
         mt_shuffle(tiles, sizeof(tiles) / sizeof(dw_tile), sizeof(dw_tile));
         for (j = 0; j < 16; j++) {
             map_fill(&rom->map, tiles[j]);
@@ -709,13 +764,18 @@ BOOL map_generate_terrain(dw_rom *rom)
 
     map_smooth(&rom->map);
 
-    /* zero out the walkability data */
+    find_walkable_area(&rom->map, lm_sizes, &largest, &next);
+
+    for (i=0; i < RIVER_COUNT; i++) {
+        map_add_river(&rom->map);
+    }
+
     find_walkable_area(&rom->map, lm_sizes, &largest, &next);
     /* make sure the walkable area is large enough */
     total_area = lm_sizes[largest - 1];
     if (largest != next)
         total_area += lm_sizes[next - 1];
-    if (total_area < 5000) {
+    if (total_area < MIN_WALKABLE) {
         printf("Total map area is too small, retrying...\n");
         return FALSE;
     }

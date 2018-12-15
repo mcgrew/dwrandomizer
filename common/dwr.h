@@ -88,6 +88,7 @@
 #define FAST_XP(x)            (x->flags & (FLAG_f | FLAG_F))
 #define BIG_SWAMP(x)          (x->flags & FLAG_b)
 #define NO_KEYS(x)            (x->flags & FLAG_k)
+#define MODERN_SPELLS(x)      (x->flags & FLAG_m)
 #define OPEN_CHARLOCK(x)      (x->flags & FLAG_o)
 #define SHORT_CHARLOCK(x)     (x->flags & FLAG_s)
 #define FAST_TEXT(x)          (x->flags & FLAG_t)

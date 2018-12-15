@@ -457,7 +457,7 @@ static void shuffle_chests(dw_rom *rom) {
         rom->flute->map = NO_MAP; /* remove flute */
         contents[1] = FLUTE; /* replace cursed belt in a chest */
     }
-    
+
     /* shuffle the contents and place them in chests */
     mt_shuffle(contents, CHEST_COUNT-2, sizeof(uint8_t));
     chest = rom->chests;
@@ -465,7 +465,7 @@ static void shuffle_chests(dw_rom *rom) {
     for (i=0; i < CHEST_COUNT; i++) {
         /* don't move the staff or starting key*/
         if ((chest->map == TANTEGEL_THRONE_ROOM && chest->item == KEY) ||
-                    chest->item == STAFF) { 
+                    chest->item == STAFF) {
             chest++;
             continue;
         }
@@ -548,13 +548,13 @@ static void randomize_attack_patterns(dw_rom *rom)
 static void randomize_music(dw_rom *rom)
 {
     int i;
-    
+
     if (!RANDOMIZE_MUSIC(rom))
         return;
 
     printf("Randomizing game music...\n");
 
-    uint8_t choices[] = {0x1, 0x1, 0x1, 0x2, 0x2, 0x2, 0x3, 0x3, 0x3, 0x4, 0x4, 
+    uint8_t choices[] = {0x1, 0x1, 0x1, 0x2, 0x2, 0x2, 0x3, 0x3, 0x3, 0x4, 0x4,
                          0x4, 0x5, 0x5, 0x5, 0xf, 0xf, 0xf, 0x10, 0x10, 0x10,
                          0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd};
 
@@ -648,7 +648,7 @@ static void randomize_zones(dw_rom *rom)
     printf("Randomizing monsters in enemy zones...\n");
 
     zone = 0;  /* tantegel zone */
-    for (i=0; i < 5; i++) { 
+    for (i=0; i < 5; i++) {
         rom->zones[zone * 5 + i] = mt_rand(SLIME, SCORPION);
     }
 
@@ -719,19 +719,19 @@ static void randomize_shops(dw_rom *rom)
         return;
 
     printf("Randomizing weapon shop inventory...\n");
-    
+
     six_item_shop = mt_rand(0, 6);
     shop_item = rom->weapon_shops;
-    
+
     for (i=0; i < 7; i++) {
         shop_start = shop_item;
         for (j=0; j < 5; j++) {
-            while(shop_contains(shop_start, shop_item, 
+            while(shop_contains(shop_start, shop_item,
                     *shop_item = items[mt_rand(0, 14)])) {}
             shop_item++;
         }
         if (i == six_item_shop) {
-            while(shop_contains(shop_start, shop_item, 
+            while(shop_contains(shop_start, shop_item,
                     *shop_item = items[mt_rand(0, 14)])) {}
             shop_item++;
             qsort(shop_start, 6, sizeof(uint8_t), &compare);
@@ -783,7 +783,7 @@ static void shuffle_searchables(dw_rom *rom)
 static uint8_t inverted_power_curve(uint8_t min, uint8_t max, double power)
 {
     double p_range;
-    
+
     p_range= pow((double)(max - min), 1 / power);
     return round(max - pow((mt_rand_double() * p_range), power));
 }
@@ -1020,11 +1020,11 @@ static uint8_t *center_title_text(uint8_t *pos, const char *text)
     ascii2dw_title(dw_text);
     len = strlen(text);
     space = 32 - len;
-    if (space) 
-        pos = pvpatch(pos, 3, 0xf7, space/2, 0x5f); 
+    if (space)
+        pos = pvpatch(pos, 3, 0xf7, space/2, 0x5f);
     pos = ppatch(pos, len, dw_text);
-    if (space) 
-        pos = pvpatch(pos, 4, 0xf7, (space+1)/2, 0x5f, 0xfc); 
+    if (space)
+        pos = pvpatch(pos, 4, 0xf7, (space+1)/2, 0x5f, 0xfc);
 
     return pos;
 }
@@ -1068,7 +1068,7 @@ static void update_title_screen(dw_rom *rom)
     char *f, *fo, text[33];
     uint64_t flags;
     uint8_t *pos, *end;
-    
+
     pos = &rom->raw[0x3f36];
     end = &rom->raw[0x3fc5];
     text[32] = '\0';
@@ -1214,8 +1214,8 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0x2b9, 1, 0x45);  /* add new stairs to the 1st floor */
     vpatch(rom, 0x2d7, 1, 0x66);  /* add a new exit to the first floor */
     /* replace the usless grave warps with some for tantegel */
-    vpatch(rom, 0xf45f, 3, 5, 1, 8); 
-    vpatch(rom, 0xf4f8, 3, 4, 1, 7); 
+    vpatch(rom, 0xf45f, 3, 5, 1, 8);
+    vpatch(rom, 0xf4f8, 3, 4, 1, 7);
     vpatch(rom, 0x1298, 1, 0x22);  /* remove the top set of stairs for the old warp in the grave */
     /* Sets the encounter rate of Zone 0 to be the same as other zones. */
     vpatch(rom, 0xcecf, 3, 0x4c, 0x04, 0xcf);  /* skip over the zone 0 code */
@@ -1310,7 +1310,7 @@ static void dwr_menu_wrap(dw_rom *rom)
         0x4c, 0xa0, 0xbe,  /* JMP $BEA0 */
         0xea               /* NOP */
     );
-    vpatch(rom, 0x6a33, 4, 
+    vpatch(rom, 0x6a33, 4,
         /* 6a23: */
         0x4c, 0xcd, 0xbe,  /* JMP #BECD */
         0xea               /* NOP */
@@ -1418,10 +1418,10 @@ static void dwr_speed_hacks(dw_rom *rom)
     vpatch(rom, 0xef49, 1, 2);  /* speed up the player attack animation */
     vpatch(rom, 0xed45, 1, 3);  /* speed up the enemy attack animation */
     /* speed up the death music */
-    vpatch(rom, 0x4d38, 1, 0x1); 
-    vpatch(rom, 0x4d3c, 1, 0x6); 
-    vpatch(rom, 0x4d4b, 1, 0x7); 
-    vpatch(rom, 0x4d4d, 1, 0x8); 
+    vpatch(rom, 0x4d38, 1, 0x1);
+    vpatch(rom, 0x4d3c, 1, 0x6);
+    vpatch(rom, 0x4d4b, 1, 0x7);
+    vpatch(rom, 0x4d4d, 1, 0x8);
     vpatch(rom, 0x4d4f, 1, 0x8);
     vpatch(rom, 0x4d51, 1, 0x8);
     vpatch(rom, 0x4d53, 1, 0x2);
@@ -1500,6 +1500,32 @@ static void no_keys(dw_rom *rom)
     vpatch(rom, 0x182b, 3, 0, 0, 0);
 }
 
+static void modern_spell_names(dw_rom *rom) {
+    if (MODERN_SPELLS(rom))
+        return;
+
+    vpatch(rom, 0x07e6b,   67,
+            /* S      I      Z      Z   */
+            0x36,  0x2c,  0x3d,  0x3d,  0xff,
+            /* S      N      O      O      Z      E   */
+            0x36,  0x31,  0x32,  0x32,  0x3d,  0x28,  0xff,
+            /* G      L      O      W   */
+            0x2a,  0x2f,  0x32,  0x3a,  0xff,
+            /* F      I      Z      Z      L      E   */
+            0x29,  0x2c,  0x3d,  0x3d,  0x2f,  0x28,  0xff,
+            /* E      V      A      C   */
+            0x28,  0x39,  0x24,  0x26,  0xff,
+            /* Z      O      O      M   */
+            0x3d,  0x32,  0x32,  0x30,  0xff,
+            /* H      O      L      Y             P      R      O      T   */
+            0x2b,  0x32,  0x2f,  0x3c,  0x5f,  0x33,  0x35,  0x32,  0x37,  0xff,
+            /* M      O      R      E      H      E      A      L   */
+            0x30,  0x32,  0x35,  0x28,  0x2b,  0x28,  0x24,  0x2f,  0xff,
+            /* K      A      S      I      Z      Z      L      E   */
+            0x2e,  0x24,  0x36,  0x2c,  0x3d,  0x3d,  0x2f,  0x28,  0xff,
+            0xff,  0xff,  0xff,  0xff,  0xff);
+}
+
 /**
  * Updates the Cantlin NPC dialogue to reveal the new overworld item location.
  * If there is no overworld item to search for, the NPC will just give you
@@ -1522,7 +1548,7 @@ static void dwr_token_dialogue(dw_rom *rom)
     }
     if (searchable->map != OVERWORLD) {
         strcpy((char*)text1, "Thou must go and fight!");
-        strcpy((char*)text2, "Go forth, descendant of Erdrick, " 
+        strcpy((char*)text2, "Go forth, descendant of Erdrick, "
                 "I have complete faith in thy victory! ");
         ascii2dw(text1);
         patch(rom, 0xa238, 23, text1);
@@ -1533,7 +1559,7 @@ static void dwr_token_dialogue(dw_rom *rom)
 //        strcpy((char*)text1, "Thou may go and search.");
         snprintf((char*)text2, 73, "From Tantegel Castle travel %2d leagues "
                 "to the %s and %2d to the %s",
-                ABS(dy), (dy < 0) ? "north" : "south", 
+                ABS(dy), (dy < 0) ? "north" : "south",
                 ABS(dx), (dx < 0) ? "west" : "east");
     }
     ascii2dw(text2);
@@ -1608,6 +1634,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     open_charlock(&rom);
     short_charlock(&rom);
     no_keys(&rom);
+    modern_spell_names(&rom);
     other_patches(&rom);
     credits(&rom);
     crc = crc64(0, rom.raw, 0x10010);

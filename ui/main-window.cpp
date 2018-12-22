@@ -10,6 +10,11 @@
 #include <QtGui/QColor>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QClipboard>
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QTabWidget>
 
 #define __STDC_FORMAT_MACROS
 #include <cinttypes>
@@ -18,9 +23,16 @@
 #include "sprites.h"
 #include "main-window.h"
 
+enum tabs {
+    GAMEPLAY,
+    COSMETIC
+};
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
     this->mainWidget = new QWidget();
+    this->gameplayWidget = new QWidget();
+    this->funWidget = new QWidget();
     this->setCentralWidget(this->mainWidget);
 
     this->initWidgets();
@@ -52,6 +64,9 @@ void MainWindow::initWidgets()
     for (int i=0; i < sizeof(dwr_sprite_names)/sizeof(char*); ++i) {
        spriteSelect->addItem(dwr_sprite_names[i]);
     }
+    this->tabWidget = new QTabWidget(this);
+    this->tabContents[0] = new QWidget(this);
+    this->tabContents[1] = new QWidget(this);
 }
 
 void MainWindow::initSlots()
@@ -66,58 +81,93 @@ void MainWindow::layout()
 {
     QVBoxLayout *vbox;
     QGridLayout *grid;
-    this->optionGrid = new QGridLayout();
+    QGridLayout *goLayout;
+
+    this->optionGrids[0] = new QGridLayout();
+    this->optionGrids[1] = new QGridLayout();
 
     vbox = new QVBoxLayout();
     grid = new QGridLayout();
+    goLayout = new QGridLayout();
+
     vbox->addLayout(grid);
-    vbox->addLayout(this->optionGrid);
+    vbox->addWidget(tabWidget);
+    vbox->addLayout(goLayout);
+
+    this->tabContents[0]->setLayout(this->optionGrids[0]);
+    this->tabContents[1]->setLayout(this->optionGrids[1]);
 
     grid->addWidget(this->romFile,   0, 0, 0);
     grid->addWidget(this->outputDir, 0, 1, 0);
     grid->addWidget(this->seed,      1, 0, 0);
     grid->addWidget(this->flags,     1, 1, 0);
+    tabWidget->addTab(tabContents[0], "Gameplay Options");
+    tabWidget->addTab(tabContents[1], "Cosmetic Options");
 
-    this->addOption('C', "Shuffle Chests && Search Items", 0, 0);
-    this->addOption('W', "Randomize Weapon Shops",         1, 0);
-    this->addOption('G', "Randomize Growth",               2, 0);
-    this->addOption('M', "Randomize Spell Learning",       3, 0);
-    this->addOption('X', "Chaos Mode",                     4, 0);
+    /* Gameplay Options */
+    this->addOption('C', "Shuffle Chests && Search Items", GAMEPLAY, 0, 0);
+    this->addOption('W', "Randomize Weapon Shops",         GAMEPLAY, 1, 0);
+    this->addOption('G', "Randomize Growth",               GAMEPLAY, 2, 0);
+    this->addOption('M', "Randomize Spell Learning",       GAMEPLAY, 3, 0);
+    this->addOption('X', "Chaos Mode",                     GAMEPLAY, 4, 0);
 
-    this->addOption('P', "Randomize Enemy Attacks",        0, 1);
-    this->addOption('Z', "Randomize Enemy Zones",          1, 1);
-    this->addOption('R', "Enable Menu Wrapping",           2, 1);
-    this->addOption('D', "Enable Death Necklace",          3, 1);
-    this->addOption('K', "Shuffle Music",                  4, 1);
-    this->addOption('Q', "Disable Music",                  5, 1);
+    this->addOption('P', "Randomize Enemy Attacks",        GAMEPLAY, 0, 1);
+    this->addOption('Z', "Randomize Enemy Zones",          GAMEPLAY, 1, 1);
+    this->addOption('R', "Enable Menu Wrapping",           GAMEPLAY, 2, 1);
+    this->addOption('D', "Enable Death Necklace",          GAMEPLAY, 3, 1);
+    this->addOption('b', "Big Swamp",                      GAMEPLAY, 4, 1);
 
-    this->addOption('b', "Big Swamp",                      0, 2);
-    this->addOption('t', "Fast Text",                      1, 2);
-    this->addOption('h', "Speed Hacks",                    2, 2);
-    this->addOption('o', "Open Charlock",                  3, 2);
-    this->addOption('s', "Short Charlock",                 4, 2);
-    this->addOption('k', "Don't Require Magic Keys",       5, 2);
+    this->addOption('t', "Fast Text",                      GAMEPLAY, 0, 2);
+    this->addOption('h', "Speed Hacks",                    GAMEPLAY, 1, 2);
+    this->addOption('o', "Open Charlock",                  GAMEPLAY, 2, 2);
+    this->addOption('s', "Short Charlock",                 GAMEPLAY, 3, 2);
+    this->addOption('k', "Don't Require Magic Keys",       GAMEPLAY, 4, 2);
 
+    /* Cosmetic Options */
+    this->addOption('K', "Shuffle Music",                  COSMETIC, 0, 0);
+    this->addOption('Q', "Disable Music",                  COSMETIC, 1, 0);
+    this->addOption('m', "Modern Spell Names",             COSMETIC, 1, 0);
 
-    /* Add an empty label for padding */
-    this->optionGrid->addWidget(new QLabel("", this), 6, 1, 0);
+    this->addLabel("Leveling Speed", GAMEPLAY, 7, 0);
+    this->placeWidget(this->levelSpeed, GAMEPLAY, 8, 0);
 
-    this->optionGrid->addWidget(new QLabel("Leveling Speed", this), 7, 0, 0);
-    this->optionGrid->addWidget(this->levelSpeed,    8, 0, 0);
-    this->optionGrid->addWidget(new QLabel("Player Sprite", this), 7, 1, 0);
-    this->optionGrid->addWidget(this->spriteSelect,    8, 1, 0);
+    this->addLabel("Player Sprite", COSMETIC, 7, 0);
+    this->placeWidget(this->spriteSelect, COSMETIC, 8, 0);
 
-    this->optionGrid->addWidget(this->goButton,      9, 2, 0);
+    /* Add some empty labels for padding */
+    this->addLabel("", GAMEPLAY, 5, 1);
+    this->addLabel("", GAMEPLAY, 6, 1);
+    this->addLabel("", COSMETIC, 0, 1);
+    this->addLabel("", COSMETIC, 0, 2);
+    this->addLabel("", COSMETIC, 2, 0);
+    this->addLabel("", COSMETIC, 3, 0);
+    this->addLabel("", COSMETIC, 4, 0);
+    this->addLabel("", COSMETIC, 5, 0);
+    this->addLabel("", COSMETIC, 6, 0);
+
+    goLayout->addWidget(new QLabel("", this), 0, 0, 0);
+    goLayout->addWidget(new QLabel("", this), 0, 1, 0);
+    goLayout->addWidget(this->goButton, 0, 2, 0);
 
     this->mainWidget->setLayout(vbox);
 }
 
-void MainWindow::addOption(char flag, QString text, int x, int y)
+void MainWindow::addOption(char flag, QString text, int tab, int x, int y)
 {
     CheckBox *option = new CheckBox(flag, text, this);
     connect(option, SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     this->options.append(option);
-    this->optionGrid->addWidget(option, x, y, 0);
+    this->optionGrids[tab]->addWidget(option, x, y, 0);
+}
+
+void MainWindow::addLabel(QString text, int tab, int x, int y)
+{
+    this->optionGrids[tab]->addWidget(new QLabel(text, this), x, y, 0);
+}
+
+void MainWindow::placeWidget(QWidget *widget, int tab, int x, int y)
+{
+    this->optionGrids[tab]->addWidget(widget, x, y, 0);
 }
 
 QString MainWindow::getOptions()

@@ -9,6 +9,7 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QGridLayout>
+#include <QtWidgets/QTabWidget>
 
 #include "widgets.h"
 
@@ -50,10 +51,15 @@ private:
     void setFlags(QString flags);
     bool saveConfig();
     bool loadConfig();
-    void addOption(char flag, QString text, int x, int y);
+    void addOption(char flag, QString text, int tab, int x, int y);
+    void addLabel(QString text, int tab, int x, int y);
+    void placeWidget(QWidget *widget, int tab, int x, int y);
 
 private:
     QWidget *mainWidget;
+    QWidget *gameplayWidget;
+    QWidget *funWidget;
+    QTabWidget *tabWidget;
     FileEntry *romFile;
     DirEntry *outputDir;
     SeedEntry *seed;
@@ -62,7 +68,8 @@ private:
     LevelComboBox *levelSpeed;
     QComboBox *spriteSelect;
     QPushButton *goButton;
-    QGridLayout *optionGrid;
+    QGridLayout *optionGrids[2];
+    QWidget *tabContents[2];
 };
 
 

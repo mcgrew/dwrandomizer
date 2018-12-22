@@ -1,0 +1,57 @@
+[
+{
+  "directory": "/home/mcgrew/projects/dwrandomizer/build",
+  "command": "/usr/bin/cc -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -I/home/mcgrew/projects/dwrandomizer/build/dwrandomizer_autogen/include -I/home/mcgrew/projects/dwrandomizer/common -isystem /usr/include/qt -isystem /usr/include/qt/QtWidgets -isystem /usr/include/qt/QtGui -isystem /usr/include/qt/QtCore -isystem /usr/lib/qt/mkspecs/linux-g++    -fPIC -o CMakeFiles/dwrandomizer.dir/common/crc64.c.o   -c /home/mcgrew/projects/dwrandomizer/common/crc64.c",
+  "file": "/home/mcgrew/projects/dwrandomizer/common/crc64.c"
+},
+{
+  "directory": "/home/mcgrew/projects/dwrandomizer/build",
+  "command": "/usr/bin/cc -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -I/home/mcgrew/projects/dwrandomizer/build/dwrandomizer_autogen/include -I/home/mcgrew/projects/dwrandomizer/common -isystem /usr/include/qt -isystem /usr/include/qt/QtWidgets -isystem /usr/include/qt/QtGui -isystem /usr/include/qt/QtCore -isystem /usr/lib/qt/mkspecs/linux-g++    -fPIC -o CMakeFiles/dwrandomizer.dir/common/sprites.c.o   -c /home/mcgrew/projects/dwrandomizer/common/sprites.c",
+  "file": "/home/mcgrew/projects/dwrandomizer/common/sprites.c"
+},
+{
+  "directory": "/home/mcgrew/projects/dwrandomizer/build",
+  "command": "/usr/bin/cc -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -I/home/mcgrew/projects/dwrandomizer/build/dwrandomizer_autogen/include -I/home/mcgrew/projects/dwrandomizer/common -isystem /usr/include/qt -isystem /usr/include/qt/QtWidgets -isystem /usr/include/qt/QtGui -isystem /usr/include/qt/QtCore -isystem /usr/lib/qt/mkspecs/linux-g++    -fPIC -o CMakeFiles/dwrandomizer.dir/common/dwr.c.o   -c /home/mcgrew/projects/dwrandomizer/common/dwr.c",
+  "file": "/home/mcgrew/projects/dwrandomizer/common/dwr.c"
+},
+{
+  "directory": "/home/mcgrew/projects/dwrandomizer/build",
+  "command": "/usr/bin/cc -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -I/home/mcgrew/projects/dwrandomizer/build/dwrandomizer_autogen/include -I/home/mcgrew/projects/dwrandomizer/common -isystem /usr/include/qt -isystem /usr/include/qt/QtWidgets -isystem /usr/include/qt/QtGui -isystem /usr/include/qt/QtCore -isystem /usr/lib/qt/mkspecs/linux-g++    -fPIC -o CMakeFiles/dwrandomizer.dir/common/map.c.o   -c /home/mcgrew/projects/dwrandomizer/common/map.c",
+  "file": "/home/mcgrew/projects/dwrandomizer/common/map.c"
+},
+{
+  "directory": "/home/mcgrew/projects/dwrandomizer/build",
+  "command": "/usr/bin/cc -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -I/home/mcgrew/projects/dwrandomizer/build/dwrandomizer_autogen/include -I/home/mcgrew/projects/dwrandomizer/common -isystem /usr/include/qt -isystem /usr/include/qt/QtWidgets -isystem /usr/include/qt/QtGui -isystem /usr/include/qt/QtCore -isystem /usr/lib/qt/mkspecs/linux-g++    -fPIC -o CMakeFiles/dwrandomizer.dir/common/mt19937-64.c.o   -c /home/mcgrew/projects/dwrandomizer/common/mt19937-64.c",
+  "file": "/home/mcgrew/projects/dwrandomizer/common/mt19937-64.c"
+},
+{
+  "directory": "/home/mcgrew/projects/dwrandomizer/build",
+  "command": "/usr/bin/cc -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -I/home/mcgrew/projects/dwrandomizer/build/dwrandomizer_autogen/include -I/home/mcgrew/projects/dwrandomizer/common -isystem /usr/include/qt -isystem /usr/include/qt/QtWidgets -isystem /usr/include/qt/QtGui -isystem /usr/include/qt/QtCore -isystem /usr/lib/qt/mkspecs/linux-g++    -fPIC -o CMakeFiles/dwrandomizer.dir/common/chaos.c.o   -c /home/mcgrew/projects/dwrandomizer/common/chaos.c",
+  "file": "/home/mcgrew/projects/dwrandomizer/common/chaos.c"
+},
+{
+  "directory": "/home/mcgrew/projects/dwrandomizer/build",
+  "command": "/usr/bin/c++  -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -I/home/mcgrew/projects/dwrandomizer/build/dwrandomizer_autogen/include -I/home/mcgrew/projects/dwrandomizer/common -isystem /usr/include/qt -isystem /usr/include/qt/QtWidgets -isystem /usr/include/qt/QtGui -isystem /usr/include/qt/QtCore -isystem /usr/lib/qt/mkspecs/linux-g++   -fPIC   -fPIC -std=gnu++11 -o CMakeFiles/dwrandomizer.dir/ui/main-window.cpp.o -c /home/mcgrew/projects/dwrandomizer/ui/main-window.cpp",
+  "file": "/home/mcgrew/projects/dwrandomizer/ui/main-window.cpp"
+},
+{
+  "directory": "/home/mcgrew/projects/dwrandomizer/build",
+  "command": "/usr/bin/c++  -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -I/home/mcgrew/projects/dwrandomizer/build/dwrandomizer_autogen/include -I/home/mcgrew/projects/dwrandomizer/common -isystem /usr/include/qt -isystem /usr/include/qt/QtWidgets -isystem /usr/include/qt/QtGui -isystem /usr/include/qt/QtCore -isystem /usr/lib/qt/mkspecs/linux-g++   -fPIC   -fPIC -std=gnu++11 -o CMakeFiles/dwrandomizer.dir/ui/widgets.cpp.o -c /home/mcgrew/projects/dwrandomizer/ui/widgets.cpp",
+  "file": "/home/mcgrew/projects/dwrandomizer/ui/widgets.cpp"
+},
+{
+  "directory": "/home/mcgrew/projects/dwrandomizer/build",
+  "command": "/usr/bin/c++  -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -I/home/mcgrew/projects/dwrandomizer/build/dwrandomizer_autogen/include -I/home/mcgrew/projects/dwrandomizer/common -isystem /usr/include/qt -isystem /usr/include/qt/QtWidgets -isystem /usr/include/qt/QtGui -isystem /usr/include/qt/QtCore -isystem /usr/lib/qt/mkspecs/linux-g++   -fPIC   -fPIC -std=gnu++11 -o CMakeFiles/dwrandomizer.dir/ui/main.cpp.o -c /home/mcgrew/projects/dwrandomizer/ui/main.cpp",
+  "file": "/home/mcgrew/projects/dwrandomizer/ui/main.cpp"
+},
+{
+  "directory": "/home/mcgrew/projects/dwrandomizer/build",
+  "command": "/usr/bin/c++  -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_WIDGETS_LIB -I/home/mcgrew/projects/dwrandomizer/build/dwrandomizer_autogen/include -I/home/mcgrew/projects/dwrandomizer/common -isystem /usr/include/qt -isystem /usr/include/qt/QtWidgets -isystem /usr/include/qt/QtGui -isystem /usr/include/qt/QtCore -isystem /usr/lib/qt/mkspecs/linux-g++   -fPIC   -fPIC -std=gnu++11 -o CMakeFiles/dwrandomizer.dir/dwrandomizer_autogen/mocs_compilation.cpp.o -c /home/mcgrew/projects/dwrandomizer/build/dwrandomizer_autogen/mocs_compilation.cpp",
+  "file": "/home/mcgrew/projects/dwrandomizer/build/dwrandomizer_autogen/mocs_compilation.cpp"
+},
+{
+  "directory": "/home/mcgrew/projects/dwrandomizer/build",
+  "command": "/usr/bin/cc  -I/home/mcgrew/projects/dwrandomizer/common    -o CMakeFiles/dwrandomizer-cli.dir/cli/main.c.o   -c /home/mcgrew/projects/dwrandomizer/cli/main.c",
+  "file": "/home/mcgrew/projects/dwrandomizer/cli/main.c"
+}
+]

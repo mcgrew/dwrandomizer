@@ -89,14 +89,14 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     FILE *input;
     int read;
 
-    rom->raw = malloc(ROM_SIZE);
-    memset(rom->raw, 0, ROM_SIZE);
+    rom->header = malloc(ROM_SIZE);
+    memset(rom->header, 0, ROM_SIZE);
     input = fopen(input_file, "rb");
     if (!input) {
         fprintf(stderr, "Unable to open ROM file '%s'", input_file);
         return FALSE;
     }
-    read = fread(rom->raw, 1, ROM_SIZE, input);
+    read = fread(rom->header, 1, ROM_SIZE, input);
     if (read < ROM_SIZE) {
         fprintf(stderr, "File '%s' is too small and may be corrupt, aborting.",
                 input_file);
@@ -104,43 +104,44 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     }
     fclose(input);
 
+    rom->content = &rom->header[0x10];
     rom->map.flags = parse_flags(rom, flags);
     /* subtract 0x9d5d from these pointers */
-    rom->map.pointers = (uint16_t*)&rom->raw[0x2663];
-    rom->map.encoded = &rom->raw[0x1d6d];
-    rom->map.meta = (dw_map_meta*)&rom->raw[0x2a];
-    rom->map.warps_from = (dw_warp*)&rom->raw[0xf3d8];
-    rom->map.warps_to   = (dw_warp*)&rom->raw[0xf471];
-    rom->map.love_calc = (dw_love_calc*)&rom->raw[0xdf4b];
-    rom->map.return_point = (dw_return_point*)&rom->raw[0xdb11];
-    rom->map.rainbow_drop = (dw_rainbow_drop*)&rom->raw[0xde9b];
-    rom->map.rainbow_bridge = (dw_rainbow_drop*)&rom->raw[0x2c4b];
-    rom->stats = (dw_stats*)&rom->raw[0x60dd];
-    rom->new_spells = (dw_new_spell*)&rom->raw[0xeaf8];
-    rom->mp_reqs = &rom->raw[0x1d63];
-    rom->xp_reqs = (uint16_t*)&rom->raw[0xf36b];
-    rom->enemies = (dw_enemy*)&rom->raw[0x5e5b];
-    rom->zones = &rom->raw[0xf55f];
-    rom->zone_layout = &rom->raw[0xf532];
-    rom->chests = (dw_chest*)&rom->raw[0x5ddd];
-    rom->axe_knight = (dw_forced_encounter*)&rom->raw[0xcd61];
-    rom->green_dragon = (dw_forced_encounter*)&rom->raw[0xcd78];
-    rom->golem = (dw_forced_encounter*)&rom->raw[0xcd95];
-    rom->axe_knight_run = (dw_forced_encounter*)&rom->raw[0xe8e4];
-    rom->green_dragon_run = (dw_forced_encounter*)&rom->raw[0xe90b];
-    rom->golem_run = (dw_forced_encounter*)&rom->raw[0xe938];
-    rom->encounter_types[0] = &rom->raw[0xcd74];
-    rom->encounter_types[1] = &rom->raw[0xcd91];
-    rom->encounter_types[2] = &rom->raw[0xcdae];
-    rom->token = (dw_searchable*)&rom->raw[0xe11b];
-    rom->flute = (dw_searchable*)&rom->raw[0xe15a];
-    rom->armor = (dw_searchable*)&rom->raw[0xe170];
-    rom->repel_table = &rom->raw[0xf50a];
-    rom->weapon_shops = &rom->raw[0x19a1];
-    rom->weapon_prices = (uint16_t*)&rom->raw[0x1957];
-    rom->weapon_price_display = (uint16_t*)&rom->raw[0x7e20];
-    rom->music = &rom->raw[0x31bf];
-    rom->title_text = &rom->raw[0x3f36];
+    rom->map.pointers = (uint16_t*)&rom->content[0x2653];
+    rom->map.encoded = &rom->content[0x1d5d];
+    rom->map.meta = (dw_map_meta*)&rom->content[0x1a];
+    rom->map.warps_from = (dw_warp*)&rom->content[0xf3c8];
+    rom->map.warps_to   = (dw_warp*)&rom->content[0xf461];
+    rom->map.love_calc = (dw_love_calc*)&rom->content[0xdf3b];
+    rom->map.return_point = (dw_return_point*)&rom->content[0xdb01];
+    rom->map.rainbow_drop = (dw_rainbow_drop*)&rom->content[0xde8b];
+    rom->map.rainbow_bridge = (dw_rainbow_drop*)&rom->content[0x2c3b];
+    rom->stats = (dw_stats*)&rom->content[0x60cd];
+    rom->new_spells = (dw_new_spell*)&rom->content[0xeae8];
+    rom->mp_reqs = &rom->content[0x1d53];
+    rom->xp_reqs = (uint16_t*)&rom->content[0xf35b];
+    rom->enemies = (dw_enemy*)&rom->content[0x5e4b];
+    rom->zones = &rom->content[0xf54f];
+    rom->zone_layout = &rom->content[0xf522];
+    rom->chests = (dw_chest*)&rom->content[0x5dcd];
+    rom->axe_knight = (dw_forced_encounter*)&rom->content[0xcd51];
+    rom->green_dragon = (dw_forced_encounter*)&rom->content[0xcd68];
+    rom->golem = (dw_forced_encounter*)&rom->content[0xcd85];
+    rom->axe_knight_run = (dw_forced_encounter*)&rom->content[0xe8d4];
+    rom->green_dragon_run = (dw_forced_encounter*)&rom->content[0xe8fb];
+    rom->golem_run = (dw_forced_encounter*)&rom->content[0xe928];
+    rom->encounter_types[0] = &rom->content[0xcd64];
+    rom->encounter_types[1] = &rom->content[0xcd81];
+    rom->encounter_types[2] = &rom->content[0xcd9e];
+    rom->token = (dw_searchable*)&rom->content[0xe10b];
+    rom->flute = (dw_searchable*)&rom->content[0xe14a];
+    rom->armor = (dw_searchable*)&rom->content[0xe160];
+    rom->repel_table = &rom->content[0xf4fa];
+    rom->weapon_shops = &rom->content[0x1991];
+    rom->weapon_prices = (uint16_t*)&rom->content[0x1947];
+    rom->weapon_price_display = (uint16_t*)&rom->content[0x7e10];
+    rom->music = &rom->content[0x31af];
+    rom->title_text = &rom->content[0x3f26];
 
     map_decode(&rom->map);
     return TRUE;
@@ -255,14 +256,14 @@ static uint8_t *dwr_str_replace(dw_rom *rom, const char *text,
     len = strlen(text);
     if (!len)
         return NULL;
-    end = &rom->raw[ROM_SIZE - len];
+    end = &rom->content[ROM_SIZE - len - 0x10];
 
     strncpy(dw_text, text, 256);
     strncpy(dw_repl, replacement, 256);
     ascii2dw((unsigned char *)dw_text);
     ascii2dw((unsigned char *)dw_repl);
 
-    for (start = rom->raw; start < end; start++) {
+    for (start = rom->content; start < end; start++) {
         if (!memcmp(start, dw_text, len)) {
             memcpy(start, dw_repl, len);
             return start;
@@ -387,7 +388,7 @@ static void shuffle_chests(dw_rom *rom) {
     check_quest_items(rom);
 
     /* make sure the player can't get more than one token or flute */
-    vpatch(rom, 0xe2fa, 95,
+    vpatch(rom, 0xe2ea, 95,
            0xc9, 0x08,        /* CMP #$08   ; If it's not the flute           */
            0xd0, 0x0b,        /* BNE $E2F7  ; Jump to the next check          */
            0xa9, 0x05,        /* LDA #$05   ; Load the flute inventory value  */
@@ -801,7 +802,7 @@ static void short_charlock(dw_rom *rom)
     rom->map.warps_from[WARP_CHARLOCK_CHEST].map = CHARLOCK_THRONE_ROOM;
     rom->map.warps_from[WARP_CHARLOCK_CHEST].x = 18;
     rom->map.warps_from[WARP_CHARLOCK_CHEST].y = 9;
-    vpatch(rom, 0x4d4, 1, 0x76); /* Add some downward stairs near the chests */
+    vpatch(rom, 0x4c4, 1, 0x76); /* Add some downward stairs near the chests */
 }
 
 /**
@@ -981,8 +982,8 @@ static void update_title_screen(dw_rom *rom)
     uint64_t flags;
     uint8_t *pos, *end;
 
-    pos = &rom->raw[0x3f36];
-    end = &rom->raw[0x3fc5];
+    pos = &rom->content[0x3f26];
+    end = &rom->content[0x3fb5];
     text[32] = '\0';
     flags = rom->flags;
     f = text;
@@ -1030,8 +1031,8 @@ static void dwr_fighters_ring(dw_rom *rom)
 
     printf("Fixing the fighter's ring...\n");
     /* fighter's ring fix */
-    vpatch(rom, 0xf10c, 4, 0x20, 0x7d, 0xff, 0xea);
-    vpatch(rom, 0xff8d, 17,
+    vpatch(rom, 0xf0fc, 4, 0x20, 0x7d, 0xff, 0xea);
+    vpatch(rom, 0xff7d, 17,
         /* ff7d: */
         0x85, 0xcd,      /* STA $00CD  ; replaces code removed from $F00C     */
         0xa5, 0xcf,      /* LDA $00CF  ; load status bits                     */
@@ -1043,7 +1044,7 @@ static void dwr_fighters_ring(dw_rom *rom)
         /* ff8b: */
         0x4c, 0x54, 0xff /* JMP $FF54  ; jump to next section                 */
     );
-    vpatch(rom, 0xff64, 3,
+    vpatch(rom, 0xff54, 3,
         /* ff54: */
         0xa5, 0xcf,      /* LDA $00CF   ; replaces code removed from $F00E    */
         0x60             /* RTS                                               */
@@ -1063,7 +1064,7 @@ static void dwr_death_necklace(dw_rom *rom)
 
     printf("Adding functionality to the death necklace...\n");
 
-    vpatch(rom, 0xff64, 31,
+    vpatch(rom, 0xff54, 31,
             /* ff54: */
             0x24, 0xcf,  /* AND #$80  ; check bit 8 (death necklace)       */
             0x10, 0x18,  /* BPL $FF71                                      */
@@ -1098,21 +1099,21 @@ static void other_patches(dw_rom *rom)
     printf("Applying various other patches...\n");
 
     /* convert PRG1 to PRG0 */
-    vpatch(rom, 0x03fae, 2,  0x37,  0x32);
-    vpatch(rom, 0x0af7c, 1,  0xef);
+    vpatch(rom, 0x03f9e, 2,  0x37,  0x32);
+    vpatch(rom, 0x0af6c, 1,  0xef);
 
     /* make search actually open a chest */
-    vpatch(rom, 0xe1ec, 2, 0xfd, 0xe1);
+    vpatch(rom, 0xe1dc, 2, 0xfd, 0xe1);
 
     /* move the golem encounter to charlock */
     rom->golem_run->map = rom->golem->map = CHARLOCK_THRONE_ROOM;
     rom->golem_run->x = rom->golem->x = 25;
     rom->golem_run->y = rom->golem->y = 22;
     /* make sure all forced encounters are never marked defeated */
-    vpatch(rom, 0xe99d, 2, 0xea, 0xea);
-    vpatch(rom, 0xe98b, 2, 0xea, 0xea);
+    vpatch(rom, 0xe98d, 2, 0xea, 0xea);
+    vpatch(rom, 0xe97b, 2, 0xea, 0xea);
 
-    vpatch(rom, 0xde33, 10,  /* Changes the enemies summoned by the harp. */
+    vpatch(rom, 0xde23, 10,  /* Changes the enemies summoned by the harp. */
         /* de23: */
         0x29, 0x7,  /* AND #$07    ; limit the random number to 0-7 */
         0xaa,  /* TAX         ; move the value to the X register */
@@ -1122,28 +1123,28 @@ static void other_patches(dw_rom *rom)
         0xea,  /* NOP         ; */
         0xea   /* NOP         ; */
     );
-    vpatch(rom, 0x43a, 1, 0x47);  /* add new stairs to the throne room */
-    vpatch(rom, 0x2b9, 1, 0x45);  /* add new stairs to the 1st floor */
-    vpatch(rom, 0x2d7, 1, 0x66);  /* add a new exit to the first floor */
+    vpatch(rom, 0x42a, 1, 0x47);  /* add new stairs to the throne room */
+    vpatch(rom, 0x2a9, 1, 0x45);  /* add new stairs to the 1st floor */
+    vpatch(rom, 0x2c7, 1, 0x66);  /* add a new exit to the first floor */
     /* replace the usless grave warps with some for tantegel */
-    vpatch(rom, 0xf45f, 3, 5, 1, 8);
-    vpatch(rom, 0xf4f8, 3, 4, 1, 7);
-    vpatch(rom, 0x1298, 1, 0x22);  /* remove the top set of stairs for the old warp in the grave */
+    vpatch(rom, 0xf44f, 3, 5, 1, 8);
+    vpatch(rom, 0xf4e8, 3, 4, 1, 7);
+    vpatch(rom, 0x1288, 1, 0x22);  /* remove the top set of stairs for the old warp in the grave */
     /* Sets the encounter rate of Zone 0 to be the same as other zones. */
-    vpatch(rom, 0xcecf, 3, 0x4c, 0x04, 0xcf);  /* skip over the zone 0 code */
-    vpatch(rom, 0xe270, 1, 0);  /* set death necklace chance to 100% */
-    vpatch(rom, 0xe75d, 1, 9);  /* buff the hurt spell */
-    vpatch(rom, 0xdbd1, 1, 18);  /* buff the heal spell */
-    vpatch(rom, 0xea51, 5, 0xad, 0x07, 0x01, 0xea, 0xea); /* I forget what this does */
+    vpatch(rom, 0xcebf, 3, 0x4c, 0x04, 0xcf);  /* skip over the zone 0 code */
+    vpatch(rom, 0xe260, 1, 0);  /* set death necklace chance to 100% */
+    vpatch(rom, 0xe74d, 1, 9);  /* buff the hurt spell */
+    vpatch(rom, 0xdbc1, 1, 18);  /* buff the heal spell */
+    vpatch(rom, 0xea41, 5, 0xad, 0x07, 0x01, 0xea, 0xea); /* I forget what this does */
     /* fixing some annoying roaming npcs */
-    vpatch(rom, 0x18fe, 1, 0xa7); /* move the stupid old man from the item shop */
-    vpatch(rom, 0x91f,  1, 0x6f); /* quit ignoring the customers */
-    vpatch(rom, 0x94c,  1, 0x6f); /* quit ignoring the customers */
-    vpatch(rom, 0x17b2, 3, 0, 0, 0); /* delete roaming throne room guard */
+    vpatch(rom, 0x18ee, 1, 0xa7); /* move the stupid old man from the item shop */
+    vpatch(rom, 0x90f,  1, 0x6f); /* quit ignoring the customers */
+    vpatch(rom, 0x93c,  1, 0x6f); /* quit ignoring the customers */
+    vpatch(rom, 0x17a2, 3, 0, 0, 0); /* delete roaming throne room guard */
     /* Change the player sprite color for fun */
-    vpatch(rom, 0xf141, 2, 0x69, 0x03); /* Lock the stat build modifier at 3 */
+    vpatch(rom, 0xf131, 2, 0x69, 0x03); /* Lock the stat build modifier at 3 */
     /* Embed the randomizer version in the ROM */
-//    vpatch(rom, 0xfff0, 16, "DWRANDOMIZER " BUILD);
+//    vpatch(rom, 0xffe0, 16, "DWRANDOMIZER " BUILD);
 
     /* I always hated this wording */
     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");
@@ -1154,7 +1155,7 @@ static void credits(dw_rom *rom)
     printf("Patching credits...\n");
 
     /* patch the credits a bit */
-    vpatch(rom, 0x5844, 162,
+    vpatch(rom, 0x5834, 162,
            /* dwrandomizer */
            0x63, 0x20,
                0x27, 0x35, 0x24, 0x2a, 0x32, 0x31, 0x5f, 0x3a, 0x24, 0x35, 0x35,
@@ -1197,11 +1198,11 @@ static void credits(dw_rom *rom)
            0x5f, 0x5f, 0x5f, 0x5f, 0x5f, 0x5f
     );
     /* credit palette edits */
-    vpatch(rom, 0x58eb, 1, 0x55);
-    vpatch(rom, 0x58ee, 2, 0x04, 0xa3);
-    vpatch(rom, 0x58f1, 2, 0x05, 0x55);
-    vpatch(rom, 0x58f8, 1, 0x55);
-    vpatch(rom, 0x5901, 1, 0xa5);
+    vpatch(rom, 0x58db, 1, 0x55);
+    vpatch(rom, 0x58de, 2, 0x04, 0xa3);
+    vpatch(rom, 0x58e1, 2, 0x05, 0x55);
+    vpatch(rom, 0x58e8, 1, 0x55);
+    vpatch(rom, 0x58f1, 1, 0xa5);
 }
 
 /**
@@ -1217,17 +1218,17 @@ static void dwr_menu_wrap(dw_rom *rom)
     printf("Enabling menu cursor wrap-around...\n");
 
     /* implement up/down wraparound for most menus (from @gameboy9) */
-    vpatch(rom, 0x69f0, 4,
+    vpatch(rom, 0x69e0, 4,
         /* 69e0 */
         0x4c, 0xa0, 0xbe,  /* JMP $BEA0 */
         0xea               /* NOP */
     );
-    vpatch(rom, 0x6a33, 4,
+    vpatch(rom, 0x6a23, 4,
         /* 6a23: */
         0x4c, 0xcd, 0xbe,  /* JMP #BECD */
         0xea               /* NOP */
     );
-    vpatch(rom, 0x7eb0, 45,
+    vpatch(rom, 0x7ea0, 45,
         /* 7e9e: */
         0xa5, 0x45,        /* LDA $0045 ; Load the map number */
         /* 7ea0: */
@@ -1256,7 +1257,7 @@ static void dwr_menu_wrap(dw_rom *rom)
         0xa5, 0xd9,        /* LDA $00D9 ; load cursor y position */
         0x60               /* RTS       ; return */
     );
-    vpatch(rom, 0x7edd, 46,
+    vpatch(rom, 0x7ecd, 46,
         /* 7ecb: */
         0x48,              /* PHA       ; push A to stack */
         0xa5, 0x45,        /* LDA $0045 ; Load map number */
@@ -1288,13 +1289,13 @@ static void dwr_menu_wrap(dw_rom *rom)
         /* 7ef8: */
         0x60               /* RTS       ; return */
     );
-    vpatch(rom, 0x7f0b, 7,
+    vpatch(rom, 0x7efb, 7,
         /* 7efb: */
         0xa5, 0xd9,        /* LDA $00D9 ; load map number */
         0xf0, 0xfb,        /* BEQ $7EF8 ; if it's 0, branch to $7EF8 (return) */
         0x4c, 0xe4, 0xa9   /* JMP $A9E4 ; jump to $A9E4 */
     );
-    vpatch(rom, 0x7f12, 8,
+    vpatch(rom, 0x7f02, 8,
         /* 7f02: */
         0x68,              /* PLA       ; pull A from stack */
         0xc5, 0xd9,        /* CMP $00D9 ; compare to map number */
@@ -1314,7 +1315,7 @@ static void dwr_speed_hacks(dw_rom *rom)
         printf("Enabling fast text...\n");
 
         /* speed up the text */
-        vpatch(rom, 0x7a43, 3, 0xea, 0xea, 0xea);
+        vpatch(rom, 0x7a33, 3, 0xea, 0xea, 0xea);
     }
 
     if (!SPEED_HACKS(rom))
@@ -1324,66 +1325,66 @@ static void dwr_speed_hacks(dw_rom *rom)
 
     /* Following are some speed hacks from @gameboy9 */
     /* speed up encounter intros */
-    vpatch(rom, 0xe41a, 3, 0xea, 0xea, 0xea);
-    vpatch(rom, 0xe44d, 3, 0xea, 0xea, 0xea);
-    vpatch(rom, 0xc53f, 3, 0xea, 0xea, 0xea);
-    vpatch(rom, 0xef49, 1, 2);  /* speed up the player attack animation */
-    vpatch(rom, 0xed45, 1, 3);  /* speed up the enemy attack animation */
+    vpatch(rom, 0xe40a, 3, 0xea, 0xea, 0xea);
+    vpatch(rom, 0xe43d, 3, 0xea, 0xea, 0xea);
+    vpatch(rom, 0xc52f, 3, 0xea, 0xea, 0xea);
+    vpatch(rom, 0xef39, 1, 2);  /* speed up the player attack animation */
+    vpatch(rom, 0xed35, 1, 3);  /* speed up the enemy attack animation */
     /* speed up the death music */
-    vpatch(rom, 0x4d38, 1, 0x1);
-    vpatch(rom, 0x4d3c, 1, 0x6);
-    vpatch(rom, 0x4d4b, 1, 0x7);
-    vpatch(rom, 0x4d4d, 1, 0x8);
-    vpatch(rom, 0x4d4f, 1, 0x8);
-    vpatch(rom, 0x4d51, 1, 0x8);
-    vpatch(rom, 0x4d53, 1, 0x2);
-    vpatch(rom, 0x4d55, 1, 0x2);
-    vpatch(rom, 0x4d57, 1, 0x10);
+    vpatch(rom, 0x4d28, 1, 0x1);
+    vpatch(rom, 0x4d2c, 1, 0x6);
+    vpatch(rom, 0x4d3b, 1, 0x7);
+    vpatch(rom, 0x4d3d, 1, 0x8);
+    vpatch(rom, 0x4d3f, 1, 0x8);
+    vpatch(rom, 0x4d41, 1, 0x8);
+    vpatch(rom, 0x4d43, 1, 0x2);
+    vpatch(rom, 0x4d45, 1, 0x2);
+    vpatch(rom, 0x4d47, 1, 0x10);
     /* speed up the level up music */
-    vpatch(rom, 0x463b, 1, 0xff),
+    vpatch(rom, 0x462b, 1, 0xff),
     /* speed up the battle win music */
-    vpatch(rom, 0x4724, 1, 1);
-    vpatch(rom, 0x472a, 1, 1);
-    vpatch(rom, 0x472c, 1, 1);
-    vpatch(rom, 0x472e, 1, 1);
+    vpatch(rom, 0x4714, 1, 1);
+    vpatch(rom, 0x471a, 1, 1);
+    vpatch(rom, 0x471c, 1, 1);
+    vpatch(rom, 0x471e, 1, 1);
     /* speed up the fairy flute */
-    vpatch(rom, 0x4cb1, 1, 1);
-    vpatch(rom, 0x4cb3, 1, 1);
-    vpatch(rom, 0x4cc5, 1, 1);
-    vpatch(rom, 0x4cc7, 1, 1);
-    vpatch(rom, 0x4cc9, 1, 1);
-    vpatch(rom, 0x4ccd, 1, 1);
-    vpatch(rom, 0x4ce2, 1, 1);
-    vpatch(rom, 0x4ce4, 1, 1);
-    vpatch(rom, 0x4ce6, 1, 1);
-    vpatch(rom, 0x4ce8, 1, 1);
-    vpatch(rom, 0x4cea, 1, 1);
-    vpatch(rom, 0x4cec, 1, 1);
+    vpatch(rom, 0x4ca1, 1, 1);
+    vpatch(rom, 0x4ca3, 1, 1);
+    vpatch(rom, 0x4cb5, 1, 1);
+    vpatch(rom, 0x4cb7, 1, 1);
+    vpatch(rom, 0x4cb9, 1, 1);
+    vpatch(rom, 0x4cbd, 1, 1);
+    vpatch(rom, 0x4cd2, 1, 1);
+    vpatch(rom, 0x4cd4, 1, 1);
+    vpatch(rom, 0x4cd6, 1, 1);
+    vpatch(rom, 0x4cd8, 1, 1);
+    vpatch(rom, 0x4cda, 1, 1);
+    vpatch(rom, 0x4cdc, 1, 1);
     /* speed up the inn music */
+    vpatch(rom, 0x46d4, 1, 1);
+    vpatch(rom, 0x46d6, 1, 1);
+    vpatch(rom, 0x46d8, 1, 1);
+    vpatch(rom, 0x46da, 1, 1);
+    vpatch(rom, 0x46dc, 1, 1);
+    vpatch(rom, 0x46de, 1, 1);
+    vpatch(rom, 0x46e0, 1, 1);
+    vpatch(rom, 0x46e2, 1, 1);
     vpatch(rom, 0x46e4, 1, 1);
-    vpatch(rom, 0x46e6, 1, 1);
     vpatch(rom, 0x46e8, 1, 1);
-    vpatch(rom, 0x46ea, 1, 1);
-    vpatch(rom, 0x46ec, 1, 1);
-    vpatch(rom, 0x46ee, 1, 1);
-    vpatch(rom, 0x46f0, 1, 1);
-    vpatch(rom, 0x46f2, 1, 1);
-    vpatch(rom, 0x46f4, 1, 1);
-    vpatch(rom, 0x46f8, 1, 1);
+    vpatch(rom, 0x46f1, 1, 1);
+    vpatch(rom, 0x46f3, 1, 1);
+    vpatch(rom, 0x46f5, 1, 1);
+    vpatch(rom, 0x46f7, 1, 1);
+    vpatch(rom, 0x46f9, 1, 1);
+    vpatch(rom, 0x46fb, 1, 1);
+    vpatch(rom, 0x46fd, 1, 1);
+    vpatch(rom, 0x46ff, 1, 1);
     vpatch(rom, 0x4701, 1, 1);
-    vpatch(rom, 0x4703, 1, 1);
     vpatch(rom, 0x4705, 1, 1);
-    vpatch(rom, 0x4707, 1, 1);
-    vpatch(rom, 0x4709, 1, 1);
-    vpatch(rom, 0x470b, 1, 1);
-    vpatch(rom, 0x470d, 1, 1);
-    vpatch(rom, 0x470f, 1, 1);
-    vpatch(rom, 0x4711, 1, 1);
-    vpatch(rom, 0x4715, 1, 1);
     /* speed up spell casting */
-    vpatch(rom, 0x436b, 1, 0x9e);
-    vpatch(rom, 0xdb49, 6, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea);
-    vpatch(rom, 0xdb54, 9, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea);
+    vpatch(rom, 0x435b, 1, 0x9e);
+    vpatch(rom, 0xdb39, 6, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea);
+    vpatch(rom, 0xdb44, 9, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea);
 }
 
 static void no_keys(dw_rom *rom)
@@ -1396,8 +1397,8 @@ static void no_keys(dw_rom *rom)
 
     printf("Removing the need for keys...\n");
     /* Don't require keys to open the door */
-    vpatch(rom, 0xdca9, 2, 0xa9, 0x01);
-    vpatch(rom, 0xdcb8, 2, 0xea, 0xea);
+    vpatch(rom, 0xdc99, 2, 0xa9, 0x01);
+    vpatch(rom, 0xdca8, 2, 0xea, 0xea);
 
     chest = rom->chests;
     for (i=0; i < CHEST_COUNT; i++) {
@@ -1407,9 +1408,9 @@ static void no_keys(dw_rom *rom)
     }
 
     /* remove the key shopkeepers */
-    vpatch(rom, 0x1793, 3, 0, 0, 0);
-    vpatch(rom, 0x186c, 3, 0, 0, 0);
-    vpatch(rom, 0x182b, 3, 0, 0, 0);
+    vpatch(rom, 0x1783, 3, 0, 0, 0);
+    vpatch(rom, 0x185c, 3, 0, 0, 0);
+    vpatch(rom, 0x181b, 3, 0, 0, 0);
 }
 
 static void modern_spell_names(dw_rom *rom)
@@ -1417,7 +1418,7 @@ static void modern_spell_names(dw_rom *rom)
     if (!MODERN_SPELLS(rom))
         return;
 
-    vpatch(rom, 0x07e6b,   67,
+    vpatch(rom, 0x07e5b,   67,
             /* S     I     Z     Z  */
             0x36, 0x2c, 0x3d, 0x3d, 0xff,
             /* S     N     O     O     Z     E  */
@@ -1465,8 +1466,8 @@ static void dwr_token_dialogue(dw_rom *rom)
         strcpy((char*)text2, "Go forth, descendant of Erdrick, "
                 "I have complete faith in thy victory! ");
         ascii2dw(text1);
-        patch(rom, 0xa238, 23, text1);
-        vpatch(rom, 0xa298, 1, 0x53); /* replace .' with ' */
+        patch(rom, 0xa228, 23, text1);
+        vpatch(rom, 0xa288, 1, 0x53); /* replace .' with ' */
     } else {
         dx = searchable->x - rom->map.warps_from[WARP_TANTEGEL].x;
         dy = searchable->y - rom->map.warps_from[WARP_TANTEGEL].y;
@@ -1477,7 +1478,7 @@ static void dwr_token_dialogue(dw_rom *rom)
                 ABS(dx), (dx < 0) ? "west" : "east");
     }
     ascii2dw(text2);
-    patch(rom, 0xa252, 70, text2);
+    patch(rom, 0xa242, 70, text2);
 }
 
 /**
@@ -1496,7 +1497,7 @@ static BOOL dwr_write(dw_rom *rom, const char *output_file)
         fprintf(stderr, "Unable to open file '%s' for writing", output_file);
         return FALSE;
     }
-    fwrite(rom->raw, 1, ROM_SIZE, output);
+    fwrite(rom->header, 1, ROM_SIZE, output);
     fclose(output);
     return TRUE;
 }
@@ -1550,7 +1551,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     no_keys(&rom);
     other_patches(&rom);
     credits(&rom);
-    crc = crc64(0, rom.raw, 0x10010);
+    crc = crc64(0, rom.content, 0x10000);
 
     sprite(&rom, sprite_name);
     modern_spell_names(&rom);
@@ -1562,6 +1563,6 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     if (!dwr_write(&rom, output_file)) {
         return 0;
     }
-    free(rom.raw);
+    free(rom.header);
     return crc;
 }

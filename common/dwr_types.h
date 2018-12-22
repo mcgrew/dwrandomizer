@@ -262,7 +262,8 @@ typedef struct {
 
 /** A struct for the rom data */
 typedef struct {
-    uint8_t *raw;
+    uint8_t *header;
+    uint8_t *content;
     uint64_t flags;
     uint64_t seed;
     dw_map map;

@@ -18,14 +18,14 @@ uint16_t vpatch(dw_rom *rom, uint32_t address, uint32_t size, ...)
     va_list arg;
     uint8_t *p;
 
-    p = &rom->raw[address];
+    p = &rom->content[address];
     va_start(arg, size);
 
     for (i=0; i < size; i++) {
         *(p++) = va_arg(arg, int);
     }
     va_end(arg);
-    return p - rom->raw;
+    return p - rom->content;
 }
 
 /**
@@ -43,12 +43,12 @@ uint16_t patch(dw_rom *rom, uint32_t address, uint32_t size,
     uint32_t i;
     uint8_t *p;
 
-    p = &rom->raw[address];
+    p = &rom->content[address];
 
     for (i=0; i < size; i++) {
         *(p++) = data[i];
     }
-    return p - rom->raw;
+    return p - rom->content;
 }
 
 /**

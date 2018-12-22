@@ -1,6 +1,3 @@
-//
-// Created by mcgrew on 8/30/17.
-//
 
 #ifndef DWRANDOMIZER_SPRITES_H
 #define DWRANDOMIZER_SPRITES_H
@@ -12,7 +9,7 @@
 extern "C" {
 #endif
 
-extern const char *dwr_sprite_names[SPRITE_COUNT];
+extern const char * const dwr_sprite_names[SPRITE_COUNT];
 
 void sprite(dw_rom *rom, const char *sprite_name);
 

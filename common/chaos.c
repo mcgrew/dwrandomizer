@@ -3,9 +3,11 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "dwr.h"
-#include "mt64.h"
 #include "chaos.h"
+#include "mt64.h"
+#include "dwr.h"
+#include "patch.h"
+
 
 static dw_enemy **global_enemy;
 

@@ -1,13 +1,12 @@
-//
-// Created by mcgrew on 8/30/17.
-//
 
 #include <string.h>
 #include <stdarg.h>
 
 #include "sprites.h"
+#include "patch.h"
+#include "dwr_types.h"
 
-const char *dwr_sprite_names[SPRITE_COUNT] = {
+const char * const dwr_sprite_names[SPRITE_COUNT] = {
         "Loto",
         "Gwaelin",
         "Slime",
@@ -77,32 +76,6 @@ const char *dwr_sprite_names[SPRITE_COUNT] = {
         "Challenge Level 2",
         "Challenge Level 5"
 };
-
-/**
- * Patches the rom at the specified address with the specified bytes.
- *
- * @param rom The rom struct to be patched
- * @param address The address inside the rom to apply the patch.
- * @param size The size of the patch
- * @param ... A series of uint8_t bytes, the patch data
- * @return The address of the end of the patch
- */
-static uint16_t vpatch(dw_rom *rom, uint32_t address, uint32_t size, ...)
-{
-    uint32_t i;
-    va_list arg;
-    uint8_t *p;
-
-    p = &rom->raw[address];
-    va_start(arg, size);
-
-    for (i=0; i < size; i++) {
-        *(p++) = va_arg(arg, int);
-    }
-    va_end(arg);
-    return p - rom->raw;
-
-}
 
 static void link(dw_rom *rom)
 {

@@ -1500,30 +1500,32 @@ static void no_keys(dw_rom *rom)
     vpatch(rom, 0x182b, 3, 0, 0, 0);
 }
 
-static void modern_spell_names(dw_rom *rom) {
-    if (MODERN_SPELLS(rom))
+static void modern_spell_names(dw_rom *rom)
+{
+    if (!MODERN_SPELLS(rom))
         return;
 
     vpatch(rom, 0x07e6b,   67,
-            /* S      I      Z      Z   */
-            0x36,  0x2c,  0x3d,  0x3d,  0xff,
-            /* S      N      O      O      Z      E   */
-            0x36,  0x31,  0x32,  0x32,  0x3d,  0x28,  0xff,
-            /* G      L      O      W   */
-            0x2a,  0x2f,  0x32,  0x3a,  0xff,
-            /* F      I      Z      Z      L      E   */
-            0x29,  0x2c,  0x3d,  0x3d,  0x2f,  0x28,  0xff,
-            /* E      V      A      C   */
-            0x28,  0x39,  0x24,  0x26,  0xff,
-            /* Z      O      O      M   */
-            0x3d,  0x32,  0x32,  0x30,  0xff,
-            /* H      O      L      Y             P      R      O      T   */
-            0x2b,  0x32,  0x2f,  0x3c,  0x5f,  0x33,  0x35,  0x32,  0x37,  0xff,
-            /* M      O      R      E      H      E      A      L   */
-            0x30,  0x32,  0x35,  0x28,  0x2b,  0x28,  0x24,  0x2f,  0xff,
-            /* K      A      S      I      Z      Z      L      E   */
-            0x2e,  0x24,  0x36,  0x2c,  0x3d,  0x3d,  0x2f,  0x28,  0xff,
-            0xff,  0xff,  0xff,  0xff,  0xff);
+            /* S     I     Z     Z  */
+            0x36, 0x2c, 0x3d, 0x3d, 0xff,
+            /* S     N     O     O     Z     E  */
+            0x36, 0x31, 0x32, 0x32, 0x3d, 0x28, 0xff,
+            /* G     L     O     W  */
+            0x2a, 0x2f, 0x32, 0x3a, 0xff,
+            /* F     I     Z     Z     L     E   */
+            0x29, 0x2c, 0x3d, 0x3d, 0x2f, 0x28, 0xff,
+            /* E     V     A     C  */
+            0x28, 0x39, 0x24, 0x26, 0xff,
+            /* Z     O     O     M   */
+            0x3d, 0x32, 0x32, 0x30, 0xff,
+            /* P     R     O     T     E     C     T    */
+            0x33, 0x35, 0x32, 0x37, 0x28, 0x26, 0x37, 0xff,
+            /* M     I     D     H     E     A     L   */
+            0x30, 0x2C, 0x27, 0x2b, 0x28, 0x24, 0x2f, 0xff,
+            /* K     A     S     I     Z     Z     L     E   */
+            0x2e, 0x24, 0x36, 0x2c, 0x3d, 0x3d, 0x2f, 0x28, 0xff,
+
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
 }
 
 /**
@@ -1634,12 +1636,12 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     open_charlock(&rom);
     short_charlock(&rom);
     no_keys(&rom);
-    modern_spell_names(&rom);
     other_patches(&rom);
     credits(&rom);
     crc = crc64(0, rom.raw, 0x10010);
 
     sprite(&rom, sprite_name);
+    modern_spell_names(&rom);
     update_title_screen(&rom);
     randomize_music(&rom);
     disable_music(&rom);

@@ -126,7 +126,7 @@ void MainWindow::layout()
     /* Cosmetic Options */
     this->addOption('K', "Shuffle Music",                  COSMETIC, 0, 0);
     this->addOption('Q', "Disable Music",                  COSMETIC, 1, 0);
-    this->addOption('m', "Modern Spell Names",             COSMETIC, 1, 0);
+    this->addOption('m', "Modern Spell Names",             COSMETIC, 2, 0);
 
     this->addLabel("Leveling Speed", GAMEPLAY, 7, 0);
     this->placeWidget(this->levelSpeed, GAMEPLAY, 8, 0);

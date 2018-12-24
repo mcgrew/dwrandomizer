@@ -1,0 +1,91 @@
+Address                 | Use                                   | Notes
+======================  | ===================================== | =======================================================
+0 - F                   | iNES header                           |
+2F - BF                 | Map Metadata                          | (5 bytes) 1-2 = Pointer to data, 3=X size, 4=Y size,
+                        |                                       | 5=Border tile
+                        |                                       |
+C0 - 188                | Charlock Map                          |
+189 - 250               | Hauksness Map                         |
+251 - 411               | Tantegel Map                          |
+412 - 443               | Tantegel Throne Room Map              |
+445 - 606               | Charlock Throne room Map              |
+Towns                   |                                       |
+607 - 726               | Kol Map                               |
+727 - 8E8               | Brecconary Map                        |
+8E8 - AAA               | Cantlin Map                           |
+AAB - B72               | Garinham Map                          |
+B73 - D34               | Rimuldar Map                          |
+Shrines                 |                                       |
+D34 - D65               | Tantegel Basement Map                 |
+D66 - D97               | Northern Shrine Map                   |
+D99 - DCA               | Southern Shrine Map                   |
+Dragonlord Cavern       |                                       |
+DCB - E92               | Dragonlord Cavern B1 Map              |
+E93 - EC4               | Dragonlord Cavern B2 Map              |
+EC5 - EF6               | Dragonlord Cavern B3 Map              |
+EF7 - F28               | Dragonlord Cavern B4 Map              |
+F29 - F5A               | Dragonlord Cavern B5 Map              |
+F5B - F8C               | Dragonlord Cavern B6 Map              |
+Other Caves             |                                       |
+F8D - FE6               | Cave to Rimuldar Map                  |
+FE7 - 1048              | Cave West of Tantegel B1 Map          |
+1048 - 10A9             | Cave West of Tantegel B2 Map          |
+10AA - 1171             | Garin's Grave B1 Map                  |
+1172 - 1239             | Garin's Grave B3 Map                  |
+123A - 126B             | Garin's Grave B4 Map                  |
+126C - 12BF             | Garin's Grave B2 Map                  |
+12C0 - 12F1             | Erdrick's Cave B1 Map                 |
+12F2 - 1323             | Erdrick's Cave B2 Map                 |
+Various Data            |                                       |
+1957 - 1992             | Weapon & Item costs (calculation)     |
+19A1-19CB               | Weapon Shop Inventory                 |
+19CC - 19DE             | Item Shop Inventory                   |
+1A9B - 1A9D             | Player palette (along with some npcs) |
+1C9F - 1D62             | Layout data for fight background      |
+1D63 - 1D6C             | MP Requirements for Magic Spells      |
+1D6D - 2662             | Overworld map                         | RLE encoded, 1st nibble is tile, 2nd how many - 1
+2663 - 26DA             | Overworld map pointers                | 16 bytes each - address of o each row of the map.
+                        |                                       | (value - 0x8000 + 16)
+2C4B - 2C5A             | Rainbow Bridge Replace Code?          |
+31BE - 31DB             | Music Pointers                        |
+3F30 - 3FB8             | Title Screen Data                     |
+3F58-3F61               | (c)1986 ENIX                          | Title screen text
+3F6D-3F75               | (c)1989 ENIX                          | Title screen text
+3F82-3F95               | LICENSED TO NINTENDO                  | Title screen text
+3FA1-3FB8               | TM TRADEMARK TO NINTENDO              | Title screen text
+44DB - 5363             | Music Data                            | http://datacrystal.romhacking.net/wiki/Dragon_Warrior:ROM_map#Music_Data
+549F - 58D9             | Ending Text                           |
+5DDD - 5E58             | Chest Data                            | Four bytes long: Map,X,Y,Contents
+5E5B - 60DB             | Enemy Data                            | Sixteen bytes each   --->
+60DD - 6190             | Player stats                          | Strength, Agility, HP, MP, Spell Mask
+                        |                                       | (2 bytes, big endian)
+6FC7 - 752B             | Menu Text                             |
+7AC0 - 7EAD             | Item, Enemy, and Spell Menu Text      |
+7E20 - 7E63             | Weapon & Item Costs (text)            |
+8039 - BCBA             | Dialog text                           |
+A236 - A298             | NPC Token location text               |
+AD95 - ADAC             | "The spell will not work."            |
+BEE1 - BFE7             | Empty Space                           |
+CBCC - ?                | Death handling code                   |
+CD61 - CD77             | Axe Knight encounter code             |
+CD78 - CD94             | Green Dragon encounter code           |
+CD95 - CDA6             | Golem encounter code                  |
+D70A                    | Max number of herbs (6)               |
+D81E                    | Max number or keys (6)                |
+DB10 - DB1F             | "Return" placement code               |
+DE9B - DEB2             | Rainbow Drop use code                 |
+DF47 - DF68             | Gwaelin's Love Calculations           |
+E11B-E159               | Token find code                       |
+E15A - E16F             | Flute find code                       |
+E170 - E199             | Armor find code                       |
+E8E4 - E8F3             | Axe Knight run code                   |
+E90B - E91A             | Green Dragon run code                 |
+E938 - E947             | Golem run code                        |
+EAF8 - EB1F             | "Thou has leaned a new spell" code    | Checks your level to see if you learned a spell
+F36C - F3A6             | Level up limits                       |
+F3D8 - F470             | Warp Data (From)                      | 3 bytes (map,x,y)
+F471 - F50A             | Warp Data (To)                        | 3 bytes (map,x,y)
+F532-F551               | Overworld Enemy Zones?                | 1 nybble each
+F552-F557               | Dungeon enemy zones?                  | 1 byte each
+F55F - F5C3             | Enemy Zone info                       | 5 bytes per zone, 20 zones. Each byte is an enemy ID
+10010-1400E             | Game Graphics                         | CHR ROM

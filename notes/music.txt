@@ -1,0 +1,30 @@
+Address | Value | Song Name   | Location
+31BF    | 5     | Overworld   | Overworld
+31C0    | 6     | Cave 1      | Charlock
+31C1    | 9     | Cave 4      | Hauksness
+31C2    | 3     | Castle      | Tantegel
+31C3    | 2     | Throne Room | Tantegel Throne Room
+31C4    | D     | Cave 8      | Charlock Throne Room
+31C5    | 4     | Town        | Kol
+31C6    | 4     | Town        | Brecconary
+31C7    | 4     | Town        | Garinham
+31C8    | 4     | Town        | Cantlin
+31C9    | 4     | Town        | Rimuldar
+31CA    | 3     | Castle      | Tantegel Basement
+31CB    | 3     | Castle      | Northern Shrine
+31CC    | 3     | Castle      | Southern Shrine
+31CD    | 7     | Cave 2      | Charlock Cave Lv 1
+31CE    | 8     | Cave 3      | Charlock Cave Lv 2
+31CF    | 9     | Cave 4      | Charlock Cave Lv 3
+31D0    | A     | Cave 5      | Charlock Cave Lv 4
+31D1    | B     | Cave 6      | Charlock Cave Lv 5
+31D2    | C     | Cave 7      | Charlock Cave Lv 6
+31D3    | 6     | Cave 1      | Swamp Cave
+31D4    | 6     | Cave 1      | Mountain Cave
+31D5    | 7     | Cave 2      | Mountain Cave Lv 2
+31D6    | 6     | Cave 1      | Garin's Grave Lv 1
+31D7    | 7     | Cave 2      | Garin's Grave Lv 2
+31D8    | 8     | Cave 3      | Garin's Grave Lv 3
+31D9    | 9     | Cave 4      | Garin's Grave Lv 4
+31DA    | 6     | Cave 1      | Erdrick's Cave
+31DB    | 7     | Cave 2      | Erdrick's Cave Lv 2

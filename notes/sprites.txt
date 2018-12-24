@@ -1,0 +1,194 @@
+Address | Character | Facing | Quadrant | Equipment | Animation | Anim 2 Mirrored
+======= | ========= | ====== | ======== | ========= | ========= | ===============
+0x00    |           |        |          |           |           |
+0x01    |           |        |          |           |           |
+0x02    |           |        |          |           |           |
+0x03    |           |        |          |           |           |
+0x04    |           |        |          |           |           |
+0x05    |           |        |          |           |           |
+0x06    |           |        |          |           |           |
+0x07    |           |        |          |           |           |
+0x08    |           |        |          |           |           |
+0x09    |           |        |          |           |           |
+0x0a    |           |        |          |           |           |
+0x0b    |           |        |          |           |           |
+0x0c    |           |        |          |           |           |
+0x0d    |           |        |          |           |           |
+0x0e    |           |        |          |           |           |
+0x0f    |           |        |          |           |           |
+0x10    |           |        |          |           |           |
+0x11    |           |        |          |           |           |
+0x12    |           |        |          |           |           |
+0x13    |           |        |          |           |           |
+0x14    |           |        |          |           |           |
+0x15    |           |        |          |           |           |
+0x16    |           |        |          |           |           |
+0x17    |           |        |          |           |           |
+0x18    |           |        |          |           |           |
+0x19    |           |        |          |           |           |
+0x1a    |           |        |          |           |           |
+0x1b    |           |        |          |           |           |
+0x1c    |           |        |          |           |           |
+0x1d    |           |        |          |           |           |
+0x1e    |           |        |          |           |           |
+0x1f    |           |        |          |           |           |
+0x20    | Loto      | N      | UL       | None      | 1         | Yes
+0x21    | Loto      | N      | UR       | None      | 1         | Yes
+0x22    |           |        |          |           |           |
+0x23    |           |        |          |           |           |
+0x24    | Loto      | N      | LL       | None      | 1         | Yes
+0x25    | Loto      | N      | LR       | None      | 1         | Yes
+0x26    | Loto      | E      | UL       | None      | 1         | No
+0x27    | Loto      | E      | UR       | None      | 1         | No
+0x28    | Loto      | E      | LL       | None      | 1         | No
+0x29    | Loto      | E      | LR       | None      | 1         | No
+0x2a    |           |        |          |           |           |
+0x2b    |           |        |          |           |           |
+0x2c    |           |        |          |           |           |
+0x2d    |           |        |          |           |           |
+0x2e    |           |        |          |           |           |
+0x2f    |           |        |          |           |           |
+0x30    | Loto      | E      | UL       | None      | 2         | No
+0x31    | Loto      | E      | UR       | None      | 2         | No
+0x32    | Loto      | E      | LL       | None      | 2         | No
+0x33    | Loto      | E      | LR       | None      | 2         | No
+0x34    | Loto      | S      | UL       | None      | 1         | Yes
+0x35    | Loto      | S      | UR       | None      | 1         | Yes
+0x36    | Loto      | S      | LL       | None      | 1         | Yes
+0x37    | Loto      | S      | LR       | None      | 1         | Yes
+0x38    |           |        |          |           |           |
+0x39    |           |        |          |           |           |
+0x3a    |           |        |          |           |           |
+0x3b    |           |        |          |           |           |
+0x3c    |           |        |          |           |           |
+0x3d    |           |        |          |           |           |
+0x3e    |           |        |          |           |           |
+0x3f    |           |        |          |           |           |
+0x40    | Loto      | N      | UL       | SW        | 1         | No
+0x41    | Loto      | N      | UR       | SW        | 1         | No
+0x42    | Loto      | N      | LL       | SW        | 1         | No
+0x43    | Loto      | N      | LR       | SW        | 1         | No
+0x44    | Loto      | N      | UL       | SW        | 2         | No
+0x45    | Loto      | N      | UR       | SW        | 2         | No
+0x46    | Loto      | N      | LL       | SW        | 2         | No
+0x47    | Loto      | N      | LR       | SW        | 2         | No
+0x48    | Loto      | E      | UL       | SW        | 1         | No
+0x49    | Loto      | E      | UR       | SW        | 1         | No
+0x4a    | Loto      | E      | LL       | SW        | 1         | No
+0x4b    | Loto      | E      | LR       | SW        | 1         | No
+0x4c    | Loto      | E      | UL       | SW        | 2         | No
+0x4d    | Loto      | E      | UR       | SW        | 2         | No
+0x4e    | Loto      | E      | LL       | SW        | 2         | No
+0x4f    | Loto      | E      | LR       | SW        | 2         | No
+0x50    | Loto      | S      | UL       | SW        | 1         | No
+0x51    | Loto      | S      | UR       | SW        | 1         | No
+0x52    | Loto      | S      | LL       | SW        | 1         | No
+0x53    | Loto      | S      | LR       | SW        | 1         | No
+0x54    | Loto      | S      | UL       | SW        | 2         | No
+0x55    | Loto      | S      | UR       | SW        | 2         | No
+0x56    | Loto      | S      | LL       | SW        | 2         | No
+0x57    | Loto      | S      | LR       | SW        | 2         | No
+0x58    |           |        |          |           |           |
+0x59    |           |        |          |           |           |
+0x5a    |           |        |          |           |           |
+0x5b    |           |        |          |           |           |
+0x5c    |           |        |          |           |           |
+0x5d    |           |        |          |           |           |
+0x5e    |           |        |          |           |           |
+0x5f    |           |        |          |           |           |
+0x60    |           |        |          |           |           |
+0x61    |           |        |          |           |           |
+0x62    |           |        |          |           |           |
+0x63    |           |        |          |           |           |
+0x64    |           |        |          |           |           |
+0x65    |           |        |          |           |           |
+0x66    |           |        |          |           |           |
+0x67    |           |        |          |           |           |
+0x68    |           |        |          |           |           |
+0x69    |           |        |          |           |           |
+0x6a    |           |        |          |           |           |
+0x6b    |           |        |          |           |           |
+0x6c    |           |        |          |           |           |
+0x6d    |           |        |          |           |           |
+0x6e    |           |        |          |           |           |
+0x6f    |           |        |          |           |           |
+0x70    |           |        |          |           |           |
+0x71    |           |        |          |           |           |
+0x72    |           |        |          |           |           |
+0x73    |           |        |          |           |           |
+0x74    |           |        |          |           |           |
+0x75    |           |        |          |           |           |
+0x76    |           |        |          |           |           |
+0x77    |           |        |          |           |           |
+0x78    |           |        |          |           |           |
+0x79    |           |        |          |           |           |
+0x7a    |           |        |          |           |           |
+0x7b    |           |        |          |           |           |
+0x7c    |           |        |          |           |           |
+0x7d    |           |        |          |           |           |
+0x7e    |           |        |          |           |           |
+0x7f    |           |        |          |           |           |
+0x80    | Loto      | N      | UR       | SW & SH   | 1         | No
+0x81    |           |        |          |           |           |
+0x82    | Loto      | N      | LR       | SW & SH   | 1         | No
+0x83    |           |        |          |           |           |
+0x84    | Loto      | N      | UR       | SW & SH   | 2         | No
+0x85    |           |        |          |           |           |
+0x86    | Loto      | N      | LR       | SW & SH   | 2         | No
+0x87    |           |        |          |           |           |
+0x88    |           |        |          |           |           |
+0x89    |           |        |          |           |           |
+0x8a    |           |        |          |           |           |
+0x8b    |           |        |          |           |           |
+0x8c    |           |        |          |           |           |
+0x8d    |           |        |          |           |           |
+0x8e    |           |        |          |           |           |
+0x8f    |           |        |          |           |           |
+0x90    |           |        |          |           |           |
+0x91    | Loto      | S      | UR       | SW & SH   | 1         | No
+0x92    |           |        |          |           |           |
+0x93    | Loto      | S      | LR       | SW & SH   | 1         | No
+0x94    |           |        |          |           |           |
+0x95    | Loto      | S      | UL       | SW & SH   | 2         | No
+0x96    |           |        |          |           |           |
+0x97    | Loto      | S      | LL       | SW & SH   | 2         | No
+0x98    | Loto      | W      | UL       | SW & SH   | 1         | No
+0x99    | Loto      | W      | UR       | SW & SH   | 1         | No
+0x9a    | Loto      | W      | LL       | SW & SH   | 1         | No
+0x9b    | Loto      | W      | LR       | SW & SH   | 1         | No
+0x9c    | Loto      | W      | UL       | SW & SH   | 2         | No
+0x9d    | Loto      | W      | UR       | SW & SH   | 2         | No
+0x9e    | Loto      | W      | LL       | SW & SH   | 2         | No
+0x9f    | Loto      | W      | LR       | SW & SH   | 2         | No
+0xa0    |           |        |          |           |           |
+0xa1    |           |        |          |           |           |
+0xa2    | Loto      | N      | LL       | Gwaelin   | 1         | No
+0xa3    | Loto      | N      | LR       | Gwaelin   | 1         | No
+0xa4    | Loto      | N      | UL       | Gwaelin   | 1 & 2     | No
+0xa5    | Loto      | N      | UR       | Gwaelin   | 1 & 2     | No
+0xa6    | Loto      | N      | LL       | Gwaelin   | 2         | No
+0xa7    | Loto      | N      | LR       | Gwaelin   | 2         | No
+0xa8    | Loto      | W      | LL       | Gwaelin   | 1         | No
+0xa9    | Loto      | W      | LR       | Gwaelin   | 1         | No
+0xaa    | Loto      | W      | UL       | Gwaelin   | 1         | No
+0xab    | Loto      | W      | UR       | Gwaelin   | 1         | No
+0xac    | Loto      | W      | LL       | Gwaelin   | 2         | No
+0xad    | Loto      | W      | LR       | Gwaelin   | 2         | No
+0xae    | Loto      | W      | UL       | Gwaelin   | 2         | No
+0xaf    | Loto      | W      | UR       | Gwaelin   | 2         | No
+0xb0    |           |        |          |           |           |
+0xb1    |           |        |          |           |           |
+0xb2    | Loto      | S      | LL       | Gwaelin   | 1         | No
+0xb3    | Loto      | S      | LR       | Gwaelin   | 1         | No
+0xb4    | Loto      | S      | UL       | Gwaelin   | 1 & 2     | No
+0xb5    | Loto      | S      | UR       | Gwaelin   | 1 & 2     | No
+0xb6    | Loto      | S      | LL       | Gwaelin   | 2         | No
+0xb7    | Loto      | S      | LR       | Gwaelin   | 2         | No
+0xb8    | Loto      | E      | LL       | Gwaelin   | 1         | No
+0xb9    | Loto      | E      | LR       | Gwaelin   | 1         | No
+0xba    | Loto      | E      | UL       | Gwaelin   | 1         | No
+0xbb    | Loto      | E      | UR       | Gwaelin   | 1         | No
+0xbc    | Loto      | E      | LL       | Gwaelin   | 2         | No
+0xbd    | Loto      | E      | LR       | Gwaelin   | 2         | No
+0xbe    | Loto      | E      | UL       | Gwaelin   | 2         | No
+0xbf    | Loto      | E      | UR       | Gwaelin   | 2         | No

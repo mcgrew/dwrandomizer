@@ -1,0 +1,103 @@
+Map Number | ROM Address     | Map                  | Size    | Border Tile   | Border Tile address
+========== | =============== | ==================== | ======= | ============= | ===================
+1          | 0x1D6D - 0x2668 | Overworld            | 120x120 | 0x0F (water)  | 0x33
+2          | 0xC0 - 0x187    | Charlock             | 20x20   | 0x06 (swamp)  | 0x38
+3          | 0x188 - 0x24f   | Hauksness            | 20x20   | 0x01 (desert) | 0x3d
+4          | 0x250 - 0x411   | Tantegel             | 30x30   | 0x00 (grass)  | 0x42
+5          | 0x412 - 0x444   | Tantegel Throne Room | 10x10   | 0x15 (roof)   | 0x47
+6          | 0x444 - 0x605   | Charlock Throne Room | 30x30   | 0x0F (water)  | 0x4c
+7          | 0x606 - 0x825   | Kol                  | 24x24   | 0x0B (trees)  | 0x51
+8          | 0x826 - 0x8E7   | Brecconary           | 30x30   | 0x00 (grass)  | 0x56
+9          | 0xAAA - 0xB71   | Garinham             | 20x20   | 0x00(grass)   | 0x5b
+10         | 0x8E8 - 0xAA9   | Cantlin              | 30x30   | 0x04 (brick)  | 0x60
+11         | 0xB72 - 0xD33   | Rimuldar             | 30x30   | 0x00 (grass)  | 0x65
+12         | 0xD34 - 0xD65   | Tantegel Basement    | 10x10   | 0x10 (block)  | 0x6a
+13         | 0xD66 - 0xD97   | Northern Shrine      | 10x10   | 0x10 (block)  | 0x6f
+14         | 0xD98 - 0xDC9   | Southern Shrine      | 10x10   | 0x10 (block)  | 0x74
+15         | 0xDCA - 0xE91   | Charlock Cave Lv 1   | 20x20   | 0x10 (block)  | 0x79
+16         | 0xE92 - 0xEC3   | Charlock Cave Lv 2   | 10x10   | 0x10 (block)  | 0x7e
+17         | 0xEC4 - 0xEF5   | Charlock Cave Lv 3   | 10x10   | 0x10 (block)  | 0x83
+18         | 0xEF6 - 0xF27   | Charlock Cave Lv 4   | 10x10   | 0x10 (block)  | 0x88
+19         | 0xF28 - 0xF59   | Charlock Cave Lv 5   | 10x10   | 0x10 (block)  | 0x8d
+20         | 0xF5A - 0xF8B   | Charlock Cave Lv 6   | 10x10   | 0x10 (block)  | 0x92
+21         | 0xF8C - 0xFE5   | Swamp Cave           | 6x30    | 0x10 (block)  | 0x97
+22         | 0xFE6 - 0x1047  | Mountain Cave        | 14x14   | 0x10 (block)  | 0x9c
+23         | 0x1048 - 0x10A9 | Mountain Cave Lv 2   | 14x14   | 0x10 (block)  | 0xa1
+24         | 0x10AA - 0x1171 | Garin's Grave Lv 1   | 20x20   | 0x10 (block)  | 0xa6
+25         | 0x126C - 0x12BF | Garin's Grave Lv 2   | 14x12   | 0x10 (block)  | 0xab
+26         | 0x1172 - 0x1239 | Garin's Grave Lv 3   | 20x20   | 0x10 (block)  | 0xb0
+27         | 0x123A - 0x126B | Garin's Grave Lv 4   | 10x10   | 0x10 (block)  | 0xb5
+28         | 0x12C0 - 0x12F1 | Erdrick's Cave       | 10x10   | 0x10 (block)  | 0xba
+29         | 0x12F2 - 0x1323 | Erdrick's Cave Lv 2  | 10x10   | 0x10 (block)  | 0xbf
+
+
+Locations                  | Map | X   | Y
+========================== | === | === | ===
+Tantegel                   | 1   | 43  | 43
+Brecconary                 | 1   | 48  | 41
+Garinham                   | 1   | 2   | 2
+                           |     |     |
+Kol                        | 1   | 104 | 10
+Northern Shrine            | 1   | 81  | 1
+                           |     |     |
+Erdrick's Cave             | 1   | 28  | 12
+Hauksness                  | 1   | 25  | 89
+Cantlin                    | 1   | 73  | 102
+Rimuldar                   | 1   | 102 | 72
+Southern Shrine            | 1   | 108 | 109
+                           |     |     |
+Swamp cave entrance        | 1   | 104 | 44
+Swamp cave exit            | 1   | 104 | 49
+Charlock Castle            | 1   | 48  | 48
+                           |     |     |
+Magic refill               | 4   | 18  | 26
+Gwaelin                    | 21  | 5   | 19
+Flute                      | 7   | 9   | 6
+Erdrick's Armor            | 3   | 18  | 12
+Erdrick's Token            | 1   | 83  | 113
+Silver Harp                | 26  | 13  | 6
+Stones of Sunlight         | 12  | 4   | 5
+Staff of Rain guard        | 13  | 5   | 4
+Staff of Rain              | 13  | 3   | 4
+Rainbow Drop               | 14  | 3   | 5
+Bridge to Charlock         | 1   | 65  | 49
+Entrance to Charlock Cave  | 2   | 10  | 1
+Erdrick's Sword            | 16  | 5   | 5
+Dragonlord                 | 6   | 17  | 24
+
+
+
+ Border Tiles  |
+=============  | ====
+Grass          | 0x0
+Desert         | 0x1
+Hills          | 0x2
+Stairs up      | 0x3
+Brick          | 0x4
+Stairs down    | 0x5
+Swamp          | 0x6
+Town           | 0x7
+Cave           | 0x8
+Castle         | 0x9
+Bridge         | 0xA
+Trees          | 0xB
+Treasure chest | 0xC
+Barrier        | 0xD
+Orange block   | 0xE
+Water          | 0xF
+Block          | 0x10
+Door           | 0x11
+Moutain        | 0x12
+Shop sign      | 0x13
+Inn Sign       | 0x14
+Root           | 0x15
+               | 0x16
+               | 0x17
+               | 0x18
+               | 0x19
+               | 0x1A
+               | 0x1C
+               | 0x1D
+               | 0x1E
+               | 0x1F
+

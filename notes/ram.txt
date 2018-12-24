@@ -1,0 +1,55 @@
+Address         | Function                | Notes
+=============== | ======================= | ============================================================================
+0x3a            | X position              |
+0x3b            | Y position              |
+0x45            | Current Map             |
+0x47            | Controller 1 Poll       | 0x80=right, 0x40=left, 0x20=down, 0x10=up, 0x8=start, 0x4=select, 0x2=B, 0x1=A
+0x51 - ??       | NPC Data                | 16 bits ------------------------->   3 bits -> sprite
+                |                         | 5 bits -> x coordinate
+                |                         | 3 bits -> direction
+                |                         | 5 bits -> y coordinate
+0x8e            | Map X pos               |
+0x8f            | Map Y pos               |
+0x94-0x95       | RNG State               |
+0xba - 0xbb     | Exp Points              |
+0xbc - 0xbd     | Gold                    |
+0xbe            | Equipment               |
+0xbf            | Key count               |
+0xc0            | Herb count              |
+0xc1            | Item slot 1 & 2         |
+0xc2            | Item slot 3 & 4         |
+0xc3            | Item slot 5 & 6         |
+0xc4            | Item slot 7 & 8         |
+0xc5            | Current HP              |
+0xc6            | Current MP              |
+0xc7            | Level                   |
+0xc8            | Strength                | Read-only
+0xc9            | Agility                 | Read-only
+0xca            | Max HP                  | Read-only
+0xcb            | Max MP                  | Read-only
+0xcc            | Attack Power            | Read-only
+0xcd            | Defense Power           | Read-only
+0xce            | Spells unlocked         | 0x80=repel, 0x40=return, 0x20=outside, 0x10=stopspell,
+                |                         | 0x8=radiant, 0x4=sleep, 0x2=hurt, 0x1=heal
+0xcf            | Spells/Quest Prog       | 0x80=death necklace equipped, 0x40=cursed belt equipped,
+                |                         | 0x20=fighters ring equipped, 0x10=dragon's scale equipped,
+                |                         | 0x8=rainbow bridge, 0x4=stairs in charlock found, 0x2=hurtmore, 0x1=healmore
+0xd0            | Light radius            | For radiant
+0xd1            | Cursor X?               |
+0xd2            | Cursor Y?               |
+0xd7            | Last selected menu item | 0x00 - 0x09 (0xFF for none)
+0xd8            | Cursor X pos            |
+0xd9            | Cursor Y pos            |
+0xda            | Radiant Timer           |
+0xdf            | Status bits             | 0x80=Hero asleep, 0x40=Enemy asleep, 0x20=Enemy's spell stopped,
+                |                         | 0x10=Hero's spell stopped, 0x8=You have left throne room, 0x4=Death necklace obtained, 0x2=Returned Gwaelin,
+                |                         | 0x1=Carrying Gwaelin
+0xe0            | Current Tile            | Enemy index when in battle
+0xe2            | Enemy HP                | Does not clear after battle.
+
+0xe4            | Quest progress          | 0x80=unused, 0x40=Killed Green Dragon, 0x20=unused, 0x10=unused, 0x8=unused,
+                |                         | 0x4=Killed Dragonlord, 0x2=Killed Golem, 0x1=unused
+0xe5            | Message Speed           | 0 = fast, 1 = normal, 2 = slow
+0x320           | Treasure chest array    |
+0x6000-0x8000   | SRAM                    |
+

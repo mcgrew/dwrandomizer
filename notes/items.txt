@@ -1,0 +1,109 @@
+Equipment value   |
+================  | ====
+== Weapons ==     |
+Bamboo Pole       | 0x20
+Club              | 0x40
+Copper Sword      | 0x60
+Hand Axe          | 0x80
+Broad Sword       | 0xa0
+Flame Sword       | 0xc0
+Erdrick's Sword   | 0xe0
+                  |
+== Armor ==       |
+Clothes           | 0x4
+Leather Armor     | 0x8
+Chain Mail        | 0xc
+Half Plate Armor  | 0x10
+Full Plate Armor  | 0x14
+Magic Armor       | 0x18
+Erdrick's Armor   | 0x1c
+                  |
+== Shields ==     |
+Small Shield      | 0x1
+Large Shield      | 0x2
+Silver Shield     | 0x3
+
+
+Items |
+===== | ===================
+0x1   | Torch
+0x2   | Fairy Water
+0x3   | Wings
+0x4   | Dragon's Scale
+0x5   | Fairy Flute
+0x6   | Fighter's Ring
+0x7   | Erdrick's Token
+0x8   | Gwaelin's Love
+0x9   | Cursed Belt
+0xa   | Silver Harp
+0xb   | Death Necklace
+0xc   | Stones of Sunlight
+0xd   | Staff of Rain
+0xe   | Rainbow Drop
+0xf   | Herb (glitched)
+
+
+== Chests ==
+Map                        | X  | Y  | contents
+========================== | == | == | =========================
+0x4 (Tantegel)             | 1  | 13 | 19 (6 Gold)
+0x4 (Tantegel)             | 1  | 15 | 19 (6 Gold)
+0x4 (Tantegel)             | 2  | 14 | 19 (6 Gold)
+0x4 (Tantegel)             | 3  | 15 | 19 (6 Gold)
+0x5 (Tantegel Throne Room) | 4  | 4  | 22 (120 Gold)
+0x5 (Tantegel Throne Room) | 5  | 4  | 4 (Torch)
+0x5 (Tantegel Throne Room) | 6  | 1  | 3 (Key)
+0xb (Rimuldar)             | 24 | 23 | 6 (Wings)
+0x9 (Garinham)             | 8  | 5  | 20 (10 Gold)
+0x9 (Garinham)             | 8  | 6  | 2 (Herb)
+0x9 (Garinham)             | 9  | 5  | 4 (Torch)
+0x6 (Charlock Throne Room) | 11 | 11 | 2 (Herb)
+0x6 (Charlock Throne Room) | 11 | 12 | 21 (500 Gold)
+0x6 (Charlock Throne Room) | 11 | 13 | 6 (Wings)
+0x6 (Charlock Throne Room) | 12 | 12 | 3 (Key)
+0x6 (Charlock Throne Room) | 12 | 13 | 12 (Cursed Belt)
+0x6 (Charlock Throne Room) | 13 | 13 | 2 (Herb)
+0xc (Tantegel Basement)    | 4  | 5  | 15 (Stones of Sunlight)
+0xd (Northern Shrine)      | 3  | 4  | 16 (Staff of Rain)
+0x24 (Garin's Grave Lv 1)  | 11 | 0  | 2 (Herb)
+0x24 (Garin's Grave Lv 1)  | 12 | 0  | 18 (5 Gold)
+0x24 (Garin's Grave Lv 1)  | 13 | 0  | 19 (6 Gold)
+0x1a (Garin's Grave Lv 3)  | 1  | 1  | 12 (Cursed Belt)
+0x1a (Garin's Grave Lv 3)  | 13 | 6  | 13 (Silver Harp)
+0x10 (Charlock Cave Lv 2)  | 5  | 5  | 17 (Erdrick's Sword)
+0x17 (Mountain Cave Lv 2)  | 1  | 6  | 14 (Death Necklace)
+0x17 (Mountain Cave Lv 2)  | 3  | 2  | 4 (Torch)
+0x17 (Mountain Cave Lv 2)  | 2  | 2  | 9 (Fighter's Ring)
+0x17 (Mountain Cave Lv 2)  | 10 | 9  | 20 (10 Gold)
+0x16 (Mountain Cave Lv 1)  | 13 | 5  | 2 (Herb)
+0x1d (Erdrick's Cave Lv 2) | 9  | 3  | 23 (Erdrick's Tablet)
+
+
+==Chest contents==
+Byte | What it is
+==== | ===========================
+0x0  | Broken
+0x1  | Broken?
+0x2  | Herb
+0x3  | Magic Key
+0x4  | Torch
+0x5  | Fairy Water
+0x6  | Wings
+0x7  | Dragon's Scale
+0x8  | Fairy Flute
+0x9  | Fighter's Ring
+0xA  | Erdrick's Token
+0xB  | Gwaelin's Love
+0xC  | Cursed Belt
+0xD  | Silver Harp
+0xE  | Death Necklace/ 5-20 Gold
+0xF  | Stones of Sunlight
+0x10 | Staff of Rain
+0x11 | Erdrick's Sword
+0x12 | 5-20 Gold
+0x13 | 6-13 Gold
+0x14 | 10-17 gold
+0x15 | 500-756 gold
+0x16 | 120 Gold
+0x17 | Erdrick's Tablet
+

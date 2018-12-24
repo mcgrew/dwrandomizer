@@ -1,0 +1,27 @@
+Enemy Data ($5E5B - $60DB)    |                             |
+============================  | =========================== | =============================
+0x0                           | Strength                    |
+0x1                           | Agility                     |
+0x2                           | Max HP                      |
+0x3                           | Attack Pattern              |
+0x4                           | Sleep/Stopspell resist      | Nybbles
+0x5                           | Hurt resist/Dodge           | Nybbles
+0x6                           | XP                          |
+0x7                           | Max Gold + 1                |
+0x8 - 0xF                     | Sprite Data??               |
+                              |                             |
+                              |                             |
+============================  | =========================== | =============================
+Pattern bits                  |                             |
+============================  | =========================== | =============================
+0x3                           | Chance to do special move 2 |
+0xC                           | Special move 2              | hurt               00xx
+                              |                             | hurtmore           01xx
+                              |                             | fire breath        10xx
+                              |                             | strong fire breath 11xx
+                              |                             |
+0x30                          | Chance to do special move 1 |
+0xC0                          | Special move 1              | sleep              00xx
+                              |                             | stopspell          01xx
+                              |                             | heal               10xx
+                              |                             | healmore           11xx

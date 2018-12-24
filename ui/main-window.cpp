@@ -104,6 +104,17 @@ void MainWindow::layout()
     tabWidget->addTab(tabContents[0], "Gameplay Options");
     tabWidget->addTab(tabContents[1], "Cosmetic Options");
 
+    /* Add some empty labels for padding */
+    this->addLabel("", GAMEPLAY, 5, 1);
+    this->addLabel("", GAMEPLAY, 6, 1);
+    this->addLabel("", COSMETIC, 0, 1);
+    this->addLabel("", COSMETIC, 0, 2);
+    this->addLabel("", COSMETIC, 3, 0);
+    this->addLabel("", COSMETIC, 4, 0);
+    this->addLabel("", COSMETIC, 5, 0);
+    this->addLabel("", COSMETIC, 6, 0);
+
+
     /* Gameplay Options */
     this->addOption('C', "Shuffle Chests && Search Items", GAMEPLAY, 0, 0);
     this->addOption('W', "Randomize Weapon Shops",         GAMEPLAY, 1, 0);
@@ -133,17 +144,6 @@ void MainWindow::layout()
 
     this->addLabel("Player Sprite", COSMETIC, 7, 0);
     this->placeWidget(this->spriteSelect, COSMETIC, 8, 0);
-
-    /* Add some empty labels for padding */
-    this->addLabel("", GAMEPLAY, 5, 1);
-    this->addLabel("", GAMEPLAY, 6, 1);
-    this->addLabel("", COSMETIC, 0, 1);
-    this->addLabel("", COSMETIC, 0, 2);
-    this->addLabel("", COSMETIC, 2, 0);
-    this->addLabel("", COSMETIC, 3, 0);
-    this->addLabel("", COSMETIC, 4, 0);
-    this->addLabel("", COSMETIC, 5, 0);
-    this->addLabel("", COSMETIC, 6, 0);
 
     goLayout->addWidget(new QLabel("", this), 0, 0, 0);
     goLayout->addWidget(new QLabel("", this), 0, 1, 0);

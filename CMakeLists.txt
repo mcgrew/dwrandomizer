@@ -7,25 +7,28 @@ project(dwrandomizer)
 
 set(CMAKE_CXX_STANDARD 11)
 #set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+find_package(Qt5 COMPONENTS Gui Widgets)
 
-if(DWR_CLI)
-    include_directories(common)
+# Compile the command line version
+include_directories(common)
 
-    set(CLI_SOURCE_FILES
-            common/crc64.c
-            common/sprites.c
-            common/dwr.c
-            common/map.c
-            common/mt19937-64.c
-            common/chaos.c
-            cli/main.c)
+set(CLI_SOURCE_FILES
+        common/crc64.c
+        common/sprites.c
+        common/dwr.c
+        common/map.c
+        common/mt19937-64.c
+        common/chaos.c
+        common/patch.c
+        cli/main.c)
 
-    add_executable(dwrandomizer-cli ${CLI_SOURCE_FILES})
-    target_link_libraries(dwrandomizer-cli m)
-else()
+add_executable(dwrandomizer-cli ${CLI_SOURCE_FILES})
+target_link_libraries(dwrandomizer-cli m)
+
+if(Qt5Widgets_FOUND)
     set (CMAKE_AUTOMOC ON)
-    find_package(Qt5 REQUIRED COMPONENTS Gui Widgets)
     include_directories(common /usr/include/qt)
     set (UI_SOURCE_FILES
             common/crc64.c
@@ -34,6 +37,7 @@ else()
             common/map.c
             common/mt19937-64.c
             common/chaos.c
+            common/patch.c
             ui/main-window.cpp
             ui/widgets.cpp
             ui/main.cpp)
@@ -42,4 +46,6 @@ else()
     add_executable(dwrandomizer ${UI_SOURCE_FILES})
 
     target_link_libraries(dwrandomizer Qt5::Widgets Qt5::Gui)
+else ()
+  message("Could not find Qt modules, skipping GUI build.")
 endif()

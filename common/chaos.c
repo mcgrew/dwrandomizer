@@ -253,7 +253,7 @@ static void chaos_xp(dw_rom *rom)
  */
 void chaos_running(dw_rom *rom)
 {
-    vpatch(rom, 0xeea4, 53,
+    vpatch(rom, 0xee94, 53,
       /*EE94*/ 0xa5, 0x45,       /* LDA $00E0 ; Load the current map.         */
       /*EE96*/ 0xc9, 0x14,       /* CMP #$01  ; If it's greater than 20.      */
       /*EE98*/ 0x90, 0x07,       /* BCC $EEA1 ;                               */

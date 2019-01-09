@@ -13,6 +13,34 @@
 #define MIN_WALKABLE    5000
 #define MAP_ENCODED_SIZE 2294
 
+#define VAN_SPOT_COUNT 22
+static const uint8_t vanilla_spots[VAN_SPOT_COUNT][2] = {
+    /* vanilla place locations */
+    { 43, 43 },
+    { 48, 41 },
+    {  2,  2 },
+    {104, 10 },
+    { 81,  1 },
+    { 28, 12 },
+    { 25, 89 },
+    { 73,102 },
+    {102, 72 },
+    {108,109 },
+    {104, 44 },
+    { 29, 57 },
+    {104, 49 },
+    /* extra locations */
+    { 83,113 },
+    { 40, 82 },
+    { 13,107 },
+    { 67, 86 },
+    { 68, 82 },
+    { 75, 82 },
+    { 67, 77 },
+    {112, 26 },
+    {114, 37 },
+};
+
 static inline int map_ob(int x) {
     return (x < 0 || x > 119);
 }
@@ -40,20 +68,20 @@ static void shift_bytes(uint8_t *start, uint8_t *end)
  * @param map The map struct
  * @return The number of bytes saved
  */
-static int optimize_map(dw_map *map)
+static int optimize_map(uint8_t *encoded_map, uint16_t *pointers)
 {
     int i, j, saved = 0;
     uint8_t *start, *end;
 
-    end = &map->encoded[MAP_ENCODED_SIZE];
+    end = &encoded_map[120 * 120];
 
     for (i=1; i < 120; i++) {
-        start = &map->encoded[map->pointers[i] - 0x9d5d - 1];
-        if (*start >> 4 == *(start+1) >> 4 && *start < *(start+1)) {
+        start = &encoded_map[pointers[i] - 0x9d5d - 1];
+        if (*start >> 4 == *(start+1) >> 4 && *start <= *(start+1)) {
             ++saved;
             shift_bytes(start, end);
             for (j=i; j < 120; j++) {
-                --map->pointers[j];
+                --pointers[j];
             }
         }
     }
@@ -95,6 +123,7 @@ static BOOL map_encode(dw_map *map)
         }
     }
 
+    e -= optimize_map(encoded, pointers);
     if (e - encoded > MAP_ENCODED_SIZE) {
         printf("Compressed map is too large (%d)\n", (int)(e - encoded));
         return FALSE;
@@ -103,7 +132,6 @@ static BOOL map_encode(dw_map *map)
     }
     memcpy(map->encoded, encoded, MAP_ENCODED_SIZE);
     memcpy(map->pointers, pointers, 240);
-    optimize_map(map);
     return TRUE;
 }
 
@@ -114,16 +142,23 @@ static BOOL map_encode(dw_map *map)
  */
 void map_decode(dw_map *map)
 {
-    uint8_t x, y, *e, current;
+    uint8_t x, y, *e, tile, count;
 
     for (y=0; y < 120; y++) {
+        /* get a pointer to the beginning of the row */
         e = &map->encoded[map->pointers[y] - 0x9d5d];
-        current = *e;
+        /* assign the pointer value to current */
+        tile = *e >> 4;
+        count = *e & 0xf;
         for (x=0; x < 120; x++) {
-            current--;
-            map->tiles[x][y] = current >> 4;
-            if (!(current & 0xf)) {
-                current = *(++e);
+            /* fill in each column in the row */
+            map->tiles[x][y] = tile;
+            if (!count) {
+                ++e;
+                tile = *e >> 4;
+                count = *e & 0xf;
+            } else {
+                count--;
             }
         }
     }
@@ -287,13 +322,22 @@ static BOOL add_bridges(dw_map *map)
  * @param x A pointer to a uint8_t which will be filled with the x coordinate
  * @param y A pointer to a uint8_t which will be filled with the y coordinate
  */
-static void map_find_land(dw_map *map, int one, int two, uint8_t *x, uint8_t *y)
+static void map_find_land(dw_map *map, int one, int two, uint8_t *x, uint8_t *y,
+        BOOL ignore_vanilla)
 {
     uint8_t cont;
+    int spot_index, loop = 0;
 
     for (;;) {
-        *x = mt_rand(0, 119);
-        *y = mt_rand(0, 119);
+        if (!ignore_vanilla && VANILLA_MAP(map) && loop < 50) {
+            spot_index = mt_rand(0, VAN_SPOT_COUNT-1);
+            *x = vanilla_spots[spot_index][0];
+            *y = vanilla_spots[spot_index][1];
+            loop++;
+        } else {
+            *x = mt_rand(0, 119);
+            *y = mt_rand(0, 119);
+        }
         cont = map->walkable[*x][*y];
         if (cont && (cont == one || cont == two))
             return;
@@ -337,7 +381,7 @@ static dw_border_tile place(dw_map *map, dw_warp_index warp_idx, dw_tile tile,
     warp = &map->warps_from[warp_idx];
 
     do {
-        map_find_land(map, lm_one, lm_two, &x, &y);
+        map_find_land(map, lm_one, lm_two, &x, &y, FALSE);
         old_tile = map->tiles[x][y];
     } while (old_tile == TILE_CASTLE || old_tile == TILE_TOWN ||
              old_tile == TILE_CAVE);
@@ -358,12 +402,16 @@ static dw_border_tile place(dw_map *map, dw_warp_index warp_idx, dw_tile tile,
  */
 static void place_charlock(dw_map *map, int largest, int next)
 {
+    if (VANILLA_MAP(map))
+        return;
+
     uint8_t x = 0, y = 0;
     int  i, j;
+
     dw_warp *warp = &map->warps_from[WARP_CHARLOCK];
 
     while(x < 7 || x > 118 || y < 3 || y > 116) {
-        map_find_land(map, largest, next, &x, &y);
+        map_find_land(map, largest, next, &x, &y, FALSE);
     }
     warp->x = x-3;
     warp->y = y;
@@ -515,7 +563,7 @@ static void map_fill(dw_map *map, dw_tile tile)
  * @param largest A pointer to fill with the largest land mass
  * @param next A pointer to fill with the next largest land mass
  */
-static inline void find_largest_lm(dw_map *map, int *lm_sizes, int lm_count,
+static inline void find_largest_lm(int *lm_sizes, int lm_count,
                             int *largest, int *next)
 {
     int i;
@@ -562,7 +610,7 @@ static int find_walkable_area(dw_map *map, int *lm_sizes, int *largest,
             }
         }
     }
-    find_largest_lm(map, lm_sizes, land_mass, largest, next);
+    find_largest_lm(lm_sizes, land_mass, largest, next);
     return (int)land_mass;
 }
 
@@ -601,9 +649,11 @@ static BOOL place_landmarks(dw_map *map)
     find_walkable_area(map, lm_sizes, &largest, &next);
     charlock_lm = map->walkable[warp->x+3][warp->y];
 
-    if (charlock_lm != largest && charlock_lm != next) {
-        printf("Charlock is obstructed, retrying...\n");
-        return FALSE;
+    if (!VANILLA_MAP(map)) {
+        if (charlock_lm != largest && charlock_lm != next) {
+            printf("Charlock is obstructed, retrying...\n");
+            return FALSE;
+        }
     }
 
     mt_shuffle(caves, 8, sizeof(dw_warp_index));
@@ -684,15 +734,14 @@ static BOOL place_landmarks(dw_map *map)
 }
 
 static void map_add_river(dw_map *map) {
-    uint8_t cont;
-    int x, y, maindir, lastdir, dir;
+    int x, y, maindir, dir;
 
     do {
         x = mt_rand(0, 119);
         y = mt_rand(0, 119);
     } while (map->tiles[x][y] != TILE_WATER);
 
-    lastdir = maindir = mt_rand(0, 3);
+    maindir = mt_rand(0, 3);
     while (map->tiles[x][y] == TILE_WATER) {
 
         if (maindir == 0) /* north */
@@ -737,59 +786,78 @@ static void map_add_river(dw_map *map) {
  */
 BOOL map_generate_terrain(dw_rom *rom)
 {
-    int i, j, lm_sizes[256];
+    int i, j, x, y, lm_sizes[256];
     int largest, next, total_area;
 
-    dw_tile tiles[16] = {
-            TILE_GRASS, TILE_GRASS, TILE_GRASS, TILE_SWAMP,
-            TILE_DESERT, TILE_DESERT, TILE_HILL, TILE_MOUNTAIN,
-            TILE_TREES, TILE_TREES, TILE_TREES, TILE_WATER,
-            TILE_WATER, TILE_WATER, TILE_WATER, TILE_SWAMP
-    };
+    if (VANILLA_MAP(rom)) {
 
-    if (BIG_SWAMP(rom)) {
-        tiles[0] = tiles[1] = tiles[4] = tiles[8] = tiles[9] = TILE_SWAMP;
-    }
+        map_decode(&rom->map);
+        for (i=0; i < VAN_SPOT_COUNT; ++i) {
+            /* clear out the towns & caves so they can be placed again */
+            x = vanilla_spots[i][0];
+            y = vanilla_spots[i][1];
+            rom->map.tiles[x][y] = rom->map.tiles[x-1][y];
+            if (!tile_is_walkable(rom->map.tiles[x][y])) {
+                rom->map.tiles[x][y] = rom->map.tiles[x+1][y];
+            }
+        }
 
-    /* first fill the map with water */
-    memset(rom->map.tiles, TILE_WATER, 120 * 120);
+    } else {
 
-    /* now fill it in with some other tiles */
-    for (i = 0; i < FILL_ITERATIONS; i++) {
-        mt_shuffle(tiles, sizeof(tiles) / sizeof(dw_tile), sizeof(dw_tile));
-        for (j = 0; j < 16; j++) {
-            map_fill(&rom->map, tiles[j]);
+        dw_tile tiles[16] = {
+                TILE_GRASS, TILE_GRASS, TILE_GRASS, TILE_SWAMP,
+                TILE_DESERT, TILE_DESERT, TILE_HILL, TILE_MOUNTAIN,
+                TILE_TREES, TILE_TREES, TILE_TREES, TILE_WATER,
+                TILE_WATER, TILE_WATER, TILE_WATER, TILE_SWAMP
+        };
+
+        if (BIG_SWAMP(rom)) {
+            tiles[0] = tiles[1] = tiles[4] = tiles[8] = tiles[9] = TILE_SWAMP;
+        }
+
+        /* first fill the map with water */
+        memset(rom->map.tiles, TILE_WATER, 120 * 120);
+
+        /* now fill it in with some other tiles */
+        for (i = 0; i < FILL_ITERATIONS; i++) {
+            mt_shuffle(tiles, sizeof(tiles) / sizeof(dw_tile), sizeof(dw_tile));
+            for (j = 0; j < 16; j++) {
+                map_fill(&rom->map, tiles[j]);
+            }
+        }
+
+        map_smooth(&rom->map);
+
+        find_walkable_area(&rom->map, lm_sizes, &largest, &next);
+
+        for (i=0; i < RIVER_COUNT; i++) {
+            map_add_river(&rom->map);
+        }
+
+        find_walkable_area(&rom->map, lm_sizes, &largest, &next);
+        /* make sure the walkable area is large enough */
+        total_area = lm_sizes[largest - 1];
+        if (largest != next)
+            total_area += lm_sizes[next - 1];
+        if (total_area < MIN_WALKABLE) {
+            printf("Total map area is too small, retrying...\n");
+            return FALSE;
+        }
+
+        while (add_bridges(&rom->map)) {
+            find_walkable_area(&rom->map, lm_sizes, &largest, &next);
         }
     }
 
-    map_smooth(&rom->map);
-
-    find_walkable_area(&rom->map, lm_sizes, &largest, &next);
-
-    for (i=0; i < RIVER_COUNT; i++) {
-        map_add_river(&rom->map);
-    }
-
-    find_walkable_area(&rom->map, lm_sizes, &largest, &next);
-    /* make sure the walkable area is large enough */
-    total_area = lm_sizes[largest - 1];
-    if (largest != next)
-        total_area += lm_sizes[next - 1];
-    if (total_area < MIN_WALKABLE) {
-        printf("Total map area is too small, retrying...\n");
-        return FALSE;
-    }
-
-    while (add_bridges(&rom->map)) {
-        find_walkable_area(&rom->map, lm_sizes, &largest, &next);
-    }
     find_walkable_area(&rom->map, lm_sizes, &largest, &next);
     if (!place_landmarks(&rom->map)) {
         return FALSE;
     }
+
     /* place the token */
     find_walkable_area(&rom->map, lm_sizes, &largest, &next);
-    map_find_land(&rom->map, largest, next, &rom->token->x, &rom->token->y);
+    map_find_land(&rom->map, largest, next, &rom->token->x, &rom->token->y,
+            TRUE);
 
     return map_encode(&rom->map);
 }

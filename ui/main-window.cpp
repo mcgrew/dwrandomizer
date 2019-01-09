@@ -120,13 +120,14 @@ void MainWindow::layout()
     this->addOption('W', "Randomize Weapon Shops",         GAMEPLAY, 1, 0);
     this->addOption('G', "Randomize Growth",               GAMEPLAY, 2, 0);
     this->addOption('M', "Randomize Spell Learning",       GAMEPLAY, 3, 0);
-    this->addOption('X', "Chaos Mode",                     GAMEPLAY, 4, 0);
+    this->addOption('v', "Vanilla (Original) Map",         GAMEPLAY, 4, 0);
 
     this->addOption('P', "Randomize Enemy Attacks",        GAMEPLAY, 0, 1);
     this->addOption('Z', "Randomize Enemy Zones",          GAMEPLAY, 1, 1);
     this->addOption('R', "Enable Menu Wrapping",           GAMEPLAY, 2, 1);
     this->addOption('D', "Enable Death Necklace",          GAMEPLAY, 3, 1);
-    this->addOption('b', "Big Swamp",                      GAMEPLAY, 4, 1);
+    this->addOption('X', "Chaos Mode",                     GAMEPLAY, 4, 1);
+    this->addOption('b', "Big Swamp",                      GAMEPLAY, 5, 1);
 
     this->addOption('t', "Fast Text",                      GAMEPLAY, 0, 2);
     this->addOption('h', "Speed Hacks",                    GAMEPLAY, 1, 2);

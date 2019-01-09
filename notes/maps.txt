@@ -47,6 +47,7 @@ Rimuldar                   | 1   | 102 | 72
 Southern Shrine            | 1   | 108 | 109
                            |     |     |
 Swamp cave entrance        | 1   | 104 | 44
+Mountain Cave              | 1   |  29 | 57
 Swamp cave exit            | 1   | 104 | 49
 Charlock Castle            | 1   | 48  | 48
                            |     |     |

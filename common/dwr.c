@@ -982,8 +982,10 @@ static void update_title_screen(dw_rom *rom)
     uint64_t flags;
     uint8_t *pos, *end;
 
-    pos = rom->title_text;
-    end = &rom->title_text + 143;
+//    pos = rom->title_text;
+//    end = &rom->title_text + 143;
+    pos = &rom->content[0x3f26];
+    end = &rom->content[0x3fb5];
     text[32] = '\0';
     flags = rom->flags;
     f = text;

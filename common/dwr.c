@@ -1552,6 +1552,9 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     }
     rom.seed = seed;
 
+    /* Clear the unused code so we can make sure it's unused */
+    memset(&rom.content[0xc288], 0xff, 0xc4f5 - 0xc288);
+
     while(!map_generate_terrain(&rom)) {}
     shuffle_searchables(&rom);
     shuffle_chests(&rom);

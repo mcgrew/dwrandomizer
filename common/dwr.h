@@ -85,9 +85,9 @@
 #define FLAG_y UINT64_C(0x1000000000000000)
 #define FLAG_z UINT64_C(0x2000000000000000)
 
-#define FAST_XP(x)            (x->flags & (FLAG_f | FLAG_F))
 #define BIG_SWAMP(x)          (x->flags & FLAG_b)
 #define NO_KEYS(x)            (x->flags & FLAG_k)
+#define SCARED_SLIMES(x)      (x->flags & FLAG_l)
 #define MODERN_SPELLS(x)      (x->flags & FLAG_m)
 #define OPEN_CHARLOCK(x)      (x->flags & FLAG_o)
 #define SHORT_CHARLOCK(x)     (x->flags & FLAG_s)
@@ -95,6 +95,7 @@
 #define VANILLA_MAP(x)        (x->flags & FLAG_v)
 #define SHUFFLE_CHESTS(x)     (x->flags & FLAG_C)
 #define DEATH_NECKLACE(x)     (x->flags & FLAG_D)
+#define FAST_XP(x)            (x->flags & (FLAG_F | FLAG_f))
 #define RANDOMIZE_GROWTH(x)   (x->flags & FLAG_G)
 #define SPEED_HACKS(x)        (x->flags & (FLAG_H | FLAG_h))
 #define RANDOMIZE_MUSIC(x)    (x->flags & FLAG_K)

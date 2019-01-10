@@ -35,12 +35,16 @@ static void print_usage(const char *command, char *default_flags)
     printf("    W  Randomize weapon shops.\n");
     printf("    X  Chaos mode.\n");
     printf("    Z  Randomize enemy zones.\n");
-    printf("    h  Apply game speed hacks\n");
+
     printf("    b  Make a larger portion of the terrain swamp\n");
+    printf("    h  Apply game speed hacks\n");
     printf("    k  Don't require keys to open doors\n");
+    printf("    l  Metal Slimes always have a chance to run\n");
     printf("    o  Open Charlock. No Rainbow Drop required.\n");
     printf("    s  Shortened Charlock\n");
     printf("    t  Enable faster text\n");
+    printf("    v  Vanilla (Original) Map\n");
+
     printf("\n");
     printf("If flags are not specified, the flags \"%s\" will be used\n",
             default_flags);

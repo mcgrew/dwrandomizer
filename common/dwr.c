@@ -1090,6 +1090,29 @@ static void dwr_death_necklace(dw_rom *rom)
         );
 }
 
+static void scared_metal_slimes(dw_rom *rom) {
+
+    if (!SCARED_SLIMES(rom)) {
+        return;
+    }
+
+    printf("Terrorizing the Metal Slimes...\n");
+    /* having the carry set upon returning gives the enemy a chance to run */
+    vpatch(rom, 0x0c4e8,   13,
+            0xcd,  0x00,  0x01, /* CMP $0100 ; Replace the code from $EFBA */
+            0xb0,  0x07,        /* BCS c4fa  ; Return, everything is fine. */
+            0xa5,  0xe0,        /* LDA $E0   ; Load the enemy type         */
+            0xc9,  0x10,        /* CMP #$10  ; Is it a metal slime?        */
+            0xf0,  0x01,        /* BEQ c4fa                                */
+            0x18,               /* CLC       ; It's not, enemy doesn't run */
+            /* c4fa: */
+            0x60                /* RTS                                     */
+    );
+    vpatch(rom, 0x0efba,    3,
+            0x20,  0xe8,  0xc4 /* JSR $C4E8  ; Jump to the new code        */
+    );
+}
+
 /**
  * Other various patches for gameplay, such as silver harp enemies, town and
  * dungeon map changes and moving some NPCs.
@@ -1551,6 +1574,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     open_charlock(&rom);
     short_charlock(&rom);
     no_keys(&rom);
+    scared_metal_slimes(&rom);
     other_patches(&rom);
     credits(&rom);
     crc = crc64(0, rom.content, 0x10000);

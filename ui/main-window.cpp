@@ -134,6 +134,7 @@ void MainWindow::layout()
     this->addOption('o', "Open Charlock",                  GAMEPLAY, 2, 2);
     this->addOption('s', "Short Charlock",                 GAMEPLAY, 3, 2);
     this->addOption('k', "Don't Require Magic Keys",       GAMEPLAY, 4, 2);
+    this->addOption('l', "Metal Slimes Always Scared",     GAMEPLAY, 5, 2);
 
     /* Cosmetic Options */
     this->addOption('K', "Shuffle Music",                  COSMETIC, 0, 0);

@@ -341,12 +341,14 @@ static inline void check_quest_items(dw_rom *rom)
  *
  * @param rom The rom struct
  */
-static void shuffle_chests(dw_rom *rom) {
-    int i;
+static void shuffle_chests(dw_rom *rom)
+{
+    int i, key_item_1 = 0, key_item_2 = 1;
     dw_chest *chest;
     uint8_t *cont, contents[CHEST_COUNT-2] = {
             CURSED_BELT, CURSED_BELT,
-            GOLD_500, GOLD_500, GOLD_500, GOLD_500, GOLD_500, GOLD_500, GOLD_500,
+            GOLD_500, GOLD_500, GOLD_500, GOLD_500,
+            GOLD_500, GOLD_500, GOLD_500,
             WINGS, WINGS,
             KEY, KEY, KEY,
             HERB, HERB, HERB, HERB,
@@ -354,6 +356,15 @@ static void shuffle_chests(dw_rom *rom) {
             FAIRY_WATER, FAIRY_WATER,
             STONES, DRAGON_SCALE, HARP, SWORD, NECKLACE, TORCH, RING
     };
+
+    if (CURSED_PRINCESS(rom)) {
+        /* keep more cursed belts in chests. replace gold with
+         * key items instead. */
+        key_item_1 = 8;
+        key_item_2 = 9;
+        /* replace a wings and fairy water with belts */
+        contents[10] = contents[21] = CURSED_BELT;
+    }
 
     if (!SHUFFLE_CHESTS(rom))
         return;
@@ -364,11 +375,11 @@ static void shuffle_chests(dw_rom *rom) {
 
     if (!mt_rand(0, 2)) { /* 33% chance */
         rom->token->map = NO_MAP; /* remove token */
-        contents[0] = TOKEN; /* replace cursed belt in a chest */
+        contents[key_item_1] = TOKEN;
     }
     if (!mt_rand(0, 2)) { /* 33% chance */
         rom->flute->map = NO_MAP; /* remove flute */
-        contents[1] = FLUTE; /* replace cursed belt in a chest */
+        contents[key_item_2] = FLUTE;
     }
 
     /* shuffle the contents and place them in chests */
@@ -1113,6 +1124,32 @@ static void scared_metal_slimes(dw_rom *rom) {
     );
 }
 
+static void cursed_princess(dw_rom *rom)
+{
+
+    if (!CURSED_PRINCESS(rom)) 
+        return;
+
+    printf("The princess shall be cursed...\n");
+
+    vpatch(rom, 0x0c4d2,  22,
+            0x85,  0x0e,        /* STA $OE    Store the item Gwaelin took     */
+            0x4c,  0x4b,  0xe0, /* JMP $E04B  Continue on                     */
+            /* C4D7: */
+            0x48,               /* PHA        Store register                  */
+            0xa5,  0x0e,        /* LDA $OE    Load the item Gwaelin took      */
+            0xc9,  0x09,        /* CMP $09    It is a cursed belt?            */
+            0xd0,  0x03,        /* BNE C4E1   No, keep playing                */
+            0x4c,  0xb8,  0xcc, /* JSR $CCB8  Yes, jump to the ending         */
+            /* C4E1: */
+            0x68,               /* PLA        Restore register and continue   */
+            0x20,  0xbd,  0xc7, /* JSR $C7BD                                  */
+            0x4c,  0x33,  0xd4  /* JMP $D433                                  */
+    );
+    vpatch(rom, 0x0d3dd,    2,  0xd2,  0xc4);
+    vpatch(rom, 0x0d40e,    2,  0xd7,  0xc4);
+}
+
 /**
  * Other various patches for gameplay, such as silver harp enemies, town and
  * dungeon map changes and moving some NPCs.
@@ -1577,6 +1614,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     open_charlock(&rom);
     short_charlock(&rom);
     no_keys(&rom);
+    cursed_princess(&rom);
     scared_metal_slimes(&rom);
     other_patches(&rom);
     credits(&rom);

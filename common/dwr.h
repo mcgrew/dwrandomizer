@@ -86,6 +86,7 @@
 #define FLAG_z UINT64_C(0x2000000000000000)
 
 #define BIG_SWAMP(x)          (x->flags & FLAG_b)
+#define CURSED_PRINCESS(x)    (x->flags & FLAG_c)
 #define NO_KEYS(x)            (x->flags & FLAG_k)
 #define SCARED_SLIMES(x)      (x->flags & FLAG_l)
 #define MODERN_SPELLS(x)      (x->flags & FLAG_m)

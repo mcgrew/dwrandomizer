@@ -122,6 +122,7 @@ void MainWindow::layout()
     this->addOption('M', "Randomize Spell Learning",       GAMEPLAY, 3, 0);
     this->addOption('v', "Vanilla (Original) Map",         GAMEPLAY, 4, 0);
     this->addOption('c', "Cursed Princess %",              GAMEPLAY, 5, 0);
+    this->addOption('x', "Three's Company %",              GAMEPLAY, 6, 0);
 
     this->addOption('P', "Randomize Enemy Attacks",        GAMEPLAY, 0, 1);
     this->addOption('Z', "Randomize Enemy Zones",          GAMEPLAY, 1, 1);

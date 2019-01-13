@@ -94,6 +94,7 @@
 #define SHORT_CHARLOCK(x)     (x->flags & FLAG_s)
 #define FAST_TEXT(x)          (x->flags & FLAG_t)
 #define VANILLA_MAP(x)        (x->flags & FLAG_v)
+#define THREES_COMPANY(x)     (x->flags & FLAG_x)
 #define SHUFFLE_CHESTS(x)     (x->flags & FLAG_C)
 #define DEATH_NECKLACE(x)     (x->flags & FLAG_D)
 #define FAST_XP(x)            (x->flags & (FLAG_F | FLAG_f))

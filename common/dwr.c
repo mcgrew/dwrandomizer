@@ -1223,6 +1223,14 @@ static void other_patches(dw_rom *rom)
     /* make search actually open a chest */
     vpatch(rom, 0xe1dc, 2, 0xfd, 0xe1);
 
+    /* Have the jerk take the token along with staff & stones */
+    vpatch(rom, 0x0d383,    2,  0xca,  0xbf); /* jump to new code below */
+    vpatch(rom, 0x03fca,    8,
+            0x20,  0x4b,  0xe0, /* JSR $E04B ; replace the rewritten code */
+            0xa9,  0x07,        /* LDA #$07  ; remove token from inventory */
+            0x4c,  0x4b,  0xe0  /* JMP $E04B ; jump to remove code and return */
+    );
+
     /* move the golem encounter to charlock */
     rom->golem_run->map = rom->golem->map = CHARLOCK_THRONE_ROOM;
     rom->golem_run->x = rom->golem->x = 25;

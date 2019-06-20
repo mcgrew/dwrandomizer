@@ -124,12 +124,12 @@ static BOOL map_encode(dw_map *map)
     }
 
     e -= optimize_map(encoded, pointers);
-    if (e - encoded > MAP_ENCODED_SIZE) {
-        printf("Compressed map is too large (%d)\n", (int)(e - encoded));
-        return FALSE;
-    } else {
+/*    if (e - encoded > MAP_ENCODED_SIZE) {*/
+/*        printf("Compressed map is too large (%d)\n", (int)(e - encoded));*/
+/*        return FALSE;*/
+/*    } else {*/
         printf("Compressed map size: %d\n", (int)(e - encoded));
-    }
+/*    }*/
     memcpy(map->encoded, encoded, MAP_ENCODED_SIZE);
     memcpy(map->pointers, pointers, 240);
     return TRUE;
@@ -402,42 +402,50 @@ static dw_border_tile place(dw_map *map, dw_warp_index warp_idx, dw_tile tile,
  */
 static void place_charlock(dw_map *map, int largest, int next)
 {
-    if (VANILLA_MAP(map))
-        return;
 
-    uint8_t x = 0, y = 0;
-    int  i, j;
+        uint8_t x = 0, y = 0;
+        int  i, j;
+        dw_warp *warp;
 
-    dw_warp *warp = &map->warps_from[WARP_CHARLOCK];
+    if (VANILLA_MAP(map)) {
+        map->rainbow_drop->x = 65;
+        map->rainbow_bridge->x = 64;
+        map->rainbow_bridge->y = map->rainbow_drop->y = 49;
+        x = 65; y = 49;
 
-    while(x < 7 || x > 118 || y < 3 || y > 116) {
-        map_find_land(map, largest, next, &x, &y, FALSE);
-    }
-    warp->x = x-3;
-    warp->y = y;
-    for (i = -3; i <= 3; i++) {
-        for (j = -3; j <= 3; j++) {
-            if (i < 0 || j != 0)
-                map->tiles[x - 3 + i][y + j] = TILE_BLOCK;
+    } else {
+        warp = &map->warps_from[WARP_CHARLOCK];
+
+        while(x < 7 || x > 118 || y < 3 || y > 116) {
+            map_find_land(map, largest, next, &x, &y, FALSE);
         }
-    }
-    for (i = -2; i <= 2; i++) {
-        for (j = -2; j <= 2; j++) {
-            map->tiles[x - 3 + i][y + j] = TILE_WATER;
+        warp->x = x-3;
+        warp->y = y;
+        for (i = -3; i <= 3; i++) {
+            for (j = -3; j <= 3; j++) {
+                if (i < 0 || j != 0)
+                    map->tiles[x - 3 + i][y + j] = TILE_BLOCK;
+            }
         }
-    }
-    for (i=-1; i <= 1; i++) {
-        for (j=-1; j <= 1; j++) {
-            map->tiles[x-3+i][y+j] = TILE_SWAMP;
+        for (i = -2; i <= 2; i++) {
+            for (j = -2; j <= 2; j++) {
+                map->tiles[x - 3 + i][y + j] = TILE_WATER;
+            }
         }
+        for (i=-1; i <= 1; i++) {
+            for (j=-1; j <= 1; j++) {
+                map->tiles[x-3+i][y+j] = TILE_SWAMP;
+            }
+        }
+        map->tiles[x-3][y] = TILE_CASTLE;
+        map->rainbow_drop->x = warp->x + 3;
+        map->rainbow_bridge->x = warp->x + 2;
+        map->rainbow_bridge->y = map->rainbow_drop->y = warp->y;
+
     }
-    map->tiles[x-3][y] = TILE_CASTLE;
-    map->rainbow_drop->x = warp->x + 3;
-    map->rainbow_bridge->x = warp->x + 2;
-    map->rainbow_bridge->y = map->rainbow_drop->y = warp->y;
 
     if (OPEN_CHARLOCK(map)) {
-        printf("Leaving Charlock open...");
+        printf("Leaving Charlock open...\n");
         map->tiles[x-1][y] = TILE_BRIDGE;
     }
 

@@ -124,12 +124,12 @@ static BOOL map_encode(dw_map *map)
     }
 
     e -= optimize_map(encoded, pointers);
-/*    if (e - encoded > MAP_ENCODED_SIZE) {*/
-/*        printf("Compressed map is too large (%d)\n", (int)(e - encoded));*/
-/*        return FALSE;*/
-/*    } else {*/
+    if (e - encoded > MAP_ENCODED_SIZE) {
+        printf("Compressed map is too large (%d)\n", (int)(e - encoded));
+        return FALSE;
+    } else {
         printf("Compressed map size: %d\n", (int)(e - encoded));
-/*    }*/
+    }
     memcpy(map->encoded, encoded, MAP_ENCODED_SIZE);
     memcpy(map->pointers, pointers, 240);
     return TRUE;

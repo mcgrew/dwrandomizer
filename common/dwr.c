@@ -1223,6 +1223,11 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0x03f9e, 2,  0x37,  0x32);
     vpatch(rom, 0x0af6c, 1,  0xef);
 
+    /* open the fairy water shop in breconnary */
+    vpatch(rom, 0x0074e, 1,  0x6f);
+    vpatch(rom, 0x0076c, 1,  0x6f);
+    vpatch(rom, 0x0077a, 1,  0x46);
+
     /* make search actually open a chest */
     vpatch(rom, 0xe1dc, 2, 0xfd, 0xe1);
 

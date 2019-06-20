@@ -749,6 +749,9 @@ static void randomize_growth(dw_rom *rom)
         for (i=1; i < 10; i++) {
             hp[i] = MAX(hp[i-1], hp[i] + 10 - i);
         }
+        for (i=10; i < 30; i++) {
+            hp[i] = MAX(hp[i-1], hp[i]);
+        }
     }
 
     for (i=0; i < 30; i++) {

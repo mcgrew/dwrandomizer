@@ -22,6 +22,8 @@ extern "C" {
 }
 #endif
 
+#define TAB_COUNT 5
+
 struct configuration {
     char input_file[1024];
     char output_dir[1024];
@@ -68,8 +70,8 @@ private:
     LevelComboBox *levelSpeed;
     QComboBox *spriteSelect;
     QPushButton *goButton;
-    QGridLayout *optionGrids[2];
-    QWidget *tabContents[2];
+    QGridLayout *optionGrids[TAB_COUNT];
+    QWidget *tabContents[TAB_COUNT];
 };
 
 

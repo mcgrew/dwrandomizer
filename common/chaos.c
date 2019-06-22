@@ -109,7 +109,7 @@ static int compare_enemies(const void *a, const void *b)
  *
  * @param rom The rom struct.
  */
-static void chaos_enemies(dw_rom *rom)
+static void chaos_enemy_stats(dw_rom *rom)
 {
     int i;
     dw_enemy *enemies;
@@ -120,8 +120,6 @@ static void chaos_enemies(dw_rom *rom)
         enemies[i].hp =   rand_power_curve(2, 12, 2.0);
         enemies[i].str =  rand_power_curve(2, 11, 2.0);
         enemies[i].agi =  rand_power_curve(2, 16, 2.0);
-        enemies[i].xp =   rand_power_curve(2, 16, 2.0);
-        enemies[i].gold = rand_power_curve(2, 16, 2.0);
 
         enemies[i].s_ss_resist = rand_power_curve(0, 4, 2.0) << 4 |
                                  rand_power_curve(0, 4, 2.0);
@@ -131,8 +129,6 @@ static void chaos_enemies(dw_rom *rom)
 
     enemies[DRAGONLORD_1].hp  = rand_power_curve(9, 14, 2.0);
     enemies[DRAGONLORD_1].str = rand_power_curve(9, 16, 2.0);
-    enemies[DRAGONLORD_1].xp = 0;
-    enemies[DRAGONLORD_1].gold = 0;
     enemies[DRAGONLORD_1].pattern = mt_rand(0, 255);
     enemies[DRAGONLORD_1].s_ss_resist &= 0xf0;
     enemies[DRAGONLORD_1].s_ss_resist |= 15 - rand_power_curve(0, 2, 2.0);
@@ -145,7 +141,7 @@ static void chaos_enemies(dw_rom *rom)
     }
     /* Maybe STOPSPELL Will work on him... MWAHAHAHA */
     enemies[DRAGONLORD_2].s_ss_resist &= 0xf0;
-    enemies[DRAGONLORD_2].s_ss_resist |= 15 - rand_power_curve(0, 4, 2.0);
+    enemies[DRAGONLORD_2].s_ss_resist |= 14 - rand_power_curve(0, 4, 2.0);
     enemies[DRAGONLORD_2].hp = mt_rand(100, 230);
 
     /* update the repel table */
@@ -153,6 +149,23 @@ static void chaos_enemies(dw_rom *rom)
         rom->repel_table[i] = enemies[i].str;
     }
 }
+
+static void chaos_enemy_drops(dw_rom *rom)
+{
+    int i;
+    dw_enemy *enemies;
+
+    if (!RANDOM_ENEMY_DROPS(rom))
+        return;
+
+    enemies = rom->enemies;
+
+    for (i=SLIME; i <= RED_DRAGON; i++) {
+        enemies[i].xp =   rand_power_curve(2, 16, 2.0);
+        enemies[i].gold = rand_power_curve(2, 16, 2.0);
+    }
+}
+
 
 /**
  * Randomizes enemy zones in a better way for chaos mode.
@@ -213,6 +226,9 @@ static void chaos_weapon_prices(dw_rom *rom)
 {
     int i;
 
+    if (!RANDOM_PRICES(rom))
+        return;
+
     for (i=0; i < 17; i++) {
         rom->weapon_price_display[i] = rom->weapon_prices[i] =
                 rand_power_curve(1, 11, 4.0);
@@ -227,6 +243,9 @@ static void chaos_weapon_prices(dw_rom *rom)
 static void chaos_xp(dw_rom *rom)
 {
     int i;
+
+    if (!RANDOM_XP_REQS(rom))
+        return;
 
     if (FAST_XP(rom)) {
         for (i=1; i < 30; i++) {
@@ -293,14 +312,15 @@ void chaos_running(dw_rom *rom)
  */
 void chaos_mode(dw_rom *rom)
 {
-    if (!CHAOS_MODE(rom))
-        return;
+    if (RANDOM_ENEMY_STATS(rom)) {
+        chaos_enemy_stats(rom);
+        chaos_zones(rom);
+        chaos_running(rom);
+    }
 
-    chaos_enemies(rom);
-    chaos_zones(rom);
+    chaos_enemy_drops(rom);
     chaos_xp(rom);
     chaos_weapon_prices(rom);
-    chaos_running(rom);
 }
 
 

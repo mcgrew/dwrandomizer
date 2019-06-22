@@ -23,8 +23,22 @@
 #include "sprites.h"
 #include "main-window.h"
 
+#define PANE_COLUMNS 2
+#define PANE_ROWS    6 
+
+const char* const tab_names[] {
+    "Gameplay",
+    "Enemies",
+    "Shortcuts",
+    "Goals",
+    "Cosmetic"
+};
+
 enum tabs {
     GAMEPLAY,
+    ENEMIES,
+    SHORTCUTS,
+    GOALS,
     COSMETIC
 };
 
@@ -65,8 +79,10 @@ void MainWindow::initWidgets()
        spriteSelect->addItem(dwr_sprite_names[i]);
     }
     this->tabWidget = new QTabWidget(this);
-    this->tabContents[0] = new QWidget(this);
-    this->tabContents[1] = new QWidget(this);
+
+    for (int i=0; i < TAB_COUNT; i++) {
+      this->tabContents[i] = new QWidget(this);
+    }
 }
 
 void MainWindow::initSlots()
@@ -83,8 +99,9 @@ void MainWindow::layout()
     QGridLayout *grid;
     QGridLayout *goLayout;
 
-    this->optionGrids[0] = new QGridLayout();
-    this->optionGrids[1] = new QGridLayout();
+    for (int i=0; i < TAB_COUNT; i++) {
+      this->optionGrids[i] = new QGridLayout();
+    }
 
     vbox = new QVBoxLayout();
     grid = new QGridLayout();
@@ -94,60 +111,60 @@ void MainWindow::layout()
     vbox->addWidget(tabWidget);
     vbox->addLayout(goLayout);
 
-    this->tabContents[0]->setLayout(this->optionGrids[0]);
-    this->tabContents[1]->setLayout(this->optionGrids[1]);
-
     grid->addWidget(this->romFile,   0, 0, 0);
     grid->addWidget(this->outputDir, 0, 1, 0);
     grid->addWidget(this->seed,      1, 0, 0);
     grid->addWidget(this->flags,     1, 1, 0);
-    tabWidget->addTab(tabContents[0], "Gameplay Options");
-    tabWidget->addTab(tabContents[1], "Cosmetic Options");
 
-    /* Add some empty labels for padding */
-    this->addLabel("", GAMEPLAY, 5, 1);
-    this->addLabel("", GAMEPLAY, 6, 1);
-    this->addLabel("", COSMETIC, 0, 1);
-    this->addLabel("", COSMETIC, 0, 2);
-    this->addLabel("", COSMETIC, 3, 0);
-    this->addLabel("", COSMETIC, 4, 0);
-    this->addLabel("", COSMETIC, 5, 0);
-    this->addLabel("", COSMETIC, 6, 0);
-
+    /* Add tab names and some empty labels for padding */
+    for (int i=0; i < TAB_COUNT; i++) {
+      this->tabContents[i]->setLayout(this->optionGrids[i]);
+      tabWidget->addTab(tabContents[i], tab_names[i]);
+      for (int c=0; c < PANE_COLUMNS; c++) {
+        this->addLabel("", i, 0, c);
+      }
+      for (int r=1; r < PANE_ROWS; r++) {
+        this->addLabel("", i, r, 0);
+      }
+    }
 
     /* Gameplay Options */
-    this->addOption('C', "Shuffle Chests && Search Items", GAMEPLAY, 0, 0);
-    this->addOption('W', "Randomize Weapon Shops",         GAMEPLAY, 1, 0);
-    this->addOption('G', "Randomize Growth",               GAMEPLAY, 2, 0);
-    this->addOption('M', "Randomize Spell Learning",       GAMEPLAY, 3, 0);
-    this->addOption('v', "Vanilla (Original) Map",         GAMEPLAY, 4, 0);
-    this->addOption('c', "Cursed Princess %",              GAMEPLAY, 5, 0);
-    this->addOption('x', "Three's Company %",              GAMEPLAY, 6, 0);
+    this->addOption('C', "Shuffle Chests && Search Items", GAMEPLAY,  0, 0);
+    this->addOption('W', "Random Weapon Shops",            GAMEPLAY,  1, 0);
+    this->addOption('G', "Random Growth",                  GAMEPLAY,  2, 0);
+    this->addOption('M', "Random Spell Learning",          GAMEPLAY,  3, 0);
+    this->addOption('x', "Random XP Requirements",         GAMEPLAY,  4, 0);
+    this->addOption('w', "Random Weapon Prices",           GAMEPLAY,  5, 0);
+    this->addOption('R', "Enable Menu Wrapping",           GAMEPLAY,  0, 1);
+    this->addOption('D', "Enable Death Necklace",          GAMEPLAY,  1, 1);
+    this->addOption('b', "Big Swamp",                      GAMEPLAY,  2, 1);
+    this->addOption('l', "Scared Metal Slimes",            GAMEPLAY,  3, 1);
+    this->addOption('v', "Vanilla (Original) Map",         GAMEPLAY,  4, 1);
 
-    this->addOption('P', "Randomize Enemy Attacks",        GAMEPLAY, 0, 1);
-    this->addOption('Z', "Randomize Enemy Zones",          GAMEPLAY, 1, 1);
-    this->addOption('R', "Enable Menu Wrapping",           GAMEPLAY, 2, 1);
-    this->addOption('D', "Enable Death Necklace",          GAMEPLAY, 3, 1);
-    this->addOption('X', "Chaos Mode",                     GAMEPLAY, 4, 1);
-    this->addOption('b', "Big Swamp",                      GAMEPLAY, 5, 1);
+    this->addOption('P', "Randomize Enemy Attacks",        ENEMIES,   0, 0);
+    this->addOption('Z', "Randomize Enemy Zones",          ENEMIES,   1, 0);
+    this->addOption('e', "Random Enemy Stats",             ENEMIES,   2, 0);
+    this->addOption('d', "Random Enemy Drops",             ENEMIES,   3, 0);
 
-    this->addOption('t', "Fast Text",                      GAMEPLAY, 0, 2);
-    this->addOption('h', "Speed Hacks",                    GAMEPLAY, 1, 2);
-    this->addOption('o', "Open Charlock",                  GAMEPLAY, 2, 2);
-    this->addOption('s', "Short Charlock",                 GAMEPLAY, 3, 2);
-    this->addOption('k', "Don't Require Magic Keys",       GAMEPLAY, 4, 2);
-    this->addOption('l', "Scared Metal Slimes",            GAMEPLAY, 5, 2);
+    this->addOption('t', "Fast Text",                      SHORTCUTS, 0, 0);
+    this->addOption('h', "Speed Hacks",                    SHORTCUTS, 1, 0);
+    this->addOption('o', "Open Charlock",                  SHORTCUTS, 2, 0);
+    this->addOption('s', "Short Charlock",                 SHORTCUTS, 3, 0);
+    this->addOption('k', "Don't Require Magic Keys",       SHORTCUTS, 4, 0);
+    this->addLabel("Leveling Speed",                       SHORTCUTS, 0, 1);
+    this->placeWidget(this->levelSpeed,                    SHORTCUTS, 1, 1);
+
+
+    /* Goals */
+    this->addOption('c', "Cursed Princess",                GOALS,     0, 0);
+    this->addOption('h', "Three's Company",                GOALS,     1, 0);
 
     /* Cosmetic Options */
-    this->addOption('K', "Shuffle Music",                  COSMETIC, 0, 0);
-    this->addOption('Q', "Disable Music",                  COSMETIC, 1, 0);
-    this->addOption('m', "Modern Spell Names",             COSMETIC, 2, 0);
-
-    this->addLabel("Leveling Speed", GAMEPLAY, 7, 0);
-    this->placeWidget(this->levelSpeed, GAMEPLAY, 8, 0);
-
-    this->addLabel("Player Sprite", COSMETIC, 7, 0);
-    this->placeWidget(this->spriteSelect, COSMETIC, 8, 0);
+    this->addOption('K', "Shuffle Music",                  COSMETIC,  0, 0);
+    this->addOption('Q', "Disable Music",                  COSMETIC,  1, 0);
+    this->addOption('m', "Modern Spell Names",             COSMETIC,  2, 0);
+    this->addLabel("Player Sprite",                        COSMETIC,  0, 1);
+    this->placeWidget(this->spriteSelect,                  COSMETIC,  1, 1);
 
     goLayout->addWidget(new QLabel("", this), 0, 0, 0);
     goLayout->addWidget(new QLabel("", this), 0, 1, 0);

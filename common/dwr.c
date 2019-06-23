@@ -491,6 +491,7 @@ static void randomize_music(dw_rom *rom)
     vpatch(rom, 0xe4e8, 1, choices[mt_rand(0, sizeof(choices)-1)]);
     vpatch(rom, 0xe4ec, 1, choices[mt_rand(0, sizeof(choices)-1)]);
     vpatch(rom, 0xd0a0, 1, choices[mt_rand(0, sizeof(choices)-1)]);
+    vpatch(rom, 0xd49d, 1, choices[mt_rand(0, sizeof(choices)-1)]);
 }
 
 /**
@@ -510,6 +511,7 @@ static void disable_music(dw_rom *rom)
     vpatch(rom, 0xe4e8, 1, 0); // Disable Dragonlord battle music
     vpatch(rom, 0xe4ec, 1, 0); // Disable normal battle music
     vpatch(rom, 0xd0a0, 1, 0); // Disable cave music after rescuing princess gwaelin.
+    vpatch(rom, 0xd49d, 1, 0); // Disable castle music after saying you love the princess.
 }
 
 /**

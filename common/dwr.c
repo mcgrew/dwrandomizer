@@ -480,16 +480,16 @@ static void randomize_music(dw_rom *rom)
 
     uint8_t choices[] = {0x1, 0x1, 0x1, 0x2, 0x2, 0x2, 0x3, 0x3, 0x3, 0x4, 0x4,
                          0x4, 0x5, 0x5, 0x5, 0xf, 0xf, 0xf, 0x10, 0x10, 0x10,
-                         0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xe, 0xe};
+                         0xe, 0xe, 0xe, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd};
 
 
     for (i=0; i < 29; i++) {
         rom->music[i] = choices[mt_rand(0, sizeof(choices)-1)];
     }
-    
-    vpatch(rom, 0xd8f7, 1, choices[mt_rand(0, sizeof(choices)-1)]); //Town music after staying at inn.
-    vpatch(rom, 0xe4e8, 1, choices[mt_rand(0, sizeof(choices)-1)]); //Dragonlord battle music
-    vpatch(rom, 0xe4ec, 1, choices[mt_rand(0, sizeof(choices)-1)]); //Normal battle music
+    /* Randomize town music, Dragonlord battle music, and normal battle music */
+    vpatch(rom, 0xd8f7, 1, choices[mt_rand(0, sizeof(choices)-1)]);
+    vpatch(rom, 0xe4e8, 1, choices[mt_rand(0, sizeof(choices)-1)]);
+    vpatch(rom, 0xe4ec, 1, choices[mt_rand(0, sizeof(choices)-1)]);
 }
 
 /**
@@ -505,10 +505,9 @@ static void disable_music(dw_rom *rom)
     printf("Disabling game music...\n");
 
     memset(rom->music, 0, 29);
-      
-    vpatch(rom, 0xd8f7, 1, 0); //Town music after staying at inn.
-    vpatch(rom, 0xe4e8, 1, 0); //Dragonlord battle music
-    vpatch(rom, 0xe4ec, 1, 0); //Normal battle music
+    vpatch(rom, 0xd8f7, 1, 0); // Disable town music after staying at inn.
+    vpatch(rom, 0xe4e8, 1, 0); // Disable Dragonlord battle music
+    vpatch(rom, 0xe4ec, 1, 0); // Disable normal battle music
 }
 
 /**

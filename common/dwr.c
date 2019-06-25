@@ -1150,25 +1150,25 @@ static void cursed_princess(dw_rom *rom)
             0x5f,  0x0c,  0x18,  0x1b,  0x1c,  0x0e,  0x1d,  0x45,  0x52,  0x5f,
             0x5f,  0x5f,  0x5f,  0x5f,  0x5f,  0x5f,  0x5f,  0x5f,  0x5f);
 
-    vpatch(rom, 0x0c4cb,  29,
+    vpatch(rom, 0x0c4ce,  26,
             0x85,  0x0e,        /* STA $OE    Store the item Gwaelin took     */
             0x4c,  0x4b,  0xe0, /* JMP $E04B  Continue on                     */
-            /* C4D7: */
+            /* C4D0: */
             0x48,               /* PHA        ; Store register                */
             0xa5,  0x0e,        /* LDA $OE    ; Load the item Gwaelin took    */
             0xc9,  0x09,        /* CMP $09    ; It is a cursed belt?          */
             0xd0,  0x0a,        /* BNE C4E1   ; No, keep playing              */
             0x20,  0xcb,  0xc7, /* JSR $C7CB  ; Yes, Display dialogue         */
             0xa0,               /* .DB $A0    ; Oh my...                      */
-            0x20,  0xfa,  0xdf, /* JMP $DFFA  ; Play the music                */
-            0x4c,  0xb8,  0xcc, /* JSR $CCB8  ; Jump to the ending            */
+            0x20,  0xfa,  0xdf, /* JSR $DFFA  ; Play the music                */
+            0x4c,  0xb8,  0xcc, /* JMP $CCB8  ; Jump to the ending            */
             /* C4E1: */
             0x68,               /* PLA        ; Restore register and continue */
-            0x20,  0xbd,  0xc7, /* JSR $C7BD                                  */
             0x4c,  0x33,  0xd4  /* JMP $D433                                  */
     );
-    vpatch(rom, 0x0d3dd,    2,  0xcb,  0xc4);
-    vpatch(rom, 0x0d40e,    2,  0xd0,  0xc4);
+    /* Change a few JSR addresses */
+    vpatch(rom, 0x0d3dd,    2,  0xce,  0xc4);
+    vpatch(rom, 0x0d40e,    2,  0xd3,  0xc4);
 }
 
 static void threes_company(dw_rom *rom)
@@ -1199,10 +1199,10 @@ static void threes_company(dw_rom *rom)
             0xea,               /* NOP       ; Don't reset the quest byte     */
             0xea,               /* NOP       ; So we know if Gwaelin is here  */
             0x85,  0xe4,        /* STA $E4   ; Original Code                  */
-            0x20,  0xb9,  0xc4, /* JSR $C4C0 ; Jump to three's company code   */
+            0x20,  0xbc,  0xc4, /* JSR $C4C0 ; Jump to three's company code   */
             0xea                /* NOP                                        */
     );
-    vpatch(rom, 0x0c4b9,  18,
+    vpatch(rom, 0x0c4bc,  18,
             0xa5,  0xdf,        /* LDA $DF   ; Load the status bits           */
             0x29,  0x01,        /* AND #$01  ; Are we carrying Gwaelin?       */
             0xf0,  0x07,        /* BEQ $C4CD ; No, back to original code      */

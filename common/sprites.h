@@ -3,7 +3,12 @@
 #define DWRANDOMIZER_SPRITES_H
 
 #include "dwr_types.h"
-#define SPRITE_COUNT 61
+
+#ifdef DW3_GHOST
+#define SPRITE_COUNT 65
+#else
+#define SPRITE_COUNT 64
+#endif
 
 #ifdef __cplusplus
 extern "C" {

@@ -1662,8 +1662,11 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 {
     uint64_t crc;
     char output_file[1024];
+
     snprintf(output_file, 1024, "%s/DWRando.%"PRIu64".%s.nes", output_dir, seed,
             flags);
+    printf("Using seed# %"PRIu64"\n", seed);
+    printf("Using flags %s\n", flags);
 
     mt_init(seed);
     dw_rom rom;

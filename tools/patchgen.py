@@ -1,10 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
-from sys import argv
+from sys import argv,exit
 from ips import Patch
 
 
 def main():
+    if len(argv) < 3:
+        print(f"Usage: {argv[0]} <original rom> <modified rom>")
+        exit(1)
     original = open(argv[1], 'rb')
     changed = open(argv[2], 'rb')
     p = Patch.create(original.read(), changed.read())

@@ -147,7 +147,7 @@ void MainWindow::layout()
     this->addOption('d', "Random Enemy XP && Gold",        ENEMIES,   3, 0);
 
     this->addOption('t', "Fast Text",                      SHORTCUTS, 0, 0);
-    this->addOption('h', "Speed Hacks",                    SHORTCUTS, 1, 0);
+    this->addOption('H', "Speed Hacks",                    SHORTCUTS, 1, 0);
     this->addOption('o', "Open Charlock",                  SHORTCUTS, 2, 0);
     this->addOption('s', "Short Charlock",                 SHORTCUTS, 3, 0);
     this->addOption('k', "Don't Require Magic Keys",       SHORTCUTS, 4, 0);

@@ -5,7 +5,7 @@
 INCLUDEPATH = common/
 HEADERS += common/dwr.h common/crc64.h common/build.h common/mt64.h
 HEADERS += common/dwr_types.h common/map.h common/chaos.h common/sprites.h
-HEADERS += common/patch.c
+HEADERS += common/patch.h
 
 SOURCES += cli/main.c
 SOURCES += common/mt19937-64.c common/map.c common/dwr.c

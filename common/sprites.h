@@ -5,9 +5,9 @@
 #include "dwr_types.h"
 
 #ifdef DW3_GHOST
-#define SPRITE_COUNT 65
-#else
 #define SPRITE_COUNT 64
+#else
+#define SPRITE_COUNT 63
 #endif
 
 #ifdef __cplusplus

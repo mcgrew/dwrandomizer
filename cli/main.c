@@ -90,7 +90,7 @@ int main(int argc, char **argv)
     if (argc > 5) {
         sprite = argv[4];
     } else {
-        sprite = "";
+        sprite = "Random";
     }
 
     printf("Randomizing using seed: %"PRIu64" with flags %s\n", seed, flags);

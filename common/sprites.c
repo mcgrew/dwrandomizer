@@ -5,8 +5,10 @@
 #include "sprites.h"
 #include "patch.h"
 #include "dwr_types.h"
+#include "mt64.h"
 
 const char * const dwr_sprite_names[SPRITE_COUNT] = {
+        "Random",
         "Loto",
         "Gwaelin",
         "Slime",
@@ -2703,8 +2705,8 @@ static void challenge5(dw_rom *rom)
 
 void sprite(dw_rom *rom, const char *sprite_name)
 {
-    void (*sprite_func[SPRITE_COUNT])(dw_rom *rom);
-    size_t i=1;
+    void (*sprite_func[SPRITE_COUNT-2])(dw_rom *rom);
+    size_t i=0;
 
     sprite_func[i++] = &gwaelin;
     sprite_func[i++] = &slime;
@@ -2778,10 +2780,18 @@ void sprite(dw_rom *rom, const char *sprite_name)
     sprite_func[i++] = &challenge2;
     sprite_func[i++] = &challenge5;
 
-    for (i=1; i < sizeof(dwr_sprite_names) / sizeof(char*); i++) {
-        if (!strcmp(dwr_sprite_names[i], sprite_name)) {
-            (*sprite_func[i])(rom);
-            break;
+    if (!strcmp("Random", sprite_name)) {
+        /* don't choose the "challenge" sprites */
+        i = mt_rand(2, SPRITE_COUNT-4);
+        printf("Setting player sprite to %s...\n", dwr_sprite_names[i]);
+        (*sprite_func[i-2])(rom);
+    } else {
+        for (i=2; i < sizeof(dwr_sprite_names) / sizeof(char*); i++) {
+            if (!strcmp(dwr_sprite_names[i], sprite_name)) {
+                printf("Setting player sprite to %s...\n", sprite_name);
+                (*sprite_func[i-2])(rom);
+                break;
+            }
         }
     }
 }

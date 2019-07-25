@@ -1,3 +1,92 @@
+# 2.1 - More ways to WIN! #
+##### Released July ??, 2019 #####
+
+* Cursed Princess mode!
+  * In this mode, if you can win the game by getting Gwaelin to take a cursed belt from your inventory when you return her to the king.
+* Three's Company mode!
+  * In this mode, you can win by bringing the princess to the Dragonlord and accepting his offer to join him.
+* Vanilla Map option
+  * Allows you to play with the original map instead of a randomized one.
+* "Chaos Mode" has been removed and separated into multiple options
+* Fixed some issues with disabled/randomized music.
+  * Music can now be totally disabled aside from instances where it affects game timing
+  * All music is now randomized/disabled, including after inn stays, etc.
+* New player sprites:
+  * Dragonlord
+  * Tov the Dog (Dragon Quest IV)
+  * Jason (Blaster Master)
+  * Bomberman
+  * Christine (Arkista's Ring)
+  * Kirby
+  * Lala (Adventures of Lolo)
+  * Lolo (Adventures of Lolo)
+  * Slime (Dragon Quest franchise)
+  * Mike (Star Tropics)
+  * Waluigi (Mario franchise)
+  * Wario (Mario franchise)
+  * Doran (Dragon Warrior 4)
+  * Yeti (Dragon Warrior 4)
+* "Jerk" now takes the token as well as the staff/stones when you receive the rainbow drop
+* An option to make metal slimes always run, even when you have low strength.
+* "Search" now opens a treasure chest instead of just telling you one is there.
+  * It's still faster to use "Take"
+* Added an option to change to modern Dragon Quest spell names
+* Fixed a bug in Death Necklace max HP calculations
+  * This fixes an issue where HP was 1 lower than it should have been with the necklace equipped.
+* Some tweaks to map generation which should make them more interesting
+
+# 2.0.6 - Bug fix for potential soft lock #
+##### Released Aug 6, 2018 #####
+
+* Fixed an issue where Brecconary being on a different continent from Tantegel Castle could create a soft lock if the swamp cave is inside Tantegel.
+  * Brecconary will now always be on the same continent as Tantegel if the swamp cave is in Tantegel.
+* Fixed the Fairy Water text for female characters (his -> her).
+
+# 2.0.5 - Bug fix for the new sprites #
+##### Released Jul 31, 2018 #####
+
+* This fixes an issue with some of the new sprites where some randomizer changes made their way into the sprite code.
+* Affected sprites:
+  * Black Belt
+  * Black Mage
+  * Black Wizard
+  * Master
+
+# 2.0.4 - Bug Fixes and New Sprites #
+##### Released Jul 29, 2018 #####
+
+* Some tweaks to Chaos Mode
+  * Raised Dragonlord form 1's minimum HP to 81
+  * Removed abilities from the "wet noodle" monster
+  * Restricted the amount of XP given by the "wet noodle" (16-64XP)
+  * Fixed the REPEL table so that Chaos Mode enemies will be repelled based on their new stats
+* Fixed a bug with forced encounters where running did not always push you back a space
+* Fixed a bug where the player could be placed in the water by the return spell under certain conditions
+* Added a bunch of new sprite options
+
+# 2.0.3 - Fixed another swamp cave issue #
+##### Released Feb 3, 2018 #####
+
+* Fixed an issue where when Tantegel and Garinham were connected by the swamp cave, they would end up on the same continent, creating a map that was not able to be completed.
+
+# 2.0.2 - Bug fixes and tweaks to Chaos Mode #
+##### Released Jan 20, 2018 #####
+
+* Fixed an error in the player stat generation
+  * A bug was causing player stats to be higher than intended
+* Added a slight HP boost to lower levels in Big Swamp Mode
+* Changes to (attempt to) ensure that at least one enemy in early zones is beatable at level 1. The lowest strength enemy will have no more than 5HP
+* Changed the run chance calculations in chaos mode
+  * Running chance in chaos mode is now based on map index rather than enemy index, since enemy index is fairly meainingless in this mode. Charlock will be the hardest place to run, followed by other dungeons, followed by Hauksness and Charlock (top floor), and easiest in the overworld. This should help with progression to level 2 as well.
+* Fixed a problem with bridge placement
+  * Bridges shouldn't be placed where walkable tiles are located to the north or south of them
+* Fixed a problem where Rimuldar could be placed on the wrong continent if the swamp cave was located in Garinham
+* Fixed a UI crash in the title screen generation
+* Made the random seeds in the UI more random
+  * The random seeds in the UI were not so random on Windows.
+  * Changed the UI such that a new random seed is chosen after generating a ROM.
+
+
 # 2.0.1 - Bugfix #
 ###### Released Oct 10, 2017 ######
 

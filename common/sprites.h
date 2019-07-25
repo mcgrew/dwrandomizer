@@ -4,7 +4,7 @@
 
 #include "dwr_types.h"
 
-#define SPRITE_COUNT 65
+#define SPRITE_COUNT 68
 
 #ifdef __cplusplus
 extern "C" {

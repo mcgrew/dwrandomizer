@@ -2,7 +2,7 @@
 ##### Released July 27, 2019 #####
 
 * Cursed Princess mode!
-  * In this mode, if you can win the game by getting Gwaelin to take a cursed belt from your inventory when you return her to the king.
+  * In this mode, you can win the game by getting Gwaelin to take a cursed belt from your inventory when you return her to the king.
 * Three's Company mode!
   * In this mode, you can win by bringing the princess to the Dragonlord and accepting his offer to join him.
 * Vanilla Map option
@@ -15,7 +15,6 @@
   * Red Slime
   * Metal Slime
   * Dragonlord
-  * Tov the Dog (Dragon Quest IV)
   * Jason (Blaster Master)
   * Bomberman
   * Christine (Arkista's Ring)
@@ -32,9 +31,10 @@
   * Mike (Star Tropics)
   * Waluigi (Mario franchise)
   * Wario (Mario franchise)
-  * Doran (Dragon Warrior 4)
-  * Yeti (Dragon Warrior 4)
-* "Jerk" now takes the token as well as the staff/stones when you receive the rainbow drop
+  * Doran (Dragon Warrior IV)
+  * Tov the Dog (Dragon Warrior IV)
+  * Yeti (Dragon Warrior IV)
+* The wizard now takes the token as well as the staff/stones when you receive the rainbow drop.
 * An option to make metal slimes always run, even when you have low strength.
 * "Search" now opens a treasure chest instead of just telling you one is there.
   * It's still faster to use "Take"

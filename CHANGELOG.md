@@ -1,5 +1,5 @@
 # 2.1 - More ways to WIN! #
-##### Released July ??, 2019 #####
+##### Released July 27, 2019 #####
 
 * Cursed Princess mode!
   * In this mode, if you can win the game by getting Gwaelin to take a cursed belt from your inventory when you return her to the king.

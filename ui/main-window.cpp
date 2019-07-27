@@ -44,6 +44,7 @@ enum tabs {
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
+    this->setMinimumWidth(600);
     this->mainWidget = new QWidget();
     this->gameplayWidget = new QWidget();
     this->funWidget = new QWidget();

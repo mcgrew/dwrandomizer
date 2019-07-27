@@ -4,7 +4,7 @@ This application is a randomizer for Dragon Warrior for NES. This randomizer
 will work on either version of the ROM.
 
 If you enjoy Dragon Warrior Randomizer, come join our
-[discord community](https://discord.gg/auYUFJ)!
+[discord community](https://discord.gg/SmHeCkD)!
 
 ## The randomizer has the following features: ##
 

@@ -764,9 +764,9 @@ static void map_add_river(dw_map *map) {
             --x;
         else if (maindir == 3) /* east */
             ++x;
-    }
-    if (map_ob(x) || map_ob(y)) {
-        return;
+        if (map_ob(x) || map_ob(y)) {
+            return;
+        }
     }
     while (map->walkable[x][y] || map->tiles[x][y] != TILE_WATER) {
         map->tiles[x][y] = TILE_WATER;

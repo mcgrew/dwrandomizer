@@ -271,13 +271,12 @@ static inline BOOL needs_bridge(uint8_t left, uint8_t right)
 /**
  * Adds bridges where necessary to connect continents
  * @param map The map struct
- * @param lm_sizes The sizes of all land masses on the map.
  * @return A boolean indicating if a bridge was placed.
  */
 static BOOL add_bridges(dw_map *map)
 {
     /* this could use more work */
-    uint8_t x, y, left, right, x_candidate[50], y_candidate[50];
+    uint8_t x, y, left, right, x_candidate[120], y_candidate[120];
     uint64_t which;
     int count = 0;
     dw_tile tile;
@@ -293,8 +292,13 @@ static BOOL add_bridges(dw_map *map)
                     y_candidate[count++] = y;
                 }
             }
+            if (count >= 120) {
+                printf("Maximum bridge candidates reached\n");
+                goto max_candidates;
+            }
         }
     }
+max_candidates:
     if (count) {
         which = mt_rand(0, count-1);
         x = x_candidate[which];

@@ -75,7 +75,7 @@ void MainWindow::initWidgets()
     this->levelSpeed = new LevelComboBox(this);
     this->goButton = new QPushButton("Randomize!", this);
     this->spriteSelect = new QComboBox(this);
-    for (int i=0; i < sizeof(dwr_sprite_names)/sizeof(char*); ++i) {
+    for (int i=0; i < sprite_count(); ++i) {
        spriteSelect->addItem(dwr_sprite_names[i]);
     }
     this->tabWidget = new QTabWidget(this);

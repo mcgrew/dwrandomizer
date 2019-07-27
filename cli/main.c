@@ -52,7 +52,7 @@ static void print_usage(const char *command, char *default_flags)
     printf("If the seed is not specified, a random seed will be chosen\n");
     printf("\n");
     printf("Sprite should be one of: ");
-    for(i=0; i < sizeof(dwr_sprite_names) / sizeof(char *); i++) {
+    for(i=0; i < sprite_count(); i++) {
         if (i) {
             printf(", %s", dwr_sprite_names[i]);
         } else {

@@ -12,6 +12,8 @@
   * Music can now be totally disabled aside from instances where it affects game timing
   * All music is now randomized/disabled, including after inn stays, etc.
 * New player sprites:
+  * Red Slime
+  * Metal Slime
   * Dragonlord
   * Tov the Dog (Dragon Quest IV)
   * Jason (Blaster Master)
@@ -20,6 +22,12 @@
   * Kirby
   * Lala (Adventures of Lolo)
   * Lolo (Adventures of Lolo)
+  * Pac-Man
+  * Ms. Pac-Man
+  * Inky
+  * Blinky
+  * Pinky
+  * Clyde
   * Slime (Dragon Quest franchise)
   * Mike (Star Tropics)
   * Waluigi (Mario franchise)

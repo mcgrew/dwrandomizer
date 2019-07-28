@@ -1,3 +1,10 @@
+# 2.1.1 - Bug fixes #
+##### Released July 28, 2019 #####
+
+* Fixed a bug where selecting the default hero sprite would crash the randomizer
+* Fixed a bounds check error in the map code which could crash the randomizer
+* Some minor edits to a few sprites.
+
 # 2.1 - More ways to WIN! #
 ##### Released July 27, 2019 #####
 

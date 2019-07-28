@@ -28,7 +28,7 @@ static void print_usage(const char *command, char *default_flags)
     printf("    M  Randomize the level spells are learned.\n");
     printf("    R  Enable menu wrap-around\n");
     printf("    P  Enable randomization of enemy attack patterns.\n");
-    printf("    Q  Disables the game music.");
+    printf("    Q  Disables the game music.\n");
     printf("    V  Set XP requirements for each level to 50%% of normal.\n");
     printf("    W  Random weapon shops.\n");
     printf("    Z  Random enemy zones.\n");

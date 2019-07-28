@@ -2685,7 +2685,7 @@ void sprite(dw_rom *rom, const char *sprite_name)
         printf("Setting player sprite to %s...\n", dwr_sprite_names[i]);
         (*sprite_func[i-2])(rom);
     } else {
-        for (i=2; i < sizeof(dwr_sprite_names) / sizeof(char*); i++) {
+        for (i=2; i < sprite_count(); i++) {
             if (!strcmp(dwr_sprite_names[i], sprite_name)) {
                 printf("Setting player sprite to %s...\n", sprite_name);
                 (*sprite_func[i-2])(rom);

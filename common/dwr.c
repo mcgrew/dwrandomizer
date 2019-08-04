@@ -421,7 +421,7 @@ static void shuffle_chests(dw_rom *rom)
            0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea,
            0xc9, 0x11,         /* CMP #$11  ; If value is >= $11              */
            0xb0, 0x03,         /* BCS $E337 ; Jump to the next check          */
-           0x4c, 0x69, 0xe2,   /* JSR $E269 ; Add the item to inventory       */
+           0x4c, 0x69, 0xe2,   /* JMP $E269 ; Add the item to inventory       */
            0xc9, 0x17,         /* CMP #$17  ; If the value is greater >= $17  */
            0xb0, 0x0e,         /* BCS $E349 ; It's the tablet                 */
            0xa9, 0xff,         /* LDA #$FF                                    */
@@ -1151,8 +1151,11 @@ static void cursed_princess(dw_rom *rom)
 
     /* new dialogue */
     vpatch(rom, 0x09f40,   39,
+            /* O      h             m      y      ,             w      h      a */
             0x32,  0x11,  0x5f,  0x16,  0x22,  0x48,  0x5f,  0x20,  0x11,  0x0a,
+            /* t             a             l      o      v      e      l      y */
             0x1d,  0x5f,  0x0a,  0x5f,  0x15,  0x18,  0x1f,  0x0e,  0x15,  0x22,
+            /*        c      o      r      s      e      t      .             */
             0x5f,  0x0c,  0x18,  0x1b,  0x1c,  0x0e,  0x1d,  0x45,  0x52,  0x5f,
             0x5f,  0x5f,  0x5f,  0x5f,  0x5f,  0x5f,  0x5f,  0x5f,  0x5f);
 
@@ -1166,7 +1169,7 @@ static void cursed_princess(dw_rom *rom)
             0xd0,  0x0a,        /* BNE C4E1   ; No, keep playing              */
             0x20,  0xcb,  0xc7, /* JSR $C7CB  ; Yes, Display dialogue         */
             0xa0,               /* .DB $A0    ; Oh my...                      */
-            0x20,  0xfa,  0xdf, /* JSR $DFFA  ; Play the music                */
+            0x20,  0xfa,  0xdf, /* JSR $DFFA  ; Play the curse music          */
             0x4c,  0xb8,  0xcc, /* JMP $CCB8  ; Jump to the ending            */
             /* C4E1: */
             0x68,               /* PLA        ; Restore register and continue */
@@ -1288,10 +1291,7 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0x90f,  1, 0x6f); /* quit ignoring the customers */
     vpatch(rom, 0x93c,  1, 0x6f); /* quit ignoring the customers */
     vpatch(rom, 0x17a2, 3, 0, 0, 0); /* delete roaming throne room guard */
-    /* Change the player sprite color for fun */
     vpatch(rom, 0xf131, 2, 0x69, 0x03); /* Lock the stat build modifier at 3 */
-    /* Embed the randomizer version in the ROM */
-//    vpatch(rom, 0xffe0, 16, "DWRANDOMIZER " BUILD);
 
     /* I always hated this wording */
     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");

@@ -95,7 +95,8 @@ typedef enum {
 
 /** In-game indexes for chest content items */
 typedef enum {
-    HERB = 0x2,
+    ARMOR = 1,
+    HERB,
     KEY,
     TORCH,
     FAIRY_WATER, /* 5 */
@@ -111,12 +112,7 @@ typedef enum {
     STONES, /* 15 */
     STAFF,
     SWORD,
-    GOLD_5,
-    GOLD_6,
-    GOLD_10, /* 20 */
-    GOLD_500,
-    GOLD_120,
-    TABLET,
+    GOLD
 } dw_chest_content;
 
 /** In-game indexes for weapon shop items */
@@ -164,12 +160,15 @@ typedef struct {
 
 /** Code for the 3 "search" items in the game (not including the trap door) */
 typedef struct {
+    // FIXME: this needs to be updated for the new treasure code
     uint8_t code1[3];
     uint8_t map;
     uint8_t code2[5];
     uint8_t x;
     uint8_t code3[5];
     uint8_t y;
+    uint8_t code4;
+    uint8_t item;
 } dw_searchable;
 
 /** A single in-game chest */

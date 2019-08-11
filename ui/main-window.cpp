@@ -234,7 +234,9 @@ void MainWindow::setOptions(QString flags)
     QList<CheckBox*>::const_iterator i;
 
     for (i = this->options.begin(); i != this->options.end(); ++i) {
-        flags += (*i)->updateState(flags);
+        if ((*i)->updateConflicts(flags)) {
+            flags += (*i)->updateState(flags);
+        }
     }
 
     this->levelSpeed->updateState(flags);

@@ -54,6 +54,8 @@ private:
     bool saveConfig();
     bool loadConfig();
     void addOption(char flag, QString text, int tab, int x, int y);
+    void addOption(char flag, QString text, QString requires,
+        QString excluded_by, int tab, int x, int y);
     void addLabel(QString text, int tab, int x, int y);
     void placeWidget(QWidget *widget, int tab, int x, int y);
 

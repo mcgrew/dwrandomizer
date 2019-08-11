@@ -27,12 +27,17 @@ class CheckBox : public QCheckBox {
 public:
     typedef QCheckBox super;
     CheckBox(const char flag, const QString &text, QWidget *parent = 0);
+    CheckBox(const char flag, const QString &text,
+        const QString requires, const QString conflicts, QWidget *parent);
     void stateChanged(int state);
     char getFlag();
+    bool updateConflicts(const QString flags);
     bool updateState(QString flags);
 
 private:
     char flag;
+    QString conflicts;
+    QString requires;
 
 };
 

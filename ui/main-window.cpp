@@ -130,42 +130,42 @@ void MainWindow::layout()
     }
 
     /* Gameplay Options */
-    this->addOption('C', "Shuffle Chests && Search Items", GAMEPLAY,  0, 0);
-    this->addOption('W', "Random Weapon Shops",            GAMEPLAY,  1, 0);
-    this->addOption('G', "Random Growth",                  GAMEPLAY,  2, 0);
-    this->addOption('M', "Random Spell Learning",          GAMEPLAY,  3, 0);
-    this->addOption('x', "Random XP Requirements",         GAMEPLAY,  4, 0);
-    this->addOption('w', "Random Weapon Prices",           GAMEPLAY,  5, 0);
-    this->addOption('R', "Enable Menu Wrapping",           GAMEPLAY,  0, 1);
-    this->addOption('D', "Enable Death Necklace",          GAMEPLAY,  1, 1);
-    this->addOption('b', "Big Swamp",                      GAMEPLAY,  2, 1);
-    this->addOption('l', "Scared Metal Slimes",            GAMEPLAY,  3, 1);
-    this->addOption('v', "Vanilla (Original) Map",         GAMEPLAY,  4, 1);
+    this->addOption('C', "Shuffle Chests && Searches",         GAMEPLAY,  0, 0);
+    this->addOption('W', "Random Weapon Shops",                GAMEPLAY,  1, 0);
+    this->addOption('G', "Random Growth",                      GAMEPLAY,  2, 0);
+    this->addOption('M', "Random Spell Learning",              GAMEPLAY,  3, 0);
+    this->addOption('x', "Random XP Requirements",             GAMEPLAY,  4, 0);
+    this->addOption('w', "Random Weapon Prices",               GAMEPLAY,  5, 0);
+    this->addOption('R', "Enable Menu Wrapping",               GAMEPLAY,  0, 1);
+    this->addOption('D', "Enable Death Necklace",              GAMEPLAY,  1, 1);
+    this->addOption('b', "Big Swamp",                          GAMEPLAY,  2, 1);
+    this->addOption('l', "Scared Metal Slimes",                GAMEPLAY,  3, 1);
+    this->addOption('v', "Vanilla (Original) Map",    "", "b", GAMEPLAY,  4, 1);
 
-    this->addOption('P', "Random Enemy Abilities",         ENEMIES,   0, 0);
-    this->addOption('Z', "Random Enemy Zones",             ENEMIES,   1, 0);
-    this->addOption('e', "Random Enemy Stats",             ENEMIES,   2, 0);
-    this->addOption('d', "Random Enemy XP && Gold",        ENEMIES,   3, 0);
+    this->addOption('P', "Random Enemy Abilities",             ENEMIES,   0, 0);
+    this->addOption('Z', "Random Enemy Zones",                 ENEMIES,   1, 0);
+    this->addOption('e', "Random Enemy Stats",        "Z", "", ENEMIES,   2, 0);
+    this->addOption('d', "Random Enemy XP && Gold",            ENEMIES,   3, 0);
 
-    this->addOption('t', "Fast Text",                      SHORTCUTS, 0, 0);
-    this->addOption('H', "Speed Hacks",                    SHORTCUTS, 1, 0);
-    this->addOption('o', "Open Charlock",                  SHORTCUTS, 2, 0);
-    this->addOption('s', "Short Charlock",                 SHORTCUTS, 3, 0);
-    this->addOption('k', "Don't Require Magic Keys",       SHORTCUTS, 4, 0);
-    this->addLabel("Leveling Speed",                       SHORTCUTS, 0, 1);
-    this->placeWidget(this->levelSpeed,                    SHORTCUTS, 1, 1);
+    this->addOption('t', "Fast Text",                          SHORTCUTS, 0, 0);
+    this->addOption('H', "Speed Hacks",                        SHORTCUTS, 1, 0);
+    this->addOption('o', "Open Charlock",                      SHORTCUTS, 2, 0);
+    this->addOption('s', "Short Charlock",                     SHORTCUTS, 3, 0);
+    this->addOption('k', "Don't Require Magic Keys",           SHORTCUTS, 4, 0);
+    this->addLabel("Leveling Speed",                           SHORTCUTS, 0, 1);
+    this->placeWidget(this->levelSpeed,                        SHORTCUTS, 1, 1);
 
 
     /* Goals */
-    this->addOption('c', "Cursed Princess",                GOALS,     0, 0);
-    this->addOption('h', "Three's Company",                GOALS,     1, 0);
+    this->addOption('c', "Cursed Princess",                    GOALS,     0, 0);
+    this->addOption('h', "Three's Company",                    GOALS,     1, 0);
 
     /* Cosmetic Options */
-    this->addOption('K', "Shuffle Music",                  COSMETIC,  0, 0);
-    this->addOption('Q', "Disable Music",                  COSMETIC,  1, 0);
-    this->addOption('m', "Modern Spell Names",             COSMETIC,  2, 0);
-    this->addLabel("Player Sprite",                        COSMETIC,  0, 1);
-    this->placeWidget(this->spriteSelect,                  COSMETIC,  1, 1);
+    this->addOption('K', "Shuffle Music",             "", "Q", COSMETIC,  0, 0);
+    this->addOption('Q', "Disable Music",             "", "K", COSMETIC,  1, 0);
+    this->addOption('m', "Modern Spell Names",                 COSMETIC,  2, 0);
+    this->addLabel("Player Sprite",                            COSMETIC,  0, 1);
+    this->placeWidget(this->spriteSelect,                      COSMETIC,  1, 1);
 
     goLayout->addWidget(new QLabel("", this), 0, 0, 0);
     goLayout->addWidget(new QLabel("", this), 0, 1, 0);
@@ -177,6 +177,15 @@ void MainWindow::layout()
 void MainWindow::addOption(char flag, QString text, int tab, int x, int y)
 {
     CheckBox *option = new CheckBox(flag, text, this);
+    connect(option, SIGNAL(clicked()), this, SLOT(handleCheckBox()));
+    this->options.append(option);
+    this->optionGrids[tab]->addWidget(option, x, y, 0);
+}
+
+void MainWindow::addOption(char flag, QString text, QString requires,
+        QString excluded_by, int tab, int x, int y)
+{
+    CheckBox *option = new CheckBox(flag, text, requires, excluded_by, this);
     connect(option, SIGNAL(clicked()), this, SLOT(handleCheckBox()));
     this->options.append(option);
     this->optionGrids[tab]->addWidget(option, x, y, 0);
@@ -195,10 +204,24 @@ void MainWindow::placeWidget(QWidget *widget, int tab, int x, int y)
 QString MainWindow::getOptions()
 {
     QList<CheckBox*>::const_iterator i;
+    bool conflicts = false;
 
     std::string flags = std::string() + this->levelSpeed->getFlag();
     for (i = this->options.begin(); i != this->options.end(); ++i) {
         flags += (*i)->getFlag();
+    }
+
+    /* check for flag conflicts */
+    for (i = this->options.begin(); i != this->options.end(); ++i) {
+        conflicts |= (*i)->updateConflicts(QString(flags.c_str()));
+    }
+
+    if (conflicts) { /* there were conflicts, so update flags */
+        flags.clear();
+        flags += this->levelSpeed->getFlag();
+        for (i = this->options.begin(); i != this->options.end(); ++i) {
+            flags += (*i)->getFlag();
+        }
     }
 
     std::sort(flags.begin(), flags.end());

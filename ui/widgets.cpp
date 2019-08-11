@@ -15,6 +15,17 @@ CheckBox::CheckBox(const char flag, const QString &text, QWidget *parent) :
         QCheckBox(text, parent)
 {
     this->flag = flag;
+    this->conflicts = "";
+    this->requires = "";
+}
+
+CheckBox::CheckBox(const char flag, const QString &text,
+        const QString requires, const QString conflicts, QWidget *parent) :
+        QCheckBox(text, parent)
+{
+    this->flag = flag;
+    this->requires = requires;
+    this->conflicts = conflicts;
 }
 
 char CheckBox::getFlag()
@@ -30,11 +41,38 @@ void CheckBox::stateChanged(int state)
     super::stateChanged(state);
 }
 
-bool CheckBox::updateState(QString flags)
+bool CheckBox::updateState(const QString flags)
 {
-    bool checked = flags.indexOf(QChar(this->flag)) >= 0;
+    bool checked = this->isEnabled() && flags.contains(this->flag);
+
     this->setChecked(checked);
     return checked;
+}
+
+bool CheckBox::updateConflicts(const QString flags)
+{
+    bool enabled = true;
+    bool checked = flags.contains(this->flag);
+
+    for (int i=0; i < this->requires.length(); i++) {
+        if (!flags.contains(this->requires.at(i))) {
+            enabled = false;
+            checked = false;
+            break;
+        }
+    }
+    if (enabled) {
+        for (int i=0; i < this->conflicts.length(); i++) {
+            if (flags.contains(this->conflicts.at(i))) {
+                enabled = false;
+                checked = false;
+                break;
+            }
+        }
+    }
+    this->setEnabled(enabled);
+    this->setChecked(checked);
+    return enabled;
 }
 
 LevelComboBox::LevelComboBox(QWidget *parent) : QComboBox(parent)

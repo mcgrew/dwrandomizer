@@ -138,8 +138,8 @@ void MainWindow::layout()
     this->addOption('w', "Random Weapon Prices",               GAMEPLAY,  5, 0);
     this->addOption('R', "Enable Menu Wrapping",               GAMEPLAY,  0, 1);
     this->addOption('D', "Enable Death Necklace",              GAMEPLAY,  1, 1);
-    this->addOption('b', "Big Swamp",                          GAMEPLAY,  2, 1);
-    this->addOption('l', "Scared Metal Slimes",                GAMEPLAY,  3, 1);
+    this->addOption('b', "Big Swamp",                 "", "v", GAMEPLAY,  2, 1);
+    this->addOption('l', "Scared Metal Slimes",       "", "e", GAMEPLAY,  3, 1);
     this->addOption('v', "Vanilla (Original) Map",    "", "b", GAMEPLAY,  4, 1);
 
     this->addOption('P', "Random Enemy Abilities",             ENEMIES,   0, 0);
@@ -240,6 +240,7 @@ void MainWindow::setOptions(QString flags)
     }
 
     this->levelSpeed->updateState(flags);
+    this->setFlags(this->getOptions());
 }
 
 QString MainWindow::getFlags()

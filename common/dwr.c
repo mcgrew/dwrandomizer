@@ -468,7 +468,10 @@ static void shuffle_chests(dw_rom *rom)
     }, *key_item = key_items;
     uint8_t search_items[] = { 0, 0, 0 };
 
-    mt_shuffle(key_items, sizeof(key_items), sizeof(uint8_t));
+    do {
+        mt_shuffle(key_items, sizeof(key_items), sizeof(uint8_t));
+    } while (THREES_COMPANY(rom) && is_quest_item(key_items[0]));
+
     for (i=0; i < 3; i++) {
         if (mt_rand(0, 3)) { /* fill in the search spots with a 75% chance */
             search_items[i] = *(key_item++);

@@ -28,8 +28,9 @@ const char *prg1sums[2] = {
 };
 
 
+/* The [ and ] are actually opening/closing quotes. The / is .' */
 const char alphabet[] = "0123456789abcdefghijklmnopqrstuvwxyz"
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ\"\"'*>_:__.,-_?!;)(``_'___________  ";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ[]'*>_:__.,-_?!;)(``/'___________  ";
 
 const char title_alphabet[] = "0123456789__________________________"
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ__________________________________!.c-     ";
@@ -100,6 +101,7 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     if (read < ROM_SIZE) {
         fprintf(stderr, "File '%s' is too small and may be corrupt, aborting.",
                 input_file);
+        fclose(input);
         return FALSE;
     }
     fclose(input);
@@ -135,8 +137,8 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->encounter_types[2] = &rom->content[0xcd9e];
     // FIXME: these should be removed or modified for the new treasure code.
     rom->token = (dw_searchable*)&rom->content[0xe10b];
-    rom->flute = (dw_searchable*)&rom->content[0xe14a];
-    rom->armor = (dw_searchable*)&rom->content[0xe160];
+    rom->flute = (dw_searchable*)&rom->content[0xe124];
+    rom->armor = (dw_searchable*)&rom->content[0xe138];
     rom->repel_table = &rom->content[0xf4fa];
     rom->weapon_shops = &rom->content[0x1991];
     rom->weapon_prices = (uint16_t*)&rom->content[0x1947];
@@ -1706,15 +1708,7 @@ static void dwr_token_dialogue(dw_rom *rom)
     uint8_t text1[24], text2[75];
     int dx, dy;
 
-    // FIXME: this should be simplified with the new treasure code
-    searchable = rom->token;
-    if (searchable->map != OVERWORLD) {
-        searchable = rom->flute;
-    }
-    if (searchable->map != OVERWORLD) {
-        searchable = rom->armor;
-    }
-    if (searchable->map != OVERWORLD) {
+    if (!rom->token->item) {
         strcpy((char*)text1, "Thou must go and fight!");
         strcpy((char*)text2, "Go forth, descendant of Erdrick, "
                 "I have complete faith in thy victory! ");
@@ -1722,13 +1716,20 @@ static void dwr_token_dialogue(dw_rom *rom)
         patch(rom, 0xa228, 23, text1);
         vpatch(rom, 0xa288, 1, 0x53); /* replace .' with ' */
     } else {
-        dx = searchable->x - rom->map.warps_from[WARP_TANTEGEL].x;
-        dy = searchable->y - rom->map.warps_from[WARP_TANTEGEL].y;
+        dx = rom->token->x - rom->map.warps_from[WARP_TANTEGEL].x;
+        dy = rom->token->y - rom->map.warps_from[WARP_TANTEGEL].y;
 //        strcpy((char*)text1, "Thou may go and search.");
-        snprintf((char*)text2, 73, "From Tantegel Castle travel %2d leagues "
-                "to the %s and %2d to the %s",
-                ABS(dy), (dy < 0) ? "north" : "south",
-                ABS(dx), (dx < 0) ? "west" : "east");
+        if (dx > 100 || dy > 100) {
+            snprintf((char*)text2, 74, "From Tantegel Castle travel %3d "
+                    "leagues to the %s and %3d %s/    ",
+                    ABS(dy), (dy < 0) ? "north" : "south",
+                    ABS(dx), (dx < 0) ? "west" : "east");
+        } else {
+            snprintf((char*)text2, 74, "From Tantegel Castle travel %2d "
+                    "leagues to the %s and %2d to the %s/",
+                    ABS(dy), (dy < 0) ? "north" : "south",
+                    ABS(dx), (dx < 0) ? "west" : "east");
+        }
     }
     ascii2dw(text2);
     patch(rom, 0xa242, 70, text2);

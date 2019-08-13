@@ -437,7 +437,7 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
 
     /* clear out the unused code */
     memset(rom->content + 0xe150, 0xff, 58);
-    memset(rom->content + 0xe364, 0xff, 16);
+    memset(rom->content + 0xe355, 0xff, 16);
 }
 
 /**

@@ -78,6 +78,7 @@ const char * const dwr_sprite_names[] = {
         "Blinky",
         "Pinky",
         "Clyde",
+        "Sue",
         "Blaster Master Jason",
         "Bomberman",
         "Arkista's Ring Christine",
@@ -2386,6 +2387,14 @@ static void clyde(dw_rom *rom)
     vpatch(rom, 0x01a94,    1,  0x37);
 }
 
+static void sue(dw_rom *rom)
+{
+    vpatch(rom, 0x087da,    2,  0x0e,  0x1b); // his -> her
+    inky(rom);
+    vpatch(rom, 0x01a8c,    1,  0x23);
+    vpatch(rom, 0x01a94,    1,  0x33);
+}
+
 static void blaster_master(dw_rom *rom)
 {
     /* switch the npc palettes who share the player palette */
@@ -2773,6 +2782,7 @@ void sprite(dw_rom *rom, const char *sprite_name)
     sprite_func[i++] = &blinky;
     sprite_func[i++] = &pinky;
     sprite_func[i++] = &clyde;
+    sprite_func[i++] = &sue;
 
     sprite_func[i++] = &blaster_master;
     sprite_func[i++] = &bomberman;

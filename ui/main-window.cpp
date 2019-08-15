@@ -28,7 +28,7 @@
 
 const char* const tab_names[] {
     "Gameplay",
-    "Enemies",
+    "Monsters",
     "Shortcuts",
     "Goals",
     "Cosmetic"
@@ -143,10 +143,10 @@ void MainWindow::layout()
     this->addOption('l', "Scared Metal Slimes",       "", "e", GAMEPLAY,  4, 1);
     this->addOption('v', "Vanilla (Original) Map",    "", "b", GAMEPLAY,  5, 1);
 
-    this->addOption('P', "Random Enemy Abilities",             ENEMIES,   0, 0);
-    this->addOption('Z', "Random Enemy Zones",                 ENEMIES,   1, 0);
-    this->addOption('e', "Random Enemy Stats",        "Z", "", ENEMIES,   2, 0);
-    this->addOption('d', "Random Enemy XP && Gold",            ENEMIES,   3, 0);
+    this->addOption('P', "Random Monster Abilities",           ENEMIES,   0, 0);
+    this->addOption('Z', "Random Monster Zones",               ENEMIES,   1, 0);
+    this->addOption('e', "Random Monster Stats",      "Z", "", ENEMIES,   2, 0);
+    this->addOption('d', "Random Monster XP && Gold",          ENEMIES,   3, 0);
 
     this->addOption('t', "Fast Text",                          SHORTCUTS, 0, 0);
     this->addOption('H', "Speed Hacks",                        SHORTCUTS, 1, 0);

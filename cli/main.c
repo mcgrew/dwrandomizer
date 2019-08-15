@@ -27,16 +27,16 @@ static void print_usage(const char *command, char *default_flags)
     printf("    K  Shuffle the game music.\n");
     printf("    M  Randomize the level spells are learned.\n");
     printf("    R  Enable menu wrap-around\n");
-    printf("    P  Enable randomization of enemy attack patterns.\n");
+    printf("    P  Enable randomization of monster attack patterns.\n");
     printf("    Q  Disables the game music.\n");
     printf("    V  Set XP requirements for each level to 50%% of normal.\n");
     printf("    W  Random weapon shops.\n");
-    printf("    Z  Random enemy zones.\n");
+    printf("    Z  Random monster zones.\n");
 
     printf("    b  Big Swamp - make a larger portion of the terrain swamp\n");
     printf("    c  Cursed princess mode\n");
-    printf("    d  Random enemy drops (XP and gold)\n");
-    printf("    e  Random enemy stats\n");
+    printf("    d  Random monster drops (XP and gold)\n");
+    printf("    e  Random monster stats\n");
     printf("    k  Don't require keys to open doors\n");
     printf("    l  Metal Slimes always have a chance to run\n");
     printf("    m  Modern spell names\n");

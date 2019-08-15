@@ -49,6 +49,19 @@ typedef enum {
     ERDRICKS_CAVE_2
 } dw_map_index;
 
+typedef enum {
+    HEAL,
+    HURT,
+    SLEEP,
+    RADIANT,
+    STOPSPELL,
+    OUTSIDE,
+    RETURN,
+    REPEL,
+    HEALMORE,
+    HURTMORE
+} dw_spells;
+
 /** In-game enemy indexes */
 typedef enum {
     SLIME,       /* 0 */

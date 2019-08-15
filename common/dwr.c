@@ -778,12 +778,11 @@ static void randomize_growth(dw_rom *rom)
 
 /**
  * Randomizes the order in which spells are learned.
- *
- * @param rom The rom struct
+ * * @param rom The rom struct
  */
 static void randomize_spells(dw_rom *rom)
 {
-    int i, j;
+    int i, j, tmp;
     dw_stats *stats;
 
     if (!RANDOMIZE_SPELLS(rom))
@@ -792,15 +791,30 @@ static void randomize_spells(dw_rom *rom)
     printf("Randomizing spell learning...\n");
 
     /* choose levels for each spell */
-    for (i=0; i < 10; i++) {
+    for (i=HEAL; i <= HURTMORE; i++) {
         rom->new_spells[i].level = mt_rand(1, 16);
     }
+
+    if (HEAL_HURT_B4_MORE(rom)) {
+        if (rom->new_spells[HEAL].level > rom->new_spells[HEALMORE].level) {
+            tmp = rom->new_spells[HEAL].level;
+            rom->new_spells[HEAL].level = rom->new_spells[HEALMORE].level;
+            rom->new_spells[HEALMORE].level = tmp;
+        }
+        if (rom->new_spells[HURT].level > rom->new_spells[HURTMORE].level) {
+            tmp = rom->new_spells[HURT].level;
+            rom->new_spells[HURT].level = rom->new_spells[HURTMORE].level;
+            rom->new_spells[HURTMORE].level = tmp;
+        }
+    }
+
+    
 
     for (i=0; i < 30; i++) {
         stats = &rom->stats[i];
         stats->spells = 0;
-        for (j=0; j < 10; j++) {
-            /* spell masks are in big endian format for some reason */
+        for (j=HEAL; j <= HURTMORE; j++) {
+            /* spell masks are in big endian format */
             if (rom->new_spells[j].level <= i+1) {
                 stats->spells |= 1 << (j + 8) % 16;
             }

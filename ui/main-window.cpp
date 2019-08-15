@@ -134,13 +134,14 @@ void MainWindow::layout()
     this->addOption('W', "Random Weapon Shops",                GAMEPLAY,  1, 0);
     this->addOption('G', "Random Growth",                      GAMEPLAY,  2, 0);
     this->addOption('M', "Random Spell Learning",              GAMEPLAY,  3, 0);
-    this->addOption('x', "Random XP Requirements",             GAMEPLAY,  4, 0);
+    this->addOption('y', "Heal/Hurt before \"More\"",          GAMEPLAY,  4, 0);
     this->addOption('w', "Random Weapon Prices",               GAMEPLAY,  5, 0);
     this->addOption('R', "Enable Menu Wrapping",               GAMEPLAY,  0, 1);
     this->addOption('D', "Enable Death Necklace",              GAMEPLAY,  1, 1);
-    this->addOption('b', "Big Swamp",                 "", "v", GAMEPLAY,  2, 1);
-    this->addOption('l', "Scared Metal Slimes",       "", "e", GAMEPLAY,  3, 1);
-    this->addOption('v', "Vanilla (Original) Map",    "", "b", GAMEPLAY,  4, 1);
+    this->addOption('x', "Random XP Requirements",             GAMEPLAY,  2, 1);
+    this->addOption('b', "Big Swamp",                 "", "v", GAMEPLAY,  3, 1);
+    this->addOption('l', "Scared Metal Slimes",       "", "e", GAMEPLAY,  4, 1);
+    this->addOption('v', "Vanilla (Original) Map",    "", "b", GAMEPLAY,  5, 1);
 
     this->addOption('P', "Random Enemy Abilities",             ENEMIES,   0, 0);
     this->addOption('Z', "Random Enemy Zones",                 ENEMIES,   1, 0);

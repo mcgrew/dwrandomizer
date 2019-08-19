@@ -335,6 +335,35 @@ static inline void check_quest_items(dw_rom *rom)
     }
 }
 
+static void torch_in_battle(dw_rom *rom) {
+    /* change the jump address in the item use code */
+
+    if (!TORCH_IN_BATTLE(rom))
+        return;
+
+    vpatch(rom, 0x0e87d,    2,  0x88,  0xc2);
+
+    vpatch(rom, 0x0c288,  22,
+        0xc9, 0x04,
+        0xd0, 0x0c,
+        0x20, 0xcb,  0xc7,
+        0xd4,
+        0xa9, 0x01,
+        0x20, 0x4b, 0xe0,
+        0x4c, 0x44, 0xe7,
+        0x4c, 0xfd, 0xe6
+    );
+
+    /* Add a message for using a torch in battle */
+    vpatch(rom, 0x0aaa8,   23, 
+        /* NAME          u      s      e      d             a             t */
+        0xf8,  0x5f,  0x1e,  0x1c,  0x0e,  0x0d,  0x5f,  0x0a,  0x5f,  0x1d,
+        /* o      r      c      h             o      n             t      h */
+        0x18,  0x1b,  0x0c,  0x11,  0x5f,  0x18,  0x17,  0x5f,  0x1d,  0x11,
+        /* e          ENMY */
+        0x0e,  0x5f,  0xf4);
+}
+
 /**
  * Shuffles the contents of all chests in the game with the exception of the
  * starting throne room key and the staff of rain.

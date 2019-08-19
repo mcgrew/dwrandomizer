@@ -24,7 +24,7 @@
 #include "main-window.h"
 
 #define PANE_COLUMNS 2
-#define PANE_ROWS    6 
+#define PANE_ROWS    7
 
 const char* const tab_names[] {
     "Gameplay",
@@ -138,10 +138,11 @@ void MainWindow::layout()
     this->addOption('w', "Random Weapon Prices",               GAMEPLAY,  5, 0);
     this->addOption('R', "Enable Menu Wrapping",               GAMEPLAY,  0, 1);
     this->addOption('D', "Enable Death Necklace",              GAMEPLAY,  1, 1);
-    this->addOption('x', "Random XP Requirements",             GAMEPLAY,  2, 1);
-    this->addOption('b', "Big Swamp",                 "", "v", GAMEPLAY,  3, 1);
-    this->addOption('l', "Scared Metal Slimes",       "", "e", GAMEPLAY,  4, 1);
-    this->addOption('v', "Vanilla (Original) Map",    "", "b", GAMEPLAY,  5, 1);
+    this->addOption('T', "Enable Torches In Battle",           GAMEPLAY,  2, 1);
+    this->addOption('x', "Random XP Requirements",             GAMEPLAY,  3, 1);
+    this->addOption('b', "Big Swamp",                 "", "v", GAMEPLAY,  4, 1);
+    this->addOption('l', "Scared Metal Slimes",       "", "e", GAMEPLAY,  5, 1);
+    this->addOption('v', "Vanilla (Original) Map",    "", "b", GAMEPLAY,  6, 1);
 
     this->addOption('P', "Random Monster Abilities",           ENEMIES,   0, 0);
     this->addOption('Z', "Random Monster Zones",               ENEMIES,   1, 0);

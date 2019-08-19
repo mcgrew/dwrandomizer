@@ -54,7 +54,7 @@ BORDER = {
 #  ROOF: 21
 }
 
-MAPS = { 2: "Charlock", 3: "Hauksness", 4: "Tantegel", 7: "Kol", 
+MAPS = { 2: "Charlock", 3: "Hauksness", 4: "Tantegel", 6: "Charlock", 7: "Kol", 
          8: "Brecconary", 9: "Garinham", 10: "Cantlin", 11: "Rimuldar",
          12: "Tantegel Basement", 13:"Northern Shrine", 14: "Southern Shrine",
          21: "Swamp Cave", 22: "Mountain Cave", 24: "Garin's Grave", 

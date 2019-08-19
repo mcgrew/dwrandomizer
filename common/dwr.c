@@ -28,8 +28,9 @@ const char *prg1sums[2] = {
 };
 
 
+/* The [ and ] are actually opening/closing quotes. The / is .' */
 const char alphabet[] = "0123456789abcdefghijklmnopqrstuvwxyz"
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ\"\"'*>_:__.,-_?!;)(``_'___________  ";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ[]'*>_:__.,-_?!;)(``/'___________  ";
 
 const char title_alphabet[] = "0123456789__________________________"
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ__________________________________!.c-     ";
@@ -100,6 +101,7 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     if (read < ROM_SIZE) {
         fprintf(stderr, "File '%s' is too small and may be corrupt, aborting.",
                 input_file);
+        fclose(input);
         return FALSE;
     }
     fclose(input);
@@ -133,9 +135,10 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->encounter_types[0] = &rom->content[0xcd64];
     rom->encounter_types[1] = &rom->content[0xcd81];
     rom->encounter_types[2] = &rom->content[0xcd9e];
+    // FIXME: these should be removed or modified for the new treasure code.
     rom->token = (dw_searchable*)&rom->content[0xe10b];
-    rom->flute = (dw_searchable*)&rom->content[0xe14a];
-    rom->armor = (dw_searchable*)&rom->content[0xe160];
+    rom->flute = (dw_searchable*)&rom->content[0xe12a];
+    rom->armor = (dw_searchable*)&rom->content[0xe13e];
     rom->repel_table = &rom->content[0xf4fa];
     rom->weapon_shops = &rom->content[0x1991];
     rom->weapon_prices = (uint16_t*)&rom->content[0x1947];
@@ -364,6 +367,123 @@ static void torch_in_battle(dw_rom *rom) {
         0x0e,  0x5f,  0xf4);
 }
 
+static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
+{
+    /* patch a few branch addresses */
+    vpatch(rom, 0x0e110,    1,  0x19);
+    vpatch(rom, 0x0e116,    1,  0x13);
+    vpatch(rom, 0x0e11c,    1,  0x0d);
+    vpatch(rom, 0x0e231,    1,  0x48);
+    vpatch(rom, 0x0e23b,    1,  0x48);
+    vpatch(rom, 0x0e26a,    1,  0x48);
+    vpatch(rom, 0x0e2ad,    1,  0x48);
+    vpatch(rom, 0x0e378,    1,  0x48);
+
+    /* new "SEARCH" code */
+    vpatch(rom, 0x0e11d,  109,
+        0xa9, items[0],   /*   lda item0                                      */
+        0xf0, 0x09,       /*   beq +                                          */
+        0x48,
+        0xa9, 0xff,
+        0x85, 0x0e,
+        0x68,
+        0x4c, 0x24, 0xe2, /* - jmp $e224                                      */
+        0xa5, 0x45,       /* + lda $45     ; Load the current map             */
+        0xc9, 0x07,       /*   cmp #$07    ; Is this Kol?                     */
+        0xd0, 0x0e,       /*   bne +                                          */
+        0xa5, 0x3a,       /*   lda $3a     ; Load the X coordinate            */
+        0xc9, 0x09,       /*   cmp #$09    ; Is it 9?                         */
+        0xd0, 0x08,       /*   bne +                                          */
+        0xa5, 0x3b,       /*   lda $3b     ; Load the Y coordinate            */
+        0xc9, 0x06,       /*   cmp #$06    ; Is it 6?                         */
+        0xa9, items[1],   /*   lda item1                                      */
+        0xd0, 0xe3,       /*   bne -                                          */
+        0xa5, 0x45,       /* + lda $45     ; Load the current map             */
+        0xc9, 0x03,       /*   cmp #$03    ; Is this Hauksness?               */
+        0xd0, 0x46,       /*   bne $e18c                                      */
+        0xa5, 0x3a,       /*   lda $3a     ; Load the X coordinate            */
+        0xc9, 0x12,       /*   cmp #$12    ; is it 18?                        */
+        0xd0, 0x40,       /*   bne $e18c                                      */
+        0xa5, 0x3b,       /*   lda $3b    ; Load the Y coordinate             */
+        0xc9, 0x0c,       /*   cmp #$0c   ; Is it 13?                         */
+        0xd0, 0x3a,       /*   bne $e13a                                      */
+        0xa9, items[2],   /*   lda item2                                      */
+        0xd0, 0xcd,       /*   bne -                                          */
+        0xf0, 0x34,       /*   beq $e18c  ; Go on to next search location     */
+
+        0xff,  0xff,  0xff,  0xff,
+        0xff,  0xff,  0xff,  0xff,
+        0xff,  0xff,  0xff,  0xff,
+        0xff,  0xff,  0xff,  0xff,
+        0xff,  0xff,  0xff,  0xff,
+        0xff,  0xff,  0xff,  0xff,
+        0xff,  0xff,  0xff,  0xff,
+        0xff,  0xff,  0xff,  0xff,
+        0xff,  0xff,  0xff,  0xff,
+        0xff,  0xff,  0xff,  0xff,
+        0xff,  0xff,  0xff,  0xff,
+        0xff,  0xff,  0xff,  0xff,
+        0xff,  0xff,  0xff,  0xff);
+
+    /* new "TAKE" code */
+    vpatch(rom, 0x0e2eb, 122,
+        0x01,
+        0xd0, 0x1b,       /*   bne +                                          */
+        0xa5, 0xbe,       /*   lda $be         ; Load the equipment byte      */
+        0x29, 0x1c,       /*   and #$1c        ; See if we have the armor     */
+        0xc9, 0x1c,       /*   cmp #$1c                                       */
+        0xf0, 0x46,       /*   beq chest_empty ; The chest is empty           */
+        0xa5, 0xbe,       /*   lda $be         ; Load the equipment byte      */
+        0x09, 0x1c,       /*   ora #$1c        ; Add the armor                */
+        0x85, 0xbe,       /*   sta $be         ; Save it                      */
+        0x20, 0x48, 0xe3, /*   jsr take_content                               */
+        0xa9, 0x28,       /*   lda #$28                                       */
+        0x20, 0xf0, 0xdb, /*   jsr $dbf0       ; "You got the armor"          */
+        0xa9, 0xd5,       /*   lda #$d5                                       */
+        0x4c, 0x42, 0xd2, /*   jmp finish_text                                */
+        0xc9, 0x08,       /* + cmp #$08    ; If it's not the flute.           */
+        0xd0, 0x0b,       /*   bne +       ; Jump to the next check           */
+        0xa9, 0x05,       /*   lda #$05    ; Load the flute inventory value   */
+        0x20, 0x55, 0xe0, /*   jsr $e055   ; Jump to inventory check          */
+        0xc9, 0xff,       /*   cmp #$ff    ; If return value is $ff (found)   */
+        0xd0, 0x26,       /*   bne chest_empty ; The chest is empty           */
+        0xa9, 0x08,       /*   lda #$08    ; Reset the flute chest value      */
+        0xc9, 0x0a,       /* + cmp #$0a    ; If it's not the token            */
+        0xd0, 0x0b,       /*   bne +       ; Jump to the next check           */
+        0xa9, 0x07,       /*   lda #$07    ; Load the token inventory value   */
+        0x20, 0x55, 0xe0, /*   jsr #$e055  ; Jump to inventory check          */
+        0xc9, 0xff,       /*   cmp #$ff    ; If return value is $ff (found)   */
+        0xd0, 0x17,       /*   bne chest_empty ; The chest is empty           */
+        0xa9, 0x0a,       /*   lda #$0a    ; Reset the token chest value      */
+        0xc9, 0x11,       /* + cmp #$11    ; If value is >= $11               */
+        0xb0, 0x03,       /*   bcs +       ; Jump to the next check           */
+        0x4c, 0x69, 0xe2, /*   jmp B3_e269 ; Add the item to the inventory    */
+        0xa9, 0xff,       /* + lda #$ff    ;                                  */
+        0x85, 0x3e,       /*   sta $3e     ;                                  */
+        0xa9, 0xf4,       /*   lda #$f4    ;                                  */
+        0x85, 0x00,       /*   sta $00     ;                                  */
+        0xa9, 0x01,       /*   lda #$01    ;                                  */
+        0x85, 0x01,       /*   sta $01     ;                                  */
+        0xd0, 0x29,
+        0xa5, 0x0e,
+        0xc9,  0xff,
+        0xa9,  0x00,
+        0x85,  0x0e,
+        0x90,  0x03,
+        0x4c, 0xa3, 0xe2,
+        0x4c, 0xc8, 0xe1,
+        0xa5, 0x0e,
+        0xc9,  0xff,
+        0xa9,  0x00,
+        0x85,  0x0e,
+        0xb0,  0x70,
+        0xf0,  0x46,
+
+        0xff,  0xff,  0xff,  0xff,
+        0xff,  0xff,  0xff,  0xff,
+        0xff,  0xff,  0xff,  0xff,  0xff);
+}
+
 /**
  * Shuffles the contents of all chests in the game with the exception of the
  * starting throne room key and the staff of rain.
@@ -372,51 +492,59 @@ static void torch_in_battle(dw_rom *rom) {
  */
 static void shuffle_chests(dw_rom *rom)
 {
-    int i, key_item_1 = 0, key_item_2 = 1;
+    size_t i;
     dw_chest *chest;
-    uint8_t *cont, contents[CHEST_COUNT-2] = {
-            CURSED_BELT, CURSED_BELT,
-            GOLD_500, GOLD_500, GOLD_500, GOLD_500,
-            GOLD_500, GOLD_500, GOLD_500,
+    uint8_t contents[] = {
+            GOLD, GOLD, GOLD, GOLD,
+            CURSED_BELT, CURSED_BELT, CURSED_BELT,
+            GOLD, GOLD, GOLD, GOLD, GOLD, GOLD,
             WINGS, WINGS,
             KEY, KEY, KEY,
             HERB, HERB, HERB, HERB,
-            TORCH, TORCH,
+            TORCH, TORCH, TORCH,
             FAIRY_WATER, FAIRY_WATER,
-            STONES, DRAGON_SCALE, HARP, SWORD, NECKLACE, TORCH, RING
-    };
+            DRAGON_SCALE, RING
+    }, *cont = contents;
+    uint8_t  key_items[] = {
+            SWORD, ARMOR, NECKLACE, HARP, STONES, FLUTE, TOKEN
+    }, *key_item = key_items;
+    uint8_t search_items[] = { 0, 0, 0 };
 
-    if (CURSED_PRINCESS(rom)) {
-        /* keep more cursed belts in chests. replace gold with
-         * key items instead. */
-        key_item_1 = 8;
-        key_item_2 = 9;
-        /* replace a wings and fairy water with belts */
-        contents[10] = contents[21] = CURSED_BELT;
+    do {
+        mt_shuffle(key_items, sizeof(key_items), sizeof(uint8_t));
+    } while (THREES_COMPANY(rom) && is_quest_item(key_items[0]));
+
+    for (i=0; i < 3; i++) {
+        if (mt_rand(0, 4)) { /* fill in the search spots with a 80% chance */
+            search_items[i] = *(key_item++);
+        }
+    }
+    rewrite_search_take_code(rom, search_items);
+
+    while (key_item < (key_items + sizeof(key_items))) {
+        /* overwite cursed belts with the remaining key items */
+        *cont = *key_item++; 
+        cont++;
     }
 
+    if (CURSED_PRINCESS(rom)) {
+        /* replace a wings and fairy water with belts */
+        contents[14] = contents[26] = CURSED_BELT;
+    }
+#if 0
     if (!SHUFFLE_CHESTS(rom))
         return;
-
+#endif
     printf("Shuffling chest contents...\n");
     cont = contents;
     chest = rom->chests;
 
-    if (!mt_rand(0, 2)) { /* 33% chance */
-        rom->token->map = NO_MAP; /* remove token */
-        contents[key_item_1] = TOKEN;
-    }
-    if (!mt_rand(0, 2)) { /* 33% chance */
-        rom->flute->map = NO_MAP; /* remove flute */
-        contents[key_item_2] = FLUTE;
-    }
-
     /* shuffle the contents and place them in chests */
-    mt_shuffle(contents, CHEST_COUNT-2, sizeof(uint8_t));
+    mt_shuffle(contents, sizeof(contents), sizeof(uint8_t));
     chest = rom->chests;
     cont = contents;
     for (i=0; i < CHEST_COUNT; i++) {
-        /* don't move the staff or starting key*/
+        /* don't move the staff or starting key */
         if ((chest->map == TANTEGEL_THRONE_ROOM && chest->item == KEY) ||
                     chest->item == STAFF) {
             chest++;
@@ -426,42 +554,6 @@ static void shuffle_chests(dw_rom *rom)
     }
 
     check_quest_items(rom);
-
-    /* make sure the player can't get more than one token or flute */
-    vpatch(rom, 0xe2ea, 95,
-           0xc9, 0x08,        /* CMP #$08   ; If it's not the flute           */
-           0xd0, 0x0b,        /* BNE $E2F7  ; Jump to the next check          */
-           0xa9, 0x05,        /* LDA #$05   ; Load the flute inventory value  */
-           0x20, 0x55, 0xe0,  /* JSR $E055  ; Jump to inventory check         */
-           0xc9, 0xff,        /* CMP #$FF   ; If return value is $FF (found)  */
-           0xd0, 0xac,        /* BNE $E2A3  ; The chest is empty              */
-           0xa9, 0x08,        /* LDA #$08   ; Reset the flute chest value     */
-           0xc9, 0x0a,        /* CMP #$0A   ; If it's not the token           */
-           0xd0, 0x33,        /* BNE $E330  ; Jump to the next check          */
-           0xa9, 0x07,        /* LDA #$07   ; Load the token inventory value  */
-           0x20, 0x55, 0xe0,  /* JSR $E055  ; Jump to inventory check         */
-           0xc9, 0xff,        /* CMP #$FF   ; If return value is $FF (found)  */
-           0xd0, 0x9d,        /* BNE $E2A3  ; The chest is empty              */
-           0xa9, 0x0a,        /* LDA #$0A   ; Reset the token chest value     */
-           0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, /* NOP x 40 */
-           0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea,
-           0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea,
-           0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea,
-           0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea,
-           0xc9, 0x11,         /* CMP #$11  ; If value is >= $11              */
-           0xb0, 0x03,         /* BCS $E337 ; Jump to the next check          */
-           0x4c, 0x69, 0xe2,   /* JMP $E269 ; Add the item to inventory       */
-           0xc9, 0x17,         /* CMP #$17  ; If the value is greater >= $17  */
-           0xb0, 0x0e,         /* BCS $E349 ; It's the tablet                 */
-           0xa9, 0xff,         /* LDA #$FF                                    */
-           0x85, 0x3e,         /* STA $003E                                   */
-           0xa9, 0xf4,         /* LDA #$F4                                    */
-           0x85, 0x00,         /* STA $0000                                   */
-           0xa9, 0x01,         /* LDA #$01                                    */
-           0x85, 0x01,         /* STA $0001                                   */
-           0xd0, 0x1c          /* BNE $E365 ; Add gold to the player          */
-    );
-
 }
 
 /**
@@ -715,6 +807,7 @@ static void randomize_shops(dw_rom *rom)
  */
 static void shuffle_searchables(dw_rom *rom)
 {
+#if 0
     dw_searchable searchables[3];
 
     if (!SHUFFLE_CHESTS(rom))
@@ -737,6 +830,7 @@ static void shuffle_searchables(dw_rom *rom)
     rom->armor->map = searchables[2].map;
     rom->armor->x   = searchables[2].x;
     rom->armor->y   = searchables[2].y;
+#endif
 }
 
 /**
@@ -883,20 +977,25 @@ static void short_charlock(dw_rom *rom)
  */
 static void open_charlock(dw_rom *rom)
 {
+    // FIXME: this doesn't work with the new treasure code
     int i;
 
     if (!OPEN_CHARLOCK(rom))
         return;
 
-    rom->token->map = NO_MAP; /* remove token */
-
     printf("Opening Charlock and removing quest items...\n");
     /* remove the quest items since we won't need them */
     for (i=0; i <= 31; ++i) {
         if (is_quest_item(rom->chests[i].item)) {
-            rom->chests[i].item = GOLD_500;
+            rom->chests[i].item = GOLD;
         }
     }
+    if (is_quest_item(rom->token->item))
+            rom->token->item = 0;
+    if (is_quest_item(rom->armor->item))
+            rom->armor->item = 0;
+    if (is_quest_item(rom->flute->item))
+            rom->flute->item = 0;
 }
 
 /**
@@ -1607,7 +1706,7 @@ static void no_keys(dw_rom *rom)
     chest = rom->chests;
     for (i=0; i < CHEST_COUNT; i++) {
         if (chest->item == KEY)
-            chest->item = GOLD_500;
+            chest->item = GOLD;
         chest++;
     }
 
@@ -1669,14 +1768,7 @@ static void dwr_token_dialogue(dw_rom *rom)
     uint8_t text1[24], text2[75];
     int dx, dy;
 
-    searchable = rom->token;
-    if (searchable->map != OVERWORLD) {
-        searchable = rom->flute;
-    }
-    if (searchable->map != OVERWORLD) {
-        searchable = rom->armor;
-    }
-    if (searchable->map != OVERWORLD) {
+    if (!rom->token->item) {
         strcpy((char*)text1, "Thou must go and fight!");
         strcpy((char*)text2, "Go forth, descendant of Erdrick, "
                 "I have complete faith in thy victory! ");
@@ -1684,13 +1776,20 @@ static void dwr_token_dialogue(dw_rom *rom)
         patch(rom, 0xa228, 23, text1);
         vpatch(rom, 0xa288, 1, 0x53); /* replace .' with ' */
     } else {
-        dx = searchable->x - rom->map.warps_from[WARP_TANTEGEL].x;
-        dy = searchable->y - rom->map.warps_from[WARP_TANTEGEL].y;
+        dx = rom->token->x - rom->map.warps_from[WARP_TANTEGEL].x;
+        dy = rom->token->y - rom->map.warps_from[WARP_TANTEGEL].y;
 //        strcpy((char*)text1, "Thou may go and search.");
-        snprintf((char*)text2, 73, "From Tantegel Castle travel %2d leagues "
-                "to the %s and %2d to the %s",
-                ABS(dy), (dy < 0) ? "north" : "south",
-                ABS(dx), (dx < 0) ? "west" : "east");
+        if (dx > 100 || dy > 100) {
+            snprintf((char*)text2, 74, "From Tantegel Castle travel %3d "
+                    "leagues to the %s and %3d %s/    ",
+                    ABS(dy), (dy < 0) ? "north" : "south",
+                    ABS(dx), (dx < 0) ? "west" : "east");
+        } else {
+            snprintf((char*)text2, 74, "From Tantegel Castle travel %2d "
+                    "leagues to the %s and %2d to the %s/",
+                    ABS(dy), (dy < 0) ? "north" : "south",
+                    ABS(dx), (dx < 0) ? "west" : "east");
+        }
     }
     ascii2dw(text2);
     patch(rom, 0xa242, 70, text2);

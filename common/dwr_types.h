@@ -160,14 +160,13 @@ typedef struct {
 
 /** Code for the 3 "search" items in the game (not including the trap door) */
 typedef struct {
-    // FIXME: this needs to be updated for the new treasure code
     uint8_t code1[3];
     uint8_t map;
     uint8_t code2[5];
     uint8_t x;
     uint8_t code3[5];
     uint8_t y;
-    uint8_t code4;
+    uint8_t code4[3];
     uint8_t item;
 } dw_searchable;
 

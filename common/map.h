@@ -7,6 +7,7 @@
 
 /** Map tile indexes */
 typedef enum {
+    TILE_NOTSWAMP = -2,
     TILE_NONE     = -1,
     TILE_GRASS    = 0x0,
     TILE_DESERT   = 0x1,

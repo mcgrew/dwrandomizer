@@ -344,9 +344,9 @@ static void torch_in_battle(dw_rom *rom) {
     if (!TORCH_IN_BATTLE(rom))
         return;
 
-    vpatch(rom, 0x0e87d,    2,  0x88,  0xc2);
+    vpatch(rom, 0x0e87d,    2,  0x60,  0xe1);
 
-    vpatch(rom, 0x0c288,  22,
+    vpatch(rom, 0x0e160,  22,
         0xc9, 0x04,
         0xd0, 0x0c,
         0x20, 0xcb,  0xc7,

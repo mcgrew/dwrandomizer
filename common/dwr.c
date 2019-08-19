@@ -1872,6 +1872,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     cursed_princess(&rom);
     threes_company(&rom);
     scared_metal_slimes(&rom);
+    torch_in_battle(&rom);
     other_patches(&rom);
     credits(&rom);
     crc = crc64(0, rom.content, 0x10000);

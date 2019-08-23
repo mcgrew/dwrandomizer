@@ -373,11 +373,11 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
     vpatch(rom, 0x0e110,    1,  0x19);
     vpatch(rom, 0x0e116,    1,  0x13);
     vpatch(rom, 0x0e11c,    1,  0x0d);
-    vpatch(rom, 0x0e231,    1,  0x48);
-    vpatch(rom, 0x0e23b,    1,  0x48);
-    vpatch(rom, 0x0e26a,    1,  0x48);
-    vpatch(rom, 0x0e2ad,    1,  0x48);
-    vpatch(rom, 0x0e378,    1,  0x48);
+    vpatch(rom, 0x0e231,    1,  0x4c);
+    vpatch(rom, 0x0e23b,    1,  0x4c);
+    vpatch(rom, 0x0e26a,    1,  0x4c);
+    vpatch(rom, 0x0e2ad,    1,  0x4c);
+    vpatch(rom, 0x0e378,    1,  0x4c);
 
     /* new "SEARCH" code */
     vpatch(rom, 0x0e11d,  109,
@@ -426,8 +426,8 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
         0xff,  0xff,  0xff,  0xff);
 
     /* new "TAKE" code */
-    vpatch(rom, 0x0e2eb, 122,
-        0x01,
+    vpatch(rom, 0x0e2ea, 123,
+        0xc9, 0x01,       /*   cmp #$01        ; Is it the armor?             */
         0xd0, 0x1b,       /*   bne +                                          */
         0xa5, 0xbe,       /*   lda $be         ; Load the equipment byte      */
         0x29, 0x1c,       /*   and #$1c        ; See if we have the armor     */
@@ -436,7 +436,7 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
         0xa5, 0xbe,       /*   lda $be         ; Load the equipment byte      */
         0x09, 0x1c,       /*   ora #$1c        ; Add the armor                */
         0x85, 0xbe,       /*   sta $be         ; Save it                      */
-        0x20, 0x48, 0xe3, /*   jsr take_content                               */
+        0x20, 0x4c, 0xe3, /*   jsr take_content                               */
         0xa9, 0x28,       /*   lda #$28                                       */
         0x20, 0xf0, 0xdb, /*   jsr $dbf0       ; "You got the armor"          */
         0xa9, 0xd5,       /*   lda #$d5                                       */
@@ -469,15 +469,15 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
         0xc9,  0xff,
         0xa9,  0x00,
         0x85,  0x0e,
-        0x90,  0x03,
+        0xb0,  0x03,
         0x4c, 0xa3, 0xe2,
         0x4c, 0xc8, 0xe1,
         0xa5, 0x0e,
         0xc9,  0xff,
         0xa9,  0x00,
         0x85,  0x0e,
-        0xb0,  0x70,
-        0xf0,  0x46,
+        0xb0,  0x6c,
+        0xf0,  0x42,
 
         0xff,  0xff,  0xff,  0xff,
         0xff,  0xff,  0xff,  0xff,

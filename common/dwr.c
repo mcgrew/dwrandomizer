@@ -345,9 +345,9 @@ static void torch_in_battle(dw_rom *rom) {
         return;
 
     /* patch the jump address */
-    vpatch(rom, 0x0e87d,   2, 0x88, 0xc2);
+    vpatch(rom, 0x0e87d,   2, 0x75, 0xc4);
 
-    vpatch(rom, 0x0c288, 71,
+    vpatch(rom, 0x0c475, 71,
         0xc9, 0x04,
         0xd0, 0x2a,
         0xa9, 0x01,

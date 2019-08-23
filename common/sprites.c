@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <time.h>
 
 #include "sprites.h"
 #include "patch.h"
@@ -2797,6 +2798,9 @@ void sprite(dw_rom *rom, const char *sprite_name)
     sprite_func[i++] = &challenge5;
 
     if (!strcmp("Random", sprite_name)) {
+        /* reseed the RNG so this isn't deterministic */
+        mt_init(time(NULL));
+
         /* don't choose the "challenge" sprites */
         i = mt_rand(2, sprite_count()-4);
         printf("Setting player sprite to %s...\n", dwr_sprite_names[i]);

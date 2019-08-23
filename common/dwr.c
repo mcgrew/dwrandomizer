@@ -138,7 +138,7 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     // FIXME: these should be removed or modified for the new treasure code.
     rom->token = (dw_searchable*)&rom->content[0xe10b];
     rom->flute = (dw_searchable*)&rom->content[0xe12a];
-    rom->armor = (dw_searchable*)&rom->content[0xe13e];
+    rom->armor = (dw_searchable*)&rom->content[0xe140];
     rom->repel_table = &rom->content[0xf4fa];
     rom->weapon_shops = &rom->content[0x1991];
     rom->weapon_prices = (uint16_t*)&rom->content[0x1947];
@@ -344,6 +344,7 @@ static void torch_in_battle(dw_rom *rom) {
     if (!TORCH_IN_BATTLE(rom))
         return;
 
+    printf("Making torches and fairy water more deadly...\n");
     /* patch the jump address */
     vpatch(rom, 0x0e87d,   2, 0x75, 0xc4);
 
@@ -418,47 +419,41 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
     vpatch(rom, 0x0e11d,  109,
         0xa9, items[0],   /*   lda item0                                      */
         0xf0, 0x09,       /*   beq +                                          */
-        0x48,
-        0xa9, 0xff,
-        0x85, 0x0e,
-        0x68,
-        0x4c, 0x24, 0xe2, /* - jmp $e224                                      */
+        0x48,             /* - pha                                            */
+        0xa9, 0xff,       /*   lda #$ff                                       */
+        0x85, 0x0e,       /*   sta $0e                                        */
+        0x68,             /*   pla                                            */
+        0x4c, 0x24, 0xe2, /*   jmp $e224                                      */
         0xa5, 0x45,       /* + lda $45     ; Load the current map             */
         0xc9, 0x07,       /*   cmp #$07    ; Is this Kol?                     */
-        0xd0, 0x0e,       /*   bne +                                          */
+        0xd0, 0x10,       /*   bne +                                          */
         0xa5, 0x3a,       /*   lda $3a     ; Load the X coordinate            */
         0xc9, 0x09,       /*   cmp #$09    ; Is it 9?                         */
-        0xd0, 0x08,       /*   bne +                                          */
+        0xd0, 0x0a,       /*   bne +                                          */
         0xa5, 0x3b,       /*   lda $3b     ; Load the Y coordinate            */
         0xc9, 0x06,       /*   cmp #$06    ; Is it 6?                         */
+        0xd0, 0x04,       /*   bne +                                          */
         0xa9, items[1],   /*   lda item1                                      */
-        0xd0, 0xe3,       /*   bne -                                          */
+        0xd0, 0xe1,       /*   bne -                                          */
         0xa5, 0x45,       /* + lda $45     ; Load the current map             */
         0xc9, 0x03,       /*   cmp #$03    ; Is this Hauksness?               */
-        0xd0, 0x46,       /*   bne $e18c                                      */
+        0xd0, 0x44,       /*   bne $e18c                                      */
         0xa5, 0x3a,       /*   lda $3a     ; Load the X coordinate            */
         0xc9, 0x12,       /*   cmp #$12    ; is it 18?                        */
-        0xd0, 0x40,       /*   bne $e18c                                      */
+        0xd0, 0x3e,       /*   bne $e18c                                      */
         0xa5, 0x3b,       /*   lda $3b    ; Load the Y coordinate             */
         0xc9, 0x0c,       /*   cmp #$0c   ; Is it 13?                         */
-        0xd0, 0x3a,       /*   bne $e13a                                      */
+        0xd0, 0x38,       /*   bne $e13a                                      */
         0xa9, items[2],   /*   lda item2                                      */
-        0xd0, 0xcd,       /*   bne -                                          */
-        0xf0, 0x34,       /*   beq $e18c  ; Go on to next search location     */
+        0xd0, 0xcb,       /*   bne -                                          */
+        0xf0, 0x32,       /*   beq $e18c  ; Go on to next search location     */
 
-        0xff,  0xff,  0xff,  0xff,
-        0xff,  0xff,  0xff,  0xff,
-        0xff,  0xff,  0xff,  0xff,
-        0xff,  0xff,  0xff,  0xff,
-        0xff,  0xff,  0xff,  0xff,
-        0xff,  0xff,  0xff,  0xff,
-        0xff,  0xff,  0xff,  0xff,
-        0xff,  0xff,  0xff,  0xff,
-        0xff,  0xff,  0xff,  0xff,
-        0xff,  0xff,  0xff,  0xff,
-        0xff,  0xff,  0xff,  0xff,
-        0xff,  0xff,  0xff,  0xff,
-        0xff,  0xff,  0xff,  0xff);
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+    );
 
     /* new "TAKE" code */
     vpatch(rom, 0x0e2ea, 123,
@@ -501,22 +496,21 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
         0x85, 0x01,       /*   sta $01     ;                                  */
         0xd0, 0x29,
         0xa5, 0x0e,
-        0xc9,  0xff,
-        0xa9,  0x00,
-        0x85,  0x0e,
-        0xb0,  0x03,
+        0xc9, 0xff,
+        0xa9, 0x00,
+        0x85, 0x0e,
+        0xb0, 0x03,
         0x4c, 0xa3, 0xe2,
         0x4c, 0xc8, 0xe1,
         0xa5, 0x0e,
-        0xc9,  0xff,
-        0xa9,  0x00,
-        0x85,  0x0e,
-        0xb0,  0x6c,
-        0xf0,  0x42,
+        0xc9, 0xff,
+        0xa9, 0x00,
+        0x85, 0x0e,
+        0xb0, 0x6c,
+        0xf0, 0x42,
 
-        0xff,  0xff,  0xff,  0xff,
-        0xff,  0xff,  0xff,  0xff,
-        0xff,  0xff,  0xff,  0xff,  0xff);
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+        0xff, 0xff, 0xff);
 }
 
 /**

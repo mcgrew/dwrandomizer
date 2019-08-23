@@ -1904,13 +1904,14 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     torch_in_battle(&rom);
     other_patches(&rom);
     credits(&rom);
-    crc = crc64(0, rom.content, 0x10000);
 
-    sprite(&rom, sprite_name);
     modern_spell_names(&rom);
-    update_title_screen(&rom);
     randomize_music(&rom);
     disable_music(&rom);
+    crc = crc64(0, rom.content, 0x10000);
+
+    update_title_screen(&rom);
+    sprite(&rom, sprite_name);
 
     printf("Checksum: %016"PRIx64"\n", crc);
     if (!dwr_write(&rom, output_file)) {

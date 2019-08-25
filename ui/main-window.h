@@ -22,7 +22,7 @@ extern "C" {
 }
 #endif
 
-#define TAB_COUNT 5
+#define TAB_COUNT 6
 
 struct configuration {
     char input_file[1024];

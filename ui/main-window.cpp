@@ -28,6 +28,7 @@
 
 const char* const tab_names[] {
     "Gameplay",
+    "Features",
     "Monsters",
     "Shortcuts",
     "Goals",
@@ -36,7 +37,8 @@ const char* const tab_names[] {
 
 enum tabs {
     GAMEPLAY,
-    ENEMIES,
+    FEATURES,
+    MONSTERS,
     SHORTCUTS,
     GOALS,
     COSMETIC
@@ -117,13 +119,14 @@ void MainWindow::layout()
     grid->addWidget(this->seed,      1, 0, 0);
     grid->addWidget(this->flags,     1, 1, 0);
 
-    /* Add tab names and some empty labels for padding */
+    /* Add tab names and initialize layouts */
     for (int i=0; i < TAB_COUNT; i++) {
       this->tabContents[i]->setLayout(this->optionGrids[i]);
       tabWidget->addTab(tabContents[i], tab_names[i]);
       for (int c=0; c < PANE_COLUMNS; c++) {
         this->addLabel("", i, 0, c);
       }
+      /* add empty labels for padding */
       for (int r=1; r < PANE_ROWS; r++) {
         this->addLabel("", i, r, 0);
       }
@@ -131,24 +134,28 @@ void MainWindow::layout()
 
     /* Gameplay Options */
     this->addOption('C', "Shuffle Chests && Searches",         GAMEPLAY,  0, 0);
-    this->addOption('W', "Random Weapon Shops",                GAMEPLAY,  1, 0);
-    this->addOption('G', "Random Growth",                      GAMEPLAY,  2, 0);
-    this->addOption('M', "Random Spell Learning",              GAMEPLAY,  3, 0);
-    this->addOption('y', "Heal/Hurt before \"More\"",          GAMEPLAY,  4, 0);
-    this->addOption('w', "Random Weapon Prices",               GAMEPLAY,  5, 0);
-    this->addOption('R', "Enable Menu Wrapping",               GAMEPLAY,  0, 1);
-    this->addOption('D', "Enable Death Necklace",              GAMEPLAY,  1, 1);
-    this->addOption('T', "Enable Torches In Battle",           GAMEPLAY,  2, 1);
-    this->addOption('x', "Random XP Requirements",             GAMEPLAY,  3, 1);
-    this->addOption('b', "Big Swamp",                 "", "v", GAMEPLAY,  4, 1);
-    this->addOption('l', "Scared Metal Slimes",       "", "e", GAMEPLAY,  5, 1);
-    this->addOption('v', "Vanilla (Original) Map",    "", "b", GAMEPLAY,  6, 1);
+    this->addOption('G', "Random Growth",                      GAMEPLAY,  1, 0);
+    this->addOption('M', "Random Spell Learning",              GAMEPLAY,  2, 0);
+    this->addOption('y', "Heal/Hurt before \"More\"", "M", "", GAMEPLAY,  3, 0);
+    this->addOption('W', "Random Weapon Shops",                GAMEPLAY,  0, 1);
+    this->addOption('w', "Random Weapon Prices",               GAMEPLAY,  1, 1);
+    this->addOption('x', "Random XP Requirements",             GAMEPLAY,  2, 1);
+    this->addOption('v', "Vanilla (Original) Map",    "", "b", GAMEPLAY,  3, 1);
 
-    this->addOption('P', "Random Monster Abilities",           ENEMIES,   0, 0);
-    this->addOption('Z', "Random Monster Zones",               ENEMIES,   1, 0);
-    this->addOption('e', "Random Monster Stats",      "Z", "", ENEMIES,   2, 0);
-    this->addOption('d', "Random Monster XP && Gold",          ENEMIES,   3, 0);
+    /* Features */
+    this->addOption('R', "Enable Menu Wrapping",               FEATURES,  0, 0);
+    this->addOption('D', "Enable Death Necklace",              FEATURES,  1, 0);
+    this->addOption('T', "Enable Torches In Battle",           FEATURES,  2, 0);
+    this->addOption('l', "Scared Metal Slimes",       "", "e", FEATURES,  0, 1);
+    this->addOption('b', "Big Swamp",                 "", "v", FEATURES,  1, 1);
 
+    /* Monster flags */
+    this->addOption('P', "Random Monster Abilities",           MONSTERS,   0, 0);
+    this->addOption('Z', "Random Monster Zones",               MONSTERS,   1, 0);
+    this->addOption('e', "Random Monster Stats",      "Z", "", MONSTERS,   2, 0);
+    this->addOption('d', "Random Monster XP && Gold",          MONSTERS,   3, 0);
+
+    /* Shortcuts */
     this->addOption('t', "Fast Text",                          SHORTCUTS, 0, 0);
     this->addOption('H', "Speed Hacks",                        SHORTCUTS, 1, 0);
     this->addOption('o', "Open Charlock",                      SHORTCUTS, 2, 0);
@@ -156,7 +163,6 @@ void MainWindow::layout()
     this->addOption('k', "Don't Require Magic Keys",           SHORTCUTS, 4, 0);
     this->addLabel("Leveling Speed",                           SHORTCUTS, 0, 1);
     this->placeWidget(this->levelSpeed,                        SHORTCUTS, 1, 1);
-
 
     /* Goals */
     this->addOption('c', "Cursed Princess",                    GOALS,     0, 0);

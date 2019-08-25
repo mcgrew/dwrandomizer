@@ -338,6 +338,11 @@ static inline void check_quest_items(dw_rom *rom)
     }
 }
 
+/**
+ * Patches the game to allow the use of torches and fairy water in battle
+ *
+ * @param rom The rom struct
+ */
 static void torch_in_battle(dw_rom *rom) {
     /* change the jump address in the item use code */
 
@@ -403,6 +408,12 @@ static void torch_in_battle(dw_rom *rom) {
 
 }
 
+/**
+ * Patches the game code to allow Erdrick's Armor to be in a chest and other
+ * items to be found on "searchable" spots
+ *
+ * @param rom The rom struct
+ */
 static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
 {
     /* patch a few branch addresses */
@@ -513,12 +524,26 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
         0xff, 0xff, 0xff);
 }
 
+/**
+ * Determines if a chest should be left alone when randomizing
+ *
+ * @param chest The chest to be checked
+ */
 static inline BOOL is_static_chest(dw_chest *chest)
 {
     return (chest->map == TANTEGEL_THRONE_ROOM && chest->item == KEY) ||
                     chest->item == STAFF;
 }
 
+/**
+ * Called when the player chooses not to shuffle items in chests. This sets
+ * them to items found in the original game with a few exceptions:
+ *   All gold chests aside from 500-755 gold no longer exist, so are replaced
+ *     with big gold chests
+ *   The tablet no longer exists, so is replaced with a Dragon's Scale
+ *
+ * @param rom The rom struct
+ */
 static void no_chest_shuffle(dw_rom *rom)
 {
     size_t i;
@@ -1297,6 +1322,11 @@ static void dwr_death_necklace(dw_rom *rom)
         );
 }
 
+/**
+ * Makes metal slimes always have a chance to run from the hero
+ *
+ * @param rom The rom struct
+ */
 static void scared_metal_slimes(dw_rom *rom)
 {
 
@@ -1321,6 +1351,11 @@ static void scared_metal_slimes(dw_rom *rom)
     );
 }
 
+/**
+ * Adds a new goal to give the princess a cursed belt to finish the game
+ *
+ * @param rom The rom struct
+ */
 static void cursed_princess(dw_rom *rom)
 {
 
@@ -1360,6 +1395,11 @@ static void cursed_princess(dw_rom *rom)
     vpatch(rom, 0x0d40e,    2,  0xd3,  0xc4);
 }
 
+/**
+ * Adds a new goal: bring the princess to the Dragonlord and join him to win
+ *
+ * @param rom The rom struct
+ */
 static void threes_company(dw_rom *rom)
 {
     if (!THREES_COMPANY(rom))
@@ -1477,6 +1517,11 @@ static void other_patches(dw_rom *rom)
     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");
 }
 
+/**
+ * Patches the credits to add contributors to the randomizer
+ *
+ * @param rom The rom struct
+ */
 static void credits(dw_rom *rom)
 {
     printf("Patching credits...\n");
@@ -1728,6 +1773,11 @@ static void dwr_speed_hacks(dw_rom *rom)
     vpatch(rom, 0xdb44, 9, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea);
 }
 
+/**
+ * Removes the need for keys to open doors
+ *
+ * @param rom The rom struct
+ */
 static void no_keys(dw_rom *rom)
 {
     int i;
@@ -1754,6 +1804,13 @@ static void no_keys(dw_rom *rom)
     vpatch(rom, 0x181b, 3, 0, 0, 0);
 }
 
+/**
+ * Modifications to repel:
+ *   Allow repel to work in dungeons
+ *   Allow permanent repel
+ *
+ * @param rom The rom struct
+ */
 static void repel_mods(dw_rom *rom)
 {
     if (REPEL_IN_DUNGEONS(rom))
@@ -1763,6 +1820,11 @@ static void repel_mods(dw_rom *rom)
         vpatch(rom, 0xcf26, 2, 0xa9, 0xff);
 }
 
+/**
+ * Updates spell names to names used in the later games and ports.
+ *
+ * @param rom The rom struct
+ */
 static void modern_spell_names(dw_rom *rom)
 {
     if (!MODERN_SPELLS(rom))

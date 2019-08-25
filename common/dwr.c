@@ -513,6 +513,52 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
         0xff, 0xff, 0xff);
 }
 
+static inline BOOL is_static_chest(dw_chest *chest)
+{
+    return (chest->map == TANTEGEL_THRONE_ROOM && chest->item == KEY) ||
+                    chest->item == STAFF;
+}
+
+static void no_chest_shuffle(dw_rom *rom)
+{
+    size_t i;
+    dw_chest *chest;
+    uint8_t contents[] = {
+            /* Tantegel */
+            GOLD, GOLD, GOLD, GOLD, GOLD, TORCH,
+            /* Rimuldar */
+            WINGS,
+            /* Garinham */
+            GOLD, HERB, TORCH,
+            /* Charlock Throne */
+            HERB, GOLD, WINGS, KEY, CURSED_BELT, HERB,
+            /* Tantegel basement */
+            STONES,
+            /* Garin's Grave */
+            HERB, GOLD, GOLD, CURSED_BELT, HARP,
+            /* Charlock dungeon */
+            SWORD,
+            /* Mountain Cave */
+            NECKLACE, TORCH, RING, GOLD, HERB,
+            /* Tablet cave (there is no longer a tablet in the game) */
+            DRAGON_SCALE
+    }, *cont = contents;
+    uint8_t  search_items[] = {
+           TOKEN, ARMOR, FLUTE
+    };
+
+    rewrite_search_take_code(rom, search_items);
+    chest = rom->chests;
+    for (i=0; i < CHEST_COUNT; i++) {
+        /* don't move the staff or starting key */
+        if (is_static_chest(chest)) {
+            chest++;
+            continue;
+        }
+        (chest++)->item = *(cont++);
+    }
+}
+
 /**
  * Shuffles the contents of all chests in the game with the exception of the
  * starting throne room key and the staff of rain.
@@ -539,12 +585,15 @@ static void shuffle_chests(dw_rom *rom)
     }, *key_item = key_items;
     uint8_t search_items[] = { 0, 0, 0 };
 
+    if (!SHUFFLE_CHESTS(rom))
+        return no_chest_shuffle(rom);
+
     do {
         mt_shuffle(key_items, sizeof(key_items), sizeof(uint8_t));
     } while (THREES_COMPANY(rom) && is_quest_item(key_items[0]));
 
     for (i=0; i < 3; i++) {
-        if (mt_rand(0, 4)) { /* fill in the search spots with a 80% chance */
+        if (mt_rand(0, 4) || CURSED_PRINCESS(rom)) { /* fill in the search spots with a 80% chance */
             search_items[i] = *(key_item++);
         }
     }
@@ -556,14 +605,6 @@ static void shuffle_chests(dw_rom *rom)
         cont++;
     }
 
-    if (CURSED_PRINCESS(rom)) {
-        /* replace a wings and fairy water with belts */
-        contents[14] = contents[26] = CURSED_BELT;
-    }
-#if 0
-    if (!SHUFFLE_CHESTS(rom))
-        return;
-#endif
     printf("Shuffling chest contents...\n");
     cont = contents;
     chest = rom->chests;
@@ -574,8 +615,7 @@ static void shuffle_chests(dw_rom *rom)
     cont = contents;
     for (i=0; i < CHEST_COUNT; i++) {
         /* don't move the staff or starting key */
-        if ((chest->map == TANTEGEL_THRONE_ROOM && chest->item == KEY) ||
-                    chest->item == STAFF) {
+        if (is_static_chest(chest)) {
             chest++;
             continue;
         }
@@ -827,39 +867,6 @@ static void randomize_shops(dw_rom *rom)
         }
         *(shop_item++) = SHOP_END;
     }
-}
-
-/**
- * Shuffles the 3 items which can be searched for.
- *
- * @param rom The rom struct
- */
-static void shuffle_searchables(dw_rom *rom)
-{
-#if 0
-    dw_searchable searchables[3];
-
-    if (!SHUFFLE_CHESTS(rom))
-        return;
-
-    printf("Shuffling searchable items...\n");
-
-    searchables[0] = *(rom->token);
-    searchables[1] = *(rom->flute);
-    searchables[2] = *(rom->armor);
-
-    mt_shuffle(searchables, 3, sizeof(dw_searchable));
-
-    rom->token->map = searchables[0].map;
-    rom->token->x   = searchables[0].x;
-    rom->token->y   = searchables[0].y;
-    rom->flute->map = searchables[1].map;
-    rom->flute->x   = searchables[1].x;
-    rom->flute->y   = searchables[1].y;
-    rom->armor->map = searchables[2].map;
-    rom->armor->x   = searchables[2].x;
-    rom->armor->y   = searchables[2].y;
-#endif
 }
 
 /**
@@ -1804,7 +1811,6 @@ static void modern_spell_names(dw_rom *rom)
  */
 static void dwr_token_dialogue(dw_rom *rom)
 {
-    dw_searchable *searchable;
     uint8_t text1[24], text2[75];
     int dx, dy;
 
@@ -1888,7 +1894,6 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     memset(&rom.content[0xc288], 0xff, 0xc4f5 - 0xc288);
 
     while(!map_generate_terrain(&rom)) {}
-    shuffle_searchables(&rom);
     shuffle_chests(&rom);
     randomize_attack_patterns(&rom);
     randomize_zone_layout(&rom);

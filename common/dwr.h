@@ -94,6 +94,8 @@
 #define SCARED_SLIMES(x)      (x->flags & FLAG_l)
 #define MODERN_SPELLS(x)      (x->flags & FLAG_m)
 #define OPEN_CHARLOCK(x)      (x->flags & FLAG_o)
+#define PERMANENT_REPEL(x)    (x->flags & FLAG_p)
+#define REPEL_IN_DUNGEONS(x)  (x->flags & FLAG_r)
 #define SHORT_CHARLOCK(x)     (x->flags & FLAG_s)
 #define FAST_TEXT(x)          (x->flags & FLAG_t)
 #define VANILLA_MAP(x)        (x->flags & FLAG_v)

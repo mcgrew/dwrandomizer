@@ -148,6 +148,8 @@ void MainWindow::layout()
     this->addOption('T', "Enable Torches In Battle",           FEATURES,  2, 0);
     this->addOption('l', "Scared Metal Slimes",       "", "e", FEATURES,  0, 1);
     this->addOption('b', "Big Swamp",                 "", "v", FEATURES,  1, 1);
+    this->addOption('r', "Repel in dungeons",                  FEATURES,  2, 1);
+    this->addOption('p', "Permanent repel",                    FEATURES,  3, 1);
 
     /* Monster flags */
     this->addOption('P', "Random Monster Abilities",           MONSTERS,   0, 0);

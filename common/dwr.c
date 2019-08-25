@@ -966,6 +966,8 @@ static void randomize_spells(dw_rom *rom)
         stats = &rom->stats[i];
         stats->spells = 0;
         for (j=HEAL; j <= HURTMORE; j++) {
+            if (j == REPEL && PERMANENT_REPEL(rom))
+                continue;
             /* spell masks are in big endian format */
             if (rom->new_spells[j].level <= i+1) {
                 stats->spells |= 1 << (j + 8) % 16;
@@ -1745,6 +1747,15 @@ static void no_keys(dw_rom *rom)
     vpatch(rom, 0x181b, 3, 0, 0, 0);
 }
 
+static void repel_mods(dw_rom *rom)
+{
+    if (REPEL_IN_DUNGEONS(rom))
+        vpatch(rom, 0xcf20, 2, 0xa9, 0x01);
+
+    if (PERMANENT_REPEL(rom))
+        vpatch(rom, 0xcf26, 2, 0xa9, 0xff);
+}
+
 static void modern_spell_names(dw_rom *rom)
 {
     if (!MODERN_SPELLS(rom))
@@ -1902,6 +1913,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     threes_company(&rom);
     scared_metal_slimes(&rom);
     torch_in_battle(&rom);
+    repel_mods(&rom);
     other_patches(&rom);
     credits(&rom);
 

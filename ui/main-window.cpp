@@ -136,7 +136,7 @@ void MainWindow::layout()
     this->addOption('C', "Shuffle Chests && Searches",         GAMEPLAY,  0, 0);
     this->addOption('G', "Random Growth",                      GAMEPLAY,  1, 0);
     this->addOption('M', "Random Spell Learning",              GAMEPLAY,  2, 0);
-    this->addOption('y', "Heal/Hurt before \"More\"", "M", "", GAMEPLAY,  3, 0);
+    this->addOption('Y', "Heal/Hurt before \"More\"", "M", "", GAMEPLAY,  3, 0);
     this->addOption('W', "Random Weapon Shops",                GAMEPLAY,  0, 1);
     this->addOption('w', "Random Weapon Prices",               GAMEPLAY,  1, 1);
     this->addOption('x', "Random XP Requirements",             GAMEPLAY,  2, 1);

@@ -101,7 +101,6 @@
 #define VANILLA_MAP(x)        (x->flags & FLAG_v)
 #define RANDOM_PRICES(x)      (x->flags & FLAG_w)
 #define RANDOM_XP_REQS(x)     (x->flags & FLAG_x)
-#define HEAL_HURT_B4_MORE(x)  (x->flags & FLAG_y)
 #define SHUFFLE_CHESTS(x)     (x->flags & FLAG_C)
 #define DEATH_NECKLACE(x)     (x->flags & FLAG_D)
 #define FAST_XP(x)            (x->flags & FLAG_F)
@@ -115,6 +114,7 @@
 #define TORCH_IN_BATTLE(x)    (x->flags & FLAG_T)
 #define VERY_FAST_XP(x)       (x->flags & FLAG_V)
 #define RANDOMIZE_SHOPS(x)    (x->flags & FLAG_W)
+#define HEAL_HURT_B4_MORE(x)  (x->flags & FLAG_Y)
 #define RANDOMIZE_ZONES(x)    (x->flags & FLAG_Z)
 
 #ifdef __cplusplus

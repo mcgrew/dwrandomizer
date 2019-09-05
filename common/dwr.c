@@ -998,7 +998,8 @@ static void randomize_spells(dw_rom *rom)
         stats = &rom->stats[i];
         stats->spells = 0;
         for (j=HEAL; j <= HURTMORE; j++) {
-            if (j == REPEL && PERMANENT_REPEL(rom))
+            if ((j == REPEL && PERMANENT_REPEL(rom)) || 
+                (j == HURTMORE && NO_HURTMORE(rom)))
                 continue;
             /* spell masks are in big endian format */
             if (rom->new_spells[j].level <= i+1) {

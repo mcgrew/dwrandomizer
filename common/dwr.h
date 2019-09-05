@@ -98,6 +98,7 @@
 #define REPEL_IN_DUNGEONS(x)  (x->flags & FLAG_r)
 #define SHORT_CHARLOCK(x)     (x->flags & FLAG_s)
 #define FAST_TEXT(x)          (x->flags & FLAG_t)
+#define NO_HURTMORE(x)        (x->flags & FLAG_u)
 #define VANILLA_MAP(x)        (x->flags & FLAG_v)
 #define RANDOM_PRICES(x)      (x->flags & FLAG_w)
 #define RANDOM_XP_REQS(x)     (x->flags & FLAG_x)

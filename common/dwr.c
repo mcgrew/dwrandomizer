@@ -618,7 +618,9 @@ static void shuffle_chests(dw_rom *rom)
     } while (THREES_COMPANY(rom) && is_quest_item(key_items[0]));
 
     for (i=0; i < 3; i++) {
-        if (mt_rand(0, 4) || CURSED_PRINCESS(rom)) { /* fill in the search spots with a 80% chance */
+        /* fill in the search spots with a 80% chance unless cursed princess */
+        /* is on, then always place to maximize cursed belts. */
+        if (mt_rand(0, 4) || CURSED_PRINCESS(rom)) {
             search_items[i] = *(key_item++);
         }
     }

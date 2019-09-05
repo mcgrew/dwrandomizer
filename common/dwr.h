@@ -18,7 +18,7 @@
 #define VERSION DWR_VERSION " beta " BUILD
 #endif
 
-#define DEFAULT_FLAGS "CDFGMPRTWZ"
+#define DEFAULT_FLAGS "CDFGPRSTWZ"
 #define CHEST_COUNT 31
 
 /** 64 bit versions of the randomization flags */
@@ -108,10 +108,10 @@
 #define RANDOMIZE_GROWTH(x)   (x->flags & FLAG_G)
 #define SPEED_HACKS(x)        (x->flags & FLAG_H)
 #define RANDOMIZE_MUSIC(x)    (x->flags & FLAG_K)
-#define RANDOMIZE_SPELLS(x)   (x->flags & FLAG_M)
 #define RANDOMIZE_PATTERNS(x) (x->flags & FLAG_P)
 #define DISABLE_MUSIC(x)      (x->flags & FLAG_Q)
 #define MENU_WRAP(x)          (x->flags & FLAG_R)
+#define RANDOMIZE_SPELLS(x)   (x->flags & FLAG_S)
 #define TORCH_IN_BATTLE(x)    (x->flags & FLAG_T)
 #define VERY_FAST_XP(x)       (x->flags & FLAG_V)
 #define RANDOMIZE_SHOPS(x)    (x->flags & FLAG_W)

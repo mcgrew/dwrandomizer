@@ -135,8 +135,8 @@ void MainWindow::layout()
     /* Gameplay Options */
     this->addOption('C', "Shuffle Chests && Searches",         GAMEPLAY,  0, 0);
     this->addOption('G', "Random Growth",                      GAMEPLAY,  1, 0);
-    this->addOption('M', "Random Spell Learning",              GAMEPLAY,  2, 0);
-    this->addOption('Y', "Heal/Hurt before \"More\"", "M", "", GAMEPLAY,  3, 0);
+    this->addOption('S', "Random Spell Learning",              GAMEPLAY,  2, 0);
+    this->addOption('Y', "Heal/Hurt before \"More\"", "S", "", GAMEPLAY,  3, 0);
     this->addOption('u', "No Hurtmore for you!",               GAMEPLAY,  4, 0);
     this->addOption('W', "Random Weapon Shops",                GAMEPLAY,  0, 1);
     this->addOption('w', "Random Weapon Prices",               GAMEPLAY,  1, 1);

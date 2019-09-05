@@ -333,7 +333,7 @@ static void map_find_land(dw_map *map, int one, int two, uint8_t *x, uint8_t *y,
     int spot_index, loop = 0;
 
     for (;;) {
-        if (!ignore_vanilla && VANILLA_MAP(map) && loop < 50) {
+        if (!ignore_vanilla && !RANDOM_MAP(map) && loop < 50) {
             spot_index = mt_rand(0, VAN_SPOT_COUNT-1);
             *x = vanilla_spots[spot_index][0];
             *y = vanilla_spots[spot_index][1];
@@ -411,7 +411,7 @@ static void place_charlock(dw_map *map, int largest, int next)
         int  i, j;
         dw_warp *warp;
 
-    if (VANILLA_MAP(map)) {
+    if (!RANDOM_MAP(map)) {
         map->rainbow_drop->x = 65;
         map->rainbow_bridge->x = 64;
         map->rainbow_bridge->y = map->rainbow_drop->y = 49;
@@ -661,7 +661,7 @@ static BOOL place_landmarks(dw_map *map)
     find_walkable_area(map, lm_sizes, &largest, &next);
     charlock_lm = map->walkable[warp->x+3][warp->y];
 
-    if (!VANILLA_MAP(map)) {
+    if (RANDOM_MAP(map)) {
         if (charlock_lm != largest && charlock_lm != next) {
             printf("Charlock is obstructed, retrying...\n");
             return FALSE;
@@ -801,7 +801,7 @@ BOOL map_generate_terrain(dw_rom *rom)
     int i, j, x, y, lm_sizes[256];
     int largest, next, total_area;
 
-    if (VANILLA_MAP(rom)) {
+    if (!RANDOM_MAP(rom)) {
 
         map_decode(&rom->map);
         for (i=0; i < VAN_SPOT_COUNT; ++i) {

@@ -18,7 +18,7 @@
 #define VERSION DWR_VERSION " beta " BUILD
 #endif
 
-#define DEFAULT_FLAGS "CDFGPRSTWZ"
+#define DEFAULT_FLAGS "CDFGMPRSTWZ"
 #define CHEST_COUNT 31
 
 /** 64 bit versions of the randomization flags */
@@ -99,7 +99,6 @@
 #define SHORT_CHARLOCK(x)     (x->flags & FLAG_s)
 #define FAST_TEXT(x)          (x->flags & FLAG_t)
 #define NO_HURTMORE(x)        (x->flags & FLAG_u)
-#define VANILLA_MAP(x)        (x->flags & FLAG_v)
 #define RANDOM_PRICES(x)      (x->flags & FLAG_w)
 #define RANDOM_XP_REQS(x)     (x->flags & FLAG_x)
 #define SHUFFLE_CHESTS(x)     (x->flags & FLAG_C)
@@ -108,6 +107,7 @@
 #define RANDOMIZE_GROWTH(x)   (x->flags & FLAG_G)
 #define SPEED_HACKS(x)        (x->flags & FLAG_H)
 #define RANDOMIZE_MUSIC(x)    (x->flags & FLAG_K)
+#define RANDOM_MAP(x)         (x->flags & FLAG_M)
 #define RANDOMIZE_PATTERNS(x) (x->flags & FLAG_P)
 #define DISABLE_MUSIC(x)      (x->flags & FLAG_Q)
 #define MENU_WRAP(x)          (x->flags & FLAG_R)

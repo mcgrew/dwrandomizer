@@ -18,7 +18,7 @@
 #define VERSION DWR_VERSION " beta " BUILD
 #endif
 
-#define DEFAULT_FLAGS "CDFGMPRSTWZ"
+#define DEFAULT_FLAGS "CDFGMPRSTWYZ"
 #define CHEST_COUNT 31
 
 /** 64 bit versions of the randomization flags */

@@ -1,3 +1,18 @@
+# 2.2 - Work in progress
+* Added the ability for armor to be in a chest
+  * Also other items can be found on search spots
+* Added the ability to use torches and fairy water in battle
+* Added a flag for forcing heal/hurt before healmore/hurtmore
+* Added a "No Hurtmore" flag
+* Changed "Vanilla Map" to "Random Map"
+  * Opposite logic, of course
+* Fixed random sprite choice to not be deterministic
+  * The random sprite chosen will no longer depend on the seed number
+* Added a Ms. Pacman "Sue" sprite
+
+# 2.1.2 - Bug fixes #
+* Fixed the slime and red slime sprites
+
 # 2.1.1 - Bug fixes #
 ##### Released July 28, 2019 #####
 

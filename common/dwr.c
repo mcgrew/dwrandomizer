@@ -420,11 +420,11 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
     vpatch(rom, 0x0e110,    1,  0x19);
     vpatch(rom, 0x0e116,    1,  0x13);
     vpatch(rom, 0x0e11c,    1,  0x0d);
-    vpatch(rom, 0x0e231,    1,  0x4c);
-    vpatch(rom, 0x0e23b,    1,  0x4c);
-    vpatch(rom, 0x0e26a,    1,  0x4c);
-    vpatch(rom, 0x0e2ad,    1,  0x4c);
-    vpatch(rom, 0x0e378,    1,  0x4c);
+    vpatch(rom, 0x0e231,    1,  0x55);
+    vpatch(rom, 0x0e23b,    1,  0x55);
+    vpatch(rom, 0x0e26a,    1,  0x55);
+    vpatch(rom, 0x0e2ad,    1,  0x55);
+    vpatch(rom, 0x0e378,    1,  0x55);
 
     /* new "SEARCH" code */
     vpatch(rom, 0x0e11d,  109,
@@ -477,7 +477,7 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
         0xa5, 0xbe,       /*   lda $be         ; Load the equipment byte      */
         0x09, 0x1c,       /*   ora #$1c        ; Add the armor                */
         0x85, 0xbe,       /*   sta $be         ; Save it                      */
-        0x20, 0x4c, 0xe3, /*   jsr take_content                               */
+        0x20, 0x55, 0xe3, /*   jsr take_content                               */
         0xa9, 0x28,       /*   lda #$28                                       */
         0x20, 0xf0, 0xdb, /*   jsr $dbf0       ; "You got the armor"          */
         0xa9, 0xd5,       /*   lda #$d5                                       */
@@ -495,14 +495,11 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
         0x20, 0x55, 0xe0, /*   jsr #$e055  ; Jump to inventory check          */
         0xc9, 0xff,       /*   cmp #$ff    ; If return value is $ff (found)   */
         0xd0, 0x20,       /*   bne chest_empty ; The chest is empty           */
-
-        // FIXME some of the branch addresses will be wrong with this new code
-        0xa9, 0x05,       /*   lda #$0e    ; Load the drop inventory value    */
-        0x20, 0x55, 0xe0, /*   jsr $e055   ; Jump to inventory check          */
-        0xc9, 0xff,       /*   cmp #$ff    ; If return value is $ff (found)   */
-        0xd0, 0x17,       /*   bne chest_empty ; The chest is empty           */
-
-        0xa9, 0x0a,       /*   lda #$0a    ; Reset the token chest value      */
+        0xa9, 0x0e,       /*   lda #$0a    ; Reset the token chest value      */
+        0x20, 0x55,  0xe0,
+        0xc9, 0xff,
+        0xd0, 0x17,
+        0xa9, 0x0a,
         0xc9, 0x11,       /* + cmp #$11    ; If value is >= $11               */
         0xb0, 0x03,       /*   bcs +       ; Jump to the next check           */
         0x4c, 0x69, 0xe2, /*   jmp B3_e269 ; Add the item to the inventory    */
@@ -512,7 +509,7 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
         0x85, 0x00,       /*   sta $00     ;                                  */
         0xa9, 0x01,       /*   lda #$01    ;                                  */
         0x85, 0x01,       /*   sta $01     ;                                  */
-        0xd0, 0x29,
+        0xd0, 0x20,
         0xa5, 0x0e,
         0xc9, 0xff,
         0xa9, 0x00,
@@ -524,8 +521,8 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
         0xc9, 0xff,
         0xa9, 0x00,
         0x85, 0x0e,
-        0xb0, 0x6c,
-        0xf0, 0x42,
+        0xb0, 0x66,
+        0xf0, 0x39,
 
         0xff, 0xff, 0xff, 0xff);
 }

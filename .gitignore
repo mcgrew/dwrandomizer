@@ -16,3 +16,5 @@ build/
 builds/
 __pycache__
 CMakeFiles
+/msvc/MetaObjects/moc_main-window.cpp
+/msvc/MetaObjects/moc_widgets.cpp

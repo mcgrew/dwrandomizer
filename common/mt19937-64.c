@@ -58,6 +58,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <malloc.h>
 
 #include "mt64.h"
 
@@ -147,7 +148,7 @@ int mt_rand_bool()
 
 void mt_shuffle(void *array, size_t n, size_t size)
 {
-    char tmp[size];
+	char *tmp = malloc(size);
     char *arr = array;
     size_t i,j, stride = size * sizeof(char);
 
@@ -160,5 +161,6 @@ void mt_shuffle(void *array, size_t n, size_t size)
             memcpy(arr + i * stride, tmp, size);
         }
     }
+	free(tmp);
 }
 

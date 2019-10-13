@@ -2715,7 +2715,9 @@ static void challenge5(dw_rom *rom)
 
 void sprite(dw_rom *rom, const char *sprite_name)
 {
-    void (*sprite_func[sprite_count()-2])(dw_rom *rom);
+	typedef void(*sprite_func_t)(dw_rom *rom);
+
+	sprite_func_t *sprite_func = _alloca((sprite_count() - 2) * sizeof(sprite_func_t));
     size_t i=0;
 
     sprite_func[i++] = &gwaelin;

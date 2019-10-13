@@ -57,9 +57,6 @@
     <ClInclude Include="..\common\sprites.h">
       <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\ui\widgets.h">
-      <Filter>Header Files\ui</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\common\chaos.c">
@@ -102,6 +99,9 @@
   <ItemGroup>
     <CustomBuild Include="..\ui\main-window.h">
       <Filter>Header Files\ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\ui\widgets.h">
+      <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>

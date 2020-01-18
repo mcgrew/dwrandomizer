@@ -299,6 +299,10 @@ void MainWindow::handleButton()
     if (crc) {
         sprintf(checksum, "Checksum: %016" PRIx64, crc);
         QGuiApplication::clipboard()->setText(checksum);
+        if(QGuiApplication::clipboard()->text() != checksum){    
+            QTest::qSleep(50);
+            QGuiApplication::clipboard()->setText(checksum);
+            }
         this->statusBar()->showMessage(
                 QString("%1 (copied to clipboard)").arg(checksum));
         QMessageBox::information(this, "Success!",

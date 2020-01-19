@@ -31,6 +31,7 @@ const char* const tab_names[] {
     "Features",
     "Monsters",
     "Shortcuts",
+    "Challenge",
     "Goals",
     "Cosmetic"
 };
@@ -40,13 +41,14 @@ enum tabs {
     FEATURES,
     MONSTERS,
     SHORTCUTS,
+    CHALLENGE,
     GOALS,
     COSMETIC
 };
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
-    this->setMinimumWidth(600);
+    this->setMinimumWidth(650);
     this->mainWidget = new QWidget();
     this->gameplayWidget = new QWidget();
     this->funWidget = new QWidget();
@@ -141,7 +143,6 @@ void MainWindow::layout()
     this->addOption('W', "Random Weapon Shops",                GAMEPLAY,  0, 1);
     this->addOption('w', "Random Weapon Prices",               GAMEPLAY,  1, 1);
     this->addOption('x', "Random XP Requirements",             GAMEPLAY,  2, 1);
-    this->addOption('u', "No Hurtmore for you!",               GAMEPLAY,  3, 1);
 
     /* Features */
     this->addOption('R', "Enable Menu Wrapping",               FEATURES,  0, 0);
@@ -166,6 +167,12 @@ void MainWindow::layout()
     this->addOption('k', "Don't Require Magic Keys",           SHORTCUTS, 4, 0);
     this->addLabel("Leveling Speed",                           SHORTCUTS, 0, 1);
     this->placeWidget(this->levelSpeed,                        SHORTCUTS, 1, 1);
+
+    /* Challenge */
+    this->addOption('u', "No Hurtmore",                        CHALLENGE, 0, 0);
+    this->addOption('n', "No Numbers",                         CHALLENGE, 1, 0);
+    this->addOption('i', "Invisible Hero",                     CHALLENGE, 2, 0);
+    this->addOption('q', "Invisible NPCs",                     CHALLENGE, 3, 0);
 
     /* Goals */
     this->addOption('c', "Cursed Princess",                    GOALS,     0, 0);

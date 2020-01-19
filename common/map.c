@@ -412,10 +412,9 @@ static void place_charlock(dw_map *map, int largest, int next)
         dw_warp *warp;
 
     if (!RANDOM_MAP(map)) {
-        map->rainbow_drop->x = 65;
+        map->rainbow_drop->x = x = 65;
         map->rainbow_bridge->x = 64;
-        map->rainbow_bridge->y = map->rainbow_drop->y = 49;
-        x = 65; y = 49;
+        map->rainbow_bridge->y = map->rainbow_drop->y = y = 49;
 
     } else {
         warp = &map->warps_from[WARP_CHARLOCK];

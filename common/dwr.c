@@ -9,6 +9,7 @@
 #include "patch.h"
 #include "chaos.h"
 #include "map.h"
+#include "challenge.h"
 #include "crc64.h"
 #include "mt64.h"
 
@@ -1993,6 +1994,11 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     modern_spell_names(&rom);
     randomize_music(&rom);
     disable_music(&rom);
+
+    no_numbers(&rom);
+    invisible_hero(&rom);
+    invisible_npcs(&rom);
+
     crc = crc64(0, rom.content, 0x10000);
 
     update_title_screen(&rom);

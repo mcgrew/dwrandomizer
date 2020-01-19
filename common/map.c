@@ -13,7 +13,7 @@
 #define MIN_WALKABLE    5000
 #define MAP_ENCODED_SIZE 2294
 
-#define VAN_SPOT_COUNT 22
+#define VAN_SPOT_COUNT 13
 static const uint8_t vanilla_spots[VAN_SPOT_COUNT][2] = {
     /* vanilla place locations */
     { 43, 43 },
@@ -29,7 +29,7 @@ static const uint8_t vanilla_spots[VAN_SPOT_COUNT][2] = {
     {104, 44 },
     { 29, 57 },
     {104, 49 },
-    /* extra locations */
+    /* extra locations 
     { 83,113 },
     { 40, 82 },
     { 13,107 },
@@ -38,7 +38,7 @@ static const uint8_t vanilla_spots[VAN_SPOT_COUNT][2] = {
     { 75, 82 },
     { 67, 77 },
     {112, 26 },
-    {114, 37 },
+    {114, 37 }, */
 };
 
 static inline int map_ob(int x) {

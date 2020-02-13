@@ -139,6 +139,12 @@ double mt_rand_double()
     return (genrand64_int64() >> 11) * (1.0/9007199254740992.0);
 }
 
+double mt_rand_double_ranged(double min, double max)
+{
+    return (genrand64_int64() >> 11) * (1.0/9007199254740992.0) * 
+        (max - min) + min;
+}
+
 
 int mt_rand_bool()
 {

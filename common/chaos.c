@@ -7,6 +7,7 @@
 #include "mt64.h"
 #include "dwr.h"
 #include "patch.h"
+#include "polyfit.h"
 
 
 static dw_enemy **global_enemy;
@@ -97,11 +98,25 @@ static int compare_enemies(const void *a, const void *b)
     enemy_a = &(*global_enemy)[*(dw_enemies*)a];
     enemy_b = &(*global_enemy)[*(dw_enemies*)b];
 
-    if (enemy_pwr(enemy_a) > enemy_pwr(enemy_b))
+    if (enemy_a->rank > enemy_b->rank)
         return 1;
-    if (enemy_pwr(enemy_a) < enemy_pwr(enemy_b))
+    if (enemy_a->rank < enemy_b->rank)
         return -1;
     return 0;
+}
+
+static double next_rank(uint64_t flags, double *rank, double min, double max)
+{
+    double newmin, newmax;
+
+    if (flags /* & FLAG_g */) {
+        newmin = MAX((*rank)-3, min);
+        newmax = MIN((*rank)+3, max);
+        *rank = mt_rand_double_ranged(newmin, newmax);
+    } else {
+        *rank = mt_rand_double_ranged(min, max);
+    }
+    return *rank;
 }
 
 /**
@@ -112,26 +127,45 @@ static int compare_enemies(const void *a, const void *b)
 static void chaos_enemy_stats(dw_rom *rom)
 {
     int i;
+    double x, rank;
+    uint64_t flags;
     dw_enemy *enemies;
 
+    x = 0;
+    flags = rom->flags;
     enemies = rom->enemies;
 
-    for (i=SLIME; i <= DRAGONLORD_1; i++) {
-        enemies[i].hp =   rand_power_curve(2, 12, 2.0);
-        enemies[i].str =  rand_power_curve(2, 11, 2.0);
-        enemies[i].agi =  rand_power_curve(2, 16, 2.0);
-
-        enemies[i].s_ss_resist = rand_power_curve(0, 4, 2.0) << 4 |
-                                 rand_power_curve(0, 4, 2.0);
-        enemies[i].hr_dodge    = rand_power_curve(0, 4, 2.0) << 4 |
-                                 rand_power_curve(0, 4, 2.0);
+    for (i=SLIME; i <= RED_DRAGON; i++) {
+        rank  = next_rank(0, &x, 1, 40);
+        enemies[i].hp  = (uint8_t)polyfit(x, &mon_hp_fac);
+        rank += next_rank(flags, &x, 1, 40);
+        enemies[i].str = (uint8_t)polyfit(x, &mon_str_fac);
+        rank += next_rank(flags, &x, 1, 40);
+        enemies[i].agi = (uint8_t)polyfit(x, &mon_agi_fac);
+        rank += next_rank(flags, &x, 1, 40) / 2;
+        enemies[i].s_ss_resist = ((uint8_t)polyfit(x, &mon_sr_fac)) << 4;
+        rank += next_rank(flags, &x, 1, 40) / 2;
+        enemies[i].s_ss_resist |= (uint8_t)polyfit(x, &mon_ssr_fac);
+        rank += next_rank(flags, &x, 1, 40) / 2;
+        enemies[i].hr_dodge    = ((uint8_t)polyfit(x, &mon_hr_fac)) << 4;
+        rank += next_rank(flags, &x, 1, 40) / 2;
+        enemies[i].hr_dodge   |=  (uint8_t)polyfit(x, &mon_dodge_fac);
+        if (!enemies[i].pattern) {
+            enemies[i].s_ss_resist |= 15;
+        }
+        enemies[i].rank = rank / 5;
     }
 
-    enemies[DRAGONLORD_1].hp  = rand_power_curve(9, 14, 2.0);
-    enemies[DRAGONLORD_1].str = rand_power_curve(9, 16, 2.0);
+    next_rank(0, &x, 30, 40);
+    enemies[DRAGONLORD_1].hp  = (uint8_t)polyfit(x, &mon_hp_fac);
+    next_rank(flags, &x, 30, 40);
+    enemies[DRAGONLORD_1].str = (uint8_t)polyfit(x, &mon_str_fac);
+    next_rank(flags, &x, 30, 40);
+    enemies[DRAGONLORD_1].agi = (uint8_t)polyfit(x, &mon_agi_fac);
     enemies[DRAGONLORD_1].pattern = mt_rand(0, 255);
     enemies[DRAGONLORD_1].s_ss_resist &= 0xf0;
-    enemies[DRAGONLORD_1].s_ss_resist |= 15 - rand_power_curve(0, 2, 2.0);
+    next_rank(0, &x, 38, 40);
+    enemies[DRAGONLORD_1].s_ss_resist |= (uint8_t)polyfit(x, &mon_sr_fac);
 
     /* Dragonlord with heal or sleep? That's just evil */
     enemies[DRAGONLORD_2].pattern |= (mt_rand(0, 255) & 0xb0);
@@ -141,7 +175,8 @@ static void chaos_enemy_stats(dw_rom *rom)
     }
     /* Maybe STOPSPELL Will work on him... MWAHAHAHA */
     enemies[DRAGONLORD_2].s_ss_resist &= 0xf0;
-    enemies[DRAGONLORD_2].s_ss_resist |= 14 - rand_power_curve(0, 4, 2.0);
+    next_rank(0, &x, 38, 40);
+    enemies[DRAGONLORD_2].s_ss_resist |= (uint8_t)polyfit(x, &mon_sr_fac);
     enemies[DRAGONLORD_2].hp = mt_rand(100, 230);
 
     /* update the repel table */
@@ -154,15 +189,21 @@ static void chaos_enemy_drops(dw_rom *rom)
 {
     int i;
     dw_enemy *enemies;
+    double x;
 
     if (!RANDOM_ENEMY_DROPS(rom))
         return;
 
     enemies = rom->enemies;
-
     for (i=SLIME; i <= RED_DRAGON; i++) {
-        enemies[i].xp =   rand_power_curve(2, 16, 2.0);
-        enemies[i].gold = rand_power_curve(2, 16, 2.0);
+        if (RANDOM_ENEMY_STATS(rom))
+            x = enemies[i].rank;
+        else
+            x = i;
+        next_rank(rom->flags, &x, 1, 40);
+        enemies[i].xp = (uint8_t)polyfit(x, &mon_xp_fac);
+        next_rank(rom->flags, &x, 1, 40);
+        enemies[i].gold = (uint8_t)polyfit(x, &mon_gold_fac);
     }
 }
 

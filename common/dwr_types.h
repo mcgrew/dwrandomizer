@@ -201,7 +201,7 @@ typedef struct {
     uint8_t hr_dodge; /* hurt resist/dodge */
     uint8_t xp;
     uint8_t gold;
-    uint64_t graphics;
+    double  rank;
 } dw_enemy;
 
 /** Statistics for a single player level */

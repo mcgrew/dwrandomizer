@@ -73,6 +73,8 @@ int mt_rand_bool();
 
 double mt_rand_double();
 
+double mt_rand_double_ranged(double min, double max);
+
 void mt_shuffle(void *array, size_t n, size_t size);
 #ifdef __cplusplus
 }

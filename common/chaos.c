@@ -156,16 +156,18 @@ static void chaos_enemy_stats(dw_rom *rom)
         enemies[i].rank = rank / 5;
     }
 
-    next_rank(0, &x, 30, 40);
+    rank = next_rank(0, &x, 30, 40);
     enemies[DRAGONLORD_1].hp  = (uint8_t)polyfit(x, &mon_hp_fac);
-    next_rank(flags, &x, 30, 40);
+    rank += next_rank(flags, &x, 30, 40);
     enemies[DRAGONLORD_1].str = (uint8_t)polyfit(x, &mon_str_fac);
-    next_rank(flags, &x, 30, 40);
+    rank += next_rank(flags, &x, 30, 40);
     enemies[DRAGONLORD_1].agi = (uint8_t)polyfit(x, &mon_agi_fac);
     enemies[DRAGONLORD_1].pattern = mt_rand(0, 255);
     enemies[DRAGONLORD_1].s_ss_resist &= 0xf0;
-    next_rank(0, &x, 38, 40);
+    rank += next_rank(0, &x, 38, 40) / 2;
     enemies[DRAGONLORD_1].s_ss_resist |= (uint8_t)polyfit(x, &mon_sr_fac);
+    rank += 40; /* for the default stats */
+    enemies[DRAGONLORD_1].rank = rank / 5;
 
     /* Dragonlord with heal or sleep? That's just evil */
     enemies[DRAGONLORD_2].pattern |= (mt_rand(0, 255) & 0xb0);
@@ -173,11 +175,13 @@ static void chaos_enemy_stats(dw_rom *rom)
     if ((enemies[DRAGONLORD_2].pattern & 0x30) == 0x30) {
         enemies[DRAGONLORD_2].pattern &= 0xcf;
     }
-    /* Maybe STOPSPELL Will work on him... MWAHAHAHA */
+    /* Maybe STOPSPELL Will work on him... */
     enemies[DRAGONLORD_2].s_ss_resist &= 0xf0;
-    next_rank(0, &x, 38, 40);
+    rank = next_rank(0, &x, 38, 40);
     enemies[DRAGONLORD_2].s_ss_resist |= (uint8_t)polyfit(x, &mon_sr_fac);
     enemies[DRAGONLORD_2].hp = mt_rand(100, 230);
+    rank += 104.45; /* for the default stats */
+    enemies[DRAGONLORD_2].rank = rank / 5;
 
     /* update the repel table */
     for (i=SLIME; i <= RED_DRAGON; i++) {

@@ -33,6 +33,7 @@ extern const polyfactors hero_mp_fac; /* hero mp */
 extern const polyfactors hero_str_fac; /* hero mp */
 extern const polyfactors hero_agi_fac; /* hero agility */
 extern const polyfactors hero_xp_fac; /* random level xp */
+extern const polyfactors wpn_price_fac; /* weapon prices */
 
 double polyfit(double x, const polyfactors *fac);
 

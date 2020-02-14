@@ -233,8 +233,10 @@ static void chaos_weapon_prices(dw_rom *rom)
         return;
 
     for (i=0; i < 17; i++) {
+        printf("%d ==> ", rom->weapon_price_display[i]);
         rom->weapon_price_display[i] = rom->weapon_prices[i] =
-                rand_power_curve(1, 11, 4.0);
+            (uint16_t)polyfit(mt_rand_double_ranged(1,17), &wpn_price_fac);
+        printf("%d\n", rom->weapon_price_display[i]);
     }
 }
 

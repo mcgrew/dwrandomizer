@@ -232,6 +232,22 @@ const polyfactors hero_xp_fac = { /* random level xp */
     0.0,
 };
 
+const polyfactors wpn_price_fac = { /* weapon prices */
+    5,
+    65535,
+    3.514576883197151,
+    -131.34297021780944,
+    104.16571157815333,
+    -20.19142289169297,
+    1.2180107366833113,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+};
+
 double polyfit(double x, const polyfactors *fac)
 {
     size_t i;

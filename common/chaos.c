@@ -39,49 +39,6 @@ static int compare_16(const void *a, const void *b)
 }
 
 /**
- * Gives an index for enemy difficulty
- *
- * @param enemy The enemy struct
- * @return  A difficulty index
- */
-static inline uint64_t enemy_pwr(dw_enemy *enemy)
-{
-    uint64_t pwr, multiplier = 0;
-
-    pwr = 1;
-    if (enemy->hp > 16)
-        pwr *= enemy->hp;
-    if (enemy->str > 16)
-        pwr *= enemy->str;
-    if (enemy->agi > 16)
-        pwr *= enemy->agi;
-    if (enemy->hp > 64)
-        pwr *= enemy->hp;
-    if (enemy->str > 64)
-        pwr *= enemy->str;
-    if (enemy->agi > 64)
-        pwr *= enemy->agi;
-    /* has healmore or sleep */
-    if (enemy->pattern & 0x30) {
-        if ((enemy->pattern & 0xc0) == 0) { /* sleep */
-            multiplier += 32;
-        } else if ((enemy->pattern & 0xc0) == 0xc0) { /* healmore */
-            multiplier += 16;
-        }
-    }
-    /* has DL breath or hurtmore */
-    if (enemy->pattern & 0x3) {
-        if ((enemy->pattern & 0xc) == 0xc) { /* DL breath */
-            multiplier += 32;
-        } else if ((enemy->pattern & 0xc) == 0x4) { /* hurtmore */
-            multiplier += 24;
-        }
-
-    }
-    return pwr * MAX(multiplier, 1);
-}
-
-/**
  * A compare function for enemies for use with qsort
  *
  * @param a The first enemy index

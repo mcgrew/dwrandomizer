@@ -292,17 +292,17 @@ static void chaos_xp(dw_rom *rom)
     if (!RANDOM_XP_REQS(rom))
         return;
 
+    for (i=1; i < 30; i++) {
+        rom->xp_reqs[i] = 
+            (uint16_t)polyfit(mt_rand_double_ranged(1,30), &hero_xp_fac);
+    }
     if (FAST_XP(rom)) {
         for (i=1; i < 30; i++) {
-            rom->xp_reqs[i] = rand_power_curve(2, 36, 3.0);
+            rom->xp_reqs[i] = (uint16_t)((double) rom->xp_reqs[i] * 3 / 4);
         }
     } else if (VERY_FAST_XP(rom)) {
         for (i=1; i < 30; i++) {
-            rom->xp_reqs[i] = rand_power_curve(2, 32, 3.0);
-        }
-    } else {
-        for (i=1; i < 30; i++) {
-            rom->xp_reqs[i] = rand_power_curve(2, 40, 3.0);
+            rom->xp_reqs[i] /= 2;
         }
     }
     qsort(rom->xp_reqs, 30, sizeof(uint16_t), &compare_16);

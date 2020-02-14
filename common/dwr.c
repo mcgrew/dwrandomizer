@@ -12,6 +12,7 @@
 #include "challenge.h"
 #include "crc64.h"
 #include "mt64.h"
+#include "polyfit.h"
 
 const char *prg0sums[8] = {
       "6a50ce57097332393e0e8751924fd56456ef083c", /* Dragon Warrior (U) (PRG0) [!].nes      */
@@ -901,21 +902,6 @@ static void randomize_shops(dw_rom *rom)
 }
 
 /**
- * Chooses random numbers on an inverted power curve
- * @param min The minimum value
- * @param max The maximum value
- * @param power An exponent to use for the curve.
- * @return The chosen random number.
- */
-static uint8_t inverted_power_curve(uint8_t min, uint8_t max, double power)
-{
-    double p_range;
-
-    p_range= pow((double)(max - min), 1 / power);
-    return round(max - pow((mt_rand_double() * p_range), power));
-}
-
-/**
  * Randomizes the player's stat growth
  *
  * @param rom The rom struct
@@ -935,16 +921,16 @@ static void randomize_growth(dw_rom *rom)
     printf("Randomizing stat growth...\n");
 
     for (i=0; i < 30; i++) {
-        str[i] = inverted_power_curve(4, 155, 1.18);
-        agi[i] = inverted_power_curve(4, 145, 1.32);
-        hp[i] =  inverted_power_curve(10, 230, 0.98);
-        mp[i] =  inverted_power_curve(0, 220, 0.95);
+        hp[i] =  (uint8_t)polyfit(mt_rand_double_ranged(1,30), &hero_hp_fac);
+        mp[i] =  (uint8_t)polyfit(mt_rand_double_ranged(0,30), &hero_mp_fac);
+        str[i] = (uint8_t)polyfit(mt_rand_double_ranged(1,30), &hero_str_fac);
+        agi[i] = (uint8_t)polyfit(mt_rand_double_ranged(1,30), &hero_agi_fac);
     }
 
-    qsort(str, 30, sizeof(uint8_t), &compare);
-    qsort(agi, 30, sizeof(uint8_t), &compare);
     qsort(hp,  30, sizeof(uint8_t), &compare);
     qsort(mp,  30, sizeof(uint8_t), &compare);
+    qsort(str, 30, sizeof(uint8_t), &compare);
+    qsort(agi, 30, sizeof(uint8_t), &compare);
 
     /* Give a little hp boost for swamp mode */
     if (BIG_SWAMP(rom)) {

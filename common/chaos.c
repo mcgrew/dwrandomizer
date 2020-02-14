@@ -13,18 +13,6 @@
 static dw_enemy **global_enemy;
 
 /**
- * Squares a number and with some variance.
- *
- * @param x The number to square.
- * @param max The maximum return value.
- * @return The calculation result.
- */
-static inline int rand_power_curve(int min, int max, double power)
-{
-    return (int)floor(pow(mt_rand_double() * (max - min) + min, power));
-}
-
-/**
  * A function to be passed to qsort for sorting uint16_t arrays
  *
  * @param a The first item to compare

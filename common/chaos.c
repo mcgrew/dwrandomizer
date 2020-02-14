@@ -248,7 +248,8 @@ static void chaos_zones(dw_rom *rom)
     /* remove any abilities */
     low_str_enemy->pattern = 0;
     /* constrict the xp value so it can't be abused */
-    low_str_enemy->xp =   rand_power_curve(4, 8, 2.0);
+    low_str_enemy->xp = 
+        (uint8_t)polyfit(mt_rand_double_ranged(1, 20), &mon_xp_fac);
 
     /* randomize Charlock Zones */
     for (zone=16; zone <= 18; zone++) {

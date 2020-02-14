@@ -92,6 +92,7 @@
 #define CONSISTENT_STATS(x)   (x->flags & FLAG_g)
 #define THREES_COMPANY(x)     (x->flags & FLAG_h)
 #define INVISIBLE_HERO(x)     (x->flags & FLAG_i)
+#define NOIR_MODE(x)          (x->flags & FLAG_j)
 #define NO_KEYS(x)            (x->flags & FLAG_k)
 #define SCARED_SLIMES(x)      (x->flags & FLAG_l)
 #define MODERN_SPELLS(x)      (x->flags & FLAG_m)

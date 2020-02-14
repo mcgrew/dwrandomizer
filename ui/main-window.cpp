@@ -183,6 +183,7 @@ void MainWindow::layout()
     this->addOption('K', "Shuffle Music",             "", "Q", COSMETIC,  0, 0);
     this->addOption('Q', "Disable Music",             "", "K", COSMETIC,  1, 0);
     this->addOption('m', "Modern Spell Names",                 COSMETIC,  2, 0);
+    this->addOption('j', "Noir Mode",                          COSMETIC,  3, 0);
     this->addLabel("Player Sprite",                            COSMETIC,  0, 1);
     this->placeWidget(this->spriteSelect,                      COSMETIC,  1, 1);
 

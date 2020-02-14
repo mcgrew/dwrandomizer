@@ -1989,6 +1989,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 
     update_title_screen(&rom);
     sprite(&rom, sprite_name);
+    noir_mode(&rom);
 
     printf("Checksum: %016"PRIx64"\n", crc);
     if (!dwr_write(&rom, output_file)) {

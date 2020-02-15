@@ -54,7 +54,7 @@ static double next_rank(uint64_t flags, double *rank, double min, double max)
 {
     double newmin, newmax;
 
-    if (flags /* & FLAG_g */) {
+    if (flags & FLAG_g) {
         newmin = MAX((*rank)-3, min);
         newmax = MIN((*rank)+3, max);
         *rank = mt_rand_double_ranged(newmin, newmax);
@@ -87,13 +87,13 @@ static void chaos_enemy_stats(dw_rom *rom)
         enemies[i].str = (uint8_t)polyfit(x, &mon_str_fac);
         rank += next_rank(flags, &x, 1, 40);
         enemies[i].agi = (uint8_t)polyfit(x, &mon_agi_fac);
-        rank += next_rank(flags, &x, 1, 40) / 2;
+        rank += next_rank(0, &x, 1, 40) / 2;
         enemies[i].s_ss_resist = ((uint8_t)polyfit(x, &mon_sr_fac)) << 4;
-        rank += next_rank(flags, &x, 1, 40) / 2;
+        rank += next_rank(0, &x, 1, 40) / 2;
         enemies[i].s_ss_resist |= (uint8_t)polyfit(x, &mon_ssr_fac);
-        rank += next_rank(flags, &x, 1, 40) / 2;
+        rank += next_rank(0, &x, 1, 40) / 2;
         enemies[i].hr_dodge    = ((uint8_t)polyfit(x, &mon_hr_fac)) << 4;
-        rank += next_rank(flags, &x, 1, 40) / 2;
+        rank += next_rank(0, &x, 1, 40) / 2;
         enemies[i].hr_dodge   |=  (uint8_t)polyfit(x, &mon_dodge_fac);
         if (!enemies[i].pattern) {
             enemies[i].s_ss_resist |= 15;

@@ -146,12 +146,6 @@ class Patch:
     """
     self.records = self.records + patch.records
 
-  def clear(self):
-    self.records = []
-
-  def combine(self, patch):
-    self.records = self.records + patch.records
-
   @staticmethod
   def create(orig_content, patched_content):
     """

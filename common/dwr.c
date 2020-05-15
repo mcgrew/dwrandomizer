@@ -677,7 +677,18 @@ static void randomize_attack_patterns(dw_rom *rom)
         if (mt_rand_bool()) {
             enemies[i].pattern = mt_rand(0, 255);
             enemies[i].s_ss_resist &= 0xf0;
-            enemies[i].s_ss_resist |= mt_rand(0, i/3);
+            // If 25% SLEEP chance, set STOPSPELL resist to 8/16 MAX.
+            if ((enemies[i].pattern & 0xc0) == 0x00 && (enemies[i].pattern & 0x30) == 0x10)
+                enemies[i].s_ss_resist |= mt_rand(0, i/5);
+            // If 50% SLEEP chance, set STOPSPELL resist to 4/16 MAX.
+            else if ((enemies[i].pattern & 0xc0) == 0x00 && (enemies[i].pattern & 0x30) == 0x20)
+                enemies[i].s_ss_resist |= mt_rand(0, i/10);
+            // If 75% SLEEP chance, set STOPSPELL resist to 2/16 MAX.
+            else if ((enemies[i].pattern & 0xc0) == 0x00 && (enemies[i].pattern & 0x30) == 0x30)
+                enemies[i].s_ss_resist |= mt_rand(0, i/20);
+            // Otherwise, STOPSPELL resist is 12/16 MAX.
+            else
+                enemies[i].s_ss_resist |= mt_rand(0, i/3);
         } else {
             enemies[i].pattern = 0;
             /* no spells, max out resistance */
@@ -807,13 +818,21 @@ static void randomize_zones(dw_rom *rom)
     printf("Randomizing monsters in enemy zones...\n");
 
     zone = 0;  /* tantegel zone */
-    for (i=0; i < 5; i++) {
+    // Ensure there is at least a [red] slime, a drakee/ghost, and a harder monster.
+    // After that, Slime to Scorpion.
+    rom->zones[zone * 5 + 0] = mt_rand(SLIME, RED_SLIME);
+    rom->zones[zone * 5 + 1] = mt_rand(DRAKEE, GHOST);
+    rom->zones[zone * 5 + 2] = mt_rand(MAGICIAN, SCORPION);
+    for (i=3; i < 5; i++) {
         rom->zones[zone * 5 + i] = mt_rand(SLIME, SCORPION);
     }
 
     for (zone=1; zone <= 2; zone++) { /* tantegel adjacent zones */
-        for (i=0; i < 5; i++) {
-            rom->zones[zone * 5 + i] = mt_rand(SLIME, WOLF);
+        // Ensure there is at least a monster that is a slime to a ghost
+        // After that, Magician to Wolf.
+        rom->zones[zone * 5 + 0] = mt_rand(SLIME, GHOST);
+        for (i=1; i < 5; i++) {
+            rom->zones[zone * 5 + i] = mt_rand(MAGICIAN, WOLF);
         }
     }
 
@@ -933,7 +952,7 @@ static void randomize_growth(dw_rom *rom)
     qsort(agi, 30, sizeof(uint8_t), &compare);
 
     /* Give a little hp boost for swamp mode */
-    if (BIG_SWAMP(rom)) {
+    if (BIG_SWAMP(rom) || rom->map.meta[TANTEGEL].border == BORDER_SWAMP) {
         hp[0] += 10;
         for (i=1; i < 10; i++) {
             hp[i] = MAX(hp[i-1], hp[i] + 10 - i);
@@ -1132,12 +1151,13 @@ static void update_enemy_hp(dw_rom *rom)
     const uint8_t remake_hp[DRAGONLORD_2+1] = {
               2,   3,   5,   7,  12,  13,  13,  22,  23,  20,  16,  24,  28,
              18,  33,  39,   3,  33,  37,  35,  44,  37,  40,  40, 153,  35,
-             47,  48,  38,  70,  72,  74,  65,  67,  98, 135,  99, 106, 100, 165
+             47,  48,  38,  70,  72,  74,  65,  67,  98, 135,  99, 106, 100, 180
     };
     for (i=SLIME; i <= DRAGONLORD_2; i++) {
         rom->enemies[i].hp =   remake_hp[i];
     }
-    rom->enemies[DRAGONLORD_2].hp -= mt_rand(0, 15);
+    // Make the DL2's HP 135-180.  135 is 75% of 180.
+    rom->enemies[DRAGONLORD_2].hp -= mt_rand(0, 45);
 }
 
 /**

@@ -10,8 +10,6 @@
 #include "polyfit.h"
 
 
-static dw_enemy **global_enemy;
-
 /**
  * A function to be passed to qsort for sorting uint16_t arrays
  *
@@ -38,10 +36,10 @@ static int compare_16(const void *a, const void *b)
  */
 static int compare_enemies(const void *a, const void *b)
 {
-    dw_enemy *enemy_a, *enemy_b;
+    const dw_enemy *enemy_a, *enemy_b;
 
-    enemy_a = &(*global_enemy)[*(dw_enemies*)a];
-    enemy_b = &(*global_enemy)[*(dw_enemies*)b];
+    enemy_a = (const dw_enemy*)a;
+    enemy_b = (const dw_enemy*)b;
 
     if (enemy_a->rank > enemy_b->rank)
         return 1;
@@ -54,12 +52,13 @@ static double next_rank(uint64_t flags, double *rank, double min, double max)
 {
     double newmin, newmax;
 
+    /* FLAG_g is for consistent stats */
     if (flags & FLAG_g) {
         newmin = MAX((*rank)-3, min);
         newmax = MIN((*rank)+3, max);
-        *rank = mt_rand_double_ranged(newmin, newmax);
+        *rank = (float)mt_rand_double_ranged(newmin, newmax);
     } else {
-        *rank = mt_rand_double_ranged(min, max);
+        *rank = (float)mt_rand_double_ranged(min, max);
     }
     return *rank;
 }
@@ -81,38 +80,40 @@ static void chaos_enemy_stats(dw_rom *rom)
     enemies = rom->enemies;
 
     for (i=SLIME; i <= RED_DRAGON; i++) {
-        rank  = next_rank(0, &x, 1, 40);
+        rank  = pow(next_rank(0, &x, 1, 40), 4);
         enemies[i].hp  = (uint8_t)polyfit(x, &mon_hp_fac);
-        rank += next_rank(flags, &x, 1, 40);
+        rank += pow(next_rank(flags, &x, 1, 40), 4);
         enemies[i].str = (uint8_t)polyfit(x, &mon_str_fac);
-        rank += next_rank(flags, &x, 1, 40);
+        rank += pow(next_rank(flags, &x, 1, 40), 4);
         enemies[i].agi = (uint8_t)polyfit(x, &mon_agi_fac);
-        rank += next_rank(0, &x, 1, 40) / 2;
+        rank += pow(next_rank(0, &x, 1, 40) / 3, 4);
         enemies[i].s_ss_resist = ((uint8_t)polyfit(x, &mon_sr_fac)) << 4;
-        rank += next_rank(0, &x, 1, 40) / 2;
-        enemies[i].s_ss_resist |= (uint8_t)polyfit(x, &mon_ssr_fac);
-        rank += next_rank(0, &x, 1, 40) / 2;
+        if (enemies[i].pattern) {
+            rank += pow(next_rank(0, &x, 1, 40) / 3, 4);
+            enemies[i].s_ss_resist |= (uint8_t)polyfit(x, &mon_ssr_fac);
+        }
+        rank += pow(next_rank(0, &x, 1, 40) / 3, 4);
         enemies[i].hr_dodge    = ((uint8_t)polyfit(x, &mon_hr_fac)) << 4;
-        rank += next_rank(0, &x, 1, 40) / 2;
+        next_rank(0, &x, 1, 40);
         enemies[i].hr_dodge   |=  (uint8_t)polyfit(x, &mon_dodge_fac);
+        /* if the enemy doesn't have any spells, set ssr to 15 */
         if (!enemies[i].pattern) {
             enemies[i].s_ss_resist |= 15;
         }
-        enemies[i].rank = rank / 5;
+        enemies[i].rank = (float)(sqrt(sqrt(rank)) * 0.75);
     }
 
-    rank = next_rank(0, &x, 30, 40);
+    rank = next_rank(0, &x, 28, 40);
     enemies[DRAGONLORD_1].hp  = (uint8_t)polyfit(x, &mon_hp_fac);
-    rank += next_rank(flags, &x, 30, 40);
+    rank += next_rank(flags, &x, 28, 40);
     enemies[DRAGONLORD_1].str = (uint8_t)polyfit(x, &mon_str_fac);
-    rank += next_rank(flags, &x, 30, 40);
+    rank += next_rank(flags, &x, 28, 40);
     enemies[DRAGONLORD_1].agi = (uint8_t)polyfit(x, &mon_agi_fac);
     enemies[DRAGONLORD_1].pattern = mt_rand(0, 255);
     enemies[DRAGONLORD_1].s_ss_resist &= 0xf0;
     rank += next_rank(0, &x, 38, 40) / 2;
     enemies[DRAGONLORD_1].s_ss_resist |= (uint8_t)polyfit(x, &mon_sr_fac);
-    rank += 40; /* for the default stats */
-    enemies[DRAGONLORD_1].rank = rank / 5;
+    enemies[DRAGONLORD_1].rank = 39.9;
 
     /* Dragonlord with heal or sleep? That's just evil */
     enemies[DRAGONLORD_2].pattern |= (mt_rand(0, 255) & 0xb0);
@@ -125,8 +126,7 @@ static void chaos_enemy_stats(dw_rom *rom)
     rank = next_rank(0, &x, 38, 40);
     enemies[DRAGONLORD_2].s_ss_resist |= (uint8_t)polyfit(x, &mon_sr_fac);
     enemies[DRAGONLORD_2].hp = mt_rand(100, 230);
-    rank += 104.45; /* for the default stats */
-    enemies[DRAGONLORD_2].rank = rank / 5;
+    enemies[DRAGONLORD_2].rank = 40.0;
 
     /* update the repel table */
     for (i=SLIME; i <= RED_DRAGON; i++) {
@@ -149,8 +149,11 @@ static void chaos_enemy_drops(dw_rom *rom)
             x = enemies[i].rank;
         else
             x = i;
-        next_rank(rom->flags, &x, 1, 40);
-        enemies[i].xp = (uint8_t)polyfit(x, &mon_xp_fac);
+        if (enemies[i].rank != 1.0) {
+            /* noodle enemy, this has been set elsewhere */
+            next_rank(rom->flags, &x, 1, 40);
+            enemies[i].xp = (uint8_t)polyfit(x, &mon_xp_fac);
+        }
         next_rank(rom->flags, &x, 1, 40);
         enemies[i].gold = (uint8_t)polyfit(x, &mon_gold_fac);
     }
@@ -165,46 +168,53 @@ static void chaos_enemy_drops(dw_rom *rom)
 static void chaos_zones(dw_rom *rom)
 {
     int i, zone, index;
-    dw_enemies enemies[RED_DRAGON+1];
+    dw_enemy enemies[RED_DRAGON+1];
     dw_enemy *low_str_enemy = NULL;
 
     /* set up an array to sort enemies by difficulty */
     for (i=SLIME; i <= RED_DRAGON; i++) {
-        enemies[i] = i;
+        rom->enemies[i].index = i;
+        enemies[i] = rom->enemies[i];
     }
-    global_enemy = &rom->enemies;
-    qsort(enemies, RED_DRAGON+1, sizeof(dw_enemies), &compare_enemies);
+    qsort(enemies, RED_DRAGON+1, sizeof(dw_enemy), &compare_enemies);
 
     /* randomize zones 0-2 again with weaker monsters */
     for (zone=0; zone <= 2; zone++) {
+        low_str_enemy = NULL;
         for (i=0; i < 5; i++) {
-            index = mt_rand(0, 14);
-            rom->zones[zone * 5 + i] = enemies[index];
+            if (!zone)
+                index = mt_rand(0,7);
+            else
+                index = mt_rand(0, 14);
+
+            rom->zones[zone * 5 + i] = enemies[index].index;
             /* Find the enemy in zones 0-2 with the lowest strength */
             if (!low_str_enemy ||
-                    rom->enemies[enemies[index]].str < low_str_enemy->str) {
-                low_str_enemy = &rom->enemies[enemies[index]];
+                    rom->enemies[enemies[index].index].rank < low_str_enemy->rank) {
+                low_str_enemy = &rom->enemies[enemies[index].index];
             }
         }
-    }
-    /* ensure that at least one enemy is beatable */
-    /* set the lowest strength enemy's HP to a max of 5. */
-    low_str_enemy->hp = MIN(low_str_enemy->hp, 5);
-    /* remove any abilities */
-    low_str_enemy->pattern = 0;
-    /* constrict the xp value so it can't be abused */
-    low_str_enemy->xp = 
-        (uint8_t)polyfit(mt_rand_double_ranged(1, 20), &mon_xp_fac);
+        /* ensure that at least one enemy in these zones is beatable */
+        /* set the lowest strength enemy's HP to a max of 5. */
+        low_str_enemy->hp = MIN(low_str_enemy->hp, 5);
+        low_str_enemy->str = MIN(low_str_enemy->str, 10);
+        /* remove any abilities */
+        low_str_enemy->pattern = 0;
+        /* constrict the xp value so it can't be abused */
+        low_str_enemy->xp =
+            (uint8_t)polyfit(mt_rand_double_ranged(1, 25), &mon_xp_fac);
+        low_str_enemy->rank = 1.0;
 
+    }
     /* randomize Charlock Zones */
     for (zone=16; zone <= 18; zone++) {
         for (i=0; i < 5; i++) {
-            rom->zones[zone * 5 + i] = enemies[mt_rand(27, 36)];
+            rom->zones[zone * 5 + i] = enemies[mt_rand(27, 36)].index;
         }
     }
 
     for (i=0; i < 3; i++) { /* randomize the forced encounters */
-        *rom->encounter_types[i] = enemies[mt_rand(31, 36)];
+        *rom->encounter_types[i] = enemies[mt_rand(31, 36)].index;
     }
 }
 
@@ -221,10 +231,8 @@ static void chaos_weapon_prices(dw_rom *rom)
         return;
 
     for (i=0; i < 17; i++) {
-        printf("%d ==> ", rom->weapon_price_display[i]);
         rom->weapon_price_display[i] = rom->weapon_prices[i] =
             (uint16_t)polyfit(mt_rand_double_ranged(1,17), &wpn_price_fac);
-        printf("%d\n", rom->weapon_price_display[i]);
     }
 }
 

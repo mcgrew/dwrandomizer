@@ -201,7 +201,10 @@ typedef struct {
     uint8_t hr_dodge; /* hurt resist/dodge */
     uint8_t xp;
     uint8_t gold;
-    double  rank;
+    /* The rest of this is 8 bytes of unused space in the original game. */
+    /* I am repurposing it. */
+    float   rank;
+    uint32_t index;
 } dw_enemy;
 
 /** Statistics for a single player level */

@@ -2770,11 +2770,7 @@ void noir_mode(dw_rom *rom)
 
     for(; pal_start < pal_end; pal_start++) {
         if ((*pal_start & 0xf) < 0xd) {
-            if ((*pal_start & 0xf) == 0x20) {
-                *pal_start = 0x3d;
-            } else {
-                *pal_start &= 0xf0;
-            }
+            *pal_start &= 0xf0;
         }
     }
 

@@ -135,7 +135,7 @@ void MainWindow::layout()
     }
 
     /* Gameplay Options */
-    this->addOption('C', "Shuffle Chests && Searches","", "v", GAMEPLAY,  0, 0);
+    this->addOption('C', "Shuffle Chests && Searches",         GAMEPLAY,  0, 0);
     this->addOption('G', "Random Growth",                      GAMEPLAY,  1, 0);
     this->addOption('M', "Random Map",                "", "v", GAMEPLAY,  2, 0);
     this->addOption('S', "Random Spell Learning",              GAMEPLAY,  3, 0);

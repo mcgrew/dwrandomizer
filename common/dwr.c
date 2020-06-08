@@ -551,6 +551,10 @@ static inline BOOL is_static_chest(dw_chest *chest)
  */
 static void no_chest_shuffle(dw_rom *rom)
 {
+
+    if (VANILLA(rom))
+        return;
+        
     size_t i;
     dw_chest *chest;
     uint8_t contents[] = {
@@ -770,6 +774,9 @@ static inline void set_ow_zone(dw_rom *rom, uint8_t x, uint8_t y, uint8_t value)
  */
 static void randomize_zone_layout(dw_rom *rom)
 {
+    if(VANILLA(rom))
+        return;
+
     int i;
     dw_warp *tantegel = &rom->map.warps_from[WARP_TANTEGEL];
 
@@ -1088,6 +1095,9 @@ static void update_drops(dw_rom *rom)
  */
 static void update_mp_reqs(dw_rom *rom)
 {
+    if(VANILLA(rom))
+        return;
+
     int i;
     const uint8_t mp_reqs[10] = {3, 2, 2, 2, 2, 6, 8, 2, 8, 5};
 
@@ -1128,16 +1138,18 @@ static void lower_xp_reqs(dw_rom *rom)
  */
 static void update_enemy_hp(dw_rom *rom)
 {
-    int i;
-    const uint8_t remake_hp[DRAGONLORD_2+1] = {
-              2,   3,   5,   7,  12,  13,  13,  22,  23,  20,  16,  24,  28,
-             18,  33,  39,   3,  33,  37,  35,  44,  37,  40,  40, 153,  35,
-             47,  48,  38,  70,  72,  74,  65,  67,  98, 135,  99, 106, 100, 165
-    };
-    for (i=SLIME; i <= DRAGONLORD_2; i++) {
-        rom->enemies[i].hp =   remake_hp[i];
+    if(!VANILLA(rom)){
+        int i;
+        const uint8_t remake_hp[DRAGONLORD_2+1] = {
+                  2,   3,   5,   7,  12,  13,  13,  22,  23,  20,  16,  24,  28,
+                 18,  33,  39,   3,  33,  37,  35,  44,  37,  40,  40, 153,  35,
+                 47,  48,  38,  70,  72,  74,  65,  67,  98, 135,  99, 106, 100, 165
+        };
+        for (i=SLIME; i <= DRAGONLORD_2; i++) {
+            rom->enemies[i].hp =   remake_hp[i];
+        }
+        rom->enemies[DRAGONLORD_2].hp -= mt_rand(0, 15);
     }
-    rom->enemies[DRAGONLORD_2].hp -= mt_rand(0, 15);
 }
 
 /**
@@ -1256,6 +1268,7 @@ static void update_title_screen(dw_rom *rom)
 static void dwr_fighters_ring(dw_rom *rom)
 {
 
+    if(!VANILLA(rom)){
     printf("Fixing the fighter's ring...\n");
     /* fighter's ring fix */
     vpatch(rom, 0xf0fc, 4, 0x20, 0x7d, 0xff, 0xea);
@@ -1276,6 +1289,7 @@ static void dwr_fighters_ring(dw_rom *rom)
         0xa5, 0xcf,      /* LDA $00CF   ; replaces code removed from $F00E    */
         0x60             /* RTS                                               */
     );
+    }
 }
 
 /**
@@ -1452,13 +1466,11 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0x03f9e, 2,  0x37,  0x32);
     vpatch(rom, 0x0af6c, 1,  0xef);
 
+    if(!VANILLA(rom)){
     /* open the fairy water shop in breconnary */
     vpatch(rom, 0x0074e, 1,  0x6f);
     vpatch(rom, 0x0076c, 1,  0x6f);
     vpatch(rom, 0x0077a, 1,  0x46);
-
-    /* make search actually open a chest */
-    vpatch(rom, 0xe1dc, 2, 0xfd, 0xe1);
 
     /* Have the jerk take the token along with staff & stones */
     vpatch(rom, 0x0d383,    2,  0xca,  0xbf); /* jump to new code below */
@@ -1486,25 +1498,37 @@ static void other_patches(dw_rom *rom)
         0xea,  /* NOP         ; */
         0xea   /* NOP         ; */
     );
-    vpatch(rom, 0x42a, 1, 0x47);  /* add new stairs to the throne room */
-    vpatch(rom, 0x2a9, 1, 0x45);  /* add new stairs to the 1st floor */
-    vpatch(rom, 0x2c7, 1, 0x66);  /* add a new exit to the first floor */
-    /* replace the usless grave warps with some for tantegel */
-    vpatch(rom, 0xf44f, 3, 5, 1, 8);
-    vpatch(rom, 0xf4e8, 3, 4, 1, 7);
-    vpatch(rom, 0x1288, 1, 0x22);  /* remove the top set of stairs for the old warp in the grave */
+
     /* Sets the encounter rate of Zone 0 to be the same as other zones. */
     vpatch(rom, 0xcebf, 3, 0x4c, 0x04, 0xcf);  /* skip over the zone 0 code */
     vpatch(rom, 0xe260, 1, 0);  /* set death necklace chance to 100% */
     vpatch(rom, 0xe74d, 1, 9);  /* buff the hurt spell */
     vpatch(rom, 0xdbc1, 1, 18);  /* buff the heal spell */
+    if(!PERMANENT_REPEL(rom)){
+        vpatch(rom, 0xf131, 2, 0x69, 0x03); /* Lock the stat build modifier at 3 */
+    }
+
+    }
+
+    vpatch(rom, 0x42a, 1, 0x47);  /* add new stairs to the throne room */
+    vpatch(rom, 0x2a9, 1, 0x45);  /* add new stairs to the 1st floor */
+    vpatch(rom, 0x2c7, 1, 0x66);  /* add a new exit to the first floor */
+
+
+    /* make search actually open a chest */
+    vpatch(rom, 0xe1dc, 2, 0xfd, 0xe1);
+
+    /* replace the usless grave warps with some for tantegel */
+    vpatch(rom, 0xf44f, 3, 5, 1, 8);
+    vpatch(rom, 0xf4e8, 3, 4, 1, 7);
+    vpatch(rom, 0x1288, 1, 0x22);  /* remove the top set of stairs for the old warp in the grave */
+
     vpatch(rom, 0xea41, 5, 0xad, 0x07, 0x01, 0xea, 0xea); /* I forget what this does */
     /* fixing some annoying roaming npcs */
     vpatch(rom, 0x18ee, 1, 0xa7); /* move the stupid old man from the item shop */
     vpatch(rom, 0x90f,  1, 0x6f); /* quit ignoring the customers */
     vpatch(rom, 0x93c,  1, 0x6f); /* quit ignoring the customers */
     vpatch(rom, 0x17a2, 3, 0, 0, 0); /* delete roaming throne room guard */
-    vpatch(rom, 0xf131, 2, 0x69, 0x03); /* Lock the stat build modifier at 3 */
 
     /* I always hated this wording */
     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");

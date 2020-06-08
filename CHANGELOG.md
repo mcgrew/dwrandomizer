@@ -10,6 +10,28 @@
   * The random sprite chosen will no longer depend on the seed number
 * Added a Ms. Pacman "Sue" sprite
 
+    # Build 479x
+      * Stat build modifier is not locked to 3 if Permanent Repel flag is selected.
+      * Added "Almost Vanilla" option to flags. 
+          Almost Vanilla turns off all of these patches:
+              - open the Fairy Water shop in Breconnary    
+              - have the old man take the Token along with Staff & Stones
+              - move the Golem encounter to Charlock
+              - make sure all forced encounters are never marked defeated
+              - changes the enemies summoned by the harp.
+              - sets the encounter rate of Zone 0 to be the same as other zones.
+              - set Death Necklace chance to 100%
+              - adjust MP requirements
+              - adjust enemy HP values (notable for Golem and Dragonlord)
+              - buff the HEAL spell
+              - buff the HURT spell
+              - lock the stat build modifier at 3
+              - replace 7-13 GOLD chests with 500-755
+          Additionally, when "Almost Vanilla" is on: 
+              - GOLD chests are only updated to 500-755 if chests are shuffled
+              - the "Random Map" flag is disabled
+            
+  
 # 2.1.2 - Bug fixes #
 * Fixed the slime and red slime sprites
 

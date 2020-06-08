@@ -21,8 +21,6 @@
 #define DEFAULT_FLAGS "CDFGMPRSTWYZ"
 #define CHEST_COUNT 31
 
-#define VANILLA_FLAGS ""
-
 /** 64 bit versions of the randomization flags */
 #define FLAG_0 UINT64_C(0x0000000000000001)
 #define FLAG_1 UINT64_C(0x0000000000000002)

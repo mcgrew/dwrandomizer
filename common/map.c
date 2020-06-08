@@ -800,6 +800,9 @@ BOOL map_generate_terrain(dw_rom *rom)
     int i, j, x, y, lm_sizes[256];
     int largest, next, total_area;
 
+    if (VANILLA(rom)) {
+        return map_encode(&rom->map);
+    }
     if (!RANDOM_MAP(rom)) {
 
         map_decode(&rom->map);

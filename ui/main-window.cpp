@@ -135,22 +135,23 @@ void MainWindow::layout()
     }
 
     /* Gameplay Options */
-    this->addOption('C', "Shuffle Chests && Searches",         GAMEPLAY,  0, 0);
+    this->addOption('C', "Shuffle Chests && Searches","", "v", GAMEPLAY,  0, 0);
     this->addOption('G', "Random Growth",                      GAMEPLAY,  1, 0);
-    this->addOption('M', "Random Map",                         GAMEPLAY,  2, 0);
+    this->addOption('M', "Random Map",                "", "v", GAMEPLAY,  2, 0);
     this->addOption('S', "Random Spell Learning",              GAMEPLAY,  3, 0);
-    this->addOption('Y', "Heal/Hurt before \"More\"", "S", "", GAMEPLAY,  4, 0);
+    this->addOption('Y', "Heal/Hurt Before \"More\"", "S", "", GAMEPLAY,  4, 0);
     this->addOption('W', "Random Weapon Shops",                GAMEPLAY,  0, 1);
     this->addOption('w', "Random Weapon Prices",               GAMEPLAY,  1, 1);
     this->addOption('x', "Random XP Requirements",             GAMEPLAY,  2, 1);
+    this->addOption('v', "Almost Vanilla",                     GAMEPLAY,  3, 1);
 
     /* Features */
     this->addOption('R', "Enable Menu Wrapping",               FEATURES,  0, 0);
     this->addOption('D', "Enable Death Necklace",              FEATURES,  1, 0);
-    this->addOption('T', "Enable Torches In Battle",           FEATURES,  2, 0);
+    this->addOption('T', "Enable Torches in Battle",           FEATURES,  2, 0);
     this->addOption('b', "Big Swamp",                 "M", "", FEATURES,  0, 1);
-    this->addOption('r', "Repel in dungeons",                  FEATURES,  1, 1);
-    this->addOption('p', "Permanent repel",                    FEATURES,  2, 1);
+    this->addOption('r', "Repel in Dungeons",                  FEATURES,  1, 1);
+    this->addOption('p', "Permanent Repel",                    FEATURES,  2, 1);
 
     /* Monster flags */
     this->addOption('P', "Random Monster Abilities",           MONSTERS,  0, 0);

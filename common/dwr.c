@@ -1455,12 +1455,6 @@ static void permanent_torch(dw_rom *rom)
             0xea,               /* NOP       ;  (Y is set to 0)               */
             0x84,  0xda         /* STY $DA   ;  set radiant timer             */
     );
-    vpatch(rom, 0x0ca68,    4,
-            0xea,               /* NOP       ; Skip decrementing              */
-            0xea,               /* NOP       ;  radiant timer                 */
-            0xea,               /* NOP       ;  when walking                  */
-            0xea                /* NOP                                        */
-    );
     vpatch(rom, 0x0dd1e,    6,
             0xea,               /* NOP       ; Skip map type check            */
             0xea,               /* NOP       ;  when using torch              */

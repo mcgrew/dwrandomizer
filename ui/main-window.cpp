@@ -151,6 +151,7 @@ void MainWindow::layout()
     this->addOption('b', "Big Swamp",                 "M", "", FEATURES,  0, 1);
     this->addOption('r', "Repel in dungeons",                  FEATURES,  1, 1);
     this->addOption('p', "Permanent repel",                    FEATURES,  2, 1);
+    this->addOption('y', "Permanent torch",                    FEATURES,  3, 1);
 
     /* Monster flags */
     this->addOption('P', "Random Monster Abilities",           MONSTERS,  0, 0);

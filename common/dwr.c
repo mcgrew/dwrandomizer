@@ -990,7 +990,7 @@ static void randomize_spells(dw_rom *rom)
         for (j=HEAL; j <= HURTMORE; j++) {
             if ((j == REPEL && PERMANENT_REPEL(rom)) ||
                 (j == HURTMORE && NO_HURTMORE(rom)) ||
-                (j == RADIANT && PERMANENT_TORCH(rom))
+                (j == RADIANT && PERMANENT_TORCH(rom)))
                 continue;
             /* spell masks are in big endian format */
             if (rom->new_spells[j].level <= i+1) {
@@ -1450,10 +1450,10 @@ static void permanent_torch(dw_rom *rom)
     printf("Illuminating all the caves...\n");
 
     vpatch(rom, 0x02f18,    7,
-            0xa5,  0x03,        /* LDA #$03  ; When loading map               */
+            0xa9,  0x03,        /* LDA #$03  ; When loading map               */
             0x85,  0xd0,        /* STA $D0   ;  set size of torch radius      */
             0xea,               /* NOP       ;  (Y is set to 0)               */
-            0x86,  0xda         /* STY $DA   ;  set radiant timer             */
+            0x84,  0xda         /* STY $DA   ;  set radiant timer             */
     );
     vpatch(rom, 0x0ca68,    4,
             0xea,               /* NOP       ; Skip decrementing              */
@@ -1468,7 +1468,7 @@ static void permanent_torch(dw_rom *rom)
             0xea,               /* NOP       ;  fail when used                */
             0xea,               /* NOP       ;  outside of battle             */
             0xea                /* NOP                                        */
-    };
+    );
 }
 
 /**

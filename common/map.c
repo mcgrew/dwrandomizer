@@ -504,20 +504,20 @@ static uint8_t place_tantegel(dw_map *map, int largest, int next)
  * @return An integer indicating how many tiles to remove from remaining tiles
  *      to place.
  */
-static int map_fill_point(dw_map *map, uint8_t *points,
+static int map_fill_point(dw_map *map, uint8_t **points,
         uint8_t x, uint8_t y, dw_tile tile)
 {
-    uint8_t *p = points;
+
     if (x >= 120 || y >= 120)
         return 0;
 
     for (;;) {
-        if (p[0] > 120) { break; }
+        if ((*points)[0] > 120) { break; }
 //        if (p[0] == x && p[1] == y) return 0;
-        p += 2;
+        (*points) += 2;
     }
-    p[0] = x;
-    p[1] = y;
+    (*points)[0] = x;
+    (*points)[1] = y;
     map->tiles[y][x] = (uint8_t)tile;
     if (tile == TILE_MOUNTAIN)
         return 2; /* not so many mountain tiles */
@@ -532,11 +532,11 @@ static int map_fill_point(dw_map *map, uint8_t *points,
  */
 static void map_fill(dw_map *map, dw_tile tile)
 {
-    uint8_t x, y, *points, *p;
+    uint8_t x, y, *points, *p, *points_orig;
     uint64_t directions;
     int size;
 
-    p = points = malloc(MAX_FILL_BLOB * 4 + 1);
+    points_orig = p = points = malloc(MAX_FILL_BLOB * 4 + 1);
     memset(p, 0xff, MAX_FILL_BLOB * 4 + 1);
     p[0] = mt_rand(0, 119);
     p[1] = mt_rand(0, 119);
@@ -546,22 +546,22 @@ static void map_fill(dw_map *map, dw_tile tile)
         x = p[0]; y=p[1];
         directions = mt_rand(0, 15);
         if (directions & 8) {
-            size -= map_fill_point(map, points, x-1, y, tile);
+            size -= map_fill_point(map, &points, x-1, y, tile);
         }
         if (directions & 4) {
-            size -= map_fill_point(map, points, x+1, y, tile);
+            size -= map_fill_point(map, &points, x+1, y, tile);
         }
         if (directions & 2) {
-            size -= map_fill_point(map, points, x, y-1, tile);
+            size -= map_fill_point(map, &points, x, y-1, tile);
         }
         if (directions & 1) {
-            size -= map_fill_point(map, points, x, y+1, tile);
+            size -= map_fill_point(map, &points, x, y+1, tile);
         }
         if (p[2] < 120) {
             p += 2;
         } else break; 
     }
-    free(points);
+    free(points_orig);
 
 }
 

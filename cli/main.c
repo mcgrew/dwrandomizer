@@ -23,28 +23,42 @@ static void print_usage(const char *command, char *default_flags)
     printf("    D  Enable Death Necklace functionality (+10 ATK -25%% HP)\n");
     printf("    F  Set XP requirements for each level to 75%% of normal.\n");
     printf("    G  Enable randomization of player stat growth.\n");
-    printf("    H  Apply game speed hacks\n");
+    printf("    H  Apply game speed hacks.\n");
     printf("    K  Shuffle the game music.\n");
-    printf("    M  Randomize the level spells are learned.\n");
-    printf("    R  Enable menu wrap-around\n");
+    printf("    M  Generate a random overworld map.\n");
     printf("    P  Enable randomization of monster attack patterns.\n");
     printf("    Q  Disables the game music.\n");
+    printf("    R  Enable menu wrap-around.\n");
+    printf("    S  Randomize spell learning levels.\n");
+    printf("    T  Add the ability to use torches and fairy water in bartle.\n");
     printf("    V  Set XP requirements for each level to 50%% of normal.\n");
     printf("    W  Random weapon shops.\n");
+    printf("    Y  Always learn the basic spell before the \"MORE\" variant.\n");
     printf("    Z  Random monster zones.\n");
 
-    printf("    b  Big Swamp - make a larger portion of the terrain swamp\n");
-    printf("    c  Cursed princess mode\n");
-    printf("    d  Random monster drops (XP and gold)\n");
+    printf("    b  Big Swamp - make a larger portion of the terrain swamp.\n");
+    printf("    c  Cursed princess mode.\n");
+    printf("    d  Random monster drops (XP and gold).\n");
     printf("    e  Random monster stats\n");
-    printf("    k  Don't require keys to open doors\n");
-    printf("    l  Metal Slimes always have a chance to run\n");
-    printf("    m  Modern spell names\n");
+    printf("    g  Make random monster stats consistent.\n");
+    printf("    h  Three's company mode.\n");
+    printf("    i  Invisible hero.\n");
+    printf("    j  Noir mode.\n");
+    printf("    k  Don't require keys to open doors.\n");
+    printf("    l  Metal Slimes always have a chance to run.\n");
+    printf("    m  Modern spell names.\n");
+    printf("    n  Numbers will not show in the dialog until the final "
+            "battle.\n");
     printf("    o  Open Charlock. No Rainbow Drop required.\n");
-    printf("    s  Shortened Charlock\n");
-    printf("    t  Enable faster text\n");
-    printf("    v  Vanilla (Original) Map\n");
-    printf("    w  Random weapon prices\n");
+    printf("    p  Permanent repel.\n");
+    printf("    q  Invisible NPCs.\n");
+    printf("    r  Repel will work in dungeons.\n");
+    printf("    s  Shortened Charlock.\n");
+    printf("    t  Enable faster text.\n");
+    printf("    u  You will not learn HURTMORE.\n");
+    printf("    v  Vanilla (Original) Map.\n");
+    printf("    w  Random weapon prices.\n");
+    printf("    x  Random expreience point requirements to level.\n");
 
     printf("\n");
     printf("If flags are not specified, the flags \"%s\" will be used\n",

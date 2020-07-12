@@ -1480,7 +1480,7 @@ static void other_patches(dw_rom *rom)
         /* de23: */
         0x29, 0x7,  /* AND #$07    ; limit the random number to 0-7 */
         0xaa,  /* TAX         ; move the value to the X register */
-        0xbd, 0x64, 0xf5,  /* LDA #F564,X ; load the monster from the zone table */
+        0xbd, 0x54, 0xf5,  /* LDA #F554,X ; load a monster from zone 1-2 */
         0xea,  /* NOP         ; fill in the rest with NOP */
         0xea,  /* NOP         ; */
         0xea,  /* NOP         ; */

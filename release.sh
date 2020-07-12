@@ -11,7 +11,7 @@ make
 cp dwrandomizer-cli ../builds/
 rm -r *
 
-qmake DEFINES+="DWR_RELEASE" ../dwrandomizer.pro
+qmake DEFINES+="DWR_RELEASE" CONFIG+= "c++11" ../dwrandomizer.pro
 make
 cp dwrandomizer ../builds/
 rm -r *

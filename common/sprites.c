@@ -105,7 +105,7 @@ size_t sprite_count()
         while(dwr_sprite_names[i] != NULL) {
             i++;
         }
-        printf("Found %u sprites.\n", i);
+        printf("Found %lu sprites.\n", i);
     }
     return i;
 }

@@ -16,7 +16,8 @@
 enum {
     KEY_IN_MOUNTAIN = 1,
     KEY_IN_GRAVE    = 2,
-    KEY_IN_BASEMENT = 4
+    KEY_IN_BASEMENT = 4,
+    KEY_IN_TABLET   = 8
 };
 
 #define VAN_SPOT_COUNT 13
@@ -684,6 +685,14 @@ static BOOL need_rimuldar(dw_map *map)
         }
     }
 
+    warp = map->warps_from[WARP_ERDRICKS_CAVE];
+    if (warp.map == 1) {
+        lm = map->walkable[warp.x][warp.y];
+        if (lm == tantegel_lm && map->have_keys & KEY_IN_TABLET) {
+            return FALSE;
+        }
+    }
+
     warp = map->warps_from[WARP_MOUNTAIN_CAVE];
     if (warp.map == 1) {
         lm = map->walkable[warp.x][warp.y];
@@ -884,6 +893,9 @@ static void check_keys(dw_rom *rom)
             switch(chest->map) {
                 case 12:
                     rom->map.have_keys |= KEY_IN_BASEMENT;
+                    break;
+                case 29:
+                    rom->map.have_keys |= KEY_IN_TABLET;
                     break;
                 case 22:
                 case 23:

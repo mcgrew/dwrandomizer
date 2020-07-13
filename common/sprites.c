@@ -105,7 +105,7 @@ size_t sprite_count()
         while(dwr_sprite_names[i] != NULL) {
             i++;
         }
-        printf("Found %lu sprites.\n", i);
+        printf("Found %u sprites.\n", i);
     }
     return i;
 }
@@ -2661,6 +2661,10 @@ void sprite(dw_rom *rom, const char *sprite_name)
 {
     void (*sprite_func[sprite_count()-2])(dw_rom *rom);
     size_t i=0;
+
+    if (INVISIBLE_HERO(rom)) {
+        return;
+    }
 
     sprite_func[i++] = &gwaelin;
     sprite_func[i++] = &slime;

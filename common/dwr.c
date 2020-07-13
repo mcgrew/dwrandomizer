@@ -324,6 +324,8 @@ static inline void check_quest_items(dw_rom *rom)
     int i, tmp_index;
     uint8_t tmp_item;
 
+    printf("Checking quest item placement...\n");
+
     for (i=1; i <= 30; i++) {
         if (rom->chests[i].map == CHARLOCK_THRONE_ROOM ||
                 rom->chests[i].map == CHARLOCK_CAVE_2) {
@@ -1948,8 +1950,8 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     /* Clear the unused code so we can make sure it's unused */
     memset(&rom.content[0xc288], 0xff, 0xc4f5 - 0xc288);
 
-    while(!map_generate_terrain(&rom)) {}
     shuffle_chests(&rom);
+    while(!map_generate_terrain(&rom)) {}
     randomize_attack_patterns(&rom);
     randomize_zone_layout(&rom);
     randomize_zones(&rom);

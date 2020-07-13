@@ -13,7 +13,14 @@
 #define MIN_WALKABLE    5000
 #define MAP_ENCODED_SIZE 2294
 
+enum {
+    KEY_IN_MOUNTAIN = 1,
+    KEY_IN_GRAVE    = 2,
+    KEY_IN_BASEMENT = 4
+};
+
 #define VAN_SPOT_COUNT 13
+
 static const uint8_t vanilla_spots[VAN_SPOT_COUNT][2] = {
     /* vanilla place locations */
     { 43, 43 },
@@ -626,6 +633,77 @@ static int find_walkable_area(dw_map *map, int *lm_sizes, int *largest,
 }
 
 /**
+ * Checks to see if swamp cave is contained in the specified town map
+ *
+ * @param map The map struct
+ * @param warp_index The warp index of the town map to check.
+ * @return A boolean indicating if swamp cave entrance is in this map.
+ */
+static BOOL swamp_cave_in(dw_map *map, uint8_t warp_index)
+{
+    int warp_to;
+    uint8_t swamp_north, swamp_south;
+
+    swamp_north = map->warps_from[WARP_SWAMP_NORTH].map;
+    swamp_south = map->warps_from[WARP_SWAMP_SOUTH].map;
+    warp_to = map->warps_to[warp_index].map;
+
+    return (swamp_north == warp_to || swamp_south == warp_to);
+}
+
+/**
+ * Checks multiple conditions to determine if rimuldar needs to be accessible
+ * for obtaining keys
+ *
+ * @param map The map struct
+ * @return A boolean indicating if Rimuldar is needed
+ */
+static BOOL need_rimuldar(dw_map *map)
+{
+    uint8_t lm, tantegel_lm, garinham_lm;
+    dw_warp warp;
+
+    warp = map->warps_from[WARP_TANTEGEL];
+    tantegel_lm = map->walkable[warp.x][warp.y];
+    warp = map->warps_from[WARP_GARINHAM];
+    garinham_lm = map->walkable[warp.x][warp.y];
+
+    /* Is swap cave in tantegel? */
+    if (!swamp_cave_in(map, WARP_TANTEGEL)) {
+        /* Is Garinhamp on the same mass? If so, does it have swamp cave? */
+        if (garinham_lm != tantegel_lm || !swamp_cave_in(map, WARP_GARINHAM)) {
+            return FALSE;
+        }
+    }
+
+    warp = map->warps_from[WARP_TANTEGEL_BASEMENT];
+    if (warp.map == 1) {
+        lm = map->walkable[warp.x][warp.y];
+        if (lm == tantegel_lm && map->have_keys & KEY_IN_BASEMENT) {
+            return FALSE;
+        }
+    }
+
+    warp = map->warps_from[WARP_MOUNTAIN_CAVE];
+    if (warp.map == 1) {
+        lm = map->walkable[warp.x][warp.y];
+        if (lm == tantegel_lm && map->have_keys & KEY_IN_MOUNTAIN) {
+            return FALSE;
+        }
+    }
+
+    warp = map->warps_from[WARP_GARINS_GRAVE];
+    if (warp.map == 1) {
+        lm = map->walkable[warp.x][warp.y];
+        if (lm == tantegel_lm && map->have_keys & KEY_IN_GRAVE) {
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+/**
  * Places landmarks on the map (towns, castles, caves)
  *
  * @param map The map struct
@@ -636,7 +714,6 @@ static BOOL place_landmarks(dw_map *map)
     int i, largest = 0, next = 0, lm_sizes[256],
             rimuldar_lm1, rimuldar_lm2, brecc_lm1, brecc_lm2;
     uint8_t tantegel_lm, charlock_lm;
-    dw_map_index swamp_north, swamp_south;
     BOOL swamp_placed = FALSE;
     dw_warp *warp;
     dw_warp_index caves[8] = {
@@ -694,28 +771,25 @@ static BOOL place_landmarks(dw_map *map)
             place(map, caves[i], TILE_CAVE, largest, next);
         }
     }
-    swamp_north = map->warps_from[WARP_SWAMP_NORTH].map;
-    swamp_south = map->warps_from[WARP_SWAMP_SOUTH].map;
-
     rimuldar_lm1 = brecc_lm1 = largest;
     rimuldar_lm2 = brecc_lm2 = next;
 
-    /* check for swamp cave to be in tantegel and/or garinham */
-    if (swamp_north == TANTEGEL || swamp_south == TANTEGEL) {
+    /* check for swamp cave to be in tantegel */
+    if (swamp_cave_in(map, WARP_TANTEGEL)) {
         if (swamp_placed) {
             tantegel_lm = place_tantegel(map, largest, 0);
         } else {
             tantegel_lm = place_tantegel(map, next, 0);
             swamp_placed = TRUE;
         }
-        /* rimuldar needs to be on the same land mass as tantegel (for keys) */
         /* brecconary on the same land mass as tantegel (for uncursing) */
-        rimuldar_lm1 = rimuldar_lm2 = brecc_lm1 = brecc_lm2 = (int)tantegel_lm;
+        brecc_lm1 = brecc_lm2 = (int)tantegel_lm;
     } else {
         tantegel_lm = place_tantegel(map, largest, next);
     }
 
-    if (swamp_north == GARINHAM || swamp_south == GARINHAM) {
+    /* check for swamp cave to be in garinham */
+    if (swamp_cave_in(map, WARP_GARINHAM)) {
         if (swamp_placed) {
             map->meta[GARINHAM].border =
                     place(map, WARP_GARINHAM, TILE_TOWN, largest, 0);
@@ -723,12 +797,15 @@ static BOOL place_landmarks(dw_map *map)
             map->meta[GARINHAM].border =
                     place(map, WARP_GARINHAM, TILE_TOWN, next, 0);
         }
-        /* rimuldar needs to be on the same land mass as tantegel (for keys) */
-        rimuldar_lm1 = rimuldar_lm2 = tantegel_lm;
     } else {
         map->meta[GARINHAM].border =
                 place(map, WARP_GARINHAM, TILE_TOWN, largest, next);
     }
+    if (need_rimuldar(map)) {
+        /* rimuldar needs to be on the same land mass as tantegel (for keys) */
+        rimuldar_lm1 = rimuldar_lm2 = tantegel_lm;
+    }
+
     map->meta[RIMULDAR].border =
             place(map, WARP_RIMULDAR, TILE_TOWN, rimuldar_lm1, rimuldar_lm2);
     map->meta[BRECCONARY].border =
@@ -790,6 +867,38 @@ static void map_add_river(dw_map *map) {
 }
 
 /**
+ * Checks where keys are available for later placement of rimuldar
+ *
+ * @param rom The rom struct
+ */
+static void check_keys(dw_rom *rom)
+{
+    dw_chest *chest, *chest_end;
+
+    printf("Checking for key availability...\n");
+    chest_end = rom->chests + CHEST_COUNT;
+    rom->map.have_keys = 0;
+
+    for ( chest = rom->chests; chest < chest_end; chest++) {
+        if (chest->item == KEY) {
+            switch(chest->map) {
+                case 12:
+                    rom->map.have_keys |= KEY_IN_BASEMENT;
+                    break;
+                case 22:
+                case 23:
+                    rom->map.have_keys |= KEY_IN_MOUNTAIN;
+                    break;
+                case 24:
+                    rom->map.have_keys |= KEY_IN_GRAVE;
+                default:
+                    break;
+            }
+        }
+    }
+}
+
+/**
  * Generates a new in-game map.
  *
  * @param rom The rom struct
@@ -800,6 +909,7 @@ BOOL map_generate_terrain(dw_rom *rom)
     int i, j, x, y, lm_sizes[256];
     int largest, next, total_area;
 
+    check_keys(rom);
     if (!RANDOM_MAP(rom)) {
 
         map_decode(&rom->map);

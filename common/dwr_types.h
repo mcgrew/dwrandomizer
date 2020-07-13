@@ -272,6 +272,7 @@ typedef struct {
     dw_rainbow_drop *rainbow_bridge;
     uint8_t tiles[120][120];
     uint8_t walkable[120][120];
+    uint8_t have_keys;
 } dw_map;
 
 /** A struct for the rom data */

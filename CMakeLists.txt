@@ -27,6 +27,10 @@ set(CLI_SOURCE_FILES
 add_executable(dwrandomizer-cli ${CLI_SOURCE_FILES})
 target_link_libraries(dwrandomizer-cli m)
 
+if (EMSCRIPTEN)
+    target_link_options(dwrandomizer-cli PRIVATE "SHELL:-s EXPORTED_FUNCTIONS='[\"_dwr_randomize\"]' -s
+    EXPORTED_RUNTIME_METHODS='[\"ccall\", \"cwrap\"]'")
+endif()
 if(Qt5Widgets_FOUND)
     set (CMAKE_AUTOMOC ON)
     include_directories(common /usr/include/qt)

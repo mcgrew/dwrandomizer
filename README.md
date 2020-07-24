@@ -242,6 +242,27 @@ make
 Some compiling will happen, and that's it! you should have a working binary in 
 the current directory.
 
+##### Emscripten #####
+
+Install emscripten from https://emscripten.org/docs/getting_started/downloads.html
+
+Instructions for MacOS and linux:
+```bash
+mkdir build
+cd build
+cmake -DCMAKE_TOOLCHAIN_FILE=<path to emscripten>/libexec/cmake/Modules/Platform/Emscripten.cmake ..
+make dwrandomizer-cli
+```
+
+You'll then have `dwrandomizer-cli.wasm` and `dwrandomizer-cli.js` files, which can be served along with the files in the
+ `emscripten` directory. For example, continuing from the same `build` directory as above:
+```bash
+cp ../emscripten/* .
+python -m http.server
+```
+Then open a web browser to http://localhost:8000
+
+
 ## FAQ ##
 
 #### What is the "checksum" when generating a ROM? ####

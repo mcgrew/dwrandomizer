@@ -143,6 +143,7 @@ void MainWindow::layout()
     this->addOption('W', "Random Weapon Shops",                GAMEPLAY,  0, 1);
     this->addOption('w', "Random Weapon Prices",               GAMEPLAY,  1, 1);
     this->addOption('x', "Random XP Requirements",             GAMEPLAY,  2, 1);
+    this->addOption('z', "Shuffle Dungeon Stairs",             GAMEPLAY,  3, 1);
 
     /* Features */
     this->addOption('R', "Enable Menu Wrapping",               FEATURES,  0, 0);

@@ -107,6 +107,7 @@
 #define RANDOM_PRICES(x)      (x->flags & FLAG_w)
 #define RANDOM_XP_REQS(x)     (x->flags & FLAG_x)
 #define PERMANENT_TORCH(x)    (x->flags & FLAG_y)
+#define STAIR_SHUFFLE(x)      (x->flags & FLAG_z)
 #define SHUFFLE_CHESTS(x)     (x->flags & FLAG_C)
 #define DEATH_NECKLACE(x)     (x->flags & FLAG_D)
 #define FAST_XP(x)            (x->flags & FLAG_F)

@@ -1508,13 +1508,6 @@ static void other_patches(dw_rom *rom)
         0xea,  /* NOP         ; */
         0xea   /* NOP         ; */
     );
-    vpatch(rom, 0x42a, 1, 0x47);  /* add new stairs to the throne room */
-    vpatch(rom, 0x2a9, 1, 0x45);  /* add new stairs to the 1st floor */
-    vpatch(rom, 0x2c7, 1, 0x66);  /* add a new exit to the first floor */
-    /* replace the usless grave warps with some for tantegel */
-    vpatch(rom, 0xf44f, 3, 5, 1, 8);
-    vpatch(rom, 0xf4e8, 3, 4, 1, 7);
-    vpatch(rom, 0x1288, 1, 0x22);  /* remove the top set of stairs for the old warp in the grave */
     /* Sets the encounter rate of Zone 0 to be the same as other zones. */
     vpatch(rom, 0xcebf, 3, 0x4c, 0x04, 0xcf);  /* skip over the zone 0 code */
     vpatch(rom, 0xe260, 1, 0);  /* set death necklace chance to 100% */
@@ -1879,6 +1872,53 @@ static void modern_spell_names(dw_rom *rom)
     );
 }
 
+static void extra_exit(dw_rom *rom)
+{
+
+    if (!STAIR_SHUFFLE(rom))
+        return;
+
+    vpatch(rom, 0x42a, 1, 0x47);  /* add new stairs to the throne room */
+    vpatch(rom, 0x2a9, 1, 0x45);  /* add new stairs to the 1st floor */
+    vpatch(rom, 0x2c7, 1, 0x66);  /* add a new exit to the first floor */
+    /* replace the usless grave warps with some for tantegel */
+    /* replace the looping stairs in Charlock */
+    vpatch(rom, 0xf437, 3, 5, 1, 8);
+    vpatch(rom, 0xf4d0, 3, 4, 1, 7);
+    /* remove the stairs tile */
+    vpatch(rom,  0xf4e, 1, 0x22);
+    /* remove the top set of stairs for the old warp in the grave */
+//    vpatch(rom, 0x1288, 1, 0x22);
+}
+
+static void stair_shuffle(dw_rom *rom)
+{
+    dw_warp *warps = rom->map.warps_to;
+    dw_warp *warps_end = warps + 52;
+    dw_warp *warp, to_shuffle[8], *to_shuffle_ptr;
+    int i, map_to, maps_to[] = { 16, 17, 18, 19, 20, 23, 25, 26, 27 };
+
+    for (i=0; i < 9; i++) {
+        to_shuffle_ptr = to_shuffle;
+        map_to = maps_to[i];
+        for (warp = warps; warp < warps_end; warp++) {
+            if (warp->map == map_to) {
+                *(to_shuffle_ptr++) = *warp;
+            }
+        }
+        mt_shuffle(to_shuffle, to_shuffle_ptr -  to_shuffle, sizeof(dw_warp));
+
+        to_shuffle_ptr = to_shuffle;
+        map_to = maps_to[i];
+        for (warp = warps; warp < warps_end; warp++) {
+            if (warp->map == map_to) {
+                *warp = *(to_shuffle_ptr++);
+            }
+        }
+    }
+
+}
+
 /**
  * Updates the Cantlin NPC dialogue to reveal the new overworld item location.
  * If there is no overworld item to search for, the NPC will just give you
@@ -1996,6 +2036,8 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     scared_metal_slimes(&rom);
     torch_in_battle(&rom);
     repel_mods(&rom);
+    extra_exit(&rom);
+    stair_shuffle(&rom);
     permanent_torch(&rom);
     other_patches(&rom);
     credits(&rom);

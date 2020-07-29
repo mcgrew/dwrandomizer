@@ -1,5 +1,5 @@
-From | Offset | Map | X   | Y   | To   | Offset | Map | X  | Y  | Location             | Index
-==== | ====== | === | === | === | ==== | ====== | === | == | == | ==================== |
+From | Offset | Map | X   | Y   | To   | Offset | Map | X  | Y  | To Location          | Index
+==== | ====== | === | === | === | ==== | ====== | === | == | == | ==================== | =====
 F3D8 | 0      | 1   | 2   | 2   | F471 | 153    | 9   | 0  | 14 | Garinham             | 0
 F3DB | 3      | 1   | 81  | 1   | F474 | 156    | 13  | 4  | 9  | Northern Shrine      | 1
 F3DE | 6      | 1   | 104 | 10  | F477 | 159    | 7   | 19 | 23 | Kol                  | 2

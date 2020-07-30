@@ -1875,9 +1875,6 @@ static void modern_spell_names(dw_rom *rom)
 static void extra_exit(dw_rom *rom)
 {
 
-    if (!STAIR_SHUFFLE(rom))
-        return;
-
     vpatch(rom, 0x42a, 1, 0x47);  /* add new stairs to the throne room */
     vpatch(rom, 0x2a9, 1, 0x45);  /* add new stairs to the 1st floor */
     vpatch(rom, 0x2c7, 1, 0x66);  /* add a new exit to the first floor */
@@ -1891,31 +1888,53 @@ static void extra_exit(dw_rom *rom)
 //    vpatch(rom, 0x1288, 1, 0x22);
 }
 
-static void stair_shuffle(dw_rom *rom)
+static inline BOOL array_contains(int *array, int value)
 {
-    dw_warp *warps = rom->map.warps_to;
+    int *i;
+
+    for (i = array; *i; i++) {
+        if (value == *i)
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
+static void shuffle_stair_group(dw_warp *warps, int *group)
+{
     dw_warp *warps_end = warps + 52;
-    dw_warp *warp, to_shuffle[8], *to_shuffle_ptr;
-    int i, map_to, maps_to[] = { 16, 17, 18, 19, 20, 23, 25, 26, 27 };
+    dw_warp *warp, to_shuffle[52], *to_shuffle_ptr;
 
-    for (i=0; i < 9; i++) {
-        to_shuffle_ptr = to_shuffle;
-        map_to = maps_to[i];
-        for (warp = warps; warp < warps_end; warp++) {
-            if (warp->map == map_to) {
-                *(to_shuffle_ptr++) = *warp;
-            }
-        }
-        mt_shuffle(to_shuffle, to_shuffle_ptr -  to_shuffle, sizeof(dw_warp));
-
-        to_shuffle_ptr = to_shuffle;
-        map_to = maps_to[i];
-        for (warp = warps; warp < warps_end; warp++) {
-            if (warp->map == map_to) {
-                *warp = *(to_shuffle_ptr++);
-            }
+    to_shuffle_ptr = to_shuffle;
+    for (warp = warps; warp < warps_end; warp++) {
+        if (array_contains(group, warp->map)) {
+            *(to_shuffle_ptr++) = *warp;
         }
     }
+    mt_shuffle(to_shuffle, to_shuffle_ptr -  to_shuffle, sizeof(dw_warp));
+
+    to_shuffle_ptr = to_shuffle;
+    for (warp = warps; warp < warps_end; warp++) {
+        if (array_contains(group, warp->map)) {
+            *warp = *(to_shuffle_ptr++);
+        }
+    }
+}
+
+static void stair_shuffle(dw_rom *rom)
+{
+    int group1[] = { MOUNTAIN_CAVE_2, GARINS_GRAVE_2, GARINS_GRAVE_3,
+        ERDRICKS_CAVE_2, 0 };
+    int group2[] = { CHARLOCK_CAVE_1, CHARLOCK_CAVE_2, CHARLOCK_CAVE_3,
+        CHARLOCK_CAVE_4, CHARLOCK_CAVE_5, CHARLOCK_THRONE_ROOM, 0 };
+
+    if (!STAIR_SHUFFLE(rom))
+        return;
+
+    printf("Shuffling stairs...\n");
+
+    shuffle_stair_group(rom->map.warps_to, group1);
+    shuffle_stair_group(rom->map.warps_to, group2);
 
 }
 

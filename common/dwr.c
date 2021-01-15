@@ -1919,6 +1919,50 @@ static void dwr_token_dialogue(dw_rom *rom)
 }
 
 /**
+ * What? No color?
+ *
+ * @param rom The rom struct.
+ */
+static void noir_mode(dw_rom *rom)
+{
+    if (!NOIR_MODE(rom))
+        return;
+
+    /* Change the PPUMASK writes to disable color */
+    vpatch(rom, 0x030b9,    1,  0x19);
+    vpatch(rom, 0x03b5e,    1,  0x19);
+    vpatch(rom, 0x0535d,    1,  0x19);
+    vpatch(rom, 0x0c9e9,    1,  0x19);
+    vpatch(rom, 0x0d39b,    1,  0x19);
+    vpatch(rom, 0x0db4e,    1,  0x19);
+    vpatch(rom, 0x0f84c,    1,  0x19);
+    if (NO_SCREEN_FLASH(rom)) {
+        vpatch(rom, 0x0d38e,    1,  0x19);
+        vpatch(rom, 0x0db40,    1,  0x19);
+    } else {
+        vpatch(rom, 0x0d38e,    1,  0x00);
+        vpatch(rom, 0x0db40,    1,  0x00);
+    }
+}
+
+/**
+ * Disables the screen flash when spells are cast
+ *
+ * @param rom The rom struct.
+ */
+static void no_screen_flash(dw_rom *rom)
+{
+    if (!NO_SCREEN_FLASH(rom))
+        return;
+
+    /* Change the PPUMASK writes to disable flashing during spells */
+    vpatch(rom, 0x0d38e,    1,  0x18);
+    vpatch(rom, 0x0db40,    1,  0x18);
+}
+
+
+
+/**
  * Writes the new rom out to disk.
  *
  * @param rom The rom struct
@@ -2012,6 +2056,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 
     update_title_screen(&rom);
     sprite(&rom, sprite_name);
+    no_screen_flash(&rom);
     noir_mode(&rom);
 
     printf("Checksum: %016"PRIx64"\n", crc);

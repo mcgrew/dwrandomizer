@@ -14,7 +14,6 @@ extern const char * const dwr_sprite_names[];
 
 void sprite(dw_rom *rom, const char *sprite_name);
 size_t sprite_count();
-void noir_mode(dw_rom *rom);
 
 #ifdef __cplusplus
 }

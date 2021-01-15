@@ -2767,19 +2767,32 @@ void noir_mode(dw_rom *rom)
     if (!NOIR_MODE(rom))
         return;
 
-    uint8_t *pal_start, *pal_end;
-
-    pal_start = &rom->content[0x1a2e];
-    pal_end   = &rom->content[0x1c8e];
-
-    for(; pal_start < pal_end; pal_start++) {
-        if ((*pal_start & 0xf) < 0xd) {
-            *pal_start &= 0xf0;
-        }
+    /* Change the PPUMASK writes to disable color */
+    vpatch(rom, 0x030b9,    1,  0x19);
+    vpatch(rom, 0x03b5e,    1,  0x19);
+    vpatch(rom, 0x0535d,    1,  0x19);
+    vpatch(rom, 0x0c9e9,    1,  0x19);
+    vpatch(rom, 0x0d39b,    1,  0x19);
+    vpatch(rom, 0x0db4e,    1,  0x19);
+    vpatch(rom, 0x0f84c,    1,  0x19);
+    if (NO_SCREEN_FLASH(rom)) {
+        vpatch(rom, 0x0d38e,    1,  0x19);
+        vpatch(rom, 0x0db40,    1,  0x19);
+    } else {
+        vpatch(rom, 0x0d38e,    1,  0x00);
+        vpatch(rom, 0x0db40,    1,  0x00);
     }
-
-    vpatch(rom, 0xbdf4,    3,  0x20,  0x30,  0x10);
-    vpatch(rom, 0xbe02,    9,  0x20,  0x30,  0x10,  0x0f,  0x20,
-            0x20,  0x0f,  0x20,  0x20);
 }
 
+/**
+ * Disables the screen flash when spells are cast
+ */
+void no_screen_flash(dw_rom *rom)
+{
+    if (!NO_SCREEN_FLASH(rom))
+        return;
+
+    /* Change the PPUMASK writes to disable flashing during spells */
+    vpatch(rom, 0x0d38e,    1,  0x18);
+    vpatch(rom, 0x0db40,    1,  0x18);
+}

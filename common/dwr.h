@@ -89,6 +89,7 @@
 #define CURSED_PRINCESS(x)    (x->flags & FLAG_c)
 #define RANDOM_ENEMY_DROPS(x) (x->flags & FLAG_d)
 #define RANDOM_ENEMY_STATS(x) (x->flags & FLAG_e)
+#define NO_SCREEN_FLASH(x)    (x->flags & FLAG_f)
 #define CONSISTENT_STATS(x)   (x->flags & FLAG_g)
 #define THREES_COMPANY(x)     (x->flags & FLAG_h)
 #define INVISIBLE_HERO(x)     (x->flags & FLAG_i)

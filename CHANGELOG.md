@@ -3,9 +3,19 @@
   * Also other items can be found on search spots
 * Added the ability to use torches and fairy water in battle
 * Added a flag for forcing heal/hurt before healmore/hurtmore
+* Randomized growth, randomized enemy stats, and random weapon prices are now based on a polynomial calculation
+* Added an option to make randomized enemy stats more consistent
+  * High AGI probably also means high STR/HP, etc.
+* Moved "Challenge mode" to an option rather than part of sprite selection.
 * Added a "No Hurtmore" flag
+* Added "Permanent Torch" which makes the minimum viewable distance in a cave 3x3
+* Rimuldar will no longer be required on the first continent if there is another way to obtain a key
+* The silver harp will now pull enemies from zones 1 & 2 rather than 3 & 4
+  * This makes it much more useful in the early game if the castle is swamp-locked
 * Changed "Vanilla Map" to "Random Map"
   * Opposite logic, of course
+* Added noir mode which makes the entire game greyscale
+* Added an option to disable screen flashing for spell casts
 * Fixed random sprite choice to not be deterministic
   * The random sprite chosen will no longer depend on the seed number
 * Added a Ms. Pacman "Sue" sprite

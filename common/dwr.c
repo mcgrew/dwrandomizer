@@ -991,8 +991,10 @@ static void randomize_spells(dw_rom *rom)
         stats->spells = 0;
         for (j=HEAL; j <= HURTMORE; j++) {
             if ((j == REPEL && PERMANENT_REPEL(rom)) ||
-                (j == HURTMORE && NO_HURTMORE(rom)))
+                (j == HURTMORE && NO_HURTMORE(rom))) {
+                rom->new_spells[j].level = 31; // this spell is never learned.
                 continue;
+            }
             /* spell masks are in big endian format */
             if (rom->new_spells[j].level <= i+1) {
                 stats->spells |= 1 << (j + 8) % 16;
@@ -1928,6 +1930,7 @@ static void noir_mode(dw_rom *rom)
     if (!NOIR_MODE(rom))
         return;
 
+    printf("Enabling noir mode...\n");
     /* Change the PPUMASK writes to disable color */
     vpatch(rom, 0x030b9,    1,  0x19);
     vpatch(rom, 0x03b5e,    1,  0x19);
@@ -1955,6 +1958,7 @@ static void no_screen_flash(dw_rom *rom)
     if (!NO_SCREEN_FLASH(rom))
         return;
 
+    printf("Disabling screen flash for spells...\n");
     /* Change the PPUMASK writes to disable flashing during spells */
     vpatch(rom, 0x0d38e,    1,  0x18);
     vpatch(rom, 0x0db40,    1,  0x18);

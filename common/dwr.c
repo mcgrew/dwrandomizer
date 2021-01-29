@@ -576,7 +576,7 @@ static void no_chest_shuffle(dw_rom *rom)
             DRAGON_SCALE
     }, *cont = contents;
     uint8_t  search_items[] = {
-           TOKEN, ARMOR, FLUTE
+           TOKEN, FLUTE, ARMOR
     };
 
     rewrite_search_take_code(rom, search_items);
@@ -917,40 +917,43 @@ static void randomize_growth(dw_rom *rom)
     uint8_t  mp[30];
     uint8_t  hp[30];
 
-    if (!RANDOMIZE_GROWTH(rom))
-        return;
+    if (RANDOMIZE_GROWTH(rom)) {
 
-    printf("Randomizing stat growth...\n");
+        printf("Randomizing stat growth...\n");
 
-    for (i=0; i < 30; i++) {
-        hp[i] =  (uint8_t)polyfit(mt_rand_double_ranged(1,30), &hero_hp_fac);
-        mp[i] =  (uint8_t)polyfit(mt_rand_double_ranged(0,30), &hero_mp_fac);
-        str[i] = (uint8_t)polyfit(mt_rand_double_ranged(1,30), &hero_str_fac);
-        agi[i] = (uint8_t)polyfit(mt_rand_double_ranged(1,30), &hero_agi_fac);
+        for (i=0; i < 30; i++) {
+            hp[i] =  (uint8_t)polyfit(mt_rand_double_ranged(1,30), &hero_hp_fac);
+            mp[i] =  (uint8_t)polyfit(mt_rand_double_ranged(0,30), &hero_mp_fac);
+            str[i] = (uint8_t)polyfit(mt_rand_double_ranged(1,30), &hero_str_fac);
+            agi[i] = (uint8_t)polyfit(mt_rand_double_ranged(1,30), &hero_agi_fac);
+        }
+
+        qsort(hp,  30, sizeof(uint8_t), &compare);
+        qsort(mp,  30, sizeof(uint8_t), &compare);
+        qsort(str, 30, sizeof(uint8_t), &compare);
+        qsort(agi, 30, sizeof(uint8_t), &compare);
+
+        /* Give a little hp boost for swamp mode */
+        for (i=0; i < 30; i++) {
+            stats = &rom->stats[i];
+            stats->str = str[i];
+            stats->agi = agi[i];
+            stats->hp =  hp[i];
+            stats->mp =  mp[i];
+        }
     }
 
-    qsort(hp,  30, sizeof(uint8_t), &compare);
-    qsort(mp,  30, sizeof(uint8_t), &compare);
-    qsort(str, 30, sizeof(uint8_t), &compare);
-    qsort(agi, 30, sizeof(uint8_t), &compare);
-
-    /* Give a little hp boost for swamp mode */
     if (BIG_SWAMP(rom)) {
-        hp[0] += 10;
+        printf("Boosting early HP...\n");
+        rom->stats[0].hp += 10;
         for (i=1; i < 10; i++) {
-            hp[i] = MAX(hp[i-1], hp[i] + 10 - i);
+            stats = &rom->stats[i];
+            stats->hp = MAX(rom->stats[i-1].hp, stats->hp + 10 - i);
         }
         for (i=10; i < 30; i++) {
-            hp[i] = MAX(hp[i-1], hp[i]);
+            stats = &rom->stats[i];
+            stats->hp = MAX(rom->stats[i-1].hp, stats->hp);
         }
-    }
-
-    for (i=0; i < 30; i++) {
-        stats = &rom->stats[i];
-        stats->str = str[i];
-        stats->agi = agi[i];
-        stats->hp =  hp[i];
-        stats->mp =  mp[i];
     }
 }
 

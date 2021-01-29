@@ -232,7 +232,7 @@ static void chaos_weapon_prices(dw_rom *rom)
 
     for (i=0; i < 17; i++) {
         rom->weapon_price_display[i] = rom->weapon_prices[i] =
-            (uint16_t)polyfit(mt_rand_double_ranged(1,17), &wpn_price_fac);
+            (uint16_t)polyfit(mt_rand_double_ranged(1,15), &wpn_price_fac);
     }
 }
 

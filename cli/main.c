@@ -39,7 +39,8 @@ static void print_usage(const char *command, char *default_flags)
     printf("    b  Big Swamp - make a larger portion of the terrain swamp.\n");
     printf("    c  Cursed princess mode.\n");
     printf("    d  Random monster drops (XP and gold).\n");
-    printf("    e  Random monster stats\n");
+    printf("    e  Random monster stats.\n");
+    printf("    f  Disable screen flashing when casting spells.\n");
     printf("    g  Make random monster stats consistent.\n");
     printf("    h  Three's company mode.\n");
     printf("    i  Invisible hero.\n");
@@ -59,6 +60,8 @@ static void print_usage(const char *command, char *default_flags)
     printf("    v  Vanilla (Original) Map.\n");
     printf("    w  Random weapon prices.\n");
     printf("    x  Random expreience point requirements to level.\n");
+    printf("    y  Permanent torch.\n");
+    printf("    \n");
 
     printf("\n");
     printf("If flags are not specified, the flags \"%s\" will be used\n",

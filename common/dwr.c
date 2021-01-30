@@ -578,6 +578,10 @@ static void no_chest_shuffle(dw_rom *rom)
     uint8_t  search_items[] = {
            TOKEN, FLUTE, ARMOR
     };
+    if (NO_NUMBERS(rom) || THREES_COMPANY(rom)) {
+        contents[28] = TOKEN;
+        search_items[0] = 0;
+    }
 
     rewrite_search_take_code(rom, search_items);
     chest = rom->chests;
@@ -620,14 +624,27 @@ static void shuffle_chests(dw_rom *rom)
     if (!SHUFFLE_CHESTS(rom))
         return no_chest_shuffle(rom);
 
-    do {
-        mt_shuffle(key_items, sizeof(key_items), sizeof(uint8_t));
-    } while (THREES_COMPANY(rom) && is_quest_item(key_items[0]));
+    mt_shuffle(key_items, sizeof(key_items), sizeof(uint8_t));
 
     for (i=0; i < 3; i++) {
+        /* If "No Numbers" is turned on, don't put anything on the overworld */
+        if (NO_NUMBERS(rom) && !i) {
+            /* If curse princess is on, add an extra cursed belt to make sure 
+             * there are three */
+            if (CURSED_PRINCESS(rom)) {
+                contents[7] = CURSED_BELT;
+            }
+            continue;
+        }
+
         /* fill in the search spots with a 80% chance unless cursed princess */
         /* is on, then always place to maximize cursed belts. */
         if (mt_rand(0, 4) || CURSED_PRINCESS(rom)) {
+            /* If we're putting something on the overworld and cursed princess
+             * is on, make sure it's not vital */
+            while (!i && THREES_COMPANY(rom) && is_quest_item(key_items[0])) {
+                mt_shuffle(key_items, sizeof(key_items), sizeof(uint8_t));
+            }
             search_items[i] = *(key_item++);
         }
     }

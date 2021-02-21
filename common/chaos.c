@@ -112,7 +112,7 @@ static void chaos_enemy_stats(dw_rom *rom)
     enemies[DRAGONLORD_1].pattern = mt_rand(0, 255);
     enemies[DRAGONLORD_1].s_ss_resist &= 0xf0;
     rank += next_rank(0, &x, 38, 40) / 2;
-    enemies[DRAGONLORD_1].s_ss_resist |= (uint8_t)polyfit(x, &mon_sr_fac);
+    enemies[DRAGONLORD_1].s_ss_resist |= (uint8_t)polyfit(x, &mon_ssr_fac);
     enemies[DRAGONLORD_1].rank = 39.9;
 
     /* Dragonlord with heal or sleep? That's just evil */
@@ -124,7 +124,7 @@ static void chaos_enemy_stats(dw_rom *rom)
     /* Maybe STOPSPELL Will work on him... */
     enemies[DRAGONLORD_2].s_ss_resist &= 0xf0;
     rank = next_rank(0, &x, 38, 40);
-    enemies[DRAGONLORD_2].s_ss_resist |= (uint8_t)polyfit(x, &mon_sr_fac);
+    enemies[DRAGONLORD_2].s_ss_resist |= (uint8_t)polyfit(x, &mon_ssr_fac);
     enemies[DRAGONLORD_2].hp = mt_rand(100, 230);
     enemies[DRAGONLORD_2].rank = 40.0;
 

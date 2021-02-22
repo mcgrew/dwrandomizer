@@ -24,21 +24,21 @@ enum {
 
 static const uint8_t vanilla_spots[VAN_SPOT_COUNT][2] = {
     /* vanilla place locations */
-    { 43, 43 },
-    { 48, 41 },
-    {  2,  2 },
-    {104, 10 },
-    { 81,  1 },
-    { 28, 12 },
-    { 25, 89 },
-    { 73,102 },
-    {102, 72 },
-    {108,109 },
-    {104, 44 },
-    { 29, 57 },
-    {104, 49 },
+    { 43, 43 }, /* Tantegel */
+    { 48, 41 }, /* Brecconary */
+    {  2,  2 }, /* Garinham */
+    {104, 10 }, /* Kol */
+    { 81,  1 }, /* Northern Shrine */
+    { 28, 12 }, /* Tablet Cave */
+    { 25, 89 }, /* Hauksness */
+    { 73,102 }, /* Cantlin */
+    {102, 72 }, /* Rimuldar */
+    {108,109 }, /* Southern Shrine */
+    {104, 44 }, /* Swamp North */
+    { 29, 57 }, /* Mountain Cave */
+    {104, 49 }, /* Swamp South */
     /* extra locations 
-    { 83,113 },
+    { 83,113 },  * Token Spot *
     { 40, 82 },
     { 13,107 },
     { 67, 86 },
@@ -783,6 +783,20 @@ static BOOL place_landmarks(dw_map *map)
     rimuldar_lm1 = brecc_lm1 = largest;
     rimuldar_lm2 = brecc_lm2 = next;
 
+    /* check for swamp cave to be in garinham */
+    if (swamp_cave_in(map, WARP_GARINHAM)) {
+        if (swamp_placed) {
+            map->meta[GARINHAM].border =
+                    place(map, WARP_GARINHAM, TILE_TOWN, largest, 0);
+        } else {
+            map->meta[GARINHAM].border =
+                    place(map, WARP_GARINHAM, TILE_TOWN, next, 0);
+            swamp_placed = TRUE;
+        }
+    } else {
+        map->meta[GARINHAM].border =
+                place(map, WARP_GARINHAM, TILE_TOWN, largest, next);
+    }
     /* check for swamp cave to be in tantegel */
     if (swamp_cave_in(map, WARP_TANTEGEL)) {
         if (swamp_placed) {
@@ -797,19 +811,6 @@ static BOOL place_landmarks(dw_map *map)
         tantegel_lm = place_tantegel(map, largest, next);
     }
 
-    /* check for swamp cave to be in garinham */
-    if (swamp_cave_in(map, WARP_GARINHAM)) {
-        if (swamp_placed) {
-            map->meta[GARINHAM].border =
-                    place(map, WARP_GARINHAM, TILE_TOWN, largest, 0);
-        } else {
-            map->meta[GARINHAM].border =
-                    place(map, WARP_GARINHAM, TILE_TOWN, next, 0);
-        }
-    } else {
-        map->meta[GARINHAM].border =
-                place(map, WARP_GARINHAM, TILE_TOWN, largest, next);
-    }
     if (need_rimuldar(map)) {
         /* rimuldar needs to be on the same land mass as tantegel (for keys) */
         rimuldar_lm1 = rimuldar_lm2 = tantegel_lm;

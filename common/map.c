@@ -341,7 +341,7 @@ static void map_find_land(dw_map *map, int one, int two, uint8_t *x, uint8_t *y,
     int spot_index, loop = 0;
 
     for (;;) {
-        if (!ignore_vanilla && !RANDOM_MAP(map) && loop < 50) {
+        if (!ignore_vanilla && !RANDOM_MAP(map) && loop < 200) {
             spot_index = mt_rand(0, VAN_SPOT_COUNT-1);
             *x = vanilla_spots[spot_index][0];
             *y = vanilla_spots[spot_index][1];

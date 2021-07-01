@@ -677,6 +677,29 @@ static void shuffle_chests(dw_rom *rom)
 }
 
 /**
+ * Generates a new monster attack pattern with constraints:
+ *
+ * No 75% DL2 fire
+ * No 75% Sleep
+ */
+static uint8_t attack_pattern() {
+    uint8_t pattern;
+
+    pattern = (uint8_t)mt_rand(0, 255); /* random pattern */
+    while ((pattern & 0x0f) == (MOVE2_FIRE2 | MOVE2_75_PERCENT)) {
+        /* 75% DL2 fire, try again... */
+        pattern &= 0xf0; /* clear move 2 pattern */
+        pattern |= (uint8_t)mt_rand(0,16); /* new move 2 pattern */
+    }
+    while ((pattern & 0xf0) == (MOVE1_SLEEP | MOVE1_75_PERCENT)) {
+        /* 75% sleep, try again... */
+        pattern &= 0x0f; /* clear move 1 pattern */
+        pattern |= (uint8_t)(mt_rand(0,16) << 4); /* new move 1 pattern */
+    }
+    return pattern;
+}
+
+/**
  * Randomizes enemy attack patterns (spells)
  *
  * @param rom The rom struct
@@ -684,23 +707,26 @@ static void shuffle_chests(dw_rom *rom)
 static void randomize_attack_patterns(dw_rom *rom)
 {
     int i;
-    dw_enemy *enemies;
+    dw_enemy *enemy;
 
     if (!RANDOMIZE_PATTERNS(rom))
         return;
 
     printf("Randomizing enemy attack patterns...\n");
-    enemies = rom->enemies;
 
     for (i=SLIME; i <= RED_DRAGON; i++) {
+        enemy = rom->enemies + i;
+        enemy->pattern = 0;
         if (mt_rand_bool()) {
-            enemies[i].pattern = mt_rand(0, 255);
-            enemies[i].s_ss_resist &= 0xf0;
-            enemies[i].s_ss_resist |= mt_rand(0, i/3);
+            enemy->pattern = attack_pattern();
+        }
+        if (enemy->pattern & 0x33) {
+            /* base max resistance on enemy index */
+            enemy->s_ss_resist &= 0xf0;
+            enemy->s_ss_resist |= mt_rand(0, i/4);
         } else {
-            enemies[i].pattern = 0;
             /* no spells, max out resistance */
-            enemies[i].s_ss_resist |= 0xf;
+            enemy->s_ss_resist |= 0xf;
         }
     }
 }

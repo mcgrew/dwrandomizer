@@ -8,7 +8,7 @@
 #include "build.h"
 #include "sprites.h"
 
-#define DWR_VERSION "2.2"
+#define DWR_VERSION "2.2.1"
 
 #ifdef  DWR_RELEASE
 #define VERSION DWR_VERSION

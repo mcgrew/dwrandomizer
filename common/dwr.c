@@ -281,15 +281,23 @@ static uint8_t *dwr_str_replace(dw_rom *rom, const char *text,
  * Returns a random index of a chest that is not in charlock. For simplicity,
  * this function will also not return the starting throne room key chest.
  */
-static inline int non_charlock_chest()
+static inline int non_charlock_chest(dw_rom *rom)
 {
-    int chest;
+    int chest, map;
 
-    chest = (int)mt_rand(0, 22);
-    /* avoid 11-16 and chest 24 (they are in charlock) */
-    if (chest >= 6) chest += 1; /* chest 6 is the throne room key */
-    if (chest >= 11) chest += 6;
-    if (chest >= 24) chest += 1;
+    while (TRUE) {
+        chest = (int)mt_rand(0, 31);
+        /* avoid 11-16 and chest 24 (they are in charlock) */
+        if (chest == 6) /* chest 6 is the throne room key */
+            continue;
+        map = rom->chests[chest].map;
+        if (map == NORTHERN_SHRINE) /* staff of rain chest */
+            continue;
+        if ((map > CHARLOCK_CAVE_1 && map <= CHARLOCK_CAVE_6) ||
+                map == CHARLOCK_THRONE_ROOM)
+            continue;
+        break;
+    }
     return chest;
 }
 
@@ -332,7 +340,7 @@ static inline void check_quest_items(dw_rom *rom)
 
             if (is_quest_item(rom->chests[i].item)) {
                 do {
-                    tmp_index = non_charlock_chest();
+                    tmp_index = non_charlock_chest(rom);
                 } while (is_quest_item(rom->chests[tmp_index].item));
                 tmp_item = rom->chests[tmp_index].item;
                 rom->chests[tmp_index].item = rom->chests[i].item;
@@ -592,6 +600,45 @@ static void no_chest_shuffle(dw_rom *rom)
             continue;
         }
         (chest++)->item = *(cont++);
+    }
+}
+
+static BOOL is_dungeon_tileset(dw_map_index map)
+{
+    switch(map) {
+        case NO_MAP:
+        case OVERWORLD:
+        case CHARLOCK:
+        case HAUKSNESS:
+        case TANTEGEL:
+        case TANTEGEL_THRONE_ROOM:
+        case CHARLOCK_THRONE_ROOM:
+        case KOL:
+        case BRECCONARY:
+        case GARINHAM:
+        case CANTLIN:
+        case RIMULDAR:
+            return FALSE;
+        case TANTEGEL_BASEMENT:
+        case NORTHERN_SHRINE:
+        case SOUTHERN_SHRINE:
+        case CHARLOCK_CAVE_1:
+        case CHARLOCK_CAVE_2:
+        case CHARLOCK_CAVE_3:
+        case CHARLOCK_CAVE_4:
+        case CHARLOCK_CAVE_5:
+        case CHARLOCK_CAVE_6:
+        case SWAMP_CAVE:
+        case MOUNTAIN_CAVE:
+        case MOUNTAIN_CAVE_2:
+        case GARINS_GRAVE_1:
+        case GARINS_GRAVE_2:
+        case GARINS_GRAVE_3:
+        case GARINS_GRAVE_4:
+        case ERDRICKS_CAVE:
+        case ERDRICKS_CAVE_2:
+        default:
+                return TRUE;
     }
 }
 

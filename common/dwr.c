@@ -642,6 +642,126 @@ static BOOL is_dungeon_tileset(dw_map_index map)
     }
 }
 
+static void set_dungeon_tile(dw_rom *rom, dw_map_index town, uint8_t x,
+        uint8_t y, uint8_t tile)
+{
+    size_t offset = (size_t)y * (rom->map.meta[town].width+1) + x;
+    size_t data_addr = ((*(uint16_t*)(&rom->map.meta[town].pointer)) & 0x7fff) +
+        offset/2;
+
+    printf("Map: %d, Width: %d, Height: %d, X: %d, Y: %d\n", town, 
+            rom->map.meta[town].width, rom->map.meta[town].height, x, y);
+    printf("Addr: %X, offset: %d, modified: %X\n", data_addr, offset, data_addr + offset/2);
+
+    if (x > rom->map.meta[town].width || y > rom->map.meta[town].height) {
+        printf("Map index (%d, %d) out of bounds, skipping tile setting...\n",
+                x, y);
+        printf("Map: %d, Width: %d, Height: %d\n", town, 
+                rom->map.meta[town].width, rom->map.meta[town].height);
+        printf("This is a bug.\n");
+        return;
+    }
+
+    if (offset % 2) {
+        rom->content[data_addr] &= 0xf0;
+        rom->content[data_addr] |= tile;
+    } else {
+        rom->content[data_addr] &= 0x0f;
+        rom->content[data_addr] |= tile << 4;
+    }
+}
+
+static void move_chests(dw_rom *rom)
+{
+    int i, map;
+    uint8_t *chest_spot;
+    uint8_t chest_spots[][3] = {
+//         {TANTEGEL_THRONE_ROOM,  4,  4}, /* vanilla */
+//         {TANTEGEL_THRONE_ROOM,  5,  4}, /* vanilla */
+//         {TANTEGEL_THRONE_ROOM,  6,  1}, /* vanilla */
+        {TANTEGEL            ,  1, 13}, /* vanilla */
+        {TANTEGEL            ,  2, 13},
+        {TANTEGEL            ,  3, 13}, /* vanilla */
+        {TANTEGEL            ,  1, 14},
+        {TANTEGEL            ,  2, 14}, /* vanilla */
+        {TANTEGEL            ,  3, 14},
+        {TANTEGEL            ,  1, 15}, /* vanilla */
+        {TANTEGEL            ,  2, 15},
+        {TANTEGEL            ,  3, 15}, /* vanilla */
+        {TANTEGEL            , 16, 15},
+        {TANTEGEL            , 24, 21},
+        {TANTEGEL_BASEMENT   ,  4,  5}, /* vanilla */
+        {TANTEGEL_BASEMENT   ,  4,  4},
+        {TANTEGEL_BASEMENT   ,  5,  5},
+        {BRECCONARY          ,  3, 21},
+//         {BRECCONARY          , 21,  3},
+        {ERDRICKS_CAVE       ,  9,  0},
+        {ERDRICKS_CAVE_2     ,  9,  0},
+        {ERDRICKS_CAVE_2     ,  9,  3}, /* vanilla */
+        {GARINHAM            ,  4,  5},
+        {GARINHAM            ,  8,  5}, /* vanilla */
+        {GARINHAM            ,  8,  6}, /* vanilla */
+        {GARINHAM            ,  9,  5}, /* vanilla */
+        {GARINHAM            , 18, 18}, /* LOCK 16, 18 */
+        {GARINS_GRAVE_1      , 11,  0}, /* vanilla */
+        {GARINS_GRAVE_1      , 12,  0}, /* vanilla */
+        {GARINS_GRAVE_1      , 13,  0}, /* vanilla */
+        {GARINS_GRAVE_1      ,  0, 14},
+        {GARINS_GRAVE_1      ,  7,  5},
+        {GARINS_GRAVE_1      ,  4, 15},
+        {GARINS_GRAVE_3      ,  1,  1}, /* vanilla */
+        {GARINS_GRAVE_3      , 13,  6}, /* vanilla */
+        {GARINS_GRAVE_3      , 13, 10},
+        {GARINS_GRAVE_3      , 17, 17},
+        {KOL                 , 22,  1}, /* LOCK 20, 2 */
+        {SWAMP_CAVE          ,  5,  0},
+        {SWAMP_CAVE          ,  4, 19},
+        {SWAMP_CAVE          ,  5, 29},
+        {RIMULDAR            , 24, 23}, /* vanilla */
+        {MOUNTAIN_CAVE       , 13,  5}, /* vanilla */
+        {MOUNTAIN_CAVE       , 13,  9},
+        {MOUNTAIN_CAVE_2     ,  1,  1},
+        {MOUNTAIN_CAVE_2     , 13,  9},
+        {MOUNTAIN_CAVE_2     ,  0,  3},
+        {MOUNTAIN_CAVE_2     ,  1,  6}, /* vanilla */
+        {MOUNTAIN_CAVE_2     ,  2, 11},
+        {MOUNTAIN_CAVE_2     ,  2,  2}, /* vanilla */
+        {MOUNTAIN_CAVE_2     ,  3,  2}, /* vanilla */
+        {MOUNTAIN_CAVE_2     , 10,  9}, /* vanilla */
+        {HAUKSNESS           ,  6,  9}, /*  LOCK 10, 8  */
+        {CANTLIN             ,  2, 27}, /*  LOCK 3, 24 */
+        {CANTLIN             , 12,  2}, /*  LOCK 10, 4  */
+};
+
+    for (i=0; i < sizeof(chest_spots) / 3; i++) {
+        chest_spot = chest_spots[i];
+        if (is_dungeon_tileset(chest_spot[0])) {
+            set_dungeon_tile(rom, chest_spot[0], chest_spot[1], chest_spot[2],
+                    DUNGEON_TILE_BRICK);
+        } else {
+            set_dungeon_tile(rom, chest_spot[0], chest_spot[1], chest_spot[2],
+                    TOWN_TILE_BRICK);
+        }
+    }
+    mt_shuffle(chest_spots, sizeof(chest_spots)/3, 3);
+    for (i=0; i < 31; i++) {
+        map = rom->chests[i].map;
+         /* don't mess with these */
+        if (map == TANTEGEL_THRONE_ROOM || map == NORTHERN_SHRINE)
+            continue;
+        rom->chests[i].map = chest_spots[i][0];
+        rom->chests[i].x = chest_spots[i][1];
+        rom->chests[i].y = chest_spots[i][2];
+        if (is_dungeon_tileset(rom->chests[i].map)) {
+            set_dungeon_tile(rom, rom->chests[i].map, rom->chests[i].x,
+                    rom->chests[i].y, DUNGEON_TILE_CHEST);
+        } else {
+            set_dungeon_tile(rom, rom->chests[i].map, rom->chests[i].x,
+                    rom->chests[i].y, TOWN_TILE_CHEST);
+        }
+    }
+}
+
 /**
  * Shuffles the contents of all chests in the game with the exception of the
  * starting throne room key and the staff of rain.
@@ -2126,6 +2246,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     /* Clear the unused code so we can make sure it's unused */
     memset(&rom.content[0xc288], 0xff, 0xc4f5 - 0xc288);
 
+    move_chests(&rom);
     shuffle_chests(&rom);
     while(!map_generate_terrain(&rom)) {}
     randomize_attack_patterns(&rom);

@@ -1,0 +1,43 @@
+End addresses are non-inclusive
+Addresses are hex, other values are decimal
+
+===============================================================================
+
+Free Space in the Original ROM
+
+Start | End  | Size | Bank | Comments
+-------------------------------------------------------------------------------
+3FCA  | 3FD8 |  14  | 0    | Unused space (FF)
+7E9E  | 7FD8 | 314  | 1    | Unused space (FF)
+BED1  | BFD8 | 263  | 2    | Unused space (FF)
+C288  | C4F5 | 621  | 3    | This section of code goes unused
+FF54  | FF74 |  32  | 3    | Unused space (FF)
+FF7D  | FF8E |  11  | 3    | Unused space (FF)
+
+===============================================================================
+
+Newly Freed space
+
+Start | End  | Size | Bank | Comments
+-------------------------------------------------------------------------------
+E158  | E19A |  42  | 3    | Freed by the search/take rewrite.
+
+===============================================================================
+
+Space used by the randomizer
+
+Start | End  | Size | Bank | Comments
+-------------------------------------------------------------------------------
+7EA0  | 7ECD |  45  | 1    | Menu Wrap
+7ECD  | 7EFB |  46  | 1    | Menu Wrap
+7EFB  | 7F02 |   7  | 1    | Menu Wrap
+7F02  | 7F0A |   8  | 1    | Menu Wrap
+C475  | C4BC |  71  | 3    | Torch/FW use in battle
+C4BC  | C4CE |  18  | 3    | Three's Company
+C4CE  | C4E8 |  26  | 3    | Cursed Princess
+C4E8  | C4F5 |  13  | 3    | Scared Metal Slimes
+E158  | E16E |  22  | 3    | Scaled Metal Slime XP
+FF7D  | FF8E |  17  | 3    | Fighter's Ring fix
+FF54  | FF57 |   3  | 3    | Fighter's Ring fix
+FF54  | FF73 |  31  | 3    | Death Necklace changes
+

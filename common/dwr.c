@@ -686,15 +686,15 @@ static uint8_t attack_pattern() {
     uint8_t pattern;
 
     pattern = (uint8_t)mt_rand(0, 255); /* random pattern */
-    while ((pattern & 0x0f) == (MOVE2_FIRE2 | MOVE2_75_PERCENT)) {
+    if ((pattern & 0x0f) == (MOVE2_FIRE2 | MOVE2_75_PERCENT)) {
         /* 75% DL2 fire, try again... */
-        pattern &= 0xf0; /* clear move 2 pattern */
-        pattern |= (uint8_t)mt_rand(0,16); /* new move 2 pattern */
+        pattern &= 0xfc; /* clear move 2 chance */
+        pattern |= (uint8_t)mt_rand(0,3); /* new move 2 chance */
     }
-    while ((pattern & 0xf0) == (MOVE1_SLEEP | MOVE1_75_PERCENT)) {
+    if ((pattern & 0xf0) == (MOVE1_SLEEP | MOVE1_75_PERCENT)) {
         /* 75% sleep, try again... */
-        pattern &= 0x0f; /* clear move 1 pattern */
-        pattern |= (uint8_t)(mt_rand(0,16) << 4); /* new move 1 pattern */
+        pattern &= 0xcf; /* clear move 1 chance */
+        pattern |= (uint8_t)(mt_rand(0,3) << 4); /* new move 1 chance */
     }
     return pattern;
 }

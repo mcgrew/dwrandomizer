@@ -107,22 +107,22 @@ typedef enum {
 } dw_enemies;
 
 typedef enum {
-    MOVE1_00_PERCENT = 0x00,
-    MOVE1_25_PERCENT = 0x01,
-    MOVE1_50_PERCENT = 0x02,
-    MOVE1_75_PERCENT = 0x03,
-    MOVE1_SLEEP      = 0x00,
-    MOVE1_STOPSPELL  = 0x04,
-    MOVE1_HEAL       = 0x08,
-    MOVE1_HEALMORE   = 0x0c,
     MOVE2_00_PERCENT = 0x00,
-    MOVE2_25_PERCENT = 0x10,
-    MOVE2_50_PERCENT = 0x20,
-    MOVE2_75_PERCENT = 0x30,
+    MOVE2_25_PERCENT = 0x01,
+    MOVE2_50_PERCENT = 0x02,
+    MOVE2_75_PERCENT = 0x03,
     MOVE2_HURT       = 0x00,
-    MOVE2_HURTMORE   = 0x40,
-    MOVE2_FIRE       = 0x80,
-    MOVE2_FIRE2      = 0xc0,
+    MOVE2_HURTMORE   = 0x04,
+    MOVE2_FIRE       = 0x08,
+    MOVE2_FIRE2      = 0x0c,
+    MOVE1_00_PERCENT = 0x00,
+    MOVE1_25_PERCENT = 0x10,
+    MOVE1_50_PERCENT = 0x20,
+    MOVE1_75_PERCENT = 0x30,
+    MOVE1_SLEEP      = 0x00,
+    MOVE1_STOPSPELL  = 0x40,
+    MOVE1_HEAL       = 0x80,
+    MOVE1_HEALMORE   = 0xc0,
 } dw_enemy_pattern;
 
 /** In-game indexes for chest content items */

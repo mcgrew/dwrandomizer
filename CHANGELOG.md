@@ -1,24 +1,44 @@
-# 2.2 - Work in progress
-* Added the ability for armor to be in a chest
-  * Also other items can be found on search spots
+# 2.2.1 - Some balance adjustments
+* Maximum STOPSPELL resist is now 9/16
+* Maximum SLEEP/DL2 breath chance is now 50%
+* New Flag: Scaled Metal Slime XP (32 times level)
+  - With this flag Metal Slimes will give XP equal to 32 times your level or 255, whichever is less.
+
+# 2.2 - Armor in Charlock? Yes. And much more!
+* Added the ability for Erdrick's Armor to be in a chest
+* The 3 search spots can now have any unique item: Sword, Armor, Token, Harp, Stones, Death Necklace, Fairy Flute.
+   - Death Necklace on a search spot also creates a mini gold grind there.
 * Added the ability to use torches and fairy water in battle
 * Added a flag for forcing heal/hurt before healmore/hurtmore
-* Randomized growth, randomized enemy stats, and random weapon prices are now based on a polynomial calculation
-* Added an option to make randomized enemy stats more consistent
-  * High AGI probably also means high STR/HP, etc.
-* Moved "Challenge mode" to an option rather than part of sprite selection.
 * Added a "No Hurtmore" flag
-* Added "Permanent Torch" which makes the minimum viewable distance in a cave 3x3
-* Rimuldar will no longer be required on the first continent if there is another way to obtain a key
-* The silver harp will now pull enemies from zones 1 & 2 rather than 3 & 4
-  * This makes it much more useful in the early game if the castle is swamp-locked
 * Changed "Vanilla Map" to "Random Map"
-  * Opposite logic, of course
-* Added noir mode which makes the entire game greyscale
+  - Opposite logic, of course
+* Fixed picking up the token again after getting the Rainbow Drop
+  - The chest/search spot will now be empty instead if you have the drop
+* Moved Challenge mode sprites to be flags on the new Challenge tab
+* Removed the extra town/cave locations from vanilla map
+* Major overhaul of all stat generation
+  - Added "make stats consistent" option for this mode for those who want the stats to be a little more sane.
+* Also modified algorithms for random weapon prices and random XP.
+* Modified the harp to pull lower-tier monsters (Zone 1&2)
+* Rimuldar will no longer be required on the first continent if there is an accessible key in a cave
+* Major speed increase to map generation (thanks dvj!)
+* Removed stray sheild sprite in "Invisible hero" (thanks dwedit!)
 * Added an option to disable screen flashing for spell casts
+* Added "Permanent Torch" option
+  - This will make the minimum viewable area 3x3 in dark areas
+  - Torches will have no effect, but radiant still works as expected
+* Fixed a bug where HP was not boosted when "Randomize Growth" was off in big swamp mode.
+* Made sure there is no item on the overworld if "No Numbers" is enabled.
+
+* Fixed an issue where towns were occasionally placed in improper spots on non-random maps 
 * Fixed random sprite choice to not be deterministic
-  * The random sprite chosen will no longer depend on the seed number
-* Added a Ms. Pacman "Sue" sprite
+  - The random sprite chosen will no longer depend on the seed number
+* Added new sprites:
+  - Ms. Pacman Sue
+  - FF4 Cecil
+  - Yoshi
+  - Fixed an error in the Kirby princess carrying sprite
 
 # 2.1.2 - Bug fixes #
 * Fixed the slime and red slime sprites
@@ -34,52 +54,52 @@
 ##### Released July 27, 2019 #####
 
 * Cursed Princess mode!
-  * In this mode, you can win the game by getting Gwaelin to take a cursed belt from your inventory when you return her to the king.
+  - In this mode, you can win the game by getting Gwaelin to take a cursed belt from your inventory when you return her to the king.
 * Three's Company mode!
-  * In this mode, you can win by bringing the princess to the Dragonlord and accepting his offer to join him.
+  - In this mode, you can win by bringing the princess to the Dragonlord and accepting his offer to join him.
 * Vanilla Map option
-  * Allows you to play with the original map instead of a randomized one.
+  - Allows you to play with the original map instead of a randomized one.
 * "Chaos Mode" has been removed and separated into multiple options
 * Fixed some issues with disabled/randomized music.
-  * Music can now be totally disabled aside from instances where it affects game timing
-  * All music is now randomized/disabled, including after inn stays, etc.
+  - Music can now be totally disabled aside from instances where it affects game timing
+  - All music is now randomized/disabled, including after inn stays, etc.
 * New player sprites:
-  * Red Slime
-  * Metal Slime
-  * Dragonlord
-  * Jason (Blaster Master)
-  * Bomberman
-  * Christine (Arkista's Ring)
-  * Kirby
-  * Lala (Adventures of Lolo)
-  * Lolo (Adventures of Lolo)
-  * Pac-Man
-  * Ms. Pac-Man
-  * Inky
-  * Blinky
-  * Pinky
-  * Clyde
-  * Slime (Dragon Quest franchise)
-  * Mike (Star Tropics)
-  * Waluigi (Mario franchise)
-  * Wario (Mario franchise)
-  * Doran (Dragon Warrior IV)
-  * Tov the Dog (Dragon Warrior IV)
-  * Yeti (Dragon Warrior IV)
+  - Red Slime
+  - Metal Slime
+  - Dragonlord
+  - Jason (Blaster Master)
+  - Bomberman
+  - Christine (Arkista's Ring)
+  - Kirby
+  - Lala (Adventures of Lolo)
+  - Lolo (Adventures of Lolo)
+  - Pac-Man
+  - Ms. Pac-Man
+  - Inky
+  - Blinky
+  - Pinky
+  - Clyde
+  - Slime (Dragon Quest franchise)
+  - Mike (Star Tropics)
+  - Waluigi (Mario franchise)
+  - Wario (Mario franchise)
+  - Doran (Dragon Warrior IV)
+  - Tov the Dog (Dragon Warrior IV)
+  - Yeti (Dragon Warrior IV)
 * The wizard now takes the token as well as the staff/stones when you receive the rainbow drop.
 * An option to make metal slimes always run, even when you have low strength.
 * "Search" now opens a treasure chest instead of just telling you one is there.
-  * It's still faster to use "Take"
+  - It's still faster to use "Take"
 * Added an option to change to modern Dragon Quest spell names
 * Fixed a bug in Death Necklace max HP calculations
-  * This fixes an issue where HP was 1 lower than it should have been with the necklace equipped.
+  - This fixes an issue where HP was 1 lower than it should have been with the necklace equipped.
 * Some tweaks to map generation which should make them more interesting
 
 # 2.0.6 - Bug fix for potential soft lock #
 ##### Released Aug 6, 2018 #####
 
 * Fixed an issue where Brecconary being on a different continent from Tantegel Castle could create a soft lock if the swamp cave is inside Tantegel.
-  * Brecconary will now always be on the same continent as Tantegel if the swamp cave is in Tantegel.
+  - Brecconary will now always be on the same continent as Tantegel if the swamp cave is in Tantegel.
 * Fixed the Fairy Water text for female characters (his -> her).
 
 # 2.0.5 - Bug fix for the new sprites #
@@ -87,19 +107,19 @@
 
 * This fixes an issue with some of the new sprites where some randomizer changes made their way into the sprite code.
 * Affected sprites:
-  * Black Belt
-  * Black Mage
-  * Black Wizard
-  * Master
+  - Black Belt
+  - Black Mage
+  - Black Wizard
+  - Master
 
 # 2.0.4 - Bug Fixes and New Sprites #
 ##### Released Jul 29, 2018 #####
 
 * Some tweaks to Chaos Mode
-  * Raised Dragonlord form 1's minimum HP to 81
-  * Removed abilities from the "wet noodle" monster
-  * Restricted the amount of XP given by the "wet noodle" (16-64XP)
-  * Fixed the REPEL table so that Chaos Mode enemies will be repelled based on their new stats
+  - Raised Dragonlord form 1's minimum HP to 81
+  - Removed abilities from the "wet noodle" monster
+  - Restricted the amount of XP given by the "wet noodle" (16-64XP)
+  - Fixed the REPEL table so that Chaos Mode enemies will be repelled based on their new stats
 * Fixed a bug with forced encounters where running did not always push you back a space
 * Fixed a bug where the player could be placed in the water by the return spell under certain conditions
 * Added a bunch of new sprite options
@@ -113,26 +133,26 @@
 ##### Released Jan 20, 2018 #####
 
 * Fixed an error in the player stat generation
-  * A bug was causing player stats to be higher than intended
+  - A bug was causing player stats to be higher than intended
 * Added a slight HP boost to lower levels in Big Swamp Mode
 * Changes to (attempt to) ensure that at least one enemy in early zones is beatable at level 1. The lowest strength enemy will have no more than 5HP
 * Changed the run chance calculations in chaos mode
-  * Running chance in chaos mode is now based on map index rather than enemy index, since enemy index is fairly meainingless in this mode. Charlock will be the hardest place to run, followed by other dungeons, followed by Hauksness and Charlock (top floor), and easiest in the overworld. This should help with progression to level 2 as well.
+  - Running chance in chaos mode is now based on map index rather than enemy index, since enemy index is fairly meainingless in this mode. Charlock will be the hardest place to run, followed by other dungeons, followed by Hauksness and Charlock (top floor), and easiest in the overworld. This should help with progression to level 2 as well.
 * Fixed a problem with bridge placement
-  * Bridges shouldn't be placed where walkable tiles are located to the north or south of them
+  - Bridges shouldn't be placed where walkable tiles are located to the north or south of them
 * Fixed a problem where Rimuldar could be placed on the wrong continent if the swamp cave was located in Garinham
 * Fixed a UI crash in the title screen generation
 * Made the random seeds in the UI more random
-  * The random seeds in the UI were not so random on Windows.
-  * Changed the UI such that a new random seed is chosen after generating a ROM.
+  - The random seeds in the UI were not so random on Windows.
+  - Changed the UI such that a new random seed is chosen after generating a ROM.
 
 
 # 2.0.1 - Bugfix #
 ###### Released Oct 10, 2017 ######
 
 * Fixed a read overrun in death_necklace()
-  * This was causing a rom difference and checksum mismatch.
-  * Bug did not affect gameplay.
+  - This was causing a rom difference and checksum mismatch.
+  - Bug did not affect gameplay.
 
 
 # 2.0 - Complete rewrite, split continents and more #
@@ -170,23 +190,23 @@
    * The NPC in the Northern Shrine will now always have the Staff of Rain.
    * Enemies summoned by the harp will now be a random set of 8 different enemies.
 * Buffed some of the weaker spells.
-  * `HEAL` now has a range of 18-25 HP.
-  * `HURT` now has a range of 9-16 HP.
+  - `HEAL` now has a range of 18-25 HP.
+  - `HURT` now has a range of 9-16 HP.
 * Menu wrap-around.
-  * Various menus in the game will now have the cursor wrap from top to bottom *(optional)*.
+  - Various menus in the game will now have the cursor wrap from top to bottom *(optional)*.
 * The Death Necklace will now always appear in it's chest the first time. You can still only get one.
 * Death Necklace now has an *optional* function other than cursing you. It can give a +10 ATK at the expense of 25% of your HP (you are still cursed).
 * Some enemy balance changes:
-  * Reduced Droll HP from 35 to 20
-  * Reduced Poltergeist HP from 26 to 23
-  * Reduced Specter HP from 48 to 33
-  * Reduced Goldman HP from 110 to 35
+  - Reduced Droll HP from 35 to 20
+  - Reduced Poltergeist HP from 26 to 23
+  - Reduced Specter HP from 48 to 33
+  - Reduced Goldman HP from 110 to 35
 * Some changes to zone randomization:
-  * Zones 1 and 2 will now have Wolf and below only.
-  * Tantegel will have 2 of each of these zones surrounding it
+  - Zones 1 and 2 will now have Wolf and below only.
+  - Tantegel will have 2 of each of these zones surrounding it
     * Zone 1 will be to the east and west
     * Zone 2 will be to the north and south
-  * All other zones will be random (using a new algorithm)
+  - All other zones will be random (using a new algorithm)
     * The new algorithm ensures each zone will appear on the overworld no more than 5 times.
 
 
@@ -335,11 +355,11 @@ This version also includes minor tweaks to zone randomization in normal mode.
 * Removed the possibility of Axe Knight having strong fire breath
 * Several tweaks to avoid a few potentially unwinnable situations.
 * Dragonlord HP tweaks:
-  * Dragonlord form 1 will now have 100HP
-  * Dragonlord form 2 will be random between 150-165HP (Always the same on the same seed)
+  - Dragonlord form 1 will now have 100HP
+  - Dragonlord form 2 will be random between 150-165HP (Always the same on the same seed)
 * Fixed some issues with pattern randomization
 * Fixed stopspell resistance
-  * Enemies with newly obtained magic now have lower stopspell resistance
+  - Enemies with newly obtained magic now have lower stopspell resistance
 
 
 

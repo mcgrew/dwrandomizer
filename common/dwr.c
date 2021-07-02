@@ -689,12 +689,12 @@ static uint8_t attack_pattern() {
     if ((pattern & 0x0f) == (MOVE2_FIRE2 | MOVE2_75_PERCENT)) {
         /* 75% DL2 fire, try again... */
         pattern &= 0xfc; /* clear move 2 chance */
-        pattern |= (uint8_t)mt_rand(0,3); /* new move 2 chance */
+        pattern |= (uint8_t)mt_rand(0,2); /* new move 2 chance */
     }
     if ((pattern & 0xf0) == (MOVE1_SLEEP | MOVE1_75_PERCENT)) {
         /* 75% sleep, try again... */
         pattern &= 0xcf; /* clear move 1 chance */
-        pattern |= (uint8_t)(mt_rand(0,3) << 4); /* new move 1 chance */
+        pattern |= (uint8_t)(mt_rand(0,2) << 4); /* new move 1 chance */
     }
     return pattern;
 }

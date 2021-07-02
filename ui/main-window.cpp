@@ -159,7 +159,7 @@ void MainWindow::layout()
     this->addOption('e', "Random Monster Stats",      "Z", "", MONSTERS,  2, 0);
     this->addOption('d', "Random Monster XP && Gold",          MONSTERS,  3, 0);
     this->addOption('g', "Make Stats Consistent",     "e", "", MONSTERS,  4, 0);
-    this->addOption('l', "Scared Metal Slimes",       "", "e", MONSTERS,  0, 1);
+//     this->addOption('l', "Scared Metal Slimes",       "", "e", MONSTERS,  0, 1);
 
     /* Shortcuts */
     this->addOption('t', "Fast Text",                          SHORTCUTS, 0, 0);

@@ -1576,6 +1576,27 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0x17a2, 3, 0, 0, 0); /* delete roaming throne room guard */
     vpatch(rom, 0xf131, 2, 0x69, 0x03); /* Lock the stat build modifier at 3 */
 
+
+    printf("Reducing early metal rewards...\n");
+    vpatch(rom, 0xea0a, 3,
+           0x20, 0x58, 0xe1 /* JSR $C288 - jump to the new code              */
+    );
+    vpatch(rom, 0xe158, 22,
+           0xa5, 0xe0,       /*   LDA $E0     ; Load Monster ID              */
+           0xc9, 0x10,       /*   CMP #$10    ; Is it a metal slime?         */
+           0xd0, 0x0c,       /*   BNE +       ; No, skip to loading XP       */
+           0xa5, 0xc7,       /*   LDA $C7     ; Load player level            */
+           0xc9, 0x08,       /*   CMP #$8     ; Is it 8 or higher?           */
+           0xb0, 0x06,       /*   BCS +       ; Yes, skip to loading XP      */
+           0x0a,             /*   ASL         ;                              */
+           0x0a,             /*   ASL         ; Multiply level by 32 and use */
+           0x0a,             /*   ASL         ; this value for XP gained     */
+           0x0a,             /*   ASL         ;                              */
+           0x0a,             /*   ASL         ;                              */
+           0x60,             /*   RTS                                        */
+           0xad, 0x06, 0x01, /* + LDA $0106   ; Load XP from monster info    */
+           0x60              /*   RTS                                        */
+    );
     /* I always hated this wording */
     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");
 }
@@ -2128,7 +2149,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     no_keys(&rom);
     cursed_princess(&rom);
     threes_company(&rom);
-    scared_metal_slimes(&rom);
+//     scared_metal_slimes(&rom);
     torch_in_battle(&rom);
     repel_mods(&rom);
     permanent_torch(&rom);

@@ -618,8 +618,8 @@ static BOOL is_dungeon_tileset(dw_map_index map)
         case GARINHAM:
         case CANTLIN:
         case RIMULDAR:
-            return FALSE;
         case TANTEGEL_BASEMENT:
+            return FALSE;
         case NORTHERN_SHRINE:
         case SOUTHERN_SHRINE:
         case CHARLOCK_CAVE_1:
@@ -642,16 +642,29 @@ static BOOL is_dungeon_tileset(dw_map_index map)
     }
 }
 
+/**
+ * Sets a single tile in a town or dungeon to the specified tile. You should
+ * be sure to check is_dungeon_tileset() to ensure you are using the correct
+ * tileset, as they differ between dungeons and towns.
+ *
+ * @param rom The rom struct.
+ * @param town The town or dungeon index.
+ * @param x The X coordinate of the tile to change.
+ * @param y The Y coordinate of the tile to change.
+ * @param tile The new tile.
+ */
 static void set_dungeon_tile(dw_rom *rom, dw_map_index town, uint8_t x,
         uint8_t y, uint8_t tile)
 {
+    BOOL is_dungeon;
     size_t offset = (size_t)y * (rom->map.meta[town].width+1) + x;
     size_t data_addr = ((*(uint16_t*)(&rom->map.meta[town].pointer)) & 0x7fff) +
         offset/2;
 
     printf("Map: %d, Width: %d, Height: %d, X: %d, Y: %d\n", town, 
             rom->map.meta[town].width, rom->map.meta[town].height, x, y);
-    printf("Addr: %X, offset: %d, modified: %X\n", data_addr, offset, data_addr + offset/2);
+    printf("Addr: %lX, offset: %ld, modified: %lX\n",
+            data_addr, offset, data_addr + offset/2);
 
     if (x > rom->map.meta[town].width || y > rom->map.meta[town].height) {
         printf("Map index (%d, %d) out of bounds, skipping tile setting...\n",
@@ -662,19 +675,58 @@ static void set_dungeon_tile(dw_rom *rom, dw_map_index town, uint8_t x,
         return;
     }
 
+    /* Preserve the MSB for dungeon tiles. It seems to contain roof data for 
+     * towns?  */
+    is_dungeon = is_dungeon_tileset(town);
     if (offset % 2) {
-        rom->content[data_addr] &= 0xf0;
+        if (is_dungeon) {
+            rom->content[data_addr] &= 0xf8;
+        } else {
+            rom->content[data_addr] &= 0xf0;
+        }
         rom->content[data_addr] |= tile;
     } else {
-        rom->content[data_addr] &= 0x0f;
+        if (is_dungeon) {
+            rom->content[data_addr] &= 0x8f;
+        } else {
+            rom->content[data_addr] &= 0x0f;
+        }
         rom->content[data_addr] |= tile << 4;
     }
 }
 
+static int chest_bin(dw_map_index map) {
+    switch(map) {
+        case TANTEGEL:
+            return 0;
+        case GARINS_GRAVE_1:
+        case GARINS_GRAVE_2:
+        case GARINS_GRAVE_3:
+        case GARINS_GRAVE_4:
+            return 1;
+        case MOUNTAIN_CAVE:
+        case MOUNTAIN_CAVE_2:
+            return 2;
+        case CHARLOCK:
+        case CHARLOCK_CAVE_1:
+        case CHARLOCK_CAVE_2:
+        case CHARLOCK_CAVE_3:
+        case CHARLOCK_CAVE_4:
+        case CHARLOCK_CAVE_5:
+        case CHARLOCK_CAVE_6:
+        case CHARLOCK_THRONE_ROOM:
+            return 3;
+        default:
+            return -1;
+    }
+}
+    
 static void move_chests(dw_rom *rom)
 {
-    int i, map;
-    uint8_t *chest_spot;
+    int i, j, bin, map;
+    BOOL is_dungeon;
+    uint8_t *chest_spot, *new_door;
+    uint8_t chest_bins[4] = { 0, 0, 0, 0};
     uint8_t chest_spots[][3] = {
 //         {TANTEGEL_THRONE_ROOM,  4,  4}, /* vanilla */
 //         {TANTEGEL_THRONE_ROOM,  5,  4}, /* vanilla */
@@ -731,7 +783,38 @@ static void move_chests(dw_rom *rom)
         {HAUKSNESS           ,  6,  9}, /*  LOCK 10, 8  */
         {CANTLIN             ,  2, 27}, /*  LOCK 3, 24 */
         {CANTLIN             , 12,  2}, /*  LOCK 10, 4  */
-};
+        {CHARLOCK_CAVE_1     , 19,  9},
+        {CHARLOCK_CAVE_1     ,  8,  6},
+        {CHARLOCK_CAVE_1     , 19,  6},
+        {CHARLOCK_CAVE_2     ,  5,  5}, /* vanilla */
+        {CHARLOCK_CAVE_3     ,  3,  8},
+        {CHARLOCK_CAVE_5     ,  2,  0},
+        {CHARLOCK_CAVE_6     ,  9,  0},
+        {CHARLOCK_THRONE_ROOM,  5,  2}, /* LOCK 4, 9 */
+        {CHARLOCK_THRONE_ROOM,  6, 12},
+        {CHARLOCK_THRONE_ROOM,  8, 12}, /* LOCK 7, 22 */
+        {CHARLOCK_THRONE_ROOM, 11, 11}, /* vanilla */
+        {CHARLOCK_THRONE_ROOM, 11, 12}, /* vanilla */
+        {CHARLOCK_THRONE_ROOM, 11, 13}, /* vanilla */
+        {CHARLOCK_THRONE_ROOM, 12, 12}, /* vanilla */
+        {CHARLOCK_THRONE_ROOM, 12, 13}, /* vanilla */
+        {CHARLOCK_THRONE_ROOM, 13, 13}, /* vanilla */
+        {CHARLOCK_THRONE_ROOM, 22, 26},
+    };
+
+    uint8_t new_doors[][3] = {
+        {GARINHAM            , 16, 18},
+        {KOL                 , 20,  2},
+        {HAUKSNESS           , 10,  8},
+        {CANTLIN             ,  3, 24},
+        {CANTLIN             , 10,  4},
+        {CHARLOCK_THRONE_ROOM,  4,  9},
+        {CHARLOCK_THRONE_ROOM,  7, 22},
+    };
+
+    if (!RANDOM_CHEST_LOCATIONS(rom)) {
+        return;
+    }
 
     for (i=0; i < sizeof(chest_spots) / 3; i++) {
         chest_spot = chest_spots[i];
@@ -743,15 +826,30 @@ static void move_chests(dw_rom *rom)
                     TOWN_TILE_BRICK);
         }
     }
+    for (i=0; i < sizeof(new_doors) / 3; i++) {
+        new_door = new_doors[i];
+        if (is_dungeon_tileset(new_door[0])) {
+            set_dungeon_tile(rom, new_door[0], new_door[1], new_door[2],
+                    DUNGEON_TILE_DOOR);
+        } else {
+            set_dungeon_tile(rom, new_door[0], new_door[1], new_door[2],
+                    TOWN_TILE_DOOR);
+        }
+    }
     mt_shuffle(chest_spots, sizeof(chest_spots)/3, 3);
-    for (i=0; i < 31; i++) {
+    for (i=0, j=0; i < 31; i++, j++) {
         map = rom->chests[i].map;
          /* don't mess with these */
         if (map == TANTEGEL_THRONE_ROOM || map == NORTHERN_SHRINE)
             continue;
-        rom->chests[i].map = chest_spots[i][0];
-        rom->chests[i].x = chest_spots[i][1];
-        rom->chests[i].y = chest_spots[i][2];
+        bin = chest_bin(chest_spots[j][0]);
+        while (bin >= 0 && chest_bins[j] > 8) {
+            bin = chest_bin(chest_spots[++j][0]);
+        }
+        chest_bins[bin]++;
+        rom->chests[i].map = chest_spots[j][0];
+        rom->chests[i].x = chest_spots[j][1];
+        rom->chests[i].y = chest_spots[j][2];
         if (is_dungeon_tileset(rom->chests[i].map)) {
             set_dungeon_tile(rom, rom->chests[i].map, rom->chests[i].x,
                     rom->chests[i].y, DUNGEON_TILE_CHEST);
@@ -1701,6 +1799,7 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0x2a9, 1, 0x45);  /* add new stairs to the 1st floor */
     vpatch(rom, 0x2c7, 1, 0x66);  /* add a new exit to the first floor */
     /* replace the usless grave warps with some for tantegel */
+    /* TODO: change these to remove the charlock loop stairs instead */
     vpatch(rom, 0xf44f, 3, 5, 1, 8);
     vpatch(rom, 0xf4e8, 3, 4, 1, 7);
     vpatch(rom, 0x1288, 1, 0x22);  /* remove the top set of stairs for the old warp in the grave */

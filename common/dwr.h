@@ -8,7 +8,7 @@
 #include "build.h"
 #include "sprites.h"
 
-#define DWR_VERSION "2.2.1"
+#define DWR_VERSION "3.0"
 
 #ifdef  DWR_RELEASE
 #define VERSION DWR_VERSION
@@ -108,6 +108,7 @@
 #define RANDOM_PRICES(x)      (x->flags & FLAG_w)
 #define RANDOM_XP_REQS(x)     (x->flags & FLAG_x)
 #define PERMANENT_TORCH(x)    (x->flags & FLAG_y)
+#define RANDOM_CHEST_LOCATIONS(x) (x->flags & FLAG_A)
 #define SHUFFLE_CHESTS(x)     (x->flags & FLAG_C)
 #define DEATH_NECKLACE(x)     (x->flags & FLAG_D)
 #define FAST_XP(x)            (x->flags & FLAG_F)

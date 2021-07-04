@@ -1856,11 +1856,10 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0x42a, 1, 0x47);  /* add new stairs to the throne room */
     vpatch(rom, 0x2a9, 1, 0x45);  /* add new stairs to the 1st floor */
     vpatch(rom, 0x2c7, 1, 0x66);  /* add a new exit to the first floor */
-    /* replace the usless grave warps with some for tantegel */
-    /* TODO: change these to remove the charlock loop stairs instead */
-    vpatch(rom, 0xf44f, 3, 5, 1, 8);
-    vpatch(rom, 0xf4e8, 3, 4, 1, 7);
-    vpatch(rom, 0x1288, 1, 0x22);  /* remove the top set of stairs for the old warp in the grave */
+    /* replace the charlock loop stairs with some for tantegel */
+    vpatch(rom, 0xf437, 3, 5, 1, 8);
+    vpatch(rom, 0xf4d0, 3, 4, 1, 7);
+    set_dungeon_tile(rom, CHARLOCK_CAVE_6, 20, 9, DUNGEON_TILE_BRICK);
     /* Sets the encounter rate of Zone 0 to be the same as other zones. */
     vpatch(rom, 0xcebf, 3, 0x4c, 0x04, 0xcf);  /* skip over the zone 0 code */
     vpatch(rom, 0xe260, 1, 0);  /* set death necklace chance to 100% */

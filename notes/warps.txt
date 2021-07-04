@@ -1,53 +1,55 @@
+Offsets do not include ROM header
+
 From | Offset | Map | X   | Y   | To   | Offset | Map | X  | Y  | Location             | Index
 ==== | ====== | === | === | === | ==== | ====== | === | == | == | ==================== |
-F3D8 | 0      | 1   | 2   | 2   | F471 | 153    | 9   | 0  | 14 | Garinham             | 0
-F3DB | 3      | 1   | 81  | 1   | F474 | 156    | 13  | 4  | 9  | Northern Shrine      | 1
-F3DE | 6      | 1   | 104 | 10  | F477 | 159    | 7   | 19 | 23 | Kol                  | 2
-F3E1 | 9      | 1   | 48  | 41  | F47A | 162    | 8   | 0  | 15 | Brecconary           | 3
-F3E4 | 12     | 1   | 43  | 43  | F47D | 165    | 4   | 11 | 29 | Tantegel             | 4
-F3E7 | 15     | 1   | 104 | 44  | F480 | 168    | 21  | 0  | 0  | Swamp Cave           | 5
-F3EA | 18     | 1   | 48  | 48  | F483 | 171    | 2   | 10 | 19 | Charlock             | 6
-F3ED | 21     | 1   | 104 | 49  | F486 | 174    | 21  | 0  | 29 | Swamp Cave           | 7
-F3F0 | 24     | 1   | 29  | 57  | F489 | 177    | 22  | 0  | 7  | Mountain Cave Lv. 1  | 8
-F3F3 | 27     | 1   | 102 | 72  | F48C | 180    | 11  | 29 | 14 | Rimuldar             | 9
-F3F6 | 30     | 1   | 25  | 89  | F48F | 183    | 3   | 0  | 10 | Hauksness            | 10
-F3F9 | 33     | 1   | 73  | 102 | F492 | 186    | 10  | 15 | 0  | Cantlin              | 11
-F3FC | 36     | 1   | 108 | 109 | F495 | 189    | 14  | 0  | 4  | Southern Shrine      | 12
-F3FF | 39     | 1   | 28  | 12  | F498 | 192    | 28  | 0  | 0  | Erdrick's Cave Lv. 1 | 13
-F402 | 42     | 2   | 10  | 1   | F49B | 195    | 15  | 9  | 0  | Charlock Cave Lv. 1  | 14
-F405 | 45     | 2   | 4   | 14  | F49E | 198    | 15  | 8  | 13 | Charlock Cave Lv. 1  | 15
-F408 | 48     | 2   | 15  | 14  | F4A1 | 201    | 15  | 17 | 15 | Charlock Cave Lv. 1  | 16
-F40B | 51     | 4   | 29  | 29  | F4A4 | 204    | 12  | 0  | 4  | Tantegel Basement    | 17
-F40E | 54     | 5   | 8   | 8   | F4A7 | 207    | 4   | 7  | 7  | Tantegel             | 18
-F411 | 57     | 9   | 19  | 0   | F4AA | 210    | 24  | 6  | 11 | Garin's Grave Lv. 1  | 19
-F414 | 60     | 15  | 15  | 1   | F4AD | 213    | 16  | 8  | 0  | Charlock Cave Lv. 2  | 20
-F417 | 63     | 15  | 13  | 7   | F4B0 | 216    | 16  | 4  | 4  | Charlock Cave Lv. 2  | 21
-F41A | 66     | 15  | 19  | 7   | F4B3 | 219    | 16  | 9  | 8  | Charlock Cave Lv. 2  | 22
-F41D | 69     | 15  | 14  | 9   | F4B6 | 222    | 16  | 8  | 9  | Charlock Cave Lv. 2  | 23
-F420 | 72     | 15  | 2   | 14  | F4B9 | 225    | 16  | 0  | 1  | Charlock Cave Lv. 2  | 24
-F423 | 75     | 15  | 2   | 4   | F4BC | 228    | 16  | 0  | 0  | Charlock Cave Lv. 2  | 25
-F426 | 78     | 15  | 8   | 19  | F4BF | 231    | 16  | 5  | 0  | Charlock Cave Lv. 2  | 26
-F429 | 81     | 16  | 3   | 0   | F4C2 | 234    | 17  | 7  | 0  | Charlock Cave Lv. 3  | 27
-F42C | 84     | 16  | 9   | 1   | F4C5 | 237    | 17  | 2  | 2  | Charlock Cave Lv. 3  | 28
-F42F | 87     | 16  | 0   | 8   | F4C8 | 240    | 17  | 5  | 4  | Charlock Cave Lv. 3  | 29
-F432 | 90     | 16  | 1   | 9   | F4CB | 243    | 17  | 0  | 9  | Charlock Cave Lv. 3  | 30
-F435 | 93     | 17  | 1   | 6   | F4CE | 246    | 18  | 0  | 9  | Charlock Cave Lv. 4  | 31
-F438 | 96     | 17  | 7   | 7   | F4D1 | 249    | 18  | 7  | 7  | Charlock Cave Lv. 4  | 32
-F43B | 99     | 18  | 2   | 2   | F4D4 | 252    | 19  | 9  | 0  | Charlock Cave Lv. 5  | 33
-F43E | 102    | 18  | 8   | 1   | F4D7 | 255    | 19  | 4  | 0  | Charlock Cave Lv. 5  | 34
-F441 | 105    | 19  | 5   | 5   | F4DA | 258    | 20  | 0  | 0  | Charlock Cave Lv. 6  | 35
-F444 | 108    | 19  | 0   | 0   | F4DD | 261    | 20  | 0  | 6  | Charlock Cave Lv. 6  | 36
-F447 | 111    | 20  | 9   | 0   | F4E0 | 264    | 20  | 0  | 0  | Charlock Cave Lv. 6  | 37
-F44A | 114    | 20  | 9   | 6   | F4E3 | 267    | 6   | 10 | 29 | Charlock Throne Room | 38
-F44D | 117    | 22  | 0   | 0   | F4E6 | 270    | 23  | 0  | 0  | Mountain Cave Lv. 2  | 39
-F450 | 120    | 22  | 6   | 5   | F4E9 | 273    | 23  | 6  | 5  | Mountain Cave Lv. 2  | 40
-F453 | 123    | 22  | 12  | 12  | F4EC | 276    | 23  | 12 | 12 | Mountain Cave Lv. 2  | 41
-F456 | 126    | 24  | 1   | 18  | F4EF | 279    | 25  | 11 | 2  | Garin's Grave Lv. 2  | 42
-F459 | 129    | 25  | 1   | 1   | F4F2 | 282    | 26  | 1  | 26 | Garin's Grave Lv. 3  | 43
-F45C | 132    | 25  | 12  | 1   | F4F5 | 285    | 26  | 18 | 1  | Garin's Grave Lv. 3  | 44
-F45F | 135    | 25  | 5   | 6   | F4F8 | 288    | 26  | 6  | 11 | Garin's Grave Lv. 3  | 45
-F462 | 138    | 25  | 1   | 10  | F4FB | 291    | 26  | 2  | 17 | Garin's Grave Lv. 3  | 46
-F465 | 141    | 25  | 12  | 10  | F4FE | 294    | 26  | 18 | 13 | Garin's Grave Lv. 3  | 47
-F468 | 144    | 26  | 9   | 5   | F501 | 297    | 27  | 0  | 4  | Garin's Grave Lv. 4  | 48
-F46B | 147    | 26  | 10  | 9   | F504 | 300    | 27  | 5  | 4  | Garin's Grave Lv. 4  | 49
-F46E | 150    | 28  | 9   | 9   | F507 | 303    | 29  | 8  | 9  | Erdrick's Cave Lv 2  | 50
+F3C8 | 0      | 1   | 2   | 2   | F461 | 153    | 9   | 0  | 14 | Garinham             | 0
+F3CB | 3      | 1   | 81  | 1   | F464 | 156    | 13  | 4  | 9  | Northern Shrine      | 1
+F3CE | 6      | 1   | 104 | 10  | F477 | 159    | 7   | 19 | 23 | Kol                  | 2
+F3D1 | 9      | 1   | 48  | 41  | F46A | 162    | 8   | 0  | 15 | Brecconary           | 3
+F3D4 | 12     | 1   | 43  | 43  | F46D | 165    | 4   | 11 | 29 | Tantegel             | 4
+F3D7 | 15     | 1   | 104 | 44  | F470 | 168    | 21  | 0  | 0  | Swamp Cave           | 5
+F3DA | 18     | 1   | 48  | 48  | F473 | 171    | 2   | 10 | 19 | Charlock             | 6
+F3DD | 21     | 1   | 104 | 49  | F476 | 174    | 21  | 0  | 29 | Swamp Cave           | 7
+F3E0 | 24     | 1   | 29  | 57  | F479 | 177    | 22  | 0  | 7  | Mountain Cave Lv. 1  | 8
+F3E3 | 27     | 1   | 102 | 72  | F47C | 180    | 11  | 29 | 14 | Rimuldar             | 9
+F3E6 | 30     | 1   | 25  | 89  | F47F | 183    | 3   | 0  | 10 | Hauksness            | 10
+F3E9 | 33     | 1   | 73  | 102 | F482 | 186    | 10  | 15 | 0  | Cantlin              | 11
+F3EC | 36     | 1   | 108 | 109 | F495 | 189    | 14  | 0  | 4  | Southern Shrine      | 12
+F3EF | 39     | 1   | 28  | 12  | F488 | 192    | 28  | 0  | 0  | Erdrick's Cave Lv. 1 | 13
+F3F2 | 42     | 2   | 10  | 1   | F48B | 195    | 15  | 9  | 0  | Charlock Cave Lv. 1  | 14
+F3F5 | 45     | 2   | 4   | 14  | F48E | 198    | 15  | 8  | 13 | Charlock Cave Lv. 1  | 15
+F3F8 | 48     | 2   | 15  | 14  | F491 | 201    | 15  | 17 | 15 | Charlock Cave Lv. 1  | 16
+F3FB | 51     | 4   | 29  | 29  | F494 | 204    | 12  | 0  | 4  | Tantegel Basement    | 17
+F3FE | 54     | 5   | 8   | 8   | F497 | 207    | 4   | 7  | 7  | Tantegel             | 18
+F401 | 57     | 9   | 19  | 0   | F49A | 210    | 24  | 6  | 11 | Garin's Grave Lv. 1  | 19
+F404 | 60     | 15  | 15  | 1   | F49D | 213    | 16  | 8  | 0  | Charlock Cave Lv. 2  | 20
+F407 | 63     | 15  | 13  | 7   | F4A0 | 216    | 16  | 4  | 4  | Charlock Cave Lv. 2  | 21
+F40A | 66     | 15  | 19  | 7   | F4A3 | 219    | 16  | 9  | 8  | Charlock Cave Lv. 2  | 22
+F40D | 69     | 15  | 14  | 9   | F4A6 | 222    | 16  | 8  | 9  | Charlock Cave Lv. 2  | 23
+F410 | 72     | 15  | 2   | 14  | F4A9 | 225    | 16  | 0  | 1  | Charlock Cave Lv. 2  | 24
+F413 | 75     | 15  | 2   | 4   | F4AC | 228    | 16  | 0  | 0  | Charlock Cave Lv. 2  | 25
+F416 | 78     | 15  | 8   | 19  | F4AF | 231    | 16  | 5  | 0  | Charlock Cave Lv. 2  | 26
+F419 | 81     | 16  | 3   | 0   | F4B2 | 234    | 17  | 7  | 0  | Charlock Cave Lv. 3  | 27
+F41C | 84     | 16  | 9   | 1   | F4B5 | 237    | 17  | 2  | 2  | Charlock Cave Lv. 3  | 28
+F41F | 87     | 16  | 0   | 8   | F4B8 | 240    | 17  | 5  | 4  | Charlock Cave Lv. 3  | 29
+F422 | 90     | 16  | 1   | 9   | F4BB | 243    | 17  | 0  | 9  | Charlock Cave Lv. 3  | 30
+F425 | 93     | 17  | 1   | 6   | F4BE | 246    | 18  | 0  | 9  | Charlock Cave Lv. 4  | 31
+F428 | 96     | 17  | 7   | 7   | F4C1 | 249    | 18  | 7  | 7  | Charlock Cave Lv. 4  | 32
+F42B | 99     | 18  | 2   | 2   | F4C4 | 252    | 19  | 9  | 0  | Charlock Cave Lv. 5  | 33
+F42E | 102    | 18  | 8   | 1   | F4C7 | 255    | 19  | 4  | 0  | Charlock Cave Lv. 5  | 34
+F431 | 105    | 19  | 5   | 5   | F4CA | 258    | 20  | 0  | 0  | Charlock Cave Lv. 6  | 35
+F434 | 108    | 19  | 0   | 0   | F4CD | 261    | 20  | 0  | 6  | Charlock Cave Lv. 6  | 36
+F437 | 111    | 20  | 9   | 0   | F4D0 | 264    | 20  | 0  | 0  | Charlock Cave Lv. 6  | 37
+F43A | 114    | 20  | 9   | 6   | F4D3 | 267    | 6   | 10 | 29 | Charlock Throne Room | 38
+F43D | 117    | 22  | 0   | 0   | F4D6 | 270    | 23  | 0  | 0  | Mountain Cave Lv. 2  | 39
+F440 | 120    | 22  | 6   | 5   | F4D9 | 273    | 23  | 6  | 5  | Mountain Cave Lv. 2  | 40
+F443 | 123    | 22  | 12  | 12  | F4DC | 276    | 23  | 12 | 12 | Mountain Cave Lv. 2  | 41
+F446 | 126    | 24  | 1   | 18  | F4DF | 279    | 25  | 11 | 2  | Garin's Grave Lv. 2  | 42
+F449 | 129    | 25  | 1   | 1   | F4E2 | 282    | 26  | 1  | 26 | Garin's Grave Lv. 3  | 43
+F44C | 132    | 25  | 12  | 1   | F4E5 | 285    | 26  | 18 | 1  | Garin's Grave Lv. 3  | 44
+F44F | 135    | 25  | 5   | 6   | F4E8 | 288    | 26  | 6  | 11 | Garin's Grave Lv. 3  | 45
+F452 | 138    | 25  | 1   | 10  | F4EB | 291    | 26  | 2  | 17 | Garin's Grave Lv. 3  | 46
+F455 | 141    | 25  | 12  | 10  | F4EE | 294    | 26  | 18 | 13 | Garin's Grave Lv. 3  | 47
+F458 | 144    | 26  | 9   | 5   | F4F1 | 297    | 27  | 0  | 4  | Garin's Grave Lv. 4  | 48
+F45B | 147    | 26  | 10  | 9   | F4F4 | 300    | 27  | 5  | 4  | Garin's Grave Lv. 4  | 49
+F45E | 150    | 28  | 9   | 9   | F4F7 | 303    | 29  | 8  | 9  | Erdrick's Cave Lv 2  | 50

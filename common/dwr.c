@@ -723,8 +723,8 @@ static int chest_bin(dw_map_index map) {
     
 static void move_chests(dw_rom *rom)
 {
-    int i, j, bin, map;
-    BOOL is_dungeon;
+    size_t i, j;
+    int bin, map;
     uint8_t *chest_spot, *new_door;
     uint8_t chest_bins[4] = { 0, 0, 0, 0};
     uint8_t chest_spots[][3] = {

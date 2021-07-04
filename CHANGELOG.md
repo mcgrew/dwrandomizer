@@ -1,3 +1,6 @@
+# 3.0
+* Added a flag for enabling random chest placement
+
 # 2.2.1 - Some balance adjustments
 * Maximum STOPSPELL resist is now 9/16
 * Maximum SLEEP/DL2 breath chance is now 50%

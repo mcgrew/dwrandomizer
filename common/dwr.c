@@ -942,6 +942,29 @@ static void shuffle_chests(dw_rom *rom)
 }
 
 /**
+ * Generates a new monster attack pattern with constraints:
+ *
+ * No 75% DL2 fire
+ * No 75% Sleep
+ */
+static uint8_t attack_pattern() {
+    uint8_t pattern;
+
+    pattern = (uint8_t)mt_rand(0, 255); /* random pattern */
+    if ((pattern & 0x0f) == (MOVE2_FIRE2 | MOVE2_75_PERCENT)) {
+        /* 75% DL2 fire, try again... */
+        pattern &= 0xfc; /* clear move 2 chance */
+        pattern |= (uint8_t)mt_rand(0,2); /* new move 2 chance */
+    }
+    if ((pattern & 0xf0) == (MOVE1_SLEEP | MOVE1_75_PERCENT)) {
+        /* 75% sleep, try again... */
+        pattern &= 0xcf; /* clear move 1 chance */
+        pattern |= (uint8_t)(mt_rand(0,2) << 4); /* new move 1 chance */
+    }
+    return pattern;
+}
+
+/**
  * Randomizes enemy attack patterns (spells)
  *
  * @param rom The rom struct
@@ -949,23 +972,26 @@ static void shuffle_chests(dw_rom *rom)
 static void randomize_attack_patterns(dw_rom *rom)
 {
     int i;
-    dw_enemy *enemies;
+    dw_enemy *enemy;
 
     if (!RANDOMIZE_PATTERNS(rom))
         return;
 
     printf("Randomizing enemy attack patterns...\n");
-    enemies = rom->enemies;
 
     for (i=SLIME; i <= RED_DRAGON; i++) {
+        enemy = rom->enemies + i;
+        enemy->pattern = 0;
         if (mt_rand_bool()) {
-            enemies[i].pattern = mt_rand(0, 255);
-            enemies[i].s_ss_resist &= 0xf0;
-            enemies[i].s_ss_resist |= mt_rand(0, i/3);
+            enemy->pattern = attack_pattern();
+        }
+        if (enemy->pattern & 0x33) {
+            /* base max resistance on enemy index */
+            enemy->s_ss_resist &= 0xf0;
+            enemy->s_ss_resist |= mt_rand(0, i/4);
         } else {
-            enemies[i].pattern = 0;
             /* no spells, max out resistance */
-            enemies[i].s_ss_resist |= 0xf;
+            enemy->s_ss_resist |= 0xf;
         }
     }
 }
@@ -1600,6 +1626,38 @@ static void dwr_death_necklace(dw_rom *rom)
             0xa5, 0xcf,  /* LDA $00CF ; replaces code removed from $F00E   */
             0x60         /* RTS                                            */
         );
+}
+
+/**
+ * Inserts code to scale XP rewards from metal slimes based on level
+ *
+ * @param rom The rom struct
+ */
+static void scaled_metal_slime_xp(dw_rom *rom) {
+
+    if (!SCALED_SLIMES(rom)) {
+        return;
+    }
+    printf("Reducing early metal rewards...\n");
+    vpatch(rom, 0xea0a, 3,
+           0x20, 0x58, 0xe1  /*   JSR $E158   ; jump to the new code         */
+    );
+    vpatch(rom, 0xe158, 22,
+           0xa5, 0xe0,       /*   LDA $E0     ; Load Monster ID              */
+           0xc9, 0x10,       /*   CMP #$10    ; Is it a metal slime?         */
+           0xd0, 0x0c,       /*   BNE +       ; No, skip to loading XP       */
+           0xa5, 0xc7,       /*   LDA $C7     ; Load player level            */
+           0xc9, 0x08,       /*   CMP #$8     ; Is it 8 or higher?           */
+           0xb0, 0x06,       /*   BCS +       ; Yes, skip to loading XP      */
+           0x0a,             /*   ASL         ;                              */
+           0x0a,             /*   ASL         ; Multiply level by 32 and use */
+           0x0a,             /*   ASL         ; this value for XP gained     */
+           0x0a,             /*   ASL         ;                              */
+           0x0a,             /*   ASL         ;                              */
+           0x60,             /*   RTS                                        */
+           0xad, 0x06, 0x01, /* + LDA $0106   ; Load XP from monster info    */
+           0x60              /*   RTS                                        */
+    );
 }
 
 /**
@@ -2370,6 +2428,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     cursed_princess(&rom);
     threes_company(&rom);
     scared_metal_slimes(&rom);
+    scaled_metal_slime_xp(&rom);
     torch_in_battle(&rom);
     repel_mods(&rom);
     permanent_torch(&rom);

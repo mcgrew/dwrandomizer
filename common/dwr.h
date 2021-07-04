@@ -85,6 +85,7 @@
 #define FLAG_y UINT64_C(0x1000000000000000)
 #define FLAG_z UINT64_C(0x2000000000000000)
 
+#define SCALED_SLIMES(x)      (x->flags & FLAG_a)
 #define BIG_SWAMP(x)          (x->flags & FLAG_b)
 #define CURSED_PRINCESS(x)    (x->flags & FLAG_c)
 #define RANDOM_ENEMY_DROPS(x) (x->flags & FLAG_d)

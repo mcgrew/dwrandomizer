@@ -657,14 +657,10 @@ static void set_dungeon_tile(dw_rom *rom, dw_map_index town, uint8_t x,
         uint8_t y, uint8_t tile)
 {
     BOOL is_dungeon;
+    uint8_t oldval;
     size_t offset = (size_t)y * (rom->map.meta[town].width+1) + x;
     size_t data_addr = ((*(uint16_t*)(&rom->map.meta[town].pointer)) & 0x7fff) +
         offset/2;
-
-    printf("Map: %d, Width: %d, Height: %d, X: %d, Y: %d\n", town, 
-            rom->map.meta[town].width, rom->map.meta[town].height, x, y);
-    printf("Addr: %lX, offset: %ld, modified: %lX\n",
-            data_addr, offset, data_addr + offset/2);
 
     if (x > rom->map.meta[town].width || y > rom->map.meta[town].height) {
         printf("Map index (%d, %d) out of bounds, skipping tile setting...\n",
@@ -678,6 +674,7 @@ static void set_dungeon_tile(dw_rom *rom, dw_map_index town, uint8_t x,
     /* Preserve the MSB for dungeon tiles. It seems to contain roof data for 
      * towns?  */
     is_dungeon = is_dungeon_tileset(town);
+    oldval = rom->content[data_addr];
     if (offset % 2) {
         if (is_dungeon) {
             rom->content[data_addr] &= 0xf8;
@@ -693,6 +690,14 @@ static void set_dungeon_tile(dw_rom *rom, dw_map_index town, uint8_t x,
         }
         rom->content[data_addr] |= tile << 4;
     }
+
+    /* TODO: remove this before release */
+    printf("Map: %d, Width: %d, Height: %d, X: %d, Y: %d, tile: %X\n", town, 
+            rom->map.meta[town].width, rom->map.meta[town].height, x, y, tile);
+    printf("Addr: %lX, offset: %ld, modified: %lX from %X to %X\n",
+            data_addr, offset, data_addr + offset/2, oldval,
+            rom->content[data_addr]);
+
 }
 
 static int chest_bin(dw_map_index map) {
@@ -720,7 +725,35 @@ static int chest_bin(dw_map_index map) {
             return -1;
     }
 }
-    
+
+/** Checks to see if a chest already exists at the current x/y coordinates.
+ * This will avoid conflicts since 2 chests cannot exist at the same
+ * coordinates where the player can travel to both locations without crossing
+ * the overwold. With stair shuffle coming, lets just avoid all conflicts.
+ *
+ * @param rom The rom struct
+ * @param x The x coordinate
+ * @param y The y coordinate
+ * @param until The number of chests to check from the beginning.
+ *
+ * @return A pointer to the conflicting chest.
+ */
+static dw_chest *chest_at(dw_rom *rom, uint8_t x, uint8_t y, size_t until) {
+    dw_chest *chest;
+    dw_chest *stop = rom->chests + until;
+    for (chest = rom->chests; chest < stop; chest++) {
+        if(chest->x == x && chest->y == y) {
+            return chest;
+        }
+    }
+    return NULL;
+}
+
+/**
+ * Randomizes the placment of chests to a subset of predetermined locations
+ *
+ * @param rom The rom struct
+ */
 static void move_chests(dw_rom *rom)
 {
     size_t i, j;
@@ -731,83 +764,95 @@ static void move_chests(dw_rom *rom)
 //         {TANTEGEL_THRONE_ROOM,  4,  4}, /* vanilla */
 //         {TANTEGEL_THRONE_ROOM,  5,  4}, /* vanilla */
 //         {TANTEGEL_THRONE_ROOM,  6,  1}, /* vanilla */
-        {TANTEGEL            ,  1, 13}, /* vanilla */
-        {TANTEGEL            ,  2, 13},
-        {TANTEGEL            ,  3, 13}, /* vanilla */
-        {TANTEGEL            ,  1, 14},
-        {TANTEGEL            ,  2, 14}, /* vanilla */
-        {TANTEGEL            ,  3, 14},
-        {TANTEGEL            ,  1, 15}, /* vanilla */
-        {TANTEGEL            ,  2, 15},
-        {TANTEGEL            ,  3, 15}, /* vanilla */
-        {TANTEGEL            , 16, 15},
-        {TANTEGEL            , 24, 21},
-        {TANTEGEL_BASEMENT   ,  4,  5}, /* vanilla */
-        {TANTEGEL_BASEMENT   ,  4,  4},
-        {TANTEGEL_BASEMENT   ,  5,  5},
-        {BRECCONARY          ,  3, 21},
-//         {BRECCONARY          , 21,  3},
-        {ERDRICKS_CAVE       ,  9,  0},
-        {ERDRICKS_CAVE_2     ,  9,  0},
-        {ERDRICKS_CAVE_2     ,  9,  3}, /* vanilla */
-        {GARINHAM            ,  4,  5},
-        {GARINHAM            ,  8,  5}, /* vanilla */
-        {GARINHAM            ,  8,  6}, /* vanilla */
-        {GARINHAM            ,  9,  5}, /* vanilla */
-        {GARINHAM            , 18, 18}, /* LOCK 16, 18 */
-        {GARINS_GRAVE_1      , 11,  0}, /* vanilla */
-        {GARINS_GRAVE_1      , 12,  0}, /* vanilla */
-        {GARINS_GRAVE_1      , 13,  0}, /* vanilla */
-        {GARINS_GRAVE_1      ,  0, 14},
-        {GARINS_GRAVE_1      ,  7,  5},
-        {GARINS_GRAVE_1      ,  4, 15},
-        {GARINS_GRAVE_3      ,  1,  1}, /* vanilla */
-        {GARINS_GRAVE_3      , 13,  6}, /* vanilla */
-        {GARINS_GRAVE_3      , 13, 10},
-        {GARINS_GRAVE_3      , 17, 17},
-        {KOL                 , 22,  1}, /* LOCK 20, 2 */
-        {SWAMP_CAVE          ,  5,  0},
-        {SWAMP_CAVE          ,  4, 19},
-        {SWAMP_CAVE          ,  5, 29},
-        {RIMULDAR            , 24, 23}, /* vanilla */
-        {MOUNTAIN_CAVE       , 13,  5}, /* vanilla */
-        {MOUNTAIN_CAVE       , 13,  9},
-        {MOUNTAIN_CAVE_2     ,  1,  1},
-        {MOUNTAIN_CAVE_2     , 13,  9},
-        {MOUNTAIN_CAVE_2     ,  0,  3},
-        {MOUNTAIN_CAVE_2     ,  1,  6}, /* vanilla */
-        {MOUNTAIN_CAVE_2     ,  2, 11},
-        {MOUNTAIN_CAVE_2     ,  2,  2}, /* vanilla */
-        {MOUNTAIN_CAVE_2     ,  3,  2}, /* vanilla */
-        {MOUNTAIN_CAVE_2     , 10,  9}, /* vanilla */
-        {HAUKSNESS           ,  6,  9}, /*  LOCK 10, 8  */
-        {CANTLIN             ,  2, 27}, /*  LOCK 3, 24 */
-        {CANTLIN             , 12,  2}, /*  LOCK 10, 4  */
-        {CHARLOCK_CAVE_1     , 19,  9},
-        {CHARLOCK_CAVE_1     ,  8,  6},
-        {CHARLOCK_CAVE_1     , 19,  6},
-        {CHARLOCK_CAVE_2     ,  5,  5}, /* vanilla */
-        {CHARLOCK_CAVE_3     ,  3,  8},
-        {CHARLOCK_CAVE_5     ,  2,  0},
-        {CHARLOCK_CAVE_6     ,  9,  0},
-        {CHARLOCK_THRONE_ROOM,  5,  2}, /* LOCK 4, 9 */
+        {TANTEGEL,              1, 13}, /* vanilla */
+        {TANTEGEL,              2, 13},
+        {TANTEGEL,              3, 13}, /* vanilla */
+        {TANTEGEL,              1, 14},
+        {TANTEGEL,              2, 14}, /* vanilla */
+        {TANTEGEL,              3, 14},
+        {TANTEGEL,              1, 15}, /* vanilla */
+        {TANTEGEL,              2, 15},
+        {TANTEGEL,              3, 15}, /* vanilla */
+        {TANTEGEL,             16, 15},
+        {TANTEGEL,             24, 21},
+        {TANTEGEL_BASEMENT,     4,  5}, /* vanilla */
+        {TANTEGEL_BASEMENT,     4,  8},
+        {TANTEGEL_BASEMENT,     5,  8},
+        {BRECCONARY,            3, 21},
+        {BRECCONARY,           10, 23},
+//         {BRECCONARY,           21,  3},
+        {ERDRICKS_CAVE,         9,  0},
+        {ERDRICKS_CAVE_2,       2,  9},
+        {ERDRICKS_CAVE_2,       9,  3}, /* vanilla */
+        {GARINHAM,              4,  5},
+        {GARINHAM,              8,  5}, /* vanilla */
+        {GARINHAM,              8,  6}, /* vanilla */
+        {GARINHAM,              9,  5}, /* vanilla */
+        {GARINHAM,             18, 18},
+        {GARINS_GRAVE_1,       11,  0}, /* vanilla */
+        {GARINS_GRAVE_1,       12,  0}, /* vanilla */
+        {GARINS_GRAVE_1,       13,  0}, /* vanilla */
+        {GARINS_GRAVE_1,        0, 14},
+        {GARINS_GRAVE_1,        7,  5},
+        {GARINS_GRAVE_1,        4, 15},
+        {GARINS_GRAVE_3,        1,  1}, /* vanilla */
+        {GARINS_GRAVE_3,       13,  6}, /* vanilla */
+        {GARINS_GRAVE_3,       13, 10},
+        {GARINS_GRAVE_3,       17, 17},
+        {KOL,                  22,  1},
+        {KOL,                   3, 13},
+        {SWAMP_CAVE,            5,  0},
+        {SWAMP_CAVE,            4, 19},
+        {SWAMP_CAVE,            5, 29},
+        {RIMULDAR,             24, 23}, /* vanilla */
+        {RIMULDAR,             17, 23},
+        {RIMULDAR,              3, 20},
+        {MOUNTAIN_CAVE,        13,  5}, /* vanilla */
+        {MOUNTAIN_CAVE,        13,  9},
+        {MOUNTAIN_CAVE_2,       1,  1},
+        {MOUNTAIN_CAVE_2,      13,  9},
+        {MOUNTAIN_CAVE_2,       0,  3},
+        {MOUNTAIN_CAVE_2,       1,  6}, /* vanilla */
+        {MOUNTAIN_CAVE_2,       2, 11},
+        {MOUNTAIN_CAVE_2,       2,  2}, /* vanilla */
+        {MOUNTAIN_CAVE_2,       3,  2}, /* vanilla */
+        {MOUNTAIN_CAVE_2,      10,  9}, /* vanilla */
+        {HAUKSNESS,             6,  9},
+        {CANTLIN,               2, 27},
+        {CANTLIN,              12,  2},
+        {CHARLOCK_CAVE_1,      19,  9},
+        {CHARLOCK_CAVE_1,       2, 17},
+        {CHARLOCK_CAVE_1,       8,  6},
+        {CHARLOCK_CAVE_1,      11,  6},
+        {CHARLOCK_CAVE_1,      19,  6},
+        {CHARLOCK_CAVE_2,       5,  5}, /* vanilla */
+        {CHARLOCK_CAVE_3,       3,  8},
+        {CHARLOCK_CAVE_4,       6,  4},
+        {CHARLOCK_CAVE_5,       2,  0},
+        {CHARLOCK_CAVE_6,       9,  0},
+        {CHARLOCK_THRONE_ROOM,  5,  2},
         {CHARLOCK_THRONE_ROOM,  6, 12},
-        {CHARLOCK_THRONE_ROOM,  8, 12}, /* LOCK 7, 22 */
+        {CHARLOCK_THRONE_ROOM,  8, 12},
         {CHARLOCK_THRONE_ROOM, 11, 11}, /* vanilla */
         {CHARLOCK_THRONE_ROOM, 11, 12}, /* vanilla */
         {CHARLOCK_THRONE_ROOM, 11, 13}, /* vanilla */
+        {CHARLOCK_THRONE_ROOM, 12, 11},
         {CHARLOCK_THRONE_ROOM, 12, 12}, /* vanilla */
         {CHARLOCK_THRONE_ROOM, 12, 13}, /* vanilla */
+        {CHARLOCK_THRONE_ROOM, 13, 11},
+        {CHARLOCK_THRONE_ROOM, 13, 12},
         {CHARLOCK_THRONE_ROOM, 13, 13}, /* vanilla */
         {CHARLOCK_THRONE_ROOM, 22, 26},
     };
 
     uint8_t new_doors[][3] = {
-        {GARINHAM            , 16, 18},
-        {KOL                 , 20,  2},
-        {HAUKSNESS           , 10,  8},
-        {CANTLIN             ,  3, 24},
-        {CANTLIN             , 10,  4},
+        {BRECCONARY,            8, 23},
+        {GARINHAM,             16, 18},
+        {KOL,                  20,  2},
+        {RIMULDAR,             17, 21},
+        {HAUKSNESS,            10,  8},
+        {CANTLIN,               3, 24},
+        {CANTLIN,              10,  4},
         {CHARLOCK_THRONE_ROOM,  4,  9},
         {CHARLOCK_THRONE_ROOM,  7, 22},
     };
@@ -816,6 +861,7 @@ static void move_chests(dw_rom *rom)
         return;
     }
 
+    printf("Removing all chests...\n");
     for (i=0; i < sizeof(chest_spots) / 3; i++) {
         chest_spot = chest_spots[i];
         if (is_dungeon_tileset(chest_spot[0])) {
@@ -826,6 +872,7 @@ static void move_chests(dw_rom *rom)
                     TOWN_TILE_BRICK);
         }
     }
+    printf("Adding doors...\n");
     for (i=0; i < sizeof(new_doors) / 3; i++) {
         new_door = new_doors[i];
         if (is_dungeon_tileset(new_door[0])) {
@@ -836,15 +883,25 @@ static void move_chests(dw_rom *rom)
                     TOWN_TILE_DOOR);
         }
     }
-    mt_shuffle(chest_spots, sizeof(chest_spots)/3, 3);
-    for (i=0, j=0; i < 31; i++, j++) {
+    printf("Adding back chests...\n");
+chest_placement_retry:
+    mt_shuffle(chest_spots, sizeof(chest_spots) / 3, 3);
+    for (i=0, j=0; i < CHEST_COUNT; i++, j++) {
         map = rom->chests[i].map;
          /* don't mess with these */
         if (map == TANTEGEL_THRONE_ROOM || map == NORTHERN_SHRINE)
             continue;
+        while (chest_at(rom, chest_spots[j][1], chest_spots[j][2], i+3)) {
+            j++;
+        }
         bin = chest_bin(chest_spots[j][0]);
         while (bin >= 0 && chest_bins[j] > 8) {
             bin = chest_bin(chest_spots[++j][0]);
+        }
+        if (j >= sizeof(chest_spots) / 3) {
+            /* this should never happen, but just in case */
+            printf("Something went wront, retrying chest placement...\n");
+            goto chest_placement_retry;
         }
         chest_bins[bin]++;
         rom->chests[i].map = chest_spots[j][0];
@@ -1859,7 +1916,7 @@ static void other_patches(dw_rom *rom)
     /* replace the charlock loop stairs with some for tantegel */
     vpatch(rom, 0xf437, 3, 5, 1, 8);
     vpatch(rom, 0xf4d0, 3, 4, 1, 7);
-    set_dungeon_tile(rom, CHARLOCK_CAVE_6, 20, 9, DUNGEON_TILE_BRICK);
+    set_dungeon_tile(rom, CHARLOCK_CAVE_6, 9, 0, DUNGEON_TILE_BRICK);
     /* Sets the encounter rate of Zone 0 to be the same as other zones. */
     vpatch(rom, 0xcebf, 3, 0x4c, 0x04, 0xcf);  /* skip over the zone 0 code */
     vpatch(rom, 0xe260, 1, 0);  /* set death necklace chance to 100% */

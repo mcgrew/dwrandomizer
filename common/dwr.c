@@ -603,6 +603,51 @@ static void no_chest_shuffle(dw_rom *rom)
     }
 }
 
+/**
+ * Whether or not the given map contains roof data. Some of the dungeon maps
+ * contain roof data in the MSB of the tile data.
+ *
+ * @param map The map number
+ */
+static BOOL contains_roof_data(dw_map_index map)
+{
+    switch(map) {
+        case NO_MAP:
+        case OVERWORLD:
+        case CHARLOCK:
+        case HAUKSNESS:
+        case TANTEGEL:
+        case TANTEGEL_THRONE_ROOM:
+        case CHARLOCK_THRONE_ROOM:
+        case KOL:
+        case BRECCONARY:
+        case GARINHAM:
+        case CANTLIN:
+        case RIMULDAR:
+            return FALSE;
+        case TANTEGEL_BASEMENT:
+        case NORTHERN_SHRINE:
+        case SOUTHERN_SHRINE:
+        case CHARLOCK_CAVE_1:
+        case CHARLOCK_CAVE_2:
+        case CHARLOCK_CAVE_3:
+        case CHARLOCK_CAVE_4:
+        case CHARLOCK_CAVE_5:
+        case CHARLOCK_CAVE_6:
+        case SWAMP_CAVE:
+        case MOUNTAIN_CAVE:
+        case MOUNTAIN_CAVE_2:
+        case GARINS_GRAVE_1:
+        case GARINS_GRAVE_2:
+        case GARINS_GRAVE_3:
+        case GARINS_GRAVE_4:
+        case ERDRICKS_CAVE:
+        case ERDRICKS_CAVE_2:
+        default:
+                return TRUE;
+    }
+}
+
 static BOOL is_dungeon_tileset(dw_map_index map)
 {
     switch(map) {
@@ -619,9 +664,9 @@ static BOOL is_dungeon_tileset(dw_map_index map)
         case CANTLIN:
         case RIMULDAR:
         case TANTEGEL_BASEMENT:
-            return FALSE;
         case NORTHERN_SHRINE:
         case SOUTHERN_SHRINE:
+            return FALSE;
         case CHARLOCK_CAVE_1:
         case CHARLOCK_CAVE_2:
         case CHARLOCK_CAVE_3:
@@ -656,7 +701,7 @@ static BOOL is_dungeon_tileset(dw_map_index map)
 static void set_dungeon_tile(dw_rom *rom, dw_map_index town, uint8_t x,
         uint8_t y, uint8_t tile)
 {
-    BOOL is_dungeon;
+    BOOL roof_data;
     uint8_t oldval;
     size_t offset = (size_t)y * (rom->map.meta[town].width+1) + x;
     size_t data_addr = ((*(uint16_t*)(&rom->map.meta[town].pointer)) & 0x7fff) +
@@ -671,19 +716,23 @@ static void set_dungeon_tile(dw_rom *rom, dw_map_index town, uint8_t x,
         return;
     }
 
-    /* Preserve the MSB for dungeon tiles. It seems to contain roof data for 
-     * towns?  */
-    is_dungeon = is_dungeon_tileset(town);
+    /* Preserve the MSB for some maps, as they contain roof data for towns. */
+    roof_data = contains_roof_data(town);
+    if (roof_data && (tile & 8)) {
+        printf("Invalid tile %d for map number %d\n", tile, town);
+        printf("This is a bug.");
+        tile &= 7;
+    }
     oldval = rom->content[data_addr];
     if (offset % 2) {
-        if (is_dungeon) {
+        if (roof_data) {
             rom->content[data_addr] &= 0xf8;
         } else {
             rom->content[data_addr] &= 0xf0;
         }
         rom->content[data_addr] |= tile;
     } else {
-        if (is_dungeon) {
+        if (roof_data) {
             rom->content[data_addr] &= 0x8f;
         } else {
             rom->content[data_addr] &= 0x0f;
@@ -782,7 +831,7 @@ static void move_chests(dw_rom *rom)
         {BRECCONARY,           10, 23},
 //         {BRECCONARY,           21,  3},
         {ERDRICKS_CAVE,         9,  0},
-        {ERDRICKS_CAVE_2,       2,  9},
+        {ERDRICKS_CAVE_2,       1,  9},
         {ERDRICKS_CAVE_2,       9,  3}, /* vanilla */
         {GARINHAM,              4,  5},
         {GARINHAM,              8,  5}, /* vanilla */
@@ -895,15 +944,17 @@ chest_placement_retry:
             j++;
         }
         bin = chest_bin(chest_spots[j][0]);
-        while (bin >= 0 && chest_bins[j] > 8) {
+        while (bin >= 0 && chest_bins[bin] > 8) {
             bin = chest_bin(chest_spots[++j][0]);
         }
         if (j >= sizeof(chest_spots) / 3) {
             /* this should never happen, but just in case */
-            printf("Something went wront, retrying chest placement...\n");
+            printf("Something went wrong, retrying chest placement...\n");
             goto chest_placement_retry;
         }
-        chest_bins[bin]++;
+        if (bin >= 0) {
+            chest_bins[bin]++;
+        }
         rom->chests[i].map = chest_spots[j][0];
         rom->chests[i].x = chest_spots[j][1];
         rom->chests[i].y = chest_spots[j][2];

@@ -739,14 +739,6 @@ static void set_dungeon_tile(dw_rom *rom, dw_map_index town, uint8_t x,
         }
         rom->content[data_addr] |= tile << 4;
     }
-
-    /* TODO: remove this before release */
-    printf("Map: %d, Width: %d, Height: %d, X: %d, Y: %d, tile: %X\n", town, 
-            rom->map.meta[town].width, rom->map.meta[town].height, x, y, tile);
-    printf("Addr: %lX, offset: %ld, modified: %lX from %X to %X\n",
-            data_addr, offset, data_addr + offset/2, oldval,
-            rom->content[data_addr]);
-
 }
 
 static int chest_bin(dw_map_index map) {
@@ -2512,7 +2504,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 
     move_chests(&rom);
     shuffle_chests(&rom);
-    while(!map_generate_terrain(&rom)) {}
+    map_generate_terrain(&rom);
     randomize_attack_patterns(&rom);
     randomize_zone_layout(&rom);
     randomize_zones(&rom);

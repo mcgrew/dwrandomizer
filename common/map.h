@@ -83,7 +83,7 @@ void map_decode(dw_map *map);
  * @param rom The rom struct
  * @return A boolean indicating whether terrain generation was successful or not
  */
-BOOL map_generate_terrain(dw_rom *rom);
+void map_generate_terrain(dw_rom *rom);
 
 #ifdef __cplusplus
 }

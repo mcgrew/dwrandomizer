@@ -230,6 +230,45 @@ static BOOL tile_is_walkable(dw_tile tile)
 
 /**
  * Finds the size of a land_mass given a point on it. Also fills in the 
+ * walkable area array. This is a less recursive version so we don't overflow
+ * the wasm stack.
+ *
+ * @param rom The rom pointer.
+ * @param x The x coordinate of the tile to start mapping.
+ * @param y The y coordinate of the tile to start mapping.
+ * @param lm_index The index for this land_mass.
+ */
+static int map_land_mass_2(dw_map *map, uint8_t x, uint8_t y,
+        uint8_t lm_index)
+{
+    int size = 0;
+    int left = 0;
+    int right = 119;
+
+    /* Move all the way to the left */
+    while(!map_ob(x-1) && tile_is_walkable(map->tiles[x-1][y]))
+        x--;
+    left = x;
+
+    while(!map_ob(x) && tile_is_walkable(map->tiles[x][y])) {
+        map->walkable[x][y] = lm_index;
+        right = x++;
+        size++;
+    }
+    /* go back to the left side and look up & down */
+    for (x = left; x <= right; x++) {
+        if (!map_ob(y-1) && tile_is_walkable(map->tiles[x][y-1]) &&
+                !map->walkable[x][y-1])
+            size += map_land_mass_2(map, x, y-1, lm_index);
+        if (!map_ob(y+1) && tile_is_walkable(map->tiles[x][y+1]) &&
+                !map->walkable[x][y+1])
+            size += map_land_mass_2(map, x, y+1, lm_index);
+    }
+    return size;
+}
+
+/**
+ * Finds the size of a land_mass given a point on it. Also fills in the 
  * walkable area array.
  *
  * @param rom The rom pointer.
@@ -242,7 +281,7 @@ static int map_land_mass(dw_map *map, uint8_t x, uint8_t y,
 {
     int size = 1;
 
-    if (x >= 120 || y >= 120)
+    if (map_ob(x) || map_ob(y))
         return 0;
 
     if (map->walkable[x][y])
@@ -624,7 +663,7 @@ static int find_walkable_area(dw_map *map, int *lm_sizes, int *largest,
         for (x=0; x < 120; x++) {
             if (!map->walkable[x][y] && tile_is_walkable(map->tiles[x][y])) {
                 lm_sizes[land_mass] = 
-                        map_land_mass(map, x, y, land_mass+1);
+                        map_land_mass_2(map, x, y, land_mass+1);
                 land_mass++;
             }
         }
@@ -917,12 +956,14 @@ static void check_keys(dw_rom *rom)
  * @param rom The rom struct
  * @return A boolean indicating whether terrain generation was successful or not
  */
-BOOL map_generate_terrain(dw_rom *rom)
+void map_generate_terrain(dw_rom *rom)
 {
     int i, j, x, y, lm_sizes[256];
     int largest, next, total_area;
 
     check_keys(rom);
+    printf("Generating map...\n");
+retry_map:
     if (!RANDOM_MAP(rom)) {
 
         map_decode(&rom->map);
@@ -974,8 +1015,9 @@ BOOL map_generate_terrain(dw_rom *rom)
         if (largest != next)
             total_area += lm_sizes[next - 1];
         if (total_area < MIN_WALKABLE) {
-            printf("Total map area is too small, retrying...\n");
-            return FALSE;
+            printf("Total map area (%d) is too small, retrying...\n",
+                    total_area);
+            goto retry_map;
         }
 
         while (add_bridges(&rom->map)) {
@@ -985,7 +1027,7 @@ BOOL map_generate_terrain(dw_rom *rom)
 
     find_walkable_area(&rom->map, lm_sizes, &largest, &next);
     if (!place_landmarks(&rom->map)) {
-        return FALSE;
+        goto retry_map;
     }
 
     /* place the token */
@@ -993,6 +1035,7 @@ BOOL map_generate_terrain(dw_rom *rom)
     map_find_land(&rom->map, largest, next, &rom->token->x, &rom->token->y,
             TRUE);
 
-    return map_encode(&rom->map);
+    if (!map_encode(&rom->map))
+        goto retry_map;
 }
 

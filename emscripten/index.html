@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DWRandomizer</title>
+    <script src="dwrandomizer-cli.js"></script>
+    <script src="big.min.js"></script>
+    <script>
+        Module["noFSInit"] = true;
+        function stdin() {
+        }
+
+        function stdout(asciiCode) {
+            var el = document.getElementById("output");
+            el.innerText += String.fromCharCode(asciiCode);
+        }
+
+        function stderr(asciiCode) {
+            document.getElementById("error_text").innerText += String.fromCharCode(asciiCode);
+        }
+
+        FS.init(stdin, stdout, stderr);
+
+        var downloadBlob, downloadURL;
+        var input_filename = "none";
+        var uploaded_file;
+
+        downloadBlob = function(data, fileName, mimeType) {
+            var blob, url;
+            blob = new Blob([data], {
+                type: mimeType
+            });
+            url = window.URL.createObjectURL(blob);
+            downloadURL(url, fileName);
+            setTimeout(function() {
+                return window.URL.revokeObjectURL(url);
+            }, 1000);
+        };
+
+        downloadURL = function(data, fileName) {
+            var a;
+            a = document.createElement('a');
+            a.href = data;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.style = 'display: none';
+            a.click();
+            a.remove();
+        };
+
+        function generate_rom() {
+            document.getElementById("output").innerText = "";
+            document.getElementById("error_text").innerText = "";
+            var seed = document.getElementById('seed').value;
+            // javascript doesn't natively handle 64-bit ints, so split to two 32-bit ints
+            Big.RM = 0;
+            var seed_big = new Big(seed);
+            var seed_high = seed_big.div(2**32)
+            var seed_low = seed_big.mod(2**32)
+            var flags = document.getElementById('flags').value;
+            var sprite = document.getElementById('sprite').value;
+            var dwr_randomize = Module.cwrap('dwr_randomize', 'number', ['string', 'number', 'number', 'string',
+                'string', 'string']);
+            var crc_low = dwr_randomize(input_filename, seed_low, seed_high, flags, sprite, "/");
+            var crc_high = getTempRet0();
+            var checksum = Math.abs(2**32+crc_high).toString(16) + "" + Math.abs(2**32+crc_low).toString(16);
+            console.debug(checksum);
+
+            var filename = "DWRando." + seed + "." + flags + ".nes";
+            var buf = FS.readFile(filename, buf);
+            downloadBlob(buf, filename, 'application/octet-stream');
+            var el = document.getElementById("output");
+            el.scrollTop = el.scrollHeight - el.clientHeight;
+        }
+
+        function init(){
+            document.getElementById('fileInput').addEventListener('change', handleFileSelect, false);
+            document.getElementById("flags").value = "CDFGMPRSTWZlr";
+            document.getElementById("sprite").value = "loto";
+            var stored_file_data = localStorage.getItem('uploaded_file_data');
+            var stored_file_name = localStorage.getItem('uploaded_file_name');
+
+            if (stored_file_data) {
+                var data = new Uint8Array(stored_file_data.split(','));
+                FS.writeFile(stored_file_name, data);
+                input_filename = stored_file_name;
+                document.getElementById('upload_text').innerText = "Using " + input_filename +
+                    ". Upload new file to override: "
+            }
+            random_seed();
+        }
+
+        function handleFileSelect(event){
+            const reader = new FileReader()
+            input_filename = event.target.files[0].name;
+            reader.onload = handleFileLoad;
+            reader.readAsArrayBuffer(event.target.files[0])
+        }
+
+        function handleFileLoad(event){
+            console.log(event);
+            uploaded_file = event.target.result;
+            var data = new Uint8Array(uploaded_file);
+            localStorage.setItem('uploaded_file_data', data);
+            localStorage.setItem('uploaded_file_name', input_filename);
+            FS.writeFile(input_filename, data);
+        }
+        function random_seed() {
+            seed = new Big(Math.floor((Math.random() * 2**16))).mul(2**32).add(Math.floor((Math.random() * 2**32))).toFixed(0);
+            document.getElementById('seed').value = seed;
+        }
+    </script>
+</head>
+<body onload="init()">
+<p><div id="upload_text">Input file:</div> <input id="fileInput" type="file" name="Upload File" /></p>
+<div>Flags: <input id="flags" name="flags" type="text" maxlength="32"></div>
+<p>Seed:
+    <input id="seed" name="seed" type="text" maxlength="32">
+    <input id="random_number" value="Randomize!" type="button" onclick="random_seed();"></p>
+<p>Sprite: <input id="sprite" name="sprite" type="text" maxlength="32"></p>
+<input id="generate" type="button" value="Generate" onclick="generate_rom();" />
+
+<pre id="output" style="width:500px;height:150px;line-height:1em;overflow:auto;padding:5px;"></pre>
+<pre id="error_text" style="color:#ff0000;width:500px;height:150px;line-height:1em;overflow:scroll;padding:5px;"></pre>
+</body>
+</html>

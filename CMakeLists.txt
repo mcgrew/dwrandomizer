@@ -28,8 +28,11 @@ set(SOURCE_FILES
 if (EMSCRIPTEN)
     add_executable(dwrandomizer ${SOURCE_FILES})
     target_link_libraries(dwrandomizer m)
-    target_link_options(dwrandomizer PRIVATE "SHELL:-s EXPORTED_FUNCTIONS='[\"_dwr_randomize\"]' -s
-    EXPORTED_RUNTIME_METHODS='[\"ccall\", \"cwrap\"]'")
+    target_link_options(dwrandomizer PRIVATE
+        "SHELL:
+        -s EXPORTED_FUNCTIONS='[\"_dwr_randomize\"]'
+        -s EXPORTED_RUNTIME_METHODS='[\"ccall\", \"cwrap\"]'
+        -s WASM_BIGINT")
 else()
     add_executable(dwrandomizer cli/main.c ${SOURCE_FILES})
     target_link_libraries(dwrandomizer m)

@@ -1,0 +1,47 @@
+
+body {
+    font-family: Helvetica, Arial, sans-serif;
+    background-color: #888;
+}
+
+body > div {
+    background-color: #fff;
+    max-width: 800px;
+    padding: 1em;
+    margin: auto;
+}
+
+h1, h3 {
+    text-align: center
+}
+
+tab {
+    display: inline-block;
+    border: 1px solid black;
+    padding: 0.5em 1em;
+    margin: 0;
+    background-color: #ddd;
+    border-radius: 4px 4px 0 0;
+    position: relative;
+    top: 2px;
+}
+
+tab.active {
+    border-bottom-width: 0;
+}
+
+tab:hover, tab.active {
+    background-color: #fff;
+}
+
+tabcontent {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    border: 1px solid black;
+    border-radius: 0 0 4px 4px;
+    padding: 3em;
+}
+
+.invalid {
+    border-color: red;
+}

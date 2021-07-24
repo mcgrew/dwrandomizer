@@ -41,6 +41,16 @@ const char flag_order[] =
         "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 /**
+ * Returns the version number. Mosltly for use with emscripten.
+ *
+ * @return The version number
+ */
+const char *version()
+{
+    return VERSION;
+}
+
+/**
  * A function to be passed to qsort for sorting uint8_t arrays
  *
  * @param a The first item to compare

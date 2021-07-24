@@ -2,9 +2,22 @@
 $ = document.querySelector.bind(document)
 $$ = document.querySelectorAll.bind(document)
 
+NodeList.prototype.addEventListener = function(evt_type, func) {
+    this.forEach(function(node) {
+        node.addEventListener(evt_type, func.bind(node));
+    });
+};
+
+NodeList.prototype.hide = function() {
+    this.forEach(function(node) {
+        node.display = 'none';
+    });
+}
+
 Module["noFSInit"] = true;
 
 let rom;
+let sprite_choices = [];
 let log = ''
 let error = ''
 function stdout(asciiCode) {
@@ -71,6 +84,29 @@ class Rom extends Uint8Array {
 }
 
 window.addEventListener('load', event => {
+    Module.onRuntimeInitialized = () => {
+        $('#version').innerText = Module.ccall('version', 'string');
+        let sprite_name = Module.cwrap('sprite_name', 'string', ['number']);
+        let sprites_el = $('#sprites');
+        let i=0;
+        while(true) {
+            let name = sprite_name(i++);
+            if (!name) break;
+            let option = document.createElement('option');
+            option.value = option.innerText = name;
+            sprite_choices.push(name);
+            sprites_el.appendChild(option);
+        }
+    };
+
+    $('#sprite').addEventListener('change', function(event) {
+        if (sprite_choices.includes(this.value)) {
+            this.classList.remove('invalid');
+        } else {
+            this.classList.add('invalid');
+        }
+    });
+
     $('#inputfile').addEventListener('change', function(event) {
         let file = this.files[0];
         file.arrayBuffer().then(buffer => {
@@ -101,6 +137,6 @@ window.addEventListener('load', event => {
     }
 
     $("#flags").value = "CDFGMPRSTWZlr";
-    $("#sprite").value = "loto";
+    $("#sprite").value = "Random";
 });
 

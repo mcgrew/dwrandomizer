@@ -10,7 +10,27 @@ NodeList.prototype.addEventListener = function(evt_type, func) {
 
 NodeList.prototype.hide = function() {
     this.forEach(function(node) {
-        node.display = 'none';
+        node.hide()
+    });
+}
+
+HTMLElement.prototype.hide = function() {
+    this.style.display = 'none';
+}
+
+HTMLElement.prototype.show = function() {
+    this.style.display = '';
+}
+
+HTMLInputElement.prototype.triState = function() {
+    this.addEventListener('change', function(event) {
+        if (!this.checked) {
+            this.indeterminate = true;
+            this.dataset.indeterminate = true;
+        } else if (this.dataset.indeterminate) {
+            delete this.dataset.indeterminate;
+            this.checked = false;
+        }
     });
 }
 
@@ -83,6 +103,167 @@ class Rom extends Uint8Array {
     }
 }
 
+class Interface {
+    constructor() {
+        this.tabBar = $('tabbar')
+        this.tabContainer = $('tabcontainer')
+        this.tabs = {};
+    }
+    
+    addTab(name) {
+        let tab = document.createElement('tab');
+        tab.innerText = name;
+        tab.id = name + '-tab';
+        tab.addEventListener('click', function(event) {
+            ui.setActiveTab(this.innerText);
+        });
+        this.tabBar.append(tab);
+        let content = document.createElement('tabcontent');
+        content.id = name + '-flags'
+        for (let i=0; i < 10; i++) {
+            content.append(document.createElement('flagcontainer'))
+        }
+        this.tabContainer.append(content);
+        this.tabs[name] = {
+            'tab': tab,
+            'content': content
+        }
+    }
+
+    setVersion(version) {
+        // do something here.
+    }
+
+    setInputFile(name) {
+        // do something here.
+    }
+
+    setActiveTab(name) {
+        $$('tab').forEach(function(tab) { tab.classList.remove('active') });
+        $$('tabcontent').hide();
+        if (this.tabs[name]) {
+            this.tabs[name].tab.classList.add('active');
+            this.tabs[name].content.show();
+        }
+
+    }
+
+    addTextBox(tab, position, title) {
+        let input = document.createElement('input')
+        input.name = tab + position;
+        let label = document.createElement('label')
+        label.for = tab + position;
+        label.innerText = title;
+        let container = this.tabs[tab].content.children[position];
+        container.innerHTML = '';
+        container.append(label);
+        container.append(input);
+        return input;
+    }
+
+    addDropDown(tab, position, values) {
+    }
+
+    addOption(tab, position, bitpos, title) {
+        let input = document.createElement('input')
+        input.type = 'checkbox';
+        input.name = tab + position;
+        let label = document.createElement('label')
+        label.for = tab + position;
+        label.innerText = title;
+        let container = this.tabs[tab].content.children[position];
+        container.innerHTML = '';
+        label.prepend(input);
+        container.append(label);
+        return input;
+    }
+
+    addTriOption(tab, position, bitpos, title) {
+        let input = document.createElement('input')
+        input.type = 'checkbox';
+        input.name = tab + position;
+        input.triState();
+        let label = document.createElement('label')
+        label.for = tab + position;
+        label.innerText = title;
+        let container = this.tabs[tab].content.children[position];
+        container.innerHTML = '';
+        label.prepend(input);
+        container.append(label);
+        return input;
+    }
+}
+
+function setup_ui() {
+    ui = new Interface();
+    ui.addTab('Gameplay');
+    ui.addTab('Features');
+    ui.addTab('Monsters');
+    ui.addTab('Shortcuts');
+    ui.addTab('Challenge');
+    ui.addTab('Goals');
+    ui.addTab('Cosmetic');
+    ui.setActiveTab('Gameplay');
+
+    ui.addTriOption('Gameplay', 0, null, 'Shuffle Chests & Searches');
+    ui.addTriOption('Gameplay', 2, null, 'Random Growth');
+    ui.addTriOption('Gameplay', 4, null, 'Random Map');
+    ui.addTriOption('Gameplay', 6, null, 'Random Spell Learning');
+    ui.addTriOption('Gameplay', 8, null, 'Heal/Hurt Before "More"');
+    ui.addTriOption('Gameplay', 1, null, 'Random Weapon Shops');
+    ui.addTriOption('Gameplay', 3, null, 'Random Weapon Prices');
+    ui.addTriOption('Gameplay', 5, null, 'Random XP Requirements');
+
+    ui.addTriOption('Features', 0, null, 'Enable Menu Wrapping');
+    ui.addTriOption('Features', 2, null, 'Enable Death Necklace');
+    ui.addTriOption('Features', 4, null, 'Enable Torches In Battle');
+    ui.addTriOption('Features', 1, null, 'Big Swamp');
+    ui.addTriOption('Features', 3, null, 'Repel in Dungeons');
+    ui.addTriOption('Features', 5, null, 'Permanent Repel');
+    ui.addTriOption('Features', 7, null, 'Permanent Torch');
+
+    ui.addTriOption('Monsters', 0, null, 'Random Monster Abilities');
+    ui.addTriOption('Monsters', 2, null, 'Random Monster Zones');
+    ui.addTriOption('Monsters', 4, null, 'Random Monster Stats');
+    ui.addTriOption('Monsters', 6, null, 'Random Monster XP & Gold');
+    ui.addTriOption('Monsters', 8, null, 'Make Random Stats Consistent');
+    ui.addTriOption('Monsters', 1, null, 'Scared Metal Slimes');
+    ui.addTriOption('Monsters', 3, null, 'Scaled Metal Slime XP');
+
+    ui.addTriOption('Shortcuts', 0, null, 'Fast Text');
+    ui.addTriOption('Shortcuts', 2, null, 'Speed Hacks');
+    ui.addTriOption('Shortcuts', 4, null, 'Open Charlock');
+    ui.addTriOption('Shortcuts', 6, null, 'Short Charlock');
+    ui.addTriOption('Shortcuts', 8, null, "Don't Require Magic Keys");
+    // leveling speed
+    
+    ui.addTriOption('Challenge', 0, null, 'No Hurtmore');
+    ui.addTriOption('Challenge', 2, null, 'No Numbers');
+    ui.addTriOption('Challenge', 4, null, 'Invisible Hero');
+    ui.addTriOption('Challenge', 6, null, 'Invisible NPCs');
+
+    ui.addTriOption('Goals', 0, null, 'Cursed Princess');
+    ui.addTriOption('Goals', 2, null, "Three's Company");
+
+    ui.addOption('Cosmetic', 0, null, 'Shuffle Music');
+    ui.addOption('Cosmetic', 2, null, 'Disable Music');
+    ui.addOption('Cosmetic', 4, null, 'Modern Spell Names');
+    ui.addOption('Cosmetic', 6, null, 'Noir Mode');
+    ui.addOption('Cosmetic', 8, null, 'Disable Spell Flashing');
+
+    // player sprite
+    spriteBox = ui.addTextBox('Cosmetic', 1, 'Player Sprite: ');
+    spriteBox.setAttribute('list', 'sprites');
+    spriteBox.addEventListener('change', function(event) {
+        if (sprite_choices.includes(this.value)) {
+            this.classList.remove('invalid');
+            localStorage.setItem('sprite', this.value);
+        } else {
+            this.classList.add('invalid');
+        }
+    });
+}
+
 window.addEventListener('load', event => {
     Module.onRuntimeInitialized = () => {
         $('#version').innerText = Module.ccall('version', 'string');
@@ -95,17 +276,10 @@ window.addEventListener('load', event => {
             let option = document.createElement('option');
             option.value = option.innerText = name;
             sprite_choices.push(name);
-            sprites_el.appendChild(option);
+            sprites_el.append(option);
         }
     };
-
-    $('#sprite').addEventListener('change', function(event) {
-        if (sprite_choices.includes(this.value)) {
-            this.classList.remove('invalid');
-        } else {
-            this.classList.add('invalid');
-        }
-    });
+    setup_ui();
 
     $('#inputfile').addEventListener('change', function(event) {
         let file = this.files[0];
@@ -134,6 +308,7 @@ window.addEventListener('load', event => {
     let rom_data = localStorage.getItem('rom_data');
     if (rom_data) {
         rom = new Rom(rom_data.split(','));
+        ui.setInputFile(localStorage.getItem('rom_name');
     }
 
     $("#flags").value = "CDFGMPRSTWZlr";

@@ -16,6 +16,10 @@ h1, h3 {
     text-align: center
 }
 
+tabbar {
+    display: block;
+}
+
 tab {
     display: inline-block;
     border: 1px solid black;

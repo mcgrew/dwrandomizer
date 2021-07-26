@@ -108,10 +108,28 @@ size_t sprite_count()
         while(dwr_sprite_names[i] != NULL) {
             i++;
         }
-        printf("Found %lu sprites.\n", i);
     }
     return i;
 }
+
+/**
+ * Gets the name of the sprite at the given index. Mostly for use with 
+ * emscripten. Returns NULL if the index is too high.
+ *
+ * @param index The index of the sprite
+ * @return The sprite name, or NULL if no such sprite exists.
+ */
+const char *sprite_name(int index)
+{
+    size_t count = sprite_count();
+
+    if ((size_t)index < count) {
+        return dwr_sprite_names[index];
+    } else {
+        return NULL;
+    }
+}
+
 
 typedef enum {
     NPC_BOY,

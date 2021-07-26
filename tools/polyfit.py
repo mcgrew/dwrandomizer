@@ -48,7 +48,7 @@ if __name__ == "__main__":
     label = None
     for arg in args[3:]:
         if arg.startswith('#'):
-            label = arg[1:]
+            label = arg[1:].replace('_', ' ')
             continue
         if arg.startswith('^'):
             factors = [float(x) for x in arg[1:].split(',')]

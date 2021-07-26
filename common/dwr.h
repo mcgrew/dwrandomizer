@@ -9,6 +9,7 @@
 #include "sprites.h"
 
 #define DWR_VERSION "3.0"
+#define DWR_ALPHA 1
 
 #ifdef  DWR_RELEASE
 #define VERSION DWR_VERSION
@@ -21,6 +22,7 @@
 #define DEFAULT_FLAGS "CDFGMPRSTWZ"
 #define CHEST_COUNT 31
 
+#if 0
 /** 64 bit versions of the randomization flags */
 #define FLAG_0 UINT64_C(0x0000000000000001)
 #define FLAG_1 UINT64_C(0x0000000000000002)
@@ -126,20 +128,59 @@
 #define RANDOMIZE_SHOPS(x)    (x->flags & FLAG_W)
 #define HEAL_HURT_B4_MORE(x)  (x->flags & FLAG_Y)
 #define RANDOMIZE_ZONES(x)    (x->flags & FLAG_Z)
+#endif
+
+#define SHUFFLE_CHESTS(x)         ((x->flags[ 0] >> 6) & 3)
+#define RANDOM_CHEST_LOCATIONS(x) ((x->flags[ 0] >> 4) & 3)
+#define RANDOMIZE_GROWTH(x)       ((x->flags[ 0] >> 2) & 3)
+#define RANDOM_MAP(x)             ((x->flags[ 0] >> 0) & 3)
+#define RANDOMIZE_SPELLS(x)       ((x->flags[ 1] >> 6) & 3)
+#define RANDOMIZE_SHOPS(x)        ((x->flags[ 1] >> 4) & 3)
+#define RANDOM_PRICES(x)          ((x->flags[ 1] >> 2) & 3)
+#define RANDOM_XP_REQS(x)         ((x->flags[ 1] >> 0) & 3)
+#define HEAL_HURT_B4_MORE(x)      ((x->flags[ 2] >> 6) & 3)
+
+#define MENU_WRAP(x)              ((x->flags[ 3] >> 6) & 3)
+#define DEATH_NECKLACE(x)         ((x->flags[ 3] >> 4) & 3)
+#define TORCH_IN_BATTLE(x)        ((x->flags[ 3] >> 2) & 3)
+#define BIG_SWAMP(x)              ((x->flags[ 3] >> 0) & 3)
+#define REPEL_IN_DUNGEONS(x)      ((x->flags[ 4] >> 6) & 3)
+#define PERMANENT_REPEL(x)        ((x->flags[ 4] >> 4) & 3)
+#define PERMANENT_TORCH(x)        ((x->flags[ 4] >> 2) & 3)
+
+#define RANDOMIZE_PATTERNS(x)     ((x->flags[ 5] >> 6) & 3)
+#define RANDOMIZE_ZONES(x)        ((x->flags[ 5] >> 4) & 3)
+#define RANDOM_ENEMY_STATS(x)     ((x->flags[ 5] >> 2) & 3)
+#define RANDOM_ENEMY_DROPS(x)     ((x->flags[ 5] >> 0) & 3)
+#define CONSISTENT_STATS(x)       ((x->flags[ 6] >> 6) & 3)
+#define SCARED_SLIMES(x)          ((x->flags[ 6] >> 4) & 3)
+#define SCALED_SLIMES(x)          ((x->flags[ 6] >> 2) & 3)
+
+#define FAST_TEXT(x)              ((x->flags[ 7] >> 6) & 3)
+#define SPEED_HACKS(x)            ((x->flags[ 7] >> 4) & 3)
+#define OPEN_CHARLOCK(x)          ((x->flags[ 7] >> 2) & 3)
+#define SHORT_CHARLOCK(x)         ((x->flags[ 7] >> 0) & 3)
+#define NO_KEYS(x)                ((x->flags[ 8] >> 6) & 3)
+#define FAST_XP(x)                ((x->flags[14] >> 0) & 1)
+#define VERY_FAST_XP(x)           ((x->flags[14] >> 1) & 1)
+
+#define NO_HURTMORE(x)            ((x->flags[ 9] >> 6) & 3)
+#define NO_NUMBERS(x)             ((x->flags[ 9] >> 4) & 3)
+#define INVISIBLE_HERO(x)         ((x->flags[ 9] >> 2) & 3)
+#define INVISIBLE_NPCS(x)         ((x->flags[ 9] >> 0) & 3)
+
+#define CURSED_PRINCESS(x)        ((x->flags[ 8] >> 2) & 3)
+#define THREES_COMPANY(x)         ((x->flags[ 8] >> 0) & 3)
+
+#define MODERN_SPELLS(x)          ((x->flags[10] >> 6) & 3)
+#define NOIR_MODE(x)              ((x->flags[10] >> 4) & 3)
+#define RANDOMIZE_MUSIC(x)        ((x->flags[14] >> 7) & 3)
+#define DISABLE_MUSIC(x)          ((x->flags[14] >> 6) & 3)
+#define NO_SCREEN_FLASH(x)        ((x->flags[14] >> 5) & 3)
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * Initializes the dw_rom struct
- *
- * @param rom An uninitialized dw_rom
- * @param input_file The file to read the rom data from
- * @param flags The flags received from the user.
- * @return A boolean indicating whether initialization was sucessful
- */
-BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags);
 
 /**
  * Randomizes a Dragon Warrior rom file

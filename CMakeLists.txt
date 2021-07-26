@@ -21,7 +21,8 @@ set(SOURCE_FILES
         common/chaos.c
         common/patch.c
         common/challenge.c
-        common/polyfit.c)
+        common/polyfit.c
+        common/base32.c)
 
 # emscripten build command
 #  cmake -DCMAKE_TOOLCHAIN_FILE=/usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake ..

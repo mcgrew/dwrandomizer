@@ -138,8 +138,10 @@ class Interface {
             'padding': '0.2em'
         });
         let flagsDiv = this.create('div', 'Flags: ');
-        this.flagsEl = this.create('input');
-        this.flagsEl.value = localStorage.flags || 'KVMAAVCAAECAAEAA';
+        this.flagsEl = this.create('input', null, {
+            'width':  '210px'
+        });
+        this.flagsEl.value = localStorage.flags || 'IVIAAVCQKACAAAAAAAAAAAAB'
         this.flagsEl.change(event => {
             this.updateFlagBytes();
             this.updateInputs();
@@ -166,8 +168,13 @@ class Interface {
         this.appContainer.append(this.tabContainer);
         this.tabs = {};
         this.inputFile = this.create('input');
+        let goContainer = this.create('div', null, {
+            'text-align': 'right',
+            'padding-top': '0.5em'
+        });
         this.goButton = this.create('button', 'Randomize!');
-        this.appContainer.append(this.goButton);
+        goContainer.append(this.goButton);
+        this.appContainer.append(goContainer);
         this.initEvents();
     }
 

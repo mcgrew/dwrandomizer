@@ -13,6 +13,7 @@
 #include "crc64.h"
 #include "mt64.h"
 #include "polyfit.h"
+#include "base32.h"
 
 const char *prg0sums[8] = {
       "6a50ce57097332393e0e8751924fd56456ef083c", /* Dragon Warrior (U) (PRG0) [!].nes      */
@@ -72,21 +73,37 @@ static int compare(const void *a, const void *b)
  * @param flags The flags from the user
  * @return A 64-bit integer containing the flags
  */
-static uint64_t parse_flags(dw_rom *rom, char *flags)
-{
-    int i, len;
-    char *order;
+// static uint64_t parse_flags(dw_rom *rom, char *flags)
+// {
+//     int i, len;
+//     char *order;
+// 
+//     len = strlen(flags);
+//     qsort(flags, len, sizeof(char), &compare);
+//     rom->flags = 0;
+//     for (i=0; i < len; i++) {
+//         order = strchr(flag_order, flags[i]);
+//         if (order) {
+//             rom->flags |= UINT64_C(1) << (order - flag_order);
+//         }
+//     }
+//     return rom->flags;
+// }
 
-    len = strlen(flags);
-    qsort(flags, len, sizeof(char), &compare);
-    rom->flags = 0;
-    for (i=0; i < len; i++) {
-        order = strchr(flag_order, flags[i]);
-        if (order) {
-            rom->flags |= UINT64_C(1) << (order - flag_order);
-        }
+/**
+ * Updates the "maybe" flags to be either on or off
+ *
+ */
+static void update_flags(dw_rom *rom)
+{
+    size_t i;
+    uint8_t tmp;
+
+    /* Only the first 12 bytes can contain maybe flags. */
+    for (i=0; i < 12; i++) {
+        rom->flags[i] |= (rom->flags[i] >> 1) & 0x55 & mt_rand(0, 15);
+        rom->flags[i] &= 0x55;
     }
-    return rom->flags;
 }
 
 /**
@@ -97,7 +114,7 @@ static uint64_t parse_flags(dw_rom *rom, char *flags)
  * @param flags The flags received from the user.
  * @return A boolean indicating whether initialization was sucessful
  */
-BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
+static BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
 {
     FILE *input;
     int read;
@@ -119,7 +136,11 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     fclose(input);
 
     rom->content = &rom->header[0x10];
-    rom->map.flags = parse_flags(rom, flags);
+    strncpy((char *)rom->flags_encoded, flags, 24);
+    rom->flags_encoded[24] = '\0'; /* Make sure it's null terminated */
+
+    memset(rom->flags, 0, 15);
+    base32_decode(rom->flags_encoded, rom->flags);
     /* subtract 0x9d5d from these pointers */
     rom->map.pointers = (uint16_t*)&rom->content[0x2653];
     rom->map.encoded = &rom->content[0x1d5d];
@@ -148,6 +169,7 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->encounter_types[1] = &rom->content[0xcd81];
     rom->encounter_types[2] = &rom->content[0xcd9e];
     // FIXME: these should be removed or modified for the new treasure code.
+    // check to see if this has been done.
     rom->token = (dw_searchable*)&rom->content[0xe10b];
     rom->flute = (dw_searchable*)&rom->content[0xe12a];
     rom->armor = (dw_searchable*)&rom->content[0xe140];
@@ -1626,8 +1648,7 @@ static uint8_t *pad_title_screen(uint8_t *pos, uint8_t *end, int reserved)
  */
 static void update_title_screen(dw_rom *rom)
 {
-    char *f, *fo, text[33];
-    uint64_t flags;
+    unsigned char text[33];
     uint8_t *pos, *end;
 
 //    pos = rom->title_text;
@@ -1635,9 +1656,6 @@ static void update_title_screen(dw_rom *rom)
     pos = &rom->content[0x3f26];
     end = &rom->content[0x3fb5];
     text[32] = '\0';
-    flags = rom->flags;
-    f = text;
-    fo = (char*)flag_order;
 
     printf("Updating title screen...\n");
     pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
@@ -1650,20 +1668,12 @@ static void update_title_screen(dw_rom *rom)
     pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
     pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
 
-    /* parse the flags back to a string */
-    while (flags) {
-        if (flags & 1) *(f++) = *fo;
-        flags >>= 1;
-        fo++;
-        if (f - text >= 32) break;
-    }
-    *f = '\0';
-
-    pos = center_title_text(pos, text);          /* flags */
+    pos = center_title_text(pos, (const char *)rom->flags_encoded); /* flags */
     snprintf((char *)text, 33, "%"PRIu64, rom->seed);
 
-    pos = pad_title_screen(pos, end, 15 + strlen(text)); /* blank line */
-    pos = center_title_text(pos, text);         /* seed number */
+     /* blank line */
+    pos = pad_title_screen(pos, end, 15 + strlen((const char *)text));
+    pos = center_title_text(pos, (const char*)text);  /* seed number */
     pos = pad_title_screen(pos, end, 4); /* blank line */
     pos = pad_title_screen(pos, end, 0); /* blank line */
 
@@ -2325,10 +2335,13 @@ static void no_keys(dw_rom *rom)
 static void repel_mods(dw_rom *rom)
 {
     if (REPEL_IN_DUNGEONS(rom))
+        printf("Making repel work in dungeons...\n");
         vpatch(rom, 0xcf20, 2, 0xa9, 0x01);
 
-    if (PERMANENT_REPEL(rom))
+    if (PERMANENT_REPEL(rom)) {
+        printf("Making repel permanent...\n");
         vpatch(rom, 0xcf26, 2, 0xa9, 0xff);
+    }
 }
 
 /**

@@ -99,13 +99,11 @@ static void update_flags(dw_rom *rom)
     size_t i;
     uint8_t tmp;
 
-    printf("%d\n", rom->flags[0] & 0xc0);
     /* Only the first 12 bytes can contain maybe flags. */
     for (i=0; i < 12; i++) {
         rom->flags[i] |= (rom->flags[i] >> 1) & 0x55 & mt_rand(0, 255);
         rom->flags[i] &= 0x55;
     }
-    printf("%d\n", rom->flags[0] & 0xc0);
 }
 
 /**

@@ -100,6 +100,7 @@ function setup_ui() {
     ui.addTriOption('Features',  3,  4, 6, 'Repel in Dungeons');
     ui.addTriOption('Features',  5,  4, 4, 'Permanent Repel');
     ui.addTriOption('Features',  7,  4, 2, 'Permanent Torch');
+    ui.addTriOption('Features',  6,  4, 0, 'Alternate Running Algorithm');
 
     ui.addTriOption('Monsters',  0,  5, 6, 'Random Monster Abilities');
     ui.addTriOption('Monsters',  2,  5, 4, 'Random Monster Zones');

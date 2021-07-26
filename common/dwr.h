@@ -9,7 +9,6 @@
 #include "sprites.h"
 
 #define DWR_VERSION "3.0"
-#define DWR_ALPHA 1
 
 #ifdef  DWR_RELEASE
 #define VERSION DWR_VERSION

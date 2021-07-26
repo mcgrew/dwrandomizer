@@ -24,6 +24,12 @@ set(SOURCE_FILES
         common/polyfit.c
         common/base32.c)
 
+if (ALPHA)
+    add_definitions(-DDWR_ALPHA)
+elseif(RELEASE)
+    add_definitions(-DDWR_RELEASE)
+endif()
+
 # emscripten build command
 #  cmake -DCMAKE_TOOLCHAIN_FILE=/usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake ..
 if (EMSCRIPTEN)
@@ -34,6 +40,15 @@ if (EMSCRIPTEN)
         -s EXPORTED_FUNCTIONS='_dwr_randomize,_sprite_name,_version'
         -s EXPORTED_RUNTIME_METHODS='ccall,cwrap'
         -s WASM_BIGINT")
+    file(MAKE_DIRECTORY                                        ${CMAKE_BINARY_DIR}/release/)
+    file(CREATE_LINK ${CMAKE_SOURCE_DIR}/webui/index.html      ${CMAKE_BINARY_DIR}/release/index.html)
+    file(CREATE_LINK ${CMAKE_SOURCE_DIR}/webui/index.js        ${CMAKE_BINARY_DIR}/release/index.js)
+    file(CREATE_LINK ${CMAKE_SOURCE_DIR}/webui/index.css       ${CMAKE_BINARY_DIR}/release/index.css)
+    file(CREATE_LINK ${CMAKE_SOURCE_DIR}/webui/base32.js       ${CMAKE_BINARY_DIR}/release/base32.js)
+    file(CREATE_LINK ${CMAKE_SOURCE_DIR}/webui/interface.js    ${CMAKE_BINARY_DIR}/release/interface.js)
+    file(CREATE_LINK ${CMAKE_SOURCE_DIR}/webui/dwr.webmanifest ${CMAKE_BINARY_DIR}/release/dwr.webmanifest)
+    file(CREATE_LINK ${CMAKE_BINARY_DIR}/dwrandomizer.js       ${CMAKE_BINARY_DIR}/release/dwrandomizer.js)
+    file(CREATE_LINK ${CMAKE_BINARY_DIR}/dwrandomizer.wasm     ${CMAKE_BINARY_DIR}/release/dwrandomizer.wasm)
 else()
     add_executable(dwrandomizer cli/main.c ${SOURCE_FILES})
     target_link_libraries(dwrandomizer m)

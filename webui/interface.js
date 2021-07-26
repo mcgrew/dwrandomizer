@@ -67,15 +67,16 @@ HTMLInputElement.prototype.getValue = function() {
 HTMLInputElement.prototype.setValue = function (value) {
     if (this.type == 'checkbox') {
         if (this.dataset.tristate) {
-            value &= 1;
-        } else {
             value &= 3;
+        } else {
+            value &= 1;
         }
         this.checked = this.indeterminate = false;
-        if (value & 1) {
-            this.checked = true;
-        } else if (value & 2) {
+        if (value & 2) {
             this.indeterminate = true;
+            this.dataset.indeterminate = true;
+        } else if (value & 1) {
+            this.checked = true;
         }
     }
 }
@@ -125,11 +126,11 @@ class Interface {
             'opacity': '0',
             'cursor': 'pointer'
         })
-        this.fileNameSpan = this.create('span',
+        this.filenameSpan = this.create('span',
             localStorage.getItem('rom_name') || 'No file selected')
         this.inputFile.type = 'file';
         this.inputFileDiv.append(this.inputFile)
-        this.inputFileDiv.append(this.fileNameSpan);
+        this.inputFileDiv.append(this.filenameSpan);
         this.appContainer.append(this.inputFileDiv);
 
          let flagsSeed = this.create('div', null, {
@@ -167,7 +168,6 @@ class Interface {
         this.tabContainer = this.create('tabcontainer');
         this.appContainer.append(this.tabContainer);
         this.tabs = {};
-        this.inputFile = this.create('input');
         let goContainer = this.create('div', null, {
             'text-align': 'right',
             'padding-top': '0.5em'
@@ -190,16 +190,16 @@ class Interface {
     }
 
     initEvents() {
-        this.inputFile.change(function(event) {
+        this.inputFile.change(function(iface, event) {
             let file = this.files[0];
-            console.log(file.name);
             file.arrayBuffer().then(buffer => {
                 rom = new Rom(buffer);
                 rom.name = file.name.basename();
+                iface.setInputFile(rom.name);
                 localStorage.setItem('rom_name', rom.name);
                 localStorage.setItem('rom_data', rom);
             });
-        })
+        }.bind(this.inputFile, this));
 
         this.seedButton.click(event => {
             this.seedEl.value = new String(
@@ -280,7 +280,7 @@ class Interface {
     }
 
     setInputFile(name) {
-        // do something here.
+        this.filenameSpan.innerText = name;
     }
 
     setActiveTab(name) {

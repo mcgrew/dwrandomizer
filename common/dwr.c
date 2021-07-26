@@ -99,11 +99,13 @@ static void update_flags(dw_rom *rom)
     size_t i;
     uint8_t tmp;
 
+    printf("%d\n", rom->flags[0] & 0xc0);
     /* Only the first 12 bytes can contain maybe flags. */
     for (i=0; i < 12; i++) {
-        rom->flags[i] |= (rom->flags[i] >> 1) & 0x55 & mt_rand(0, 15);
+        rom->flags[i] |= (rom->flags[i] >> 1) & 0x55 & mt_rand(0, 255);
         rom->flags[i] &= 0x55;
     }
+    printf("%d\n", rom->flags[0] & 0xc0);
 }
 
 /**
@@ -141,6 +143,7 @@ static BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
 
     memset(rom->flags, 0, 15);
     base32_decode(rom->flags_encoded, rom->flags);
+    update_flags(rom);
     /* subtract 0x9d5d from these pointers */
     rom->map.pointers = (uint16_t*)&rom->content[0x2653];
     rom->map.encoded = &rom->content[0x1d5d];

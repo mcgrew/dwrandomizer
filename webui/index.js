@@ -54,10 +54,13 @@ class Rom extends Uint8Array {
 
         this.seed = seed;
         this.flags = flags;
-        Module.ccall('dwr_randomize', 'BigInt',
+        let checksum = Module.ccall('dwr_randomize', 'BigInt',
             ['string', 'BigInt', 'string', 'string', 'string'],
-            ['/'+this.name, seed, flags, sprite, '/']);
+            ['/'+this.name, seed, flags, sprite, '/'])
         this.outname = 'DWRando.' + seed + '.' + flags + '.nes';
+        // return value is signed, so fix it if it's negative
+        if (checksum < 0) checksum += 18446744073709551616n;
+        return checksum;
     }
 
     save() {

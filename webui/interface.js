@@ -175,6 +175,14 @@ class Interface {
         this.goButton = this.create('button', 'Randomize!');
         goContainer.append(this.goButton);
         this.appContainer.append(goContainer);
+        this.checksumHolder = this.create('input');
+        this.checksumHolder.readOnly = true;
+        this.checksumButton = this.create('button', 'Copy');
+        this.checksumContainer = this.create('div', 'Checksum: ');
+        this.checksumContainer.append(this.checksumHolder);
+        this.checksumContainer.append(this.checksumButton);
+        this.checksumContainer.hide();
+        this.appContainer.append(this.checksumContainer);
         this.initEvents();
     }
 
@@ -210,9 +218,16 @@ class Interface {
             let seed = BigInt(this.seedEl.value);
             let flags = this.flagsEl.value;
             let sprite = localStorage.sprite || 'Random';
-            rom.randomize(seed, flags, sprite);
+            let checksum = rom.randomize(seed, flags, sprite);
+            this.showChecksum(true, checksum.toString(16));
+            this.checksumHolder.value = checksum.toString(16);
             rom.save();
-        })
+        });
+        this.checksumButton.click(event => {
+            this.checksumHolder.select();
+            document.execCommand('copy');
+            this.checksumHolder.setSelectionRange(0, 0);
+        });
     }
 
     setFlags(flags) {
@@ -272,6 +287,15 @@ class Interface {
         this.tabs[name] = {
             'tab': tab,
             'content': content
+        }
+    }
+
+    showChecksum(show, value) {
+        if (show === false) {
+            this.checksumContainer.hide()
+        } else {
+            this.checksumContainer.show()
+            if (value) this.checksumHolder.value = value;
         }
     }
 

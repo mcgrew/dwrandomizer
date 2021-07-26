@@ -454,9 +454,9 @@ static dw_border_tile place(dw_map *map, dw_warp_index warp_idx, dw_tile tile,
 static void place_charlock(dw_map *map, int largest, int next)
 {
 
-        uint8_t x = 0, y = 0;
-        int  i, j;
-        dw_warp *warp;
+    uint8_t x = 0, y = 0;
+    int  i, j;
+    dw_warp *warp;
 
     if (!RANDOM_MAP(map)) {
         map->rainbow_drop->x = x = 65;

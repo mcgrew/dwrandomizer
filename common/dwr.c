@@ -139,6 +139,7 @@ static BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     strncpy((char *)rom->flags_encoded, flags, 24);
     rom->flags_encoded[24] = '\0'; /* Make sure it's null terminated */
 
+    rom->map.flags = rom->flags;
     memset(rom->flags, 0, 15);
     base32_decode(rom->flags_encoded, rom->flags);
     update_flags(rom);

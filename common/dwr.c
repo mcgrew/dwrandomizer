@@ -1312,35 +1312,30 @@ static void randomize_shops(dw_rom *rom)
 {
     uint8_t *shop_start, *shop_item;
     int i, j, six_item_shop;
-    dw_shop_item items[15] = {
+    dw_shop_item items[] = {
             BAMBOO_POLE, CLUB, COPPER_SWORD, HAND_AXE, BROAD_SWORD, FLAME_SWORD,
             CLOTHES, LEATHER_ARMOR, CHAIN_MAIL, HALF_PLATE, FULL_PLATE,
-            MAGIC_ARMOR, SMALL_SHIELD, LARGE_SHIELD, SILVER_SHIELD
+            MAGIC_ARMOR, SMALL_SHIELD, LARGE_SHIELD, SILVER_SHIELD,
     };
+    size_t item_counts[] = { 5, 5, 5, 5, 5, 5, 5 };
 
     if (!RANDOMIZE_SHOPS(rom))
         return;
 
     printf("Randomizing weapon shop inventory...\n");
 
-    six_item_shop = mt_rand(0, 6);
+    /* make one weapon shop have 6 items */
+    item_counts[mt_rand(0, 6)] = 6;
     shop_item = rom->weapon_shops;
 
     for (i=0; i < 7; i++) {
         shop_start = shop_item;
-        for (j=0; j < 5; j++) {
+        for (j=0; j < item_counts[i]; j++) {
             while(shop_contains(shop_start, shop_item,
                     *shop_item = items[mt_rand(0, 14)])) {}
             shop_item++;
         }
-        if (i == six_item_shop) {
-            while(shop_contains(shop_start, shop_item,
-                    *shop_item = items[mt_rand(0, 14)])) {}
-            shop_item++;
-            qsort(shop_start, 6, sizeof(uint8_t), &compare);
-        } else {
-            qsort(shop_start, 5, sizeof(uint8_t), &compare);
-        }
+        qsort(shop_start, item_counts[i], sizeof(uint8_t), &compare);
         *(shop_item++) = SHOP_END;
     }
 }
@@ -1480,7 +1475,6 @@ static void short_charlock(dw_rom *rom)
  */
 static void open_charlock(dw_rom *rom)
 {
-    // FIXME: this doesn't work with the new treasure code
     int i;
 
     if (!OPEN_CHARLOCK(rom))
@@ -2544,9 +2538,9 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     dwr_death_necklace(&rom);
     dwr_menu_wrap(&rom);
     dwr_speed_hacks(&rom);
+    open_charlock(&rom);
     dwr_token_dialogue(&rom);
     chaos_mode(&rom);
-    open_charlock(&rom);
     short_charlock(&rom);
     no_keys(&rom);
     cursed_princess(&rom);

@@ -1359,10 +1359,10 @@ static void randomize_growth(dw_rom *rom)
         printf("Randomizing stat growth...\n");
 
         for (i=0; i < 30; i++) {
-            hp[i] =  (uint8_t)polyfit(mt_rand_double_ranged(1,30), &hero_hp_fac);
+            hp[i] =  (uint8_t)polyfit(mt_rand_double_ranged(0,30), &hero_hp_fac);
             mp[i] =  (uint8_t)polyfit(mt_rand_double_ranged(0,30), &hero_mp_fac);
-            str[i] = (uint8_t)polyfit(mt_rand_double_ranged(1,30), &hero_str_fac);
-            agi[i] = (uint8_t)polyfit(mt_rand_double_ranged(1,30), &hero_agi_fac);
+            str[i] = (uint8_t)polyfit(mt_rand_double_ranged(0,30), &hero_str_fac);
+            agi[i] = (uint8_t)polyfit(mt_rand_double_ranged(0,30), &hero_agi_fac);
         }
 
         qsort(hp,  30, sizeof(uint8_t), &compare);

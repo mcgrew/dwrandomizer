@@ -1,0 +1,26 @@
+{
+  "name": "dwrandomizer",
+  "version": "3.0.0",
+  "description": "Dragon Warrior Randomizer",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder -wl",
+    "dist-mac": "electron-builder -m"
+  },
+  "build": {
+    "appId": "com.dwrandomizer"
+  },
+  "repository": "https://github.com/mcgrew/dwrandomizer",
+  "keywords": [
+    "Dragon",
+    "Warrior",
+    "Randomizer"
+  ],
+  "author": "mcgrew",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^13.1.7",
+    "electron-builder": "^22.11.7"
+  }
+}

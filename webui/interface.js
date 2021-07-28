@@ -192,7 +192,7 @@ class Interface {
             el.innerText = text
         if (style) {
             for (key in style)
-                el.style[key] = style[key];
+                el.style.setProperty(key, style[key]);
         }
         return el;
     }

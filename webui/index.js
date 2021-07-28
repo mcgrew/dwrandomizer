@@ -65,6 +65,7 @@ class Rom extends Uint8Array {
 
     save() {
         this.output = FS.readFile('/'+this.outname, null);
+        FS.unlink('/'+this.outname);
         let url = URL.createObjectURL(new Blob([this.output]), {
             type: 'application/octet-stream'
         });
@@ -99,11 +100,11 @@ function setup_ui() {
     ui.addTriOption('Features',  0,  3, 6, 'Enable Menu Wrapping');
     ui.addTriOption('Features',  2,  3, 4, 'Enable Death Necklace');
     ui.addTriOption('Features',  4,  3, 2, 'Enable Torches In Battle');
-    ui.addTriOption('Features',  1,  3, 0, 'Big Swamp');
-    ui.addTriOption('Features',  3,  4, 6, 'Repel in Dungeons');
-    ui.addTriOption('Features',  5,  4, 4, 'Permanent Repel');
-    ui.addTriOption('Features',  7,  4, 2, 'Permanent Torch');
-    ui.addTriOption('Features',  6,  4, 0, 'Alternate Running Algorithm');
+    ui.addTriOption('Features',  6,  3, 0, 'Big Swamp');
+    ui.addTriOption('Features',  1,  4, 6, 'Repel in Dungeons');
+    ui.addTriOption('Features',  3,  4, 4, 'Permanent Repel');
+    ui.addTriOption('Features',  5,  4, 2, 'Permanent Torch');
+    ui.addTriOption('Features',  8,  4, 0, 'Alternate Running Algorithm');
 
     ui.addTriOption('Monsters',  0,  5, 6, 'Random Monster Abilities');
     ui.addTriOption('Monsters',  2,  5, 4, 'Random Monster Zones');
@@ -123,6 +124,11 @@ function setup_ui() {
         'Normal' : 0,
         'Fast' : 1,
         'Very Fast': 2
+    });
+    ui.addDropDown ('Shortcuts', 3, 14, 2, 'Map Size: ', {
+        'Normal' : 0,
+        'Small' : 1,
+        'Very Small': 2
     });
 
     ui.addTriOption('Challenge', 0,  9, 6, 'No Hurtmore');

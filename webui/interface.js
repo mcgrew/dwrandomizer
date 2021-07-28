@@ -340,6 +340,8 @@ class Interface {
         }
         select.change(this.updateFlags.bind(this));
         let container = this.tabs[tab].content.children[position];
+        container.style.marginRight = '40%';
+        container.style.textAlign = 'right';
         container.innerText = title;
         container.append(select);
         this.inputs.push(select);

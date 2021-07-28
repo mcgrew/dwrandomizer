@@ -6,7 +6,6 @@
 #include "mt64.h"
 #include "map.h"
 
-#define FILL_ITERATIONS 12
 #define MAX_FILL_BLOB   7000
 #define MIN_LM_SIZE     400   /* minimum size for a land_mass to use */
 #define RIVER_COUNT     25
@@ -554,7 +553,6 @@ static uint8_t place_tantegel(dw_map *map, int largest, int next)
 static int map_fill_point(dw_map *map, uint8_t **points,
         uint8_t x, uint8_t y, dw_tile tile)
 {
-
     if (x >= 120 || y >= 120)
         return 0;
 
@@ -582,11 +580,16 @@ static void map_fill(dw_map *map, dw_tile tile)
     uint8_t x, y, *points, *p, *points_orig;
     uint64_t directions;
     int size;
+    int min, max;
+    
+    min = (120 - map->size) / 2;
+    max = 120 - min;
+
 
     points_orig = p = points = malloc(MAX_FILL_BLOB * 4 + 1);
     memset(p, 0xff, MAX_FILL_BLOB * 4 + 1);
-    p[0] = mt_rand(0, 119);
-    p[1] = mt_rand(0, 119);
+    p[0] = mt_rand(min, max-1);
+    p[1] = mt_rand(min, max-1);
     size = mt_rand(MAX_FILL_BLOB/4, MAX_FILL_BLOB);
 
     while (size > 0) {
@@ -962,7 +965,18 @@ void map_generate_terrain(dw_rom *rom)
     int largest, next, total_area;
 
     check_keys(rom);
-    printf("Generating map...\n");
+
+    if (SMALL_MAP(rom)) {
+        printf("Generating a small map\n");
+        rom->map.size = 90;
+    } else if (VERY_SMALL_MAP(rom)) {
+        printf("Generating a very small map\n");
+        rom->map.size = 60;
+    } else {
+        printf("Generating a normal size map\n");
+        rom->map.size = 120;
+    }
+
 retry_map:
     if (!RANDOM_MAP(rom)) {
 
@@ -994,7 +1008,7 @@ retry_map:
         memset(rom->map.tiles, TILE_WATER, 120 * 120);
 
         /* now fill it in with some other tiles */
-        for (i = 0; i < FILL_ITERATIONS; i++) {
+        for (i = 0; i < rom->map.size / 10; i++) {
             mt_shuffle(tiles, sizeof(tiles) / sizeof(dw_tile), sizeof(dw_tile));
             for (j = 0; j < 16; j++) {
                 map_fill(&rom->map, tiles[j]);
@@ -1014,7 +1028,7 @@ retry_map:
         total_area = lm_sizes[largest - 1];
         if (largest != next)
             total_area += lm_sizes[next - 1];
-        if (total_area < MIN_WALKABLE) {
+        if (total_area < rom->map.size * 42) {
             printf("Total map area (%d) is too small, retrying...\n",
                     total_area);
             goto retry_map;

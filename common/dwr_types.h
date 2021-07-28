@@ -312,6 +312,7 @@ typedef struct {
     uint16_t *pointers;
     uint8_t *encoded;
     uint8_t *flags;
+    int size;
     dw_map_meta *meta;
     dw_warp *warps_from;
     dw_warp *warps_to;

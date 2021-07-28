@@ -11,9 +11,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     document.body.style.backgroundColor = '#fff';
-    let customStyle = document.createElement('style');
-    customStyle.innerText = 'h1 { -webkit-app-region: drag; cursor: grab; }';
-    document.head.append(customStyle);
 
     const remote = require('electron').remote
     // add a close button
@@ -47,7 +44,19 @@ window.addEventListener('DOMContentLoaded', () => {
         remote.getCurrentWindow().minimize();
     });
     document.body.prepend(minButton);
-    
+
+    // add a "title bar"
+    let titleBar = createElement('div', null, {
+        'position': 'absolute',
+        'top': '0px',
+        'right': '0px',
+        'left': '0px',
+        'height': '26px',
+        'background-color': '#ccc',
+        '-webkit-app-region': 'drag'
+    });
+    document.body.prepend(titleBar);
+
 })
 
 function createElement(element, text, style) {

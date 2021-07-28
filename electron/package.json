@@ -9,7 +9,13 @@
     "dist-mac": "electron-builder -m"
   },
   "build": {
-    "appId": "com.dwrandomizer"
+    "appId": "com.dwrandomizer",
+    "linux": {
+        "category": "Gaming"
+    },
+    "mac": {
+        "category": "Gaming"
+    }
   },
   "repository": "https://github.com/mcgrew/dwrandomizer",
   "keywords": [

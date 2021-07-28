@@ -5,7 +5,7 @@ body {
     margin: 0;
 }
 
-body > div {
+#application {
     background-color: #fff;
     max-width: 800px;
     padding: 1em;

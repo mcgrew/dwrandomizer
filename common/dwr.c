@@ -2411,13 +2411,13 @@ static void dwr_token_dialogue(dw_rom *rom)
         dx = rom->token->x - rom->map.warps_from[WARP_TANTEGEL].x;
         dy = rom->token->y - rom->map.warps_from[WARP_TANTEGEL].y;
 //        strcpy((char*)text1, "Thou may go and search.");
-        if (dx > 100 || dy > 100) {
-            snprintf((char*)text2, 74, "From Tantegel Castle travel %3d "
+        if (ABS(dx) > 100 || ABS(dy) > 100) {
+            snprintf((char*)text2, 75, "From Tantegel Castle travel %3d "
                     "leagues to the %s and %3d %s/    ",
                     ABS(dy), (dy < 0) ? "north" : "south",
                     ABS(dx), (dx < 0) ? "west" : "east");
         } else {
-            snprintf((char*)text2, 74, "From Tantegel Castle travel %2d "
+            snprintf((char*)text2, 75, "From Tantegel Castle travel %2d "
                     "leagues to the %s and %2d to the %s/",
                     ABS(dy), (dy < 0) ? "north" : "south",
                     ABS(dx), (dx < 0) ? "west" : "east");

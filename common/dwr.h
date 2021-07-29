@@ -166,6 +166,7 @@
 #define VERY_FAST_XP(x)           (x->flags[14] & 0x02)
 #define SMALL_MAP(x)              (x->flags[14] & 0x04)
 #define VERY_SMALL_MAP(x)         (x->flags[14] & 0x08)
+#define RANDOM_MAP_SIZE(x)        (x->flags[14] & 0x0c)
 
 #define NO_HURTMORE(x)            (x->flags[ 9] & 0xc0)
 #define NO_NUMBERS(x)             (x->flags[ 9] & 0x30)

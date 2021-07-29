@@ -6,8 +6,7 @@
 #include "mt64.h"
 #include "map.h"
 
-#define MAX_FILL_BLOB   7000
-#define MIN_LM_SIZE     400   /* minimum size for a land_mass to use */
+#define MIN_LM_SIZE     300   /* minimum size for a land_mass to use */
 #define RIVER_COUNT     25
 #define MIN_WALKABLE    5000
 #define MAP_ENCODED_SIZE 2294
@@ -584,13 +583,14 @@ static void map_fill(dw_map *map, dw_tile tile)
     
     min = (120 - map->size) / 2;
     max = 120 - min;
+    int max_fill_blob = map->size * 128;
 
 
-    points_orig = p = points = malloc(MAX_FILL_BLOB * 4 + 1);
-    memset(p, 0xff, MAX_FILL_BLOB * 4 + 1);
+    points_orig = p = points = malloc(max_fill_blob * 4 + 1);
+    memset(p, 0xff, max_fill_blob * 4 + 1);
     p[0] = mt_rand(min, max-1);
     p[1] = mt_rand(min, max-1);
-    size = mt_rand(MAX_FILL_BLOB/4, MAX_FILL_BLOB);
+    size = mt_rand(max_fill_blob/4, max_fill_blob);
 
     while (size > 0) {
         x = p[0]; y=p[1];

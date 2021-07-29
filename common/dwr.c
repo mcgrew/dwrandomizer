@@ -104,6 +104,10 @@ static void update_flags(dw_rom *rom)
         rom->flags[i] |= (rom->flags[i] >> 1) & 0x55 & mt_rand(0, 255);
         rom->flags[i] &= 0x55;
     }
+    if (RANDOM_MAP_SIZE(rom) == 0xc) {
+        rom->flags[14] &= 0xf3;
+        rom->flags[14] |= mt_rand(0, 2) << 2;
+    }
 }
 
 /**

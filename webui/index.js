@@ -128,7 +128,8 @@ function setup_ui() {
     ui.addDropDown ('Shortcuts', 3, 14, 2, 'Map Size: ', {
         'Normal' : 0,
         'Small' : 1,
-        'Very Small': 2
+        'Very Small': 2,
+        'Random': 3
     });
 
     ui.addTriOption('Challenge', 0,  9, 6, 'No Hurtmore');

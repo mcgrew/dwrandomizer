@@ -17,6 +17,8 @@ set(SOURCE_FILES
         common/sprites.c
         common/dwr.c
         common/map.c
+        common/dungeon_maps.c
+        common/chests.c
         common/mt19937-64.c
         common/chaos.c
         common/patch.c

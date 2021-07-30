@@ -96,6 +96,7 @@ function setup_ui() {
     ui.addTriOption('Gameplay',  3,  1, 2, 'Random Weapon Prices');
     ui.addTriOption('Gameplay',  5,  1, 0, 'Random XP Requirements');
     ui.addTriOption('Gameplay',  7,  2, 6, 'Heal/Hurt Before "More"');
+    ui.addTriOption('Gameplay',  9,  2, 4, 'Randomly Rotate/Mirror Dungeons');
 
     ui.addTriOption('Features',  0,  3, 6, 'Enable Menu Wrapping');
     ui.addTriOption('Features',  2,  3, 4, 'Enable Death Necklace');

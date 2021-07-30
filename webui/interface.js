@@ -248,6 +248,7 @@ class Interface {
         let encoded = base32.encode(this.flagBytes);
         localStorage.setItem('flags', encoded); 
         this.flagsEl.value = encoded;
+        this.updateSummary()
         return encoded;
     }
 
@@ -270,18 +271,75 @@ class Interface {
         }
     }
 
-    addTab(name) {
-        let tab = document.createElement('tab');
+    updateSummary() {
+        if (!this.summary)
+            return;
+        this.summary.innerHTML = 'Flags: ' + this.flagsEl.value +  "\n";
+        this.summary.innerHTML += 'Seed: ' + this.seedEl.value +  "\n";
+        let state;
+        let name;
+        for (let i=0; i < this.inputs.length; i++) {
+            let input = this.inputs[i];
+            if (input.tagName == 'INPUT') {
+                let input = this.inputs[i];
+                if (input.indeterminate) {
+                    state = 'Maybe';
+                } else if (input.checked) {
+                    state = 'Yes';
+                } else {
+                    state = 'No';
+                }
+            }
+            else if (input.tagName == 'SELECT') {
+                state = input.selectedOptions[0].innerText;
+            }
+            this.summary.innerHTML += input.dataset.label + ': ' + state + "\n";
+        }
+        let spriteBox = $('#sprite-box')
+        if (spriteBox)
+            this.summary.innerHTML += 'Player Sprite: ' + spriteBox.getValue();
+    }
+
+    addSummaryTab(name) {
+        let tab = this.create('tab');
         tab.innerText = name;
         tab.id = name + '-tab';
         tab.click(function(event) {
             ui.setActiveTab(this.innerText);
         });
         this.tabBar.append(tab);
-        let content = document.createElement('tabcontent');
+        let content = this.create('tabcontent', null, {
+            'padding': '0',
+            'grid-template-columns': '100%',
+            'grid-template-rows': 'calc(250px + 6em)'
+        });
+        this.summary = this.create('pre', null, {
+            'margin': '0',
+            'padding': '1em',
+            'font-size': '14px',
+            'overflow-y': 'scroll',
+            'user-select': 'text'
+        });
+        this.tabContainer.append(content);
+        content.append(this.summary);
+        this.tabs[name] = {
+            'tab': tab,
+            'content': content
+        }
+    }
+
+    addTab(name) {
+        let tab = this.create('tab');
+        tab.innerText = name;
+        tab.id = name + '-tab';
+        tab.click(function(event) {
+            ui.setActiveTab(this.innerText);
+        });
+        this.tabBar.append(tab);
+        let content = this.create('tabcontent');
         content.id = name + '-flags'
         for (let i=0; i < 10; i++) {
-            content.append(document.createElement('flagcontainer'))
+            content.append(this.create('flagcontainer'))
         }
         this.tabContainer.append(content);
         this.tabs[name] = {
@@ -342,7 +400,7 @@ class Interface {
         let container = this.tabs[tab].content.children[position];
         container.style.marginRight = '40%';
         container.style.textAlign = 'right';
-        container.innerText = title;
+        container.innerText = (select.dataset.label = title) + ': ';
         container.append(select);
         this.inputs.push(select);
         this.updateInputs();
@@ -355,6 +413,7 @@ class Interface {
         input.name = tab + position;
         input.dataset.bytepos = bytepos;
         input.dataset.shift = shift;
+        input.dataset.label = title;
         if (!skipChange)
             input.change(this.updateFlags.bind(this));
         let label = this.create('label', title)

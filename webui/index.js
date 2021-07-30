@@ -83,8 +83,8 @@ function setup_ui() {
     ui.addTab('Monsters');
     ui.addTab('Shortcuts');
     ui.addTab('Challenge');
-    ui.addTab('Goals');
     ui.addTab('Cosmetic');
+    ui.addSummaryTab('Summary');
     ui.setActiveTab('Gameplay');
 
     ui.addTriOption('Gameplay',  0,  0, 6, 'Shuffle Chests & Searches');
@@ -119,13 +119,15 @@ function setup_ui() {
     ui.addTriOption('Shortcuts', 4,  7, 2, 'Open Charlock');
     ui.addTriOption('Shortcuts', 6,  7, 0, 'Short Charlock');
     ui.addTriOption('Shortcuts', 8,  8, 6, "Don't Require Magic Keys");
+    ui.addTriOption('Shortcuts', 1,  8, 2, 'Cursed Princess');
+    ui.addTriOption('Shortcuts', 3,  8, 0, "Three's Company");
     // leveling speed
-    ui.addDropDown ('Shortcuts', 1, 14, 0, 'Leveling Speed: ', {
+    ui.addDropDown ('Shortcuts', 7, 14, 0, 'Leveling Speed', {
         'Normal' : 0,
         'Fast' : 1,
         'Very Fast': 2
     });
-    ui.addDropDown ('Shortcuts', 3, 14, 2, 'Map Size: ', {
+    ui.addDropDown ('Shortcuts', 9, 14, 2, 'Map Size', {
         'Normal' : 0,
         'Small' : 1,
         'Very Small': 2,
@@ -137,9 +139,6 @@ function setup_ui() {
     ui.addTriOption('Challenge', 4,  9, 2, 'Invisible Hero');
     ui.addTriOption('Challenge', 6,  9, 0, 'Invisible NPCs');
 
-    ui.addTriOption('Goals',     0,  8, 2, 'Cursed Princess');
-    ui.addTriOption('Goals',     2,  8, 0, "Three's Company");
-
     ui.addTriOption('Cosmetic',  4, 10, 6, 'Modern Spell Names');
     ui.addTriOption('Cosmetic',  6, 10, 4, 'Noir Mode');
     ui.addOption   ('Cosmetic',  0, 14, 7, 'Shuffle Music');
@@ -150,6 +149,12 @@ function setup_ui() {
     let spriteBox = ui.addTextBox('Cosmetic', 1, 'Player Sprite: ');
     spriteBox.setAttribute('list', 'sprites');
     spriteBox.value = localStorage.getItem('sprite') || 'Random';
+    spriteBox.id = "sprite-box";
+    spriteBox.getValue = function() {
+        if (this.classList.contains('invalid'))
+            return 'Random';
+        return this.value;
+    }
     spriteBox.addEventListener('change', function(event) {
         if (sprite_choices.includes(this.value)) {
             this.classList.remove('invalid');
@@ -157,7 +162,9 @@ function setup_ui() {
         } else {
             this.classList.add('invalid');
         }
+        ui.updateSummary();
     });
+    ui.updateSummary();
 }
 
 window.addEventListener('load', event => {

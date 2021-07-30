@@ -11,40 +11,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     document.body.style.backgroundColor = '#fff';
-
-    const remote = require('electron').remote
-    // add a close button
-    let closeButton = createElement('img', null, {
-        'position': 'absolute',
-        'top': '4px',
-        'right': '4px',
-        'height': '16px',
-        'width': '16px',
-        'cursor': 'pointer',
-        '-webkit-app-region': 'no-drag'
-    });
-    closeButton.setAttribute('src', 'close.svg');
-    closeButton.addEventListener('click', event => {
-        remote.getCurrentWindow().close();
-    });
-    document.body.prepend(closeButton);
-
-    // add a minimize button
-    let minButton = createElement('img', null, {
-        'position': 'absolute',
-        'top': '4px',
-        'right': '30px',
-        'height': '16px',
-        'width': '16px',
-        'cursor': 'pointer',
-        '-webkit-app-region': 'no-drag'
-    });
-    minButton.setAttribute('src', 'minimize.svg');
-    minButton.addEventListener('click', event => {
-        remote.getCurrentWindow().minimize();
-    });
-    document.body.prepend(minButton);
-
     // add a "title bar"
     let titleBar = createElement('div', null, {
         'position': 'absolute',
@@ -56,6 +22,38 @@ window.addEventListener('DOMContentLoaded', () => {
         '-webkit-app-region': 'drag'
     });
     document.body.prepend(titleBar);
+
+
+    const remote = require('electron').remote
+    // add a close button
+    let closeButton = createElement('img', null, {
+        'float': 'right',
+        'margin': '4px',
+        'height': '16px',
+        'width': '16px',
+        'cursor': 'pointer',
+        '-webkit-app-region': 'no-drag'
+    });
+    closeButton.setAttribute('src', 'close.svg');
+    closeButton.addEventListener('click', event => {
+        remote.getCurrentWindow().close();
+    });
+    titleBar.append(closeButton);
+
+    // add a minimize button
+    let minButton = createElement('img', null, {
+        'float': 'right',
+        'margin': '4px',
+        'height': '16px',
+        'width': '16px',
+        'cursor': 'pointer',
+        '-webkit-app-region': 'no-drag'
+    });
+    minButton.setAttribute('src', 'minimize.svg');
+    minButton.addEventListener('click', event => {
+        remote.getCurrentWindow().minimize();
+    });
+    titleBar.append(minButton);
 
 })
 

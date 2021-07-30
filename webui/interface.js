@@ -1,4 +1,5 @@
 
+
 NodeList.prototype.addEventListener = function(evt_type, func) {
     this.forEach(function(node) {
         node.addEventListener(evt_type, func.bind(node));
@@ -108,6 +109,11 @@ String.prototype.isNumeric = function() {
     return !!/^[0-9]*(.[0-9]*)?$/.exec(this)
 }
 
+window.addEventListener('hashchange', event => {
+    if (!ignoreHashChange && Interface.instance)
+        Interface.instance.readHash();
+});
+
 class Interface {
     constructor(flagSize) {
         this.flagBytes = new Uint8Array(flagSize);
@@ -153,6 +159,7 @@ class Interface {
 
         let seedDiv = this.create('div', 'Seed: ')
         this.seedEl = this.create('input');
+        this.seedEl.type = 'number'
         this.seedEl.value = new String(
             Math.floor(Math.random() * Number.MAX_SAFE_INTEGER));
         seedDiv.append(this.seedEl);
@@ -184,6 +191,8 @@ class Interface {
         this.checksumContainer.hide();
         this.appContainer.append(this.checksumContainer);
         this.initEvents();
+        this.readHash();
+        Interface.instance = this;
     }
 
     create(element, text, style) {
@@ -210,8 +219,8 @@ class Interface {
         }.bind(this.inputFile, this));
 
         this.seedButton.click(event => {
-            this.seedEl.value = new String(
-                Math.floor(Math.random() * Number.MAX_SAFE_INTEGER));
+            this.setSeed(new String(
+                Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)));
         });
 
         this.goButton.click(event => {
@@ -230,11 +239,41 @@ class Interface {
         });
     }
 
+    readHash() {
+        let flags = '';
+        let seed = '';
+        if (location.hash) {
+            let query = location.hash.substring(1);
+            query.split('&').forEach(item => {
+                if (item.includes('=')) {
+                    let params = item.split('=');
+                    if (params[0] == 'flags')
+                        this.setFlags(params[1]);
+                    if (params[0] == 'seed')
+                        this.setSeed(params[1]);
+                }
+            })
+        }
+    }
+
+    setHash() {
+        window.ignoreHashChange = true;
+        location.hash = ('flags=' + this.flagsEl.value 
+            + '&seed=' + this.seedEl.value);
+        window.ignoreHashChange = false;
+    }
+
+    setSeed(seed) {
+        this.seedEl.value = seed;
+        this.setHash();
+    }
+
     setFlags(flags) {
         this.flagsEl.value = flags;
         localStorage.setItem('flags', flags); 
         this.updateFlagBytes();
         this.updateInputs();
+        this.setHash();
     }
 
     updateFlags() {
@@ -249,6 +288,7 @@ class Interface {
         localStorage.setItem('flags', encoded); 
         this.flagsEl.value = encoded;
         this.updateSummary()
+        this.setHash();
         return encoded;
     }
 

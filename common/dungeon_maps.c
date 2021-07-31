@@ -208,6 +208,53 @@ static void rotate_chest_positions(dw_rom *rom, dw_map_index map_index,
     }
 }
 
+static void rotate_forced_encounter(dw_rom *rom, uint8_t rotatemirror)
+{
+    uint8_t x, y, tmp, run_direction=0, instruction, address;
+    const dw_map_meta *meta = &rom->map.meta[SWAMP_CAVE];
+
+    printf("%d\n", rotatemirror);
+    // run direction: NORTH=0, SOUTH=1, EAST=2, WEST=3
+    x = rom->green_dragon->x;
+    y = rom->green_dragon->y;
+    if (MIRROR_V(rotatemirror)) {
+        x = meta->width - x;
+    }
+    if (MIRROR_H(rotatemirror)) {
+        y = meta->height - y;
+        run_direction ^= 1; // north -> south and vice versa
+    }
+    if (ROTATE_90(rotatemirror)) {
+        tmp = x;
+        x = meta->height - y;
+        y = tmp;
+        run_direction ^= 3; // north -> west, south -> east
+    }
+    if (ROTATE_180(rotatemirror)) {
+        x = meta->width - x;
+        y = meta->height - y;
+        run_direction ^= 1; // north -> south and vice versa
+    }
+    if (ROTATE_270(rotatemirror)) {
+        tmp = x;
+        x = y;
+        y = meta->width - tmp;
+        run_direction ^= 2; // north -> east, south -> west, etc.
+    }
+    rom->green_dragon->x = rom->green_dragon_run->x = x;
+    rom->green_dragon->y = rom->green_dragon_run->y = y;
+    // fix the run placement coordinates
+    if (run_direction & 1)  // south or west
+        instruction = 0xe6; // increment
+    else                    // north or east
+        instruction = 0xc6; // decrement
+    if (run_direction & 2)  // east or west
+        address = 0x3a;     // x coordinate
+    else                    // north or south
+        address = 0x3b;     // y coordinate
+    vpatch(rom, 0xe916, 2, instruction, address);
+}
+
 static void rotate_mirror_map(dw_rom *rom, dw_map_index map_index)
 {
     dw_map_meta *meta = &rom->map.meta[map_index];
@@ -279,6 +326,9 @@ static void rotate_mirror_map(dw_rom *rom, dw_map_index map_index)
     }
     rotate_warps(rom, map_index, rotatemirror);
     rotate_chest_positions(rom, map_index, rotatemirror);
+    if (map_index == SWAMP_CAVE) {
+        rotate_forced_encounter(rom, rotatemirror);
+    }
 
 
     if (rotatemirror & 1) { // rotated 90 or 270, swap w & h

@@ -2366,6 +2366,7 @@ static void pacman(dw_rom *rom)
 
 static void ms_pacman(dw_rom *rom)
 {
+    vpatch(rom, 0x087da,    2,  0x0e,  0x1b); // his -> her
     /* switch the npc palettes who share the player palette */
     switch_npc_palette(rom, NPC_BOY, 2);
     switch_npc_palette(rom, NPC_GIRL, 3);
@@ -2593,6 +2594,7 @@ static void lolo(dw_rom *rom)
 
 static void lala(dw_rom *rom)
 {
+    vpatch(rom, 0x087da,    2,  0x0e,  0x1b); // his -> her
     lolo(rom);
     vpatch(rom, 0x01a8c,    1,  0x15);
 }

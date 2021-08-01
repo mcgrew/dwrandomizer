@@ -6,21 +6,21 @@
 
 /**
  * Returns a random index of a chest that is not in charlock. For simplicity,
- * this function will also not return the starting throne room key chest.
+ * this function will also not return the starting throne room key chest or
+ * the staff of rain chest.
  */
 static inline int non_charlock_chest(dw_rom *rom)
 {
     int chest, map;
 
     while (TRUE) {
-        chest = (int)mt_rand(0, 31);
-        /* avoid 11-16 and chest 24 (they are in charlock) */
+        chest = (int)mt_rand(0, 30);
         if (chest == 6) /* chest 6 is the throne room key */
             continue;
         map = rom->chests[chest].map;
         if (map == NORTHERN_SHRINE) /* staff of rain chest */
             continue;
-        if ((map > CHARLOCK_CAVE_1 && map <= CHARLOCK_CAVE_6) ||
+        if ((map >= CHARLOCK_CAVE_1 && map <= CHARLOCK_CAVE_6) ||
                 map == CHARLOCK_THRONE_ROOM)
             continue;
         break;
@@ -58,12 +58,14 @@ static inline void check_quest_items(dw_rom *rom)
 {
     int i, tmp_index;
     uint8_t tmp_item;
+    dw_map_index map;
 
     printf("Checking quest item placement...\n");
 
-    for (i=1; i <= 30; i++) {
-        if (rom->chests[i].map == CHARLOCK_THRONE_ROOM ||
-                rom->chests[i].map == CHARLOCK_CAVE_2) {
+    for (i=0; i < CHEST_COUNT; i++) {
+        map = rom->chests[i].map;
+        if (map == CHARLOCK_THRONE_ROOM
+                || (map >= CHARLOCK_CAVE_1 && map <= CHARLOCK_CAVE_6)) {
 
             if (is_quest_item(rom->chests[i].item)) {
                 do {

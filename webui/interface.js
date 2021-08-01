@@ -149,10 +149,6 @@ class Interface {
             'width':  '210px'
         });
         this.flagsEl.value = localStorage.flags || 'IVIAAVCQKACAAAAAAAAAAAAB'
-        this.flagsEl.change(event => {
-            this.updateFlagBytes();
-            this.updateInputs();
-        });
         this.updateFlagBytes();
         flagsDiv.append(this.flagsEl);
         flagsSeed.append(flagsDiv);
@@ -221,6 +217,16 @@ class Interface {
         this.seedButton.click(event => {
             this.setSeed(new String(
                 Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)));
+        });
+
+        this.flagsEl.change(event => {
+            this.updateFlagBytes();
+            this.updateInputs();
+            this.setHash();
+        });
+
+        this.seedEl.change(event => {
+            this.setHash();
         });
 
         this.goButton.click(event => {

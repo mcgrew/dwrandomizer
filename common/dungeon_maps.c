@@ -213,7 +213,6 @@ static void rotate_forced_encounter(dw_rom *rom, uint8_t rotatemirror)
     uint8_t x, y, tmp, run_direction=0, instruction, address;
     const dw_map_meta *meta = &rom->map.meta[SWAMP_CAVE];
 
-    printf("%d\n", rotatemirror);
     // run direction: NORTH=0, SOUTH=1, EAST=2, WEST=3
     x = rom->green_dragon->x;
     y = rom->green_dragon->y;

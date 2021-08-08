@@ -73,6 +73,7 @@
 #define RANDOMIZE_MUSIC(x)        (x->flags[14] & 0x80)
 #define DISABLE_MUSIC(x)          (x->flags[14] & 0x40)
 #define NO_SCREEN_FLASH(x)        (x->flags[14] & 0x20)
+#define CUSTOM_SPELLS(x)          (x->flags[13] & 0x80)
 
 #ifdef __cplusplus
 extern "C" {
@@ -90,6 +91,7 @@ extern "C" {
  */
 uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
         const char *sprite_name, const char* output_dir);
+size_t set_text(dw_rom *rom, const size_t address, char *text);
 
 #ifdef __cplusplus
 }

@@ -210,8 +210,6 @@ size_t ascii2dw(uint8_t *string)
             if (string[i] == alphabet[j]) {
                 string[i] = j;
                 break;
-            } else if (j == alphalen-1) {
-                string[i] = 0x5f;
             }
         }
     }
@@ -281,6 +279,17 @@ size_t dw2ascii(uint8_t *string, size_t bufsize)
     }
     return bufsize;
 }
+
+size_t set_text(dw_rom *rom, const size_t address, char *text)
+{
+    size_t size = strlen(text);
+    uint8_t *translated = malloc(size+1);
+
+    strcpy((char *)translated, text);
+    ascii2dw(translated);
+    return patch(rom, address, strlen(text), translated);
+}
+
 
 /**
  * Searches for a string inside the rom and replaces it with the new string

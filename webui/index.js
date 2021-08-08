@@ -145,6 +145,7 @@ function setup_ui() {
     ui.addOption   ('Cosmetic',  0, 14, 7, 'Shuffle Music');
     ui.addOption   ('Cosmetic',  2, 14, 6, 'Disable Music');
     ui.addOption   ('Cosmetic',  8, 14, 5, 'Disable Spell Flashing');
+    ui.addOption   ('Cosmetic',  3, 13, 7, 'Allow Custom Spell Names');
 
     // player sprite
     let spriteBox = ui.addTextBox('Cosmetic', 1, 'Player Sprite: ');

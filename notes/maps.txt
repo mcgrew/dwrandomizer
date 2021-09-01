@@ -7,7 +7,7 @@ Map Number | ROM Address     | Map                  | Size    | Border Tile   | 
 5          | 0x412 - 0x444   | Tantegel Throne Room | 10x10   | 0x15 (roof)   | 0x47
 6          | 0x444 - 0x605   | Charlock Throne Room | 30x30   | 0x0F (water)  | 0x4c
 7          | 0x606 - 0x825   | Kol                  | 24x24   | 0x0B (trees)  | 0x51
-8          | 0x826 - 0x8E7   | Brecconary           | 30x30   | 0x00 (grass)  | 0x56
+8          | 0x726 - 0x8E7   | Brecconary           | 30x30   | 0x00 (grass)  | 0x56
 9          | 0xAAA - 0xB71   | Garinham             | 20x20   | 0x00(grass)   | 0x5b
 10         | 0x8E8 - 0xAA9   | Cantlin              | 30x30   | 0x04 (brick)  | 0x60
 11         | 0xB72 - 0xD33   | Rimuldar             | 30x30   | 0x00 (grass)  | 0x65

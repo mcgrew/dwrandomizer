@@ -241,19 +241,18 @@ typedef struct {
 } dw_chest;
 
 /** Statistics for an in-game enemy */
-typedef struct {
+typedef struct __attribute__((packed)) {
     uint8_t str;
     uint8_t agi;
     uint8_t hp;
     uint8_t pattern;
     uint8_t s_ss_resist; /* sleep/stopspell resist */
     uint8_t hr_dodge; /* hurt resist/dodge */
-    uint8_t xp;
-    uint8_t gold;
-    /* The rest of this is 8 bytes of unused space in the original game. */
-    /* I am repurposing it. */
+    uint16_t xp;      /* These are 1 byte in the original game, but there is */
+    uint16_t gold;    /* Unused space so we're supporting 2 bytes            */
+    /* The rest of this is 6 bytes of unused space in the original game.     */
     float   rank;
-    uint32_t index;
+    uint16_t index;
 } dw_enemy;
 
 /** Statistics for a single player level */

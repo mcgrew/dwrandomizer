@@ -44,7 +44,7 @@ Various Data            |                                       |
 1C9F - 1D62             | Layout data for fight background      |
 1D63 - 1D6C             | MP Requirements for Magic Spells      |
 1D6D - 2662             | Overworld map                         | RLE encoded, 1st nibble is tile, 2nd how many - 1
-2663 - 26DA             | Overworld map pointers                | 16 bytes each - address of o each row of the map.
+2663 - 26DA             | Overworld map pointers                | 16 bits each - address of each row of the map.
                         |                                       | (value - 0x8000 + 16)
 2C4B - 2C5A             | Rainbow Bridge Replace Code?          |
 31BE - 31DB             | Music Pointers                        |

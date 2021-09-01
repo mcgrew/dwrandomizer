@@ -4,6 +4,7 @@
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
+#include <assert.h>
 
 #include "dwr.h"
 #include "patch.h"
@@ -827,14 +828,14 @@ static void update_drops(dw_rom *rom)
     int i;
 
     printf("Modifying enemy drops...\n");
-    const uint8_t remake_xp[DRAGONLORD_2+1] = {
+    const uint16_t remake_xp[] = {
               1,   2,   3,   4,   8,  12,  16,  14,  15,  18,  20,  25,  28,
-             31,  40,  42, 255,  47,  52,  58,  58,  64,  70,  72, 255,   6,
-             78,  83,  90,  95, 135, 105, 120, 130, 180, 155, 172, 255, 0, 0
+             31,  40,  42, 255,  47,  52,  58,  58,  64,  70,  72, 350,   6,
+             78,  83,  90,  95, 135, 105, 120, 130, 180, 155, 172, 350, 0, 0
     };
-    const uint8_t remake_gold[DRAGONLORD_2+1] = {
+    const uint16_t remake_gold[] = {
               2,   4,   6,   8,  16,  20,  25,  21,  19,  30,  25,  42,  50,
-             48,  60,  62,   6,  75,  80,  95, 110, 105, 110, 120,  10, 255,
+             48,  60,  62,   6,  75,  80,  95, 110, 105, 110, 120,  10, 650,
             150, 135, 148, 155, 160, 169, 185, 165, 150, 148, 152, 143, 0, 0
     };
 
@@ -891,9 +892,9 @@ static void lower_xp_reqs(dw_rom *rom)
 static void update_enemy_hp(dw_rom *rom)
 {
     int i;
-    const uint8_t remake_hp[DRAGONLORD_2+1] = {
+    const uint8_t remake_hp[] = {
               2,   3,   5,   7,  12,  13,  13,  22,  23,  20,  16,  24,  28,
-             18,  33,  39,   3,  33,  37,  35,  44,  37,  40,  40, 153,  35,
+             18,  33,  39,   3,  33,  37,  35,  44,  37,  40,  40, 153,  50,
              47,  48,  38,  70,  72,  74,  65,  67,  98, 135,  99, 106, 100, 165
     };
     for (i=SLIME; i <= DRAGONLORD_2; i++) {
@@ -1066,35 +1067,112 @@ static void dwr_death_necklace(dw_rom *rom)
 }
 
 /**
- * Inserts code to scale XP rewards from metal slimes based on level
+ * Inserts code to handle 2 byte xp and gold values
  *
  * @param rom The rom struct
  */
-static void scaled_metal_slime_xp(dw_rom *rom) {
+static void support_2_byte_xp_gold(dw_rom *rom)
+{
+    int ss_lvl = 1; /* level to not scale metal slime xp */
 
-    if (!SCALED_SLIMES(rom)) {
-        return;
+    if (SCALED_SLIMES(rom)) {
+        printf("Reducing early metal rewards...\n");
+        ss_lvl = 8;
     }
-    printf("Reducing early metal rewards...\n");
-    vpatch(rom, 0xea0a, 3,
-           0x20, 0x58, 0xe1  /*   JSR $E158   ; jump to the new code         */
-    );
-    vpatch(rom, 0xe158, 22,
-           0xa5, 0xe0,       /*   LDA $E0     ; Load Monster ID              */
-           0xc9, 0x10,       /*   CMP #$10    ; Is it a metal slime?         */
-           0xd0, 0x0c,       /*   BNE +       ; No, skip to loading XP       */
-           0xa5, 0xc7,       /*   LDA $C7     ; Load player level            */
-           0xc9, 0x08,       /*   CMP #$8     ; Is it 8 or higher?           */
-           0xb0, 0x06,       /*   BCS +       ; Yes, skip to loading XP      */
-           0x0a,             /*   ASL         ;                              */
-           0x0a,             /*   ASL         ; Multiply level by 32 and use */
-           0x0a,             /*   ASL         ; this value for XP gained     */
-           0x0a,             /*   ASL         ;                              */
-           0x0a,             /*   ASL         ;                              */
-           0x60,             /*   RTS                                        */
-           0xad, 0x06, 0x01, /* + LDA $0106   ; Load XP from monster info    */
-           0x60              /*   RTS                                        */
-    );
+
+    /* Note that this code won't work properly if scaled slimes is on and
+     * metal slimes are set to give more than 255XP. If that is changed then
+     * this code will need to be reworked.
+     */
+//     vpatch(rom, 0x0ea0a, 84,
+//             0xad, 0x06, 0x01,  /*   lda $0106   ; Load low byte of XP        */
+//             0x85, 0x00,        /*   sta $00     ; Store at $00               */
+//             0xad, 0x07, 0x01,  /*   lda $0107   ; Load High byte of XP       */
+//             0x85, 0x01,        /*   sta $01     ; Store at $01               */
+//             0xa5, 0xe0,        /*   lda $e0     ; Load Monster ID            */
+//             0xc9, 0x10,        /*   cmp #16     ; Is it a metal slime?       */
+//             0xd0, 0x0d,        /*   bne +       ; No, skip to loading XP     */
+//             0xa5, 0xc7,        /*   lda $c7     ; Load player level          */
+//             0xc9, ss_lvl,      /*   cmp #ss_lvl ; Is it 8 or higher?         */
+//             0xb0, 0x07,        /*   bcs +       ; Yes, skip to print XP      */
+//             0x0a,              /*   asl         ;                            */
+//             0x0a,              /*   asl         ; Multiply level by 32 and   */
+//             0x0a,              /*   asl         ; use this value for XP      */
+//             0x0a,              /*   asl         ; gained                     */
+//             0x0a,              /*   asl         ;                            */
+//             0x85, 0x00,        /*   sta $00     ; Store XP at $00            */
+//             0x20, 0xcb, 0xc7,  /* + jsr $c7cb   ; Print XP gained            */
+//             0xef,              /*   hex ef                                   */
+//             0xa5, 0x00,        /*   lda $00     ; Load Low byte of XP        */
+//             0x18,              /*   clc                                      */
+//             0x65, 0xba,        /*   adc $ba     ; Add it to low byte of      */
+//             0x85, 0xba,        /*   sta $ba     ; player XP                  */
+//             0xa5, 0x01,        /*   lda $01     ; Load high byte of XP       */
+//             0x65, 0xbb,        /*   adc $bb     ; Add it to low byte of      */
+//             0x85, 0xbb,        /*   sta $bb     ; player XP                  */
+//             0x90, 0x06,        /*   bcc +       ; No overflow, go to gold    */
+//             0xa9, 0xff,        /*   lda #$ff    ; Overflow, set player XP    */
+//             0x85, 0xba,        /*   sta $ba     ; to 65535                   */
+//             0x85, 0xbb,        /*   sta $bb                                  */
+//             0xad, 0x08, 0x01,  /* + lda $0108   ; Load low byte of gold      */
+//             0x85, 0x00,        /*   sta $00     ; Store at $00               */
+//             0xad, 0x09, 0x01,  /*   lda $0109   ; Load high byte of gold     */
+//             0x85, 0x01,        /*   sta $01     ; Store at $01               */
+//             0x20, 0xcb, 0xc7,  /*   jsr $c7cb   ; Print GOLD gained          */
+//             0xf0,              /*   hex f0                                   */
+//             0xa5, 0x00,        /*   lda $00     ; Load low byte of gold      */
+//             0x18,              /*   clc                                      */
+//             0x65, 0xbc,        /*   adc $bc     ; Add to low byte of player  */
+//             0x85, 0xbc,        /*   sta $bc     ; gold                       */
+//             0xa5, 0x01,        /*   lda $01     ; Load high byte of gold     */
+//             0x65, 0xbd,        /*   adc $bd     ; Add to high byte of player */
+//             0x85, 0xbd,        /*   sta $bd     ; gold                       */
+//             0x90, 0x63, 0xea   /*   bcc $ea63   ; no overflow, continue      */
+//     );
+
+    vpatch(rom, 0x0ea0f,   77,
+            0xad,  0x07,  0x01,
+            0x85,  0x01,
+            0xa5,  0xe0,
+            0xc9,  0x10,
+            0xd0,  0x0d,
+            0xa5,  0xc7,
+            0xc9,  ss_lvl,
+            0xb0,  0x07,
+            0x0a,
+            0x0a,
+            0x0a,
+            0x0a,
+            0x0a,
+            0x85,  0x00,
+            0x20,  0xcb,  0xc7,
+            0xef,
+            0xa5,  0x00,
+            0x18,
+            0x65,  0xba,
+            0x85,  0xba,
+            0xa5,  0x01,
+            0x65,  0xbb,
+            0x85,  0xbb, 
+            0x90,  0x06, 
+            0xa9,  0xff, 
+            0x85,  0xba,
+            0x85,  0xbb,
+            0xad,  0x08,  0x01,
+            0x85,  0x00, 
+            0xad,  0x09,  0x01,
+            0x85,  0x01,
+            0x20,  0xcb,  0xc7, 
+            0xf0,
+            0xa5,  0x00,
+            0x18,
+            0x65,  0xbc,
+            0x85,  0xbc,
+            0xa5,  0x01, 
+            0x65,  0xbd,
+            0x85,  0xbd,
+            0x90
+        );
 }
 
 /**
@@ -1302,7 +1380,6 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0xe260, 1, 0);  /* set death necklace chance to 100% */
     vpatch(rom, 0xe74d, 1, 9);  /* buff the hurt spell */
     vpatch(rom, 0xdbc1, 1, 18);  /* buff the heal spell */
-    vpatch(rom, 0xea41, 5, 0xad, 0x07, 0x01, 0xea, 0xea); /* I forget what this does */
     /* fixing some annoying roaming npcs */
     vpatch(rom, 0x18ee, 1, 0xa7); /* move the stupid old man from the item shop */
     vpatch(rom, 0x90f,  1, 0x6f); /* quit ignoring the customers */
@@ -1811,6 +1888,11 @@ static BOOL dwr_write(dw_rom *rom, const char *output_file)
     return TRUE;
 }
 
+static void check_structs()
+{
+    assert(sizeof(dw_enemy) == 16);
+}
+
 /**
  * Randomizes a Dragon Warrior rom file
  *
@@ -1826,6 +1908,8 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 {
     uint64_t crc;
     char output_file[1024];
+
+    check_structs();
 
     snprintf(output_file, 1024, "%s/DWRando.%"PRIu64".%s.nes", output_dir, seed,
             flags);
@@ -1866,7 +1950,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     cursed_princess(&rom);
     threes_company(&rom);
     scared_metal_slimes(&rom);
-    scaled_metal_slime_xp(&rom);
+    support_2_byte_xp_gold(&rom);
     torch_in_battle(&rom);
     repel_mods(&rom);
     permanent_torch(&rom);

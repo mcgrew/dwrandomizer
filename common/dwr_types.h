@@ -306,6 +306,14 @@ typedef struct {
     uint8_t y;
 } dw_rainbow_drop;
 
+typedef struct {
+    uint8_t map;
+    uint8_t x;
+    uint8_t y;
+    uint8_t monster;
+} dwr_spike_table_entry;
+
+
 /** A struct for the in-game map */
 typedef struct {
     uint16_t *pointers;
@@ -340,13 +348,7 @@ typedef struct {
     uint8_t *zones;
     uint8_t *zone_layout;
     dw_chest *chests;
-    dw_forced_encounter *axe_knight;
-    dw_forced_encounter *green_dragon;
-    dw_forced_encounter *golem;
-    dw_forced_encounter *axe_knight_run;
-    dw_forced_encounter *green_dragon_run;
-    dw_forced_encounter *golem_run;
-    uint8_t *encounter_types[3];
+    dwr_spike_table_entry *spike_entries;
     dw_searchable *token;
     dw_searchable *flute;
     dw_searchable *armor;

@@ -168,15 +168,7 @@ static BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->zones = &rom->content[0xf54f];
     rom->zone_layout = &rom->content[0xf522];
     rom->chests = (dw_chest*)&rom->content[0x5dcd];
-    rom->axe_knight = (dw_forced_encounter*)&rom->content[0xcd51];
-    rom->green_dragon = (dw_forced_encounter*)&rom->content[0xcd68];
-    rom->golem = (dw_forced_encounter*)&rom->content[0xcd85];
-    rom->axe_knight_run = (dw_forced_encounter*)&rom->content[0xe8d4];
-    rom->green_dragon_run = (dw_forced_encounter*)&rom->content[0xe8fb];
-    rom->golem_run = (dw_forced_encounter*)&rom->content[0xe928];
-    rom->encounter_types[0] = &rom->content[0xcd64];
-    rom->encounter_types[1] = &rom->content[0xcd81];
-    rom->encounter_types[2] = &rom->content[0xcd9e];
+    rom->spike_entries = (dwr_spike_table_entry*)&rom->content[0xcd82];
     // FIXME: these should be removed or modified for the new treasure code.
     // check to see if this has been done.
     rom->token = (dw_searchable*)&rom->content[0xe10b];
@@ -597,10 +589,6 @@ static void randomize_zones(dw_rom *rom)
     zone = 19;  /* swamp cave */
     for (i=0; i < 5; i++) {
         rom->zones[zone * 5 + i] = mt_rand(SLIME, RED_DRAGON);
-    }
-
-    for (i=0; i < 3; i++) { /* randomize the forced encounters */
-        *rom->encounter_types[i] = charlock_enemies[mt_rand(4, 9)];
     }
 }
 
@@ -1350,10 +1338,6 @@ static void other_patches(dw_rom *rom)
             0x4c,  0x4b,  0xe0  /* JMP $E04B ; jump to remove code and return */
     );
 
-    /* move the golem encounter to charlock */
-    rom->golem_run->map = rom->golem->map = CHARLOCK_THRONE_ROOM;
-    rom->golem_run->x = rom->golem->x = 25;
-    rom->golem_run->y = rom->golem->y = 22;
     /* make sure all forced encounters are never marked defeated */
     vpatch(rom, 0xe98d, 2, 0xea, 0xea);
     vpatch(rom, 0xe97b, 2, 0xea, 0xea);
@@ -1611,12 +1595,12 @@ static void spike_rewrite(dw_rom *rom)
     size_t i;
     const dw_enemies spike_enemies[] = {
         AXE_KNIGHT, BLUE_DRAGON, STONEMAN, ARMORED_KNIGHT, RED_DRAGON, GOLEM };
-    const dw_enemies spikes[] = {
+    dw_enemies spikes[] = {
         AXE_KNIGHT, GREEN_DRAGON, GOLEM, SLIME, SLIME, SLIME, SLIME, SLIME };
 
     if (!RANDOMIZE_ZONES(rom)) {
         for (i=0; i < 8; i++) {
-            spikes[i] = spike_enemies[mt_rand(0, sizeof(spike_enemies)-1);
+            spikes[i] = spike_enemies[mt_rand(0, sizeof(spike_enemies)-1)];
         }
     }
 
@@ -2069,6 +2053,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 
     do_chest_flags(&rom);
     map_generate_terrain(&rom);
+    spike_rewrite(&rom);
     randomize_attack_patterns(&rom);
     randomize_zone_layout(&rom);
     randomize_zones(&rom);

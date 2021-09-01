@@ -1605,6 +1605,147 @@ static void dwr_menu_wrap(dw_rom *rom)
     );
 }
 
+static void spike_rewrite(dw_rom *rom)
+{
+
+    size_t i;
+    const dw_enemies spike_enemies[] = {
+        AXE_KNIGHT, BLUE_DRAGON, STONEMAN, ARMORED_KNIGHT, RED_DRAGON, GOLEM };
+    const dw_enemies spikes[] = {
+        AXE_KNIGHT, GREEN_DRAGON, GOLEM, SLIME, SLIME, SLIME, SLIME, SLIME };
+
+    if (!RANDOMIZE_ZONES(rom)) {
+        for (i=0; i < 8; i++) {
+            spikes[i] = spike_enemies[mt_rand(0, sizeof(spike_enemies)-1);
+        }
+    }
+
+    /* patch some jump addresses */
+    vpatch(rom, 0x03263,    2,  0xca,  0xbf);
+    vpatch(rom, 0x0335d,    2,  0xca,  0xbf);
+    vpatch(rom, 0x033e9,    2,  0xca,  0xbf);
+    vpatch(rom, 0x03515,    2,  0xca,  0xbf);
+    
+    /* save the previous tile you were on */
+    vpatch(rom, 0x03fca,   11,
+            0xa5,  0x3a,       /*   lda X_POS                                */
+            0x85,  0xdc,       /*   sta _UNUSED_DC                           */
+            0xa5,  0x3b,       /*   lda Y_POS                                */
+            0x85,  0xdd,       /*   sta _UNUSED_DD                           */
+            0x4c,  0xcc,  0xb1 /*   jmp $b1cc                                */
+    );
+
+    /* spike encounter table */
+    vpatch(rom, 0x0cd82, 32,
+          /* MAP    X     Y    MON */
+            HAUKSNESS           , 25, 12, spikes[0],
+            SWAMP_CAVE          ,  4, 15, spikes[1],
+            CHARLOCK_THRONE_ROOM, 25, 22, spikes[2],
+            NO_MAP,                0,  0, spikes[3],
+            NO_MAP,                0,  0, spikes[4],
+            NO_MAP,                0,  0, spikes[5],
+            NO_MAP,                0,  0, spikes[6],
+            NO_MAP,                0,  0, spikes[7] 
+    );
+    vpatch(rom, 0x0cd51, 39,
+            0xa2, 0x00,       /*    ldx #$00                                 */
+            0xa5, 0x45,       /* -  lda MAP_INDEX                            */
+            0xdd, 0x82, 0xcd, /*    cmp spike_tab,x                          */
+            0xd0, 0x14,       /*    bne +                                    */
+            0xa5, 0x3a,       /*    lda X_POS                                */
+            0xdd, 0x83, 0xcd, /*    cmp spike_tab+1,x                        */
+            0xd0, 0x0d,       /*    bne +                                    */
+            0xa5, 0x3b,       /*    lda Y_POS                                */
+            0xdd, 0x84, 0xcd, /*    cmp spike_tab+2,x                        */
+            0xd0, 0x06,       /*    bne +                                    */
+            0xbd, 0x85, 0xcd, /*    lda spike_tab+3,x                        */
+            0x4c, 0xdf, 0xe4, /*    jmp start_combat                         */
+            0xe8,             /* +  inx                                      */
+            0xe8,             /*    inx                                      */
+            0xe8,             /*    inx                                      */
+            0xe8,             /*    inx                                      */
+            0xe0, 0x10,       /*    cpx #16                                  */
+            0xd0, 0xdd,       /*    bne -                                    */
+            0xf0, 0x2a        /*    beq +done                                */
+    );
+    vpatch(rom, 0x0e8d4, 51,
+            0xa2, 0x00,       /*    ldx #$00                                 */
+            0xa5, 0x45,       /* -  lda MAP_INDEX                            */
+            0xdd, 0x82, 0xcd, /*    cmp spike_tab,x                          */
+            0xd0, 0x20,       /*    bne +                                    */
+            0xa5, 0x3a,       /*    lda X_POS                                */
+            0xdd, 0x83, 0xcd, /*    cmp spike_tab+1,x                        */
+            0xd0, 0x19,       /*    bne +                                    */
+            0xa5, 0x3b,       /*    lda Y_POS                                */
+            0xdd, 0x84, 0xcd, /*    cmp spike_tab+2,x                        */
+            0xd0, 0x12,       /*    bne +                                    */
+            0x20, 0xbb, 0xc6, /*    jsr b3_c6bb                              */
+            0xa5, 0xdc,       /*    lda _UNUSED_DC                           */
+            0x85, 0x3a,       /*    sta X_POS                                */
+            0x85, 0x8e,       /*    sta X_POS_2                              */
+            0xa5, 0xdd,       /*    lda _UNUSED_DD                           */
+            0x85, 0x3b,       /*    sta Y_POS                                */
+            0x85, 0x8f,       /*    sta Y_POS_2                              */
+            0x4c, 0x97, 0xb0, /*    jmp $b097                                */
+            0xe8,             /* +  inx                                      */
+            0xe8,             /*    inx                                      */
+            0xe8,             /*    inx                                      */
+            0xe8,             /*    inx                                      */
+            0xe0, 0x10,       /*    cpx #16                                  */
+            0xd0, 0xd1,       /*    bne -                                    */
+            0xf0, 0x39        /*    beq +done                                */
+        );
+}
+
+static void sorted_inventory(dw_rom *rom)
+{
+    /* patch some jump addresses */
+    vpatch(rom, 0x0d388,    2,  0x88,  0xc2);
+    vpatch(rom, 0x0d3bf,    2,  0x88,  0xc2);
+    vpatch(rom, 0x0d3e9,    2,  0x88,  0xc2);
+    vpatch(rom, 0x0d72c,    2,  0x88,  0xc2);
+    vpatch(rom, 0x0d875,    2,  0x88,  0xc2);
+    vpatch(rom, 0x0e0f5,    2,  0x88,  0xc2);
+//     vpatch(rom, 0x0e13c,    2,  0x88,  0xc2);
+    vpatch(rom, 0x0e27a,    2,  0x88,  0xc2);
+
+    vpatch(rom, 0x0c288, 61,
+            0x20, 0x1b, 0xe0,  /*      jsr b3_e01b ; add the new item        */
+            0xe0, 0x04,        /*      cpx #$04                              */
+            0xf0, 0x35,        /*      beq ++                                */
+            0xa2, 0x03,        /*      ldx #$03                              */
+            0xb5, 0xc1,        /*  -   lda ITEMS,x                           */
+            0x29, 0x0f,        /*      and #$0f                              */
+            0x95, 0xa8,        /*      sta $a8,x                             */
+            0xb5, 0xc1,        /*      lda ITEMS,x                           */
+            0x4a,              /*      lsr a                                 */
+            0x4a,              /*      lsr a                                 */
+            0x4a,              /*      lsr a                                 */
+            0x4a,              /*      lsr a                                 */
+            0x95, 0xac,        /*      sta $ac,x                             */
+            0xa9, 0x00,        /*      lda #$00                              */
+            0x95, 0xc1,        /*      sta ITEMS,x                           */
+            0xca, 0x10,        /*      dex                                   */
+            0xeb,              /*      bpl -                                 */
+            0xa9, 0x00,        /*      lda #$00                              */
+            0xa2, 0x07,        /*  --  ldx #$07                              */
+            0xd5, 0xa8,        /*  -   cmp $a8,x                             */
+            0xb0, 0x04,        /*      bcs +                                 */
+            0xb5, 0xa8,        /*      lda $a8,x                             */
+            0x86, 0xa7,        /*      stx $a7                               */
+            0xca,              /*  +   dex                                   */
+            0x10, 0xf5,        /*      bpl -                                 */
+            0xc9, 0x00,        /*      cmp #$00                              */
+            0xf0, 0x0b,        /*      beq ++                                */
+            0x20, 0x1b, 0xe0,  /*      jsr b3_e01b ; add the next item       */
+            0xa6, 0xa7,        /*      ldx $a7                               */
+            0xa9, 0x00,        /*      lda #$00                              */
+            0x95, 0xa8,        /*      sta $a8,x                             */
+            0xf0, 0xe4,        /*      beq --                                */
+            0x60               /*  ++  rts                                   */
+    );
+}
+
 /**
  * Enables various hacks to speed up gameplay, such as text and music changes.
  *
@@ -1955,6 +2096,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     repel_mods(&rom);
     permanent_torch(&rom);
     rotate_dungeons(&rom);
+    sorted_inventory(&rom);
     other_patches(&rom);
     credits(&rom);
 

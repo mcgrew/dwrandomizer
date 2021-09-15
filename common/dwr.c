@@ -1331,8 +1331,8 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0xe1dc, 2, 0xfd, 0xe1);
 
     /* Have the jerk take the token along with staff & stones */
-    vpatch(rom, 0x0d383,    2,  0xca,  0xbf); /* jump to new code below */
-    vpatch(rom, 0x03fca,    8,
+    vpatch(rom, 0x0d383,    2,  0xd5,  0xbf); /* jump to new code below */
+    vpatch(rom, 0x03fd5,    8,
             0x20,  0x4b,  0xe0, /* JSR $E04B ; replace the rewritten code */
             0xa9,  0x07,        /* LDA #$07  ; remove token from inventory */
             0x4c,  0x4b,  0xe0  /* JMP $E04B ; jump to remove code and return */
@@ -1598,8 +1598,8 @@ static void spike_rewrite(dw_rom *rom)
     dw_enemies spikes[] = {
         AXE_KNIGHT, GREEN_DRAGON, GOLEM, SLIME, SLIME, SLIME, SLIME, SLIME };
 
-    if (!RANDOMIZE_ZONES(rom)) {
-        for (i=0; i < 8; i++) {
+    if (RANDOMIZE_ZONES(rom)) {
+        for (i=0; i < 3; i++) {
             spikes[i] = spike_enemies[mt_rand(0, sizeof(spike_enemies)-1)];
         }
     }
@@ -1609,7 +1609,7 @@ static void spike_rewrite(dw_rom *rom)
     vpatch(rom, 0x0335d,    2,  0xca,  0xbf);
     vpatch(rom, 0x033e9,    2,  0xca,  0xbf);
     vpatch(rom, 0x03515,    2,  0xca,  0xbf);
-    
+
     /* save the previous tile you were on */
     vpatch(rom, 0x03fca,   11,
             0xa5,  0x3a,       /*   lda X_POS                                */
@@ -1622,8 +1622,8 @@ static void spike_rewrite(dw_rom *rom)
     /* spike encounter table */
     vpatch(rom, 0x0cd82, 32,
           /* MAP    X     Y    MON */
-            HAUKSNESS           , 25, 12, spikes[0],
-            SWAMP_CAVE          ,  4, 15, spikes[1],
+            HAUKSNESS           , 18, 12, spikes[0],
+            SWAMP_CAVE          ,  4, 14, spikes[1],
             CHARLOCK_THRONE_ROOM, 25, 22, spikes[2],
             NO_MAP,                0,  0, spikes[3],
             NO_MAP,                0,  0, spikes[4],
@@ -1648,7 +1648,7 @@ static void spike_rewrite(dw_rom *rom)
             0xe8,             /*    inx                                      */
             0xe8,             /*    inx                                      */
             0xe8,             /*    inx                                      */
-            0xe0, 0x10,       /*    cpx #16                                  */
+            0xe0, 0x20,       /*    cpx #32                                  */
             0xd0, 0xdd,       /*    bne -                                    */
             0xf0, 0x2a        /*    beq +done                                */
     );
@@ -1679,6 +1679,60 @@ static void spike_rewrite(dw_rom *rom)
             0xd0, 0xd1,       /*    bne -                                    */
             0xf0, 0x39        /*    beq +done                                */
         );
+}
+
+static BOOL should_be_guarded(dw_chest_content item)
+{
+    switch(item)
+    {
+        case STONES:
+        case HARP:
+        case TOKEN:
+        case SWORD:
+        case ARMOR:
+            return TRUE;
+        default:
+            return FALSE;
+    }
+}
+
+static void treasure_guards(dw_rom *rom)
+{
+    size_t i;
+    dwr_spike_table_entry *spike = rom->spike_entries + 3;
+    dw_chest *chest = rom->chests;
+    dw_searchable *searchables[] = { rom->token, rom->flute, rom->armor };
+    dw_searchable *search = (dw_searchable*)searchables;
+
+    if (!TREASURE_GUARDS(rom))
+        return;
+
+    printf("Adding important treasure guards...\n");
+
+    for (i=0; i < CHEST_COUNT; i++){
+        if (should_be_guarded(chest->item)) {
+            if (chest->map == TANTEGEL_THRONE_ROOM)
+                continue;
+            spike->map = chest->map;
+            spike->x = chest->x;
+            spike->y = chest->y;
+            spike->monster = mt_rand(WYVERN, WIZARD);
+            spike++;
+        }
+        chest++;
+    }
+    for (i=0; i < 3; i++){
+        if (should_be_guarded(search->item)) {
+            if (search->map == HAUKSNESS)
+                continue;
+            spike->map = search->map;
+            spike->x = search->x;
+            spike->y = search->y;
+            spike->monster = mt_rand(WYVERN, WIZARD);
+            spike++;
+        }
+        search++;
+    }
 }
 
 static void sorted_inventory(dw_rom *rom)
@@ -2054,6 +2108,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     do_chest_flags(&rom);
     map_generate_terrain(&rom);
     spike_rewrite(&rom);
+    treasure_guards(&rom);
     randomize_attack_patterns(&rom);
     randomize_zone_layout(&rom);
     randomize_zones(&rom);

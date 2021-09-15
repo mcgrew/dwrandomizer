@@ -31,6 +31,7 @@
 #define RANDOM_XP_REQS(x)         (x->flags[ 1] & 0x03)
 #define HEAL_HURT_B4_MORE(x)      (x->flags[ 2] & 0xc0)
 #define ROTATE_DUNGEONS(x)        (x->flags[ 2] & 0x30)
+#define TREASURE_GUARDS(x)        (x->flags[ 2] & 0x03)
 
 #define MENU_WRAP(x)              (x->flags[ 3] & 0xc0)
 #define DEATH_NECKLACE(x)         (x->flags[ 3] & 0x30)

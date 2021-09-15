@@ -384,7 +384,7 @@ class Interface {
         this.tabBar.append(tab);
         let content = this.create('tabcontent');
         content.id = name + '-flags'
-        for (let i=0; i < 10; i++) {
+        for (let i=0; i < 12; i++) {
             content.append(this.create('flagcontainer'))
         }
         this.tabContainer.append(content);
@@ -453,14 +453,14 @@ class Interface {
         return select;
     }
 
-    addOption(tab, position, bytepos, shift, title, skipChange) {
+    addOption(tab, position, bytepos, shift, title, description, skipFlags) {
         let input = this.create('input')
         input.type = 'checkbox';
         input.name = tab + position;
         input.dataset.bytepos = bytepos;
         input.dataset.shift = shift;
         input.dataset.label = title;
-        if (!skipChange)
+        if (!skipFlags)
             input.change(this.updateFlags.bind(this));
         let label = this.create('label', title)
         label.for = tab + position;
@@ -468,13 +468,22 @@ class Interface {
         container.innerHTML = '';
         label.prepend(input);
         container.append(label);
+        if (description) {
+            let descriptionEl = this.create('div', description, {
+                'font-size': '0.7em',
+                'color': '#666',
+                'margin-left': '2em',
+            });
+            container.append(descriptionEl);
+        }
         this.inputs.push(input);
         this.updateInputs();
         return input;
     }
 
-    addTriOption(tab, position, bytepos, shift , title) {
-        let input = this.addOption(tab, position, bytepos, shift, title);
+    addTriOption(tab, position, bytepos, shift , title, description) {
+        let input = this.addOption(tab, position, bytepos, shift, title,
+            description);
         input.triState();
         input.change(this.updateFlags.bind(this));
         this.updateInputs();

@@ -87,41 +87,74 @@ function setup_ui() {
     ui.addSummaryTab('Summary');
     ui.setActiveTab('Gameplay');
 
-    ui.addTriOption('Gameplay',  0,  0, 6, 'Shuffle Chests & Searches');
-    ui.addTriOption('Gameplay',  2,  0, 4, 'Random Chest Locations');
-    ui.addTriOption('Gameplay',  4,  0, 2, 'Random Growth');
-    ui.addTriOption('Gameplay',  6,  0, 0, 'Random Map');
-    ui.addTriOption('Gameplay',  8,  1, 6, 'Random Spell Learning');
-    ui.addTriOption('Gameplay',  1,  1, 4, 'Random Weapon Shops');
-    ui.addTriOption('Gameplay',  3,  1, 2, 'Random Weapon Prices');
-    ui.addTriOption('Gameplay',  5,  1, 0, 'Random XP Requirements');
-    ui.addTriOption('Gameplay',  7,  2, 6, 'Heal/Hurt Before "More"');
-    ui.addTriOption('Gameplay',  9,  2, 4, 'Randomly Rotate/Mirror Dungeons');
+    ui.addTriOption('Gameplay',  0,  0, 6, 'Shuffle Chests & Searches',
+        'The items in chests and search locations will be randomized.');
+    ui.addTriOption('Gameplay',  2,  0, 4, 'Random Chest Locations',
+        'Chests will be at a random set of predetermined locations.');
+    ui.addTriOption('Gameplay',  4,  0, 2, 'Random Growth',
+        'Player statistical growth at each level will be randomized.');
+    ui.addTriOption('Gameplay',  6,  0, 0, 'Random Map',
+        'The overworld map will be randomly generated.');
+    ui.addTriOption('Gameplay',  8,  1, 6, 'Random Spell Learning',
+        'The order and level you learn spells will be random.');
+    ui.addTriOption('Gameplay',  1,  1, 4, 'Random Weapon Shops',
+        'The weapons available in each shop will be randomized.');
+    ui.addTriOption('Gameplay',  3,  1, 2, 'Random Weapon Prices',
+        'Pretty self-explanatory.');
+    ui.addTriOption('Gameplay',  5,  1, 0, 'Random XP Requirements',
+        'Experience requirements for each level will be randomized.');
+    ui.addTriOption('Gameplay',  7,  2, 6, 'Heal/Hurt Before "More"',
+        'HEAL must come before HEALMORE; HURT before HURTMORE.');
+    ui.addTriOption('Gameplay',  9,  2, 4, 'Randomly Rotate/Mirror Dungeons',
+        'All dungeons will be rotated at random angles and/or mirrored.');
+    ui.addTriOption('Gameplay', 11,  2, 0, 'Treasure Guards',
+        'Important items will have a mid-level monster guarding them.');
 
-    ui.addTriOption('Features',  0,  3, 6, 'Enable Menu Wrapping');
-    ui.addTriOption('Features',  2,  3, 4, 'Enable Death Necklace');
-    ui.addTriOption('Features',  4,  3, 2, 'Enable Torches In Battle');
-    ui.addTriOption('Features',  6,  3, 0, 'Big Swamp');
-    ui.addTriOption('Features',  1,  4, 6, 'Repel in Dungeons');
-    ui.addTriOption('Features',  3,  4, 4, 'Permanent Repel');
-    ui.addTriOption('Features',  5,  4, 2, 'Permanent Torch');
-    ui.addTriOption('Features',  8,  4, 0, 'Alternate Running Algorithm');
+    ui.addTriOption('Features',  0,  3, 6, 'Enable Menu Wrapping',
+        'This enables cursor wrapping in menus.');
+    ui.addTriOption('Features',  2,  3, 4, 'Enable Death Necklace',
+        'Equipping the death necklace will cause +10AP and -25% HP.');
+    ui.addTriOption('Features',  4,  3, 2, 'Enable Torches In Battle',
+        'Torches and Fairy water can be thrown at monsters.');
+    ui.addTriOption('Features',  6,  3, 0, 'Big Swamp',
+        'Approximately 60% of the overworld will be poisonous swamp.');
+    ui.addTriOption('Features',  1,  4, 6, 'Repel in Dungeons',
+        'Enables REPEL to work in dungeons');
+    ui.addTriOption('Features',  3,  4, 4, 'Permanent Repel',
+        'REPEL will always be active.');
+    ui.addTriOption('Features',  5,  4, 2, 'Permanent Torch',
+        'At least a 3x3 area will always be lit in dungeons.');
+    ui.addTriOption('Features',  8,  4, 0, 'Alternate Running Algorithm',
+        'The run blocking multiplier will depend on where you are.');
+    ui.addTriOption('Monsters',  0,  5, 6, 'Random Monster Abilities',
+        'Monster spells and abilities will be randomized.');
+    ui.addTriOption('Monsters',  2,  5, 4, 'Random Monster Zones',
+        'Monster encounters in each zone will be randomized.');
+    ui.addTriOption('Monsters',  4,  5, 2, 'Random Monster Stats',
+        'Monster strength, agility, and HP will be randomized.');
+    ui.addTriOption('Monsters',  6,  5, 0, 'Random Monster XP & Gold',
+        'The XP and GOLD gained from monsters will be randomized.');
+    ui.addTriOption('Monsters',  8,  6, 6, 'Make Random Stats Consistent',
+        'This makes the random stats, XP, and GOLD consistent with one another.');
+    ui.addTriOption('Monsters',  1,  6, 4, 'Scared Metal Slimes',
+        'Metal Slimes will always have a chance to run.');
+    ui.addTriOption('Monsters',  3,  6, 2, 'Scaled Metal Slime XP',
+        'Metal Slime XP will depend on your current level.');
 
-    ui.addTriOption('Monsters',  0,  5, 6, 'Random Monster Abilities');
-    ui.addTriOption('Monsters',  2,  5, 4, 'Random Monster Zones');
-    ui.addTriOption('Monsters',  4,  5, 2, 'Random Monster Stats');
-    ui.addTriOption('Monsters',  6,  5, 0, 'Random Monster XP & Gold');
-    ui.addTriOption('Monsters',  8,  6, 6, 'Make Random Stats Consistent');
-    ui.addTriOption('Monsters',  1,  6, 4, 'Scared Metal Slimes');
-    ui.addTriOption('Monsters',  3,  6, 2, 'Scaled Metal Slime XP');
-
-    ui.addTriOption('Shortcuts', 0,  7, 6, 'Fast Text');
-    ui.addTriOption('Shortcuts', 2,  7, 4, 'Speed Hacks');
-    ui.addTriOption('Shortcuts', 4,  7, 2, 'Open Charlock');
-    ui.addTriOption('Shortcuts', 6,  7, 0, 'Short Charlock');
-    ui.addTriOption('Shortcuts', 8,  8, 6, "Don't Require Magic Keys");
-    ui.addTriOption('Shortcuts', 1,  8, 2, 'Cursed Princess');
-    ui.addTriOption('Shortcuts', 3,  8, 0, "Three's Company");
+    ui.addTriOption('Shortcuts', 0,  7, 6, 'Fast Text',
+        'All text will progress much faster.');
+    ui.addTriOption('Shortcuts', 2,  7, 4, 'Speed Hacks',
+        'Various aspects of the game will be much faster.');
+    ui.addTriOption('Shortcuts', 4,  7, 2, 'Open Charlock',
+        'No need to create a bridge to enter Charlock Castle.');
+    ui.addTriOption('Shortcuts', 6,  7, 0, 'Short Charlock',
+        'Charlock Dungeon will be much shorter.');
+    ui.addTriOption('Shortcuts', 8,  8, 6, "Don't Require Magic Keys",
+        'All of the doors are unlocked. Just open them.');
+    ui.addTriOption('Shortcuts', 1,  8, 2, 'Cursed Princess',
+        'Get Gwaelin to take a Cursed Belt when you return her to win.');
+    ui.addTriOption('Shortcuts', 3,  8, 0, "Three's Company",
+        'Bring Gwaelin to the Dragonlord and accept his offer to win.');
     // leveling speed
     ui.addDropDown ('Shortcuts', 7, 14, 0, 'Leveling Speed', {
         'Normal' : 0,
@@ -135,17 +168,27 @@ function setup_ui() {
         'Random': 3
     });
 
-    ui.addTriOption('Challenge', 0,  9, 6, 'No Hurtmore');
-    ui.addTriOption('Challenge', 2,  9, 4, 'No Numbers');
-    ui.addTriOption('Challenge', 4,  9, 2, 'Invisible Hero');
-    ui.addTriOption('Challenge', 6,  9, 0, 'Invisible NPCs');
+    ui.addTriOption('Challenge', 0,  9, 6, 'No Hurtmore',
+        'You will never learn HURTMORE. Monsters will still have it.');
+    ui.addTriOption('Challenge', 2,  9, 4, 'No Numbers',
+        'No numbers will be visible until the Dragonlord fight.');
+    ui.addTriOption('Challenge', 4,  9, 2, 'Invisible Hero',
+        'Your sprite will be invisible.');
+    ui.addTriOption('Challenge', 6,  9, 0, 'Invisible NPCs',
+        'All NPCs will be invisible.');
 
-    ui.addTriOption('Cosmetic',  4, 10, 6, 'Modern Spell Names');
-    ui.addTriOption('Cosmetic',  6, 10, 4, 'Noir Mode');
-    ui.addOption   ('Cosmetic',  0, 14, 7, 'Shuffle Music');
-    ui.addOption   ('Cosmetic',  2, 14, 6, 'Disable Music');
-    ui.addOption   ('Cosmetic',  8, 14, 5, 'Disable Spell Flashing');
-    ui.addOption   ('Cosmetic',  3, 13, 7, 'Allow Custom Spell Names');
+    ui.addTriOption('Cosmetic',  4, 10, 6, 'Modern Spell Names',
+        'Use spell names from more recent DQ releases.');
+    ui.addTriOption('Cosmetic',  6, 10, 4, 'Noir Mode',
+        "It's all black and white baby!");
+    ui.addOption   ('Cosmetic',  0, 14, 7, 'Shuffle Music',
+        'Music in each area will be randomized.');
+    ui.addOption   ('Cosmetic',  2, 14, 6, 'Disable Music',
+        'This disables the game music in most situations.');
+    ui.addOption   ('Cosmetic',  8, 14, 5, 'Disable Spell Flashing',
+        'Prevents the screen from flashing when you cast spells.');
+    ui.addOption   ('Cosmetic',  3, 13, 7, 'Allow Custom Spell Names',
+        'Allow spell names to be changed based on the chosen sprite.');
 
     // player sprite
     let spriteBox = ui.addTextBox('Cosmetic', 1, 'Player Sprite: ');

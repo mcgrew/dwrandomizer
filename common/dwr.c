@@ -1311,6 +1311,24 @@ static void permanent_torch(dw_rom *rom)
 }
 
 /**
+ * Discounts all weapon and armor prices..
+ *
+ * @param rom The rom struct
+ */
+static void summer_sale(dw_rom *rom)
+{
+    size_t i;
+
+    if (!SUMMER_SALE(rom))
+        return;
+
+    for (i=0; i < 17; i++) {
+        rom->weapon_price_display[i] = rom->weapon_prices[i] =
+            (uint16_t)(rom->weapon_prices[i] * 0.65);
+    }
+}
+
+/**
  * Other various patches for gameplay, such as silver harp enemies, town and
  * dungeon map changes and moving some NPCs.
  *
@@ -2175,6 +2193,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     rotate_dungeons(&rom);
     treasure_guards(&rom);
     sorted_inventory(&rom);
+    summer_sale(&rom);
     other_patches(&rom);
     credits(&rom);
 

@@ -141,22 +141,24 @@ function setup_ui() {
     ui.addTriOption('Monsters',  3,  6, 2, 'Scaled Metal Slime XP',
         'Metal Slime XP will depend on your current level.');
 
-    ui.addTriOption('Shortcuts', 0,  7, 6, 'Fast Text',
+    ui.addTriOption('Shortcuts',  0,  7, 6, 'Fast Text',
         'All text will progress much faster.');
-    ui.addTriOption('Shortcuts', 2,  7, 4, 'Speed Hacks',
+    ui.addTriOption('Shortcuts',  2,  7, 4, 'Speed Hacks',
         'Various aspects of the game will be much faster.');
-    ui.addTriOption('Shortcuts', 4,  7, 2, 'Open Charlock',
+    ui.addTriOption('Shortcuts',  4,  7, 2, 'Open Charlock',
         'No need to create a bridge to enter Charlock Castle.');
-    ui.addTriOption('Shortcuts', 6,  7, 0, 'Short Charlock',
+    ui.addTriOption('Shortcuts',  6,  7, 0, 'Short Charlock',
         'Charlock Dungeon will be much shorter.');
-    ui.addTriOption('Shortcuts', 8,  8, 6, "Don't Require Magic Keys",
+    ui.addTriOption('Shortcuts',  8,  8, 6, "Don't Require Magic Keys",
         'All of the doors are unlocked. Just open them.');
-    ui.addTriOption('Shortcuts', 1,  8, 2, 'Cursed Princess',
+    ui.addTriOption('Shortcuts', 10,  8, 4, "Summer Sale",
+        'All weapons and armor 35% off!');
+    ui.addTriOption('Shortcuts',  1,  8, 2, 'Cursed Princess',
         'Get Gwaelin to take a Cursed Belt when you return her to win.');
-    ui.addTriOption('Shortcuts', 3,  8, 0, "Three's Company",
+    ui.addTriOption('Shortcuts',  3,  8, 0, "Three's Company",
         'Bring Gwaelin to the Dragonlord and accept his offer to win.');
     // leveling speed
-    ui.addDropDown ('Shortcuts', 7, 14, 0, 'Leveling Speed', {
+    ui.addDropDown ('Shortcuts',  7, 14, 0, 'Leveling Speed', {
         'Normal' : 0,
         'Fast' : 1,
         'Very Fast': 2

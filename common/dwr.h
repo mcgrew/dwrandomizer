@@ -55,6 +55,7 @@
 #define OPEN_CHARLOCK(x)          (x->flags[ 7] & 0x0c)
 #define SHORT_CHARLOCK(x)         (x->flags[ 7] & 0x03)
 #define NO_KEYS(x)                (x->flags[ 8] & 0xc0)
+#define SUMMER_SALE(x)            (x->flags[ 8] & 0x30)
 #define FAST_XP(x)                (x->flags[14] & 0x01)
 #define VERY_FAST_XP(x)           (x->flags[14] & 0x02)
 #define SMALL_MAP(x)              (x->flags[14] & 0x04)

@@ -212,8 +212,11 @@ static void chaos_zones(dw_rom *rom)
         }
     }
 
-    for (i=0; i < 8; i++) { /* randomize the forced encounters */
-        rom->spike_entries[i].monster = enemies[mt_rand(31, 36)].index;
+    for (i=0; i < 3; i++) { /* randomize the forced encounters */
+        rom->spike_table->monster[i] = enemies[mt_rand(33, 37)].index;
+    }
+    for (i=3; i < 8; i++) { /* randomize the forced encounters */
+        rom->spike_table->monster[i] = enemies[mt_rand(21, 32)].index;
     }
 }
 

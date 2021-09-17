@@ -6,8 +6,10 @@ cmake_minimum_required(VERSION 3.7)
 project(dwrandomizer)
 
 set(CMAKE_CXX_STANDARD 11)
-#set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+if (DEBUG)
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
 
 # Compile the command line version
 include_directories(common)

@@ -12,6 +12,7 @@ dwrandomizer
 cmake_install.cmake
 CMakeCache.txt
 Makefile
+cli-build/
 build/
 builds/
 __pycache__

@@ -18,7 +18,7 @@
 #define VERSION DWR_VERSION " beta " BUILD
 #endif
 
-#define DEFAULT_FLAGS "CDFGMPRSTWZ"
+#define DEFAULT_FLAGS "IVIAAVCQKACAAAAAAAAAAAAB"
 #define CHEST_COUNT 31
 
 #define SHUFFLE_CHESTS(x)         (x->flags[ 0] & 0xc0)

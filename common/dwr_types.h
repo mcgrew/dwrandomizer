@@ -307,11 +307,12 @@ typedef struct {
 } dw_rainbow_drop;
 
 typedef struct {
-    uint8_t map;
-    uint8_t x;
-    uint8_t y;
-    uint8_t monster;
-} dwr_spike_table_entry;
+    uint8_t map[8];
+    uint8_t x[8];
+    uint8_t y[8];
+    uint8_t flags[8];
+    uint8_t monster[8];
+} dwr_spike_table;
 
 
 /** A struct for the in-game map */
@@ -348,7 +349,7 @@ typedef struct {
     uint8_t *zones;
     uint8_t *zone_layout;
     dw_chest *chests;
-    dwr_spike_table_entry *spike_entries;
+    dwr_spike_table *spike_table;
     dw_searchable *token;
     dw_searchable *flute;
     dw_searchable *armor;

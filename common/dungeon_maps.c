@@ -208,6 +208,37 @@ static void rotate_chest_positions(dw_rom *rom, dw_map_index map_index,
     }
 }
 
+static void rotate_forced_encounter(dw_rom *rom, uint8_t rotatemirror)
+{
+    uint8_t x, y, tmp;
+    const dw_map_meta *meta = &rom->map.meta[SWAMP_CAVE];
+
+    x = rom->spike_table->x[1];
+    y = rom->spike_table->y[1];
+    if (MIRROR_V(rotatemirror)) {
+        x = meta->width - x;
+    }
+    if (MIRROR_H(rotatemirror)) {
+        y = meta->height - y;
+    }
+    if (ROTATE_90(rotatemirror)) {
+        tmp = x;
+        x = meta->height - y;
+        y = tmp;
+    }
+    if (ROTATE_180(rotatemirror)) {
+        x = meta->width - x;
+        y = meta->height - y;
+    }
+    if (ROTATE_270(rotatemirror)) {
+        tmp = x;
+        x = y;
+        y = meta->width - tmp;
+    }
+    rom->spike_table->x[1] = x;
+    rom->spike_table->y[1] = y;
+}
+
 static void rotate_mirror_map(dw_rom *rom, dw_map_index map_index)
 {
     dw_map_meta *meta = &rom->map.meta[map_index];
@@ -217,6 +248,7 @@ static void rotate_mirror_map(dw_rom *rom, dw_map_index map_index)
     uint8_t rotatemirror, *buf, *mirroredvbuf, *mirroredhbuf, *rotatedbuf;
 
     rotatemirror = mt_rand(0, 15);
+    if (map_index == SWAMP_CAVE)
 
     if (!rotatemirror)
         return;
@@ -279,6 +311,10 @@ static void rotate_mirror_map(dw_rom *rom, dw_map_index map_index)
     }
     rotate_warps(rom, map_index, rotatemirror);
     rotate_chest_positions(rom, map_index, rotatemirror);
+    if (map_index == SWAMP_CAVE) {
+        rotate_forced_encounter(rom, rotatemirror);
+    }
+
 
     if (rotatemirror & 1) { // rotated 90 or 270, swap w & h
         x = meta->height;

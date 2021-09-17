@@ -168,7 +168,7 @@ static BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->zones = &rom->content[0xf54f];
     rom->zone_layout = &rom->content[0xf522];
     rom->chests = (dw_chest*)&rom->content[0x5dcd];
-    rom->spike_entries = (dwr_spike_table_entry*)&rom->content[0xcd82];
+    rom->spike_table = (dwr_spike_table*)&rom->content[0xcd7a];
     // FIXME: these should be removed or modified for the new treasure code.
     // check to see if this has been done.
     rom->token = (dw_searchable*)&rom->content[0xe10b];
@@ -1065,6 +1065,8 @@ static void support_2_byte_xp_gold(dw_rom *rom)
 
     if (SCALED_SLIMES(rom)) {
         printf("Reducing early metal rewards...\n");
+        if (rom->enemies[METAL_SLIME].xp > 255)
+            rom->enemies[METAL_SLIME].xp = 255; /* make sure xp <= 255 */
         ss_lvl = 8;
     }
 
@@ -1587,16 +1589,16 @@ static void dwr_menu_wrap(dw_rom *rom)
 
 static void spike_rewrite(dw_rom *rom)
 {
-
-    size_t i;
+    size_t i=0;
     const dw_enemies spike_enemies[] = {
         AXE_KNIGHT, BLUE_DRAGON, STONEMAN, ARMORED_KNIGHT, RED_DRAGON, GOLEM };
-    dw_enemies spikes[] = {
+    const size_t spike_enemy_count = sizeof(spike_enemies)/sizeof(dw_enemies);
+    uint8_t spikes[] = {
         AXE_KNIGHT, GREEN_DRAGON, GOLEM, SLIME, SLIME, SLIME, SLIME, SLIME };
 
     if (RANDOMIZE_ZONES(rom)) {
         for (i=0; i < 3; i++) {
-            spikes[i] = spike_enemies[mt_rand(0, sizeof(spike_enemies)-1)];
+            spikes[i] = spike_enemies[mt_rand(0, spike_enemy_count-1)];
         }
     }
 
@@ -1616,8 +1618,7 @@ static void spike_rewrite(dw_rom *rom)
     );
 
     /* spike encounter table */
-    vpatch(rom, 0x0cd82, 40,
-          /* MAP    X     Y    MON */
+    vpatch(rom, 0x0cd7a, 40,
         /* MAP */
         HAUKSNESS, SWAMP_CAVE, CHARLOCK_THRONE_ROOM, NO_MAP, NO_MAP, NO_MAP, NO_MAP, NO_MAP,
         /* X */
@@ -1652,6 +1653,7 @@ static void spike_rewrite(dw_rom *rom)
             0x30, 0x28        /*   bmi +done                               */
       );
 
+    /* ran away from a spike encounter */
     vpatch(rom, 0x0e8d4, 108,
             0xa2, 0x07,       /*    ldx #7                                   */
             0xa5, 0x45,       /* -- lda MAP_INDEX                            */
@@ -1696,6 +1698,7 @@ static void spike_rewrite(dw_rom *rom)
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0xff, 0xff, 0xff);
 
+    /* defeated a spike encounter */
     vpatch(rom, 0x0e96b, 36,
             0xa2, 0x07,       /*   ldx #7                                    */
             0xa5, 0x45,       /* - lda MAP_INDEX                             */
@@ -1710,7 +1713,7 @@ static void spike_rewrite(dw_rom *rom)
             0xbd, 0x92, 0xcd, /*   lda spike_flags,x                         */
             0x05, 0xe4,       /*   ora QUEST_PROGRESS                        */
             0x85, 0xe4,       /*   sta QUEST_PROGRESS                        */
-            0xe4, 0xca,       /* + dex                                       */
+            0xca,             /* + dex                                       */
             0x10, 0xe1,       /*   bpl -                                     */
             0xea,             /*   nop                                       */
             0xea,             /*   nop                                       */
@@ -1735,8 +1738,8 @@ static BOOL should_be_guarded(dw_chest_content item)
 
 static void treasure_guards(dw_rom *rom)
 {
-    size_t i;
-    dwr_spike_table_entry *spike = rom->spike_entries + 3;
+    size_t i, spike_entry = 3;
+    dwr_spike_table *spike = rom->spike_table;
     dw_chest *chest = rom->chests;
     dw_searchable *searchables[] = { rom->token, rom->flute, rom->armor };
     dw_searchable *search = (dw_searchable*)searchables;
@@ -1750,11 +1753,10 @@ static void treasure_guards(dw_rom *rom)
         if (should_be_guarded(chest->item)) {
             if (chest->map == TANTEGEL_THRONE_ROOM)
                 continue;
-            spike->map = chest->map;
-            spike->x = chest->x;
-            spike->y = chest->y;
-            spike->monster = mt_rand(WYVERN, WIZARD);
-            spike++;
+            spike->map[spike_entry] = chest->map;
+            spike->x[spike_entry] = chest->x;
+            spike->y[spike_entry] = chest->y;
+            spike->monster[spike_entry++] = mt_rand(WYVERN, WIZARD);
         }
         chest++;
     }
@@ -1762,11 +1764,10 @@ static void treasure_guards(dw_rom *rom)
         if (should_be_guarded(search->item)) {
             if (search->map == HAUKSNESS)
                 continue;
-            spike->map = search->map;
-            spike->x = search->x;
-            spike->y = search->y;
-            spike->monster = mt_rand(WYVERN, WIZARD);
-            spike++;
+            spike->map[spike_entry] = search->map;
+            spike->x[spike_entry] = search->x;
+            spike->y[spike_entry] = search->y;
+            spike->monster[spike_entry++] = mt_rand(WYVERN, WIZARD);
         }
         search++;
     }
@@ -2122,8 +2123,9 @@ static void check_structs()
 uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
         const char *sprite_name, const char* output_dir)
 {
-    uint64_t crc;
-    char output_file[1024];
+    uint64_t crc = 0;
+    char output_file[1024] = { 0 };
+    dw_rom rom;
 
     check_structs();
 
@@ -2133,7 +2135,6 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     printf("Using flags %s\n", flags);
 
     mt_init(seed);
-    dw_rom rom;
     if (!dwr_init(&rom, input_file, flags)) {
         return 0;
     }
@@ -2145,7 +2146,6 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     do_chest_flags(&rom);
     map_generate_terrain(&rom);
     spike_rewrite(&rom);
-    treasure_guards(&rom);
     randomize_attack_patterns(&rom);
     randomize_zone_layout(&rom);
     randomize_zones(&rom);
@@ -2173,6 +2173,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     repel_mods(&rom);
     permanent_torch(&rom);
     rotate_dungeons(&rom);
+    treasure_guards(&rom);
     sorted_inventory(&rom);
     other_patches(&rom);
     credits(&rom);

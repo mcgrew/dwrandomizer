@@ -220,17 +220,13 @@ typedef struct {
     uint8_t y;
 } dw_forced_encounter;
 
-/** Code for the 3 "search" items in the game (not including the trap door) */
+/** Table for the 3 "search" items in the game (not including the trap door) */
 typedef struct {
-    uint8_t code1[3];
-    uint8_t map;
-    uint8_t code2[5];
-    uint8_t x;
-    uint8_t code3[5];
-    uint8_t y;
-    uint8_t code4[3];
-    uint8_t item;
-} dw_searchable;
+    uint8_t map[3];
+    uint8_t x[3];
+    uint8_t y[3];
+    uint8_t item[3];
+} dwr_search_table;
 
 /** A single in-game chest */
 typedef struct {
@@ -350,9 +346,7 @@ typedef struct {
     uint8_t *zone_layout;
     dw_chest *chests;
     dwr_spike_table *spike_table;
-    dw_searchable *token;
-    dw_searchable *flute;
-    dw_searchable *armor;
+    dwr_search_table *search_table;
     uint8_t *repel_table;
     uint8_t *weapon_shops;
     uint16_t *weapon_prices;

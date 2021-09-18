@@ -69,31 +69,6 @@ static int compare(const void *a, const void *b)
 }
 
 /**
- * Parses the flags string into a 64-bit integer, one bit indicating the status
- * of each flag.
- *
- * @param rom A dw_rom struct containing the rom data.
- * @param flags The flags from the user
- * @return A 64-bit integer containing the flags
- */
-// static uint64_t parse_flags(dw_rom *rom, char *flags)
-// {
-//     int i, len;
-//     char *order;
-// 
-//     len = strlen(flags);
-//     qsort(flags, len, sizeof(char), &compare);
-//     rom->flags = 0;
-//     for (i=0; i < len; i++) {
-//         order = strchr(flag_order, flags[i]);
-//         if (order) {
-//             rom->flags |= UINT64_C(1) << (order - flag_order);
-//         }
-//     }
-//     return rom->flags;
-// }
-
-/**
  * Updates the "maybe" flags to be either on or off
  *
  */
@@ -171,9 +146,7 @@ static BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->spike_table = (dwr_spike_table*)&rom->content[0xcd7a];
     // FIXME: these should be removed or modified for the new treasure code.
     // check to see if this has been done.
-    rom->token = (dw_searchable*)&rom->content[0xe10b];
-    rom->flute = (dw_searchable*)&rom->content[0xe12a];
-    rom->armor = (dw_searchable*)&rom->content[0xe140];
+    rom->search_table = (dwr_search_table*)&rom->content[0xe136];
     rom->repel_table = &rom->content[0xf4fa];
     rom->weapon_shops = &rom->content[0x1991];
     rom->weapon_prices = (uint16_t*)&rom->content[0x1947];
@@ -797,12 +770,10 @@ static void open_charlock(dw_rom *rom)
             rom->chests[i].item = GOLD;
         }
     }
-    if (is_quest_item(rom->token->item))
-            rom->token->item = 0;
-    if (is_quest_item(rom->armor->item))
-            rom->armor->item = 0;
-    if (is_quest_item(rom->flute->item))
-            rom->flute->item = 0;
+    for (i=0; i <= 3; ++i) {
+        if (is_quest_item(rom->search_table->item[i]))
+                rom->search_table->item[i] = 0;
+    }
 }
 
 /**
@@ -1318,13 +1289,18 @@ static void permanent_torch(dw_rom *rom)
 static void summer_sale(dw_rom *rom)
 {
     size_t i;
+    double discount;
 
     if (!SUMMER_SALE(rom))
         return;
 
     for (i=0; i < 17; i++) {
+        /* if it's a maybe flag, only apply about half the time */
+        if (SUMMER_SALE(rom) == 2 && mt_rand_bool())
+            continue;
+        discount = mt_rand_double_ranged(0.35, 0.65);
         rom->weapon_price_display[i] = rom->weapon_prices[i] =
-            (uint16_t)(rom->weapon_prices[i] * 0.65);
+            (uint16_t)(rom->weapon_prices[i] * discount);
     }
 }
 
@@ -1759,35 +1735,37 @@ static void treasure_guards(dw_rom *rom)
     size_t i, spike_entry = 3;
     dwr_spike_table *spike = rom->spike_table;
     dw_chest *chest = rom->chests;
-    dw_searchable *searchables[] = { rom->token, rom->flute, rom->armor };
-    dw_searchable *search = (dw_searchable*)searchables;
+    dwr_search_table *search = rom->search_table;
 
     if (!TREASURE_GUARDS(rom))
         return;
 
     printf("Adding important treasure guards...\n");
 
-    for (i=0; i < CHEST_COUNT; i++){
-        if (should_be_guarded(chest->item)) {
-            if (chest->map == TANTEGEL_THRONE_ROOM)
+    for (i=0; i < 2; i++){
+        if (should_be_guarded(search->item[i])) {
+            /* if it's a maybe flag, only apply about half the time */
+            if (TREASURE_GUARDS(rom) == 2 && mt_rand_bool())
                 continue;
-            spike->map[spike_entry] = chest->map;
-            spike->x[spike_entry] = chest->x;
-            spike->y[spike_entry] = chest->y;
+            spike->map[spike_entry] = search->map[i];
+            spike->x[spike_entry] = search->x[i];
+            spike->y[spike_entry] = search->y[i];
             spike->monster[spike_entry++] = mt_rand(WYVERN, WIZARD);
         }
-        chest++;
     }
-    for (i=0; i < 3; i++){
-        if (should_be_guarded(search->item)) {
-            if (search->map == HAUKSNESS)
+    for (i=0; i < CHEST_COUNT; i++){
+        if (spike_entry >= 8)
+            break;
+        if (should_be_guarded(chest[i].item)) {
+            /* if it's a maybe flag, only apply about half the time */
+            if (chest[i].map == TANTEGEL_THRONE_ROOM
+                || TREASURE_GUARDS(rom) == 2 && mt_rand_bool())
                 continue;
-            spike->map[spike_entry] = search->map;
-            spike->x[spike_entry] = search->x;
-            spike->y[spike_entry] = search->y;
+            spike->map[spike_entry] = chest[i].map;
+            spike->x[spike_entry] = chest[i].x;
+            spike->y[spike_entry] = chest[i].y;
             spike->monster[spike_entry++] = mt_rand(WYVERN, WIZARD);
         }
-        search++;
     }
 }
 
@@ -2029,7 +2007,7 @@ static void dwr_token_dialogue(dw_rom *rom)
     uint8_t text1[24], text2[75];
     int dx, dy;
 
-    if (!rom->token->item) {
+    if (!rom->search_table->item[0]) {
         strcpy((char*)text1, "Thou must go and fight!");
         strcpy((char*)text2, "Go forth, descendant of Erdrick, "
                 "I have complete faith in thy victory! ");
@@ -2037,8 +2015,8 @@ static void dwr_token_dialogue(dw_rom *rom)
         patch(rom, 0xa228, 23, text1);
         vpatch(rom, 0xa288, 1, 0x53); /* replace .' with ' */
     } else {
-        dx = rom->token->x - rom->map.warps_from[WARP_TANTEGEL].x;
-        dy = rom->token->y - rom->map.warps_from[WARP_TANTEGEL].y;
+        dx = rom->search_table->x[0] - rom->map.warps_from[WARP_TANTEGEL].x;
+        dy = rom->search_table->y[0] - rom->map.warps_from[WARP_TANTEGEL].y;
 //        strcpy((char*)text1, "Thou may go and search.");
         if (ABS(dx) > 100 || ABS(dy) > 100) {
             snprintf((char*)text2, 75, "From Tantegel Castle travel %3d "

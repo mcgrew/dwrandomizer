@@ -1,4 +1,6 @@
 
+#include <string.h>
+
 #include "dwr.h"
 #include "mt64.h"
 #include "patch.h"
@@ -88,9 +90,6 @@ static inline void check_quest_items(dw_rom *rom)
 static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
 {
     /* patch a few branch addresses */
-    vpatch(rom, 0x0e110,    1,  0x19);
-    vpatch(rom, 0x0e116,    1,  0x13);
-    vpatch(rom, 0x0e11c,    1,  0x0d);
     vpatch(rom, 0x0e231,    1,  0x55);
     vpatch(rom, 0x0e23b,    1,  0x55);
     vpatch(rom, 0x0e26a,    1,  0x55);
@@ -98,104 +97,105 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
     vpatch(rom, 0x0e378,    1,  0x55);
 
     /* new "SEARCH" code */
-    vpatch(rom, 0x0e11d,  109,
-        0xa9, items[0],   /*   lda item0                                      */
-        0xf0, 0x09,       /*   beq +                                          */
-        0x48,             /* - pha                                            */
-        0xa9, 0xff,       /*   lda #$ff                                       */
-        0x85, 0x0e,       /*   sta $0e                                        */
-        0x68,             /*   pla                                            */
-        0x4c, 0x24, 0xe2, /*   jmp $e224                                      */
-        0xa5, 0x45,       /* + lda $45     ; Load the current map             */
-        0xc9, 0x07,       /*   cmp #$07    ; Is this Kol?                     */
-        0xd0, 0x10,       /*   bne +                                          */
-        0xa5, 0x3a,       /*   lda $3a     ; Load the X coordinate            */
-        0xc9, 0x09,       /*   cmp #$09    ; Is it 9?                         */
-        0xd0, 0x0a,       /*   bne +                                          */
-        0xa5, 0x3b,       /*   lda $3b     ; Load the Y coordinate            */
-        0xc9, 0x06,       /*   cmp #$06    ; Is it 6?                         */
-        0xd0, 0x04,       /*   bne +                                          */
-        0xa9, items[1],   /*   lda item1                                      */
-        0xd0, 0xe1,       /*   bne -                                          */
-        0xa5, 0x45,       /* + lda $45     ; Load the current map             */
-        0xc9, 0x03,       /*   cmp #$03    ; Is this Hauksness?               */
-        0xd0, 0x44,       /*   bne $e18c                                      */
-        0xa5, 0x3a,       /*   lda $3a     ; Load the X coordinate            */
-        0xc9, 0x12,       /*   cmp #$12    ; is it 18?                        */
-        0xd0, 0x3e,       /*   bne $e18c                                      */
-        0xa5, 0x3b,       /*   lda $3b    ; Load the Y coordinate             */
-        0xc9, 0x0c,       /*   cmp #$0c   ; Is it 13?                         */
-        0xd0, 0x38,       /*   bne $e13a                                      */
-        0xa9, items[2],   /*   lda item2                                      */
-        0xd0, 0xcb,       /*   bne -                                          */
-        0xf0, 0x32,       /*   beq $e18c  ; Go on to next search location     */
-
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+    vpatch(rom, 0x0e10b,  43,
+        0xa2, 0x02,        /*     ldx #02                                    */
+        0xa5, 0x45,        /* -   lda MAP_INDEX                              */
+        0xdd, 0x36, 0xe1,  /*     cmp search_map,x                           */
+        0xd0, 0x1c,        /*     bne +                                      */
+        0xa5, 0x3a,        /*     lda X_POS                                  */
+        0xdd, 0x39, 0xe1,  /*     cmp search_x,x                             */
+        0xd0, 0x15,        /*     bne +                                      */
+        0xa5, 0x3b,        /*     lda Y_POS                                  */
+        0xdd, 0x3c, 0xe1,  /*     cmp search_y,x                             */
+        0xd0, 0x0e,        /*     bne +                                      */
+        0xbd, 0x3f, 0xe1,  /*     lda search_item,x                          */
+        0xf0, 0x63,        /*     beq $e18a                                  */
+        0x48,              /*     pha                                        */
+        0xa9, 0xff,        /*     lda #$ff                                   */
+        0x85, 0x0e,        /*     sta $0e                                    */
+        0x68,              /*     pla                                        */
+        0x4c, 0x24,        /*     jmp $e224                                  */
+        0xe2, 0xca,        /* +   dex                                        */
+        0x10, 0xda,        /*     bpl -                                      */
+        0x4c, 0x8a, 0xe1   /*     jmp $e18a                                  */
     );
 
-    /* new "TAKE" code */
-    vpatch(rom, 0x0e2ea, 123,
-        0xc9, 0x01,       /*   cmp #$01        ; Is it the armor?             */
-        0xd0, 0x1b,       /*   bne +                                          */
-        0xa5, 0xbe,       /*   lda $be         ; Load the equipment byte      */
-        0x29, 0x1c,       /*   and #$1c        ; See if we have the armor     */
-        0xc9, 0x1c,       /*   cmp #$1c                                       */
-        0xf0, 0x4f,       /*   beq chest_empty ; The chest is empty           */
-        0xa5, 0xbe,       /*   lda $be         ; Load the equipment byte      */
-        0x09, 0x1c,       /*   ora #$1c        ; Add the armor                */
-        0x85, 0xbe,       /*   sta $be         ; Save it                      */
-        0x20, 0x55, 0xe3, /*   jsr take_content                               */
-        0xa9, 0x28,       /*   lda #$28                                       */
-        0x20, 0xf0, 0xdb, /*   jsr $dbf0       ; "You got the armor"          */
-        0xa9, 0xd5,       /*   lda #$d5                                       */
-        0x4c, 0x42, 0xd2, /*   jmp finish_text                                */
-        0xc9, 0x08,       /* + cmp #$08    ; If it's not the flute.           */
-        0xd0, 0x0b,       /*   bne +       ; Jump to the next check           */
-        0xa9, 0x05,       /*   lda #$05    ; Load the flute inventory value   */
-        0x20, 0x55, 0xe0, /*   jsr $e055   ; Jump to inventory check          */
-        0xc9, 0xff,       /*   cmp #$ff    ; If return value is $ff (found)   */
-        0xd0, 0x2f,       /*   bne chest_empty ; The chest is empty           */
-        0xa9, 0x08,       /*   lda #$08    ; Reset the flute chest value      */
-        0xc9, 0x0a,       /* + cmp #$0a    ; If it's not the token            */
-        0xd0, 0x14,       /*   bne +       ; Jump to the next check           */
-        0xa9, 0x07,       /*   lda #$07    ; Load the token inventory value   */
-        0x20, 0x55, 0xe0, /*   jsr #$e055  ; Jump to inventory check          */
-        0xc9, 0xff,       /*   cmp #$ff    ; If return value is $ff (found)   */
-        0xd0, 0x20,       /*   bne chest_empty ; The chest is empty           */
-        0xa9, 0x0e,       /*   lda #$0a    ; Reset the token chest value      */
-        0x20, 0x55,  0xe0,
-        0xc9, 0xff,
-        0xd0, 0x17,
-        0xa9, 0x0a,
-        0xc9, 0x11,       /* + cmp #$11    ; If value is >= $11               */
-        0xb0, 0x03,       /*   bcs +       ; Jump to the next check           */
-        0x4c, 0x69, 0xe2, /*   jmp B3_e269 ; Add the item to the inventory    */
-        0xa9, 0xff,       /* + lda #$ff    ;                                  */
-        0x85, 0x3e,       /*   sta $3e     ;                                  */
-        0xa9, 0xf4,       /*   lda #$f4    ;                                  */
-        0x85, 0x00,       /*   sta $00     ;                                  */
-        0xa9, 0x01,       /*   lda #$01    ;                                  */
-        0x85, 0x01,       /*   sta $01     ;                                  */
-        0xd0, 0x20,
-        0xa5, 0x0e,
-        0xc9, 0xff,
-        0xa9, 0x00,
-        0x85, 0x0e,
-        0xb0, 0x03,
-        0x4c, 0xa3, 0xe2,
-        0x4c, 0xc8, 0xe1,
-        0xa5, 0x0e,
-        0xc9, 0xff,
-        0xa9, 0x00,
-        0x85, 0x0e,
-        0xb0, 0x66,
-        0xf0, 0x39,
+    /* Searchable item table */
+    vpatch(rom, 0x0e136,  12,
+    /* search_map:  */
+        OVERWORLD,      KOL, HAUKSNESS,
+    /* search_x:    */
+             0x53,     0x09,      0x12,
+    /* search_y:    */
+             0x71,     0x06,      0x0c,
+    /* search_item: */
+         items[0], items[1],  items[2]
+    );
+    /* This is freed up space. Mark it with ff so we can find it later. */
+    memset((void*)&rom->content[0xe152], 0xff, 72);
 
-        0xff, 0xff, 0xff, 0xff);
+    /* new "TAKE" code */
+    vpatch(rom, 0x0e2ea,  123,
+        0xc9,  0x01,        /*     cmp #$01    ; Is it the armor?            */
+        0xd0,  0x1b,        /*     bne +                                     */
+        0xa5,  0xbe,        /*     lda $be     ; Load the equipment byte     */
+        0x29,  0x1c,        /*     and #$1c    ; See if we have the armor    */
+        0xc9,  0x1c,        /*     cmp #$1c                                  */
+        0xf0,  0x4f,        /*     beq ++      ; The chest is empty          */
+        0xa5,  0xbe,        /*     lda $be     ; Load the equipment byte     */
+        0x09,  0x1c,        /*     ora #$1c    ; Add the armor               */
+        0x85,  0xbe,        /*     sta $be     ; Save it                     */
+        0x20,  0x55,  0xe3, /*     jsr +++                                   */
+        0xa9,  0x28,        /*     lda #$28                                  */
+        0x20,  0xf0,  0xdb, /*     jsr b3_dbf0 ; "You got the armor"         */
+        0xa9,  0xd5,        /*     lda #$d5                                  */
+        0x4c,  0x42,  0xd2, /*     jmp b3_d242                               */
+                            /*                                               */
+        0xc9,  0x08,        /* +   cmp #$08    ; If it's not the flute.      */
+        0xd0,  0x0b,        /*     bne +       ; Jump to the next check      */
+        0xa9,  0x05,        /*     lda #$05    ; Load the flute inv value    */
+        0x20,  0x55,  0xe0, /*     jsr $e055   ; Jump to inventory check     */
+        0xc9,  0xff,        /*     cmp #$ff    ; Return value is $ff (found) */
+        0xd0,  0x2f,        /*     bne ++      ; The chest is empty          */
+        0xa9,  0x08,        /*     lda #$08    ; Reset the flute chest value */
+        0xc9,  0x0a,        /* +   cmp #$0a    ; If it's not the token       */
+        0xd0,  0x14,        /*     bne +       ; Jump to the next check      */
+        0xa9,  0x07,        /*     lda #$07    ; Load the token inv value    */
+        0x20,  0x55,  0xe0, /*     jsr $e055   ; Jump to inventory check     */
+        0xc9,  0xff,        /*     cmp #$ff    ; Return value is $ff (found) */
+        0xd0,  0x20,        /*     bne ++      ; The chest is empty          */
+        0xa9,  0x0e,        /*     lda #$0e    ; Reset the token chest value */
+        0x20,  0x55,  0xe0, /*     jsr $e055                                 */
+        0xc9,  0xff,        /*     cmp #$ff                                  */
+        0xd0,  0x17,        /*     bne ++                                    */
+        0xa9,  0x0a,        /*     lda #$0a                                  */
+        0xc9,  0x11,        /* +   cmp #$11    ; If value is >= $11          */
+        0xb0,  0x03,        /*     bcs +       ; Jump to the next check      */
+        0x4c,  0x69,  0xe2, /*     jmp b3_e269 ; Add the item                */
+                            /*                                               */
+        0xa9,  0xff,        /* +   lda #$ff                                  */
+        0x85,  0x3e,        /*     sta $3e                                   */
+        0xa9,  0xf4,        /*     lda #$f4                                  */
+        0x85,  0x00,        /*     sta $00                                   */
+        0xa9,  0x01,        /*     lda #$01                                  */
+        0x85,  0x01,        /*     sta $01                                   */
+        0xd0,  0x20,        /*     bne b3_e365                               */
+        0xa5,  0x0e,        /* ++  lda $0e                                   */
+        0xc9,  0xff,        /*     cmp #$ff                                  */
+        0xa9,  0x00,        /*     lda #$00                                  */
+        0x85,  0x0e,        /*     sta $0e                                   */
+        0xb0,  0x03,        /*     bcs +                                     */
+        0x4c,  0xa3,  0xe2, /*     jmp b3_e2a3                               */
+        0x4c,  0xc8,  0xe1, /* +   jmp b3_e1c8                               */
+                            /*                                               */
+                            /*     ; Check the "searched" flag and clear it. */
+        0xa5,  0x0e,        /* +++ lda $0e     ; Load the flag               */
+        0xc9,  0xff,        /*     cmp #$ff    ; FF indicates search item.   */
+        0xa9,  0x00,        /*     lda #$00    ; Clear the flag              */
+        0x85,  0x0e,        /*     sta $0e                                   */
+        0xb0,  0x66,        /*     bcs b3_e3c5 ; Search: don't play sound    */
+        0xf0,  0x39,        /*     beq b3_e39a ; It's a chest.               */ 
+        0xff,  0xff,  0xff,  0xff);
 }
 
 

@@ -1046,8 +1046,8 @@ retry_map:
 
     /* place the token */
     find_walkable_area(&rom->map, lm_sizes, &largest, &next);
-    map_find_land(&rom->map, largest, next, &rom->token->x, &rom->token->y,
-            TRUE);
+    map_find_land(&rom->map, largest, next, &rom->search_table->x[0],
+            &rom->search_table->y[0], TRUE);
 
     if (!map_encode(&rom->map))
         goto retry_map;

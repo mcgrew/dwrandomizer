@@ -107,7 +107,7 @@ function setup_ui() {
         'HEAL must come before HEALMORE; HURT before HURTMORE.');
     ui.addTriOption('Gameplay',  9,  2, 4, 'Randomly Rotate/Mirror Dungeons',
         'All dungeons will be rotated at random angles and/or mirrored.');
-    ui.addTriOption('Gameplay', 11,  2, 0, 'Treasure Guards',
+    ui.addTriOption('Gameplay', 11, 13, 0, 'Treasure Guards',
         'Important items will have a mid-level monster guarding them.');
 
     ui.addTriOption('Features',  0,  3, 6, 'Enable Menu Wrapping',
@@ -151,8 +151,8 @@ function setup_ui() {
         'Charlock Dungeon will be much shorter.');
     ui.addTriOption('Shortcuts',  8,  8, 6, "Don't Require Magic Keys",
         'All of the doors are unlocked. Just open them.');
-    ui.addTriOption('Shortcuts', 10,  8, 4, "Summer Sale",
-        'All weapons and armor 35% off!');
+    ui.addTriOption('Shortcuts', 10, 13, 4, "Summer Sale",
+        'All weapons and armor 35-65% off!');
     ui.addTriOption('Shortcuts',  1,  8, 2, 'Cursed Princess',
         'Get Gwaelin to take a Cursed Belt when you return her to win.');
     ui.addTriOption('Shortcuts',  3,  8, 0, "Three's Company",

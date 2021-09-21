@@ -20,6 +20,7 @@ set(SOURCE_FILES
         common/dwr.c
         common/map.c
         common/dungeon_maps.c
+        common/stair_shuffle.c
         common/chests.c
         common/mt19937-64.c
         common/chaos.c

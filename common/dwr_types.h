@@ -327,6 +327,8 @@ typedef struct {
     uint8_t tiles[120][120];
     uint8_t walkable[120][120];
     uint8_t have_keys;
+    uint8_t *chest_access;
+    uint8_t key_access;
 } dw_map;
 
 /** A struct for the rom data */
@@ -335,6 +337,7 @@ typedef struct {
     uint8_t *content;
     unsigned char flags_encoded[25];
     uint8_t flags[15];
+    uint8_t chest_access[31];
     uint64_t seed;
     dw_map map;
     dw_stats *stats;

@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
@@ -11,12 +12,14 @@
 #include "chaos.h"
 #include "map.h"
 #include "dungeon_maps.h"
+#include "stair_shuffle.h"
 #include "chests.h"
 #include "challenge.h"
 #include "crc64.h"
 #include "mt64.h"
 #include "polyfit.h"
 #include "base32.h"
+#include "sprites.h"
 
 const char *prg0sums[8] = {
       "6a50ce57097332393e0e8751924fd56456ef083c", /* Dragon Warrior (U) (PRG0) [!].nes      */
@@ -125,6 +128,7 @@ static BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     memset(rom->flags, 0, 15);
     base32_decode(rom->flags_encoded, rom->flags);
     update_flags(rom);
+    rom->map.chest_access = rom->chest_access;
     /* subtract 0x9d5d from these pointers */
     rom->map.pointers = (uint16_t*)&rom->content[0x2653];
     rom->map.encoded = &rom->content[0x1d5d];
@@ -1312,7 +1316,7 @@ static void summer_sale(dw_rom *rom)
  */
 static void other_patches(dw_rom *rom)
 {
-    printf("Applying various other patches...\n");
+    printf("Applying various patches...\n");
 
     /* convert PRG1 to PRG0 */
     vpatch(rom, 0x03f9e, 2,  0x37,  0x32);
@@ -2138,8 +2142,10 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 
     /* Clear the unused code so we can make sure it's unused */
     memset(&rom.content[0xc288], 0xff, 0xc4f5 - 0xc288);
+    other_patches(&rom);
 
     do_chest_flags(&rom);
+    stair_shuffle(&rom);
     map_generate_terrain(&rom);
     spike_rewrite(&rom);
     randomize_attack_patterns(&rom);
@@ -2172,7 +2178,6 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     treasure_guards(&rom);
     sorted_inventory(&rom);
     summer_sale(&rom);
-    other_patches(&rom);
     credits(&rom);
 
     modern_spell_names(&rom);

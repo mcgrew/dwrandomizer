@@ -8,5 +8,7 @@
 void rotate_dungeons(dw_rom *rom);
 void set_dungeon_tile(dw_rom *rom, dw_map_index town, uint8_t x,
         uint8_t y, uint8_t tile);
+dw_dungeon_tile get_dungeon_tile(dw_rom *rom, dw_map_index town, uint8_t x,
+        uint8_t y);
 
 #endif

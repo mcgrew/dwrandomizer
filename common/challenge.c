@@ -1,4 +1,6 @@
 
+#include <stdio.h>
+
 #include "dwr_types.h"
 #include "dwr.h"
 #include "patch.h"

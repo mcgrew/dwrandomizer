@@ -745,9 +745,9 @@ static void short_charlock(dw_rom *rom)
 
     printf("Shortening Charlock Castle...\n");
 
-    rom->map.warps_to[WARP_CHARLOCK].map = CHARLOCK_THRONE_ROOM;
-    rom->map.warps_to[WARP_CHARLOCK].x = 10;
-    rom->map.warps_to[WARP_CHARLOCK].y = 29;
+    rom->map.warps_to[WARP_CHARLOCK_SURFACE_2].map = CHARLOCK_THRONE_ROOM;
+    rom->map.warps_to[WARP_CHARLOCK_SURFACE_2].x = 10;
+    rom->map.warps_to[WARP_CHARLOCK_SURFACE_2].y = 29;
     rom->map.warps_from[WARP_CHARLOCK_CHEST].map = CHARLOCK_THRONE_ROOM;
     rom->map.warps_from[WARP_CHARLOCK_CHEST].x = 18;
     rom->map.warps_from[WARP_CHARLOCK_CHEST].y = 9;

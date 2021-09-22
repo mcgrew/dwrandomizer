@@ -635,8 +635,6 @@ static inline void find_largest_lm(int *lm_sizes, int lm_count,
     if (lm_sizes[(*next)-1] < MIN_LM_SIZE) {
         *next = *largest;
     }
-//    printf("Largest: %d(%d), Next: %d(%d)\n", *largest, lm_sizes[(*largest)-1],
-//           *next, lm_sizes[(*next)-1]);
 }
 
 /**

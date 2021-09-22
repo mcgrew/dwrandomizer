@@ -32,6 +32,8 @@
 #define RANDOM_XP_REQS(x)         ((x->flags[ 1] & 0x03) >> 0)
 #define HEAL_HURT_B4_MORE(x)      ((x->flags[ 2] & 0xc0) >> 6)
 #define ROTATE_DUNGEONS(x)        ((x->flags[ 2] & 0x30) >> 4)
+// #define STAIR_SHUFFLE(x)          ((x->flags[ 2] & 0x0c) >> 0)
+#define STAIR_SHUFFLE(x)          (1)
 #define TREASURE_GUARDS(x)        ((x->flags[13] & 0x03) >> 0)
 
 #define MENU_WRAP(x)              ((x->flags[ 3] & 0xc0) >> 6)

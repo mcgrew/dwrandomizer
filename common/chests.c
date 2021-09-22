@@ -1,5 +1,6 @@
 
 #include <string.h>
+#include <stdio.h>
 
 #include "dwr.h"
 #include "mt64.h"
@@ -13,19 +14,12 @@
  */
 static inline int non_charlock_chest(dw_rom *rom)
 {
-    int chest, map;
+    int chest;
 
     while (TRUE) {
         chest = (int)mt_rand(0, 30);
-        if (chest == 6) /* chest 6 is the throne room key */
-            continue;
-        map = rom->chests[chest].map;
-        if (map == NORTHERN_SHRINE) /* staff of rain chest */
-            continue;
-        if ((map >= CHARLOCK_CAVE_1 && map <= CHARLOCK_CAVE_6) ||
-                map == CHARLOCK_THRONE_ROOM)
-            continue;
-        break;
+        if (!(rom->chest_access[chest] & 0x88))
+            break;
     }
     return chest;
 }
@@ -60,15 +54,11 @@ static inline void check_quest_items(dw_rom *rom)
 {
     int i, tmp_index;
     uint8_t tmp_item;
-    dw_map_index map;
 
     printf("Checking quest item placement...\n");
 
     for (i=0; i < CHEST_COUNT; i++) {
-        map = rom->chests[i].map;
-        if (map == CHARLOCK_THRONE_ROOM
-                || (map >= CHARLOCK_CAVE_1 && map <= CHARLOCK_CAVE_6)) {
-
+        if (rom->chest_access[i] & 0x88) {
             if (is_quest_item(rom->chests[i].item)) {
                 do {
                     tmp_index = non_charlock_chest(rom);

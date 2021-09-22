@@ -5,6 +5,9 @@
 
 #include <stdint.h>
 
+#include "dwr_types.h"
+#include "dwr.h"
+
 /** Map tile indexes */
 typedef enum {
     TILE_NOTSWAMP = -2,
@@ -63,8 +66,12 @@ typedef enum {
     WARP_GARINS_GRAVE_POINTLESS = 45
 } dw_warp_index;
 
-#include "dwr_types.h"
-#include "dwr.h"
+enum {
+    KEY_IN_TABLET   = 0x01,
+    KEY_IN_MOUNTAIN = 0x02,
+    KEY_IN_GRAVE    = 0x04,
+    KEY_IN_BASEMENT = 0x10,
+};
 
 #ifdef __cplusplus
 extern "C" {

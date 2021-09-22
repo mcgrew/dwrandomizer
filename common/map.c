@@ -11,13 +11,6 @@
 #define MIN_WALKABLE    5000
 #define MAP_ENCODED_SIZE 2294
 
-enum {
-    KEY_IN_MOUNTAIN = 1,
-    KEY_IN_GRAVE    = 2,
-    KEY_IN_BASEMENT = 4,
-    KEY_IN_TABLET   = 8
-};
-
 #define VAN_SPOT_COUNT 13
 
 static const uint8_t vanilla_spots[VAN_SPOT_COUNT][2] = {
@@ -722,7 +715,7 @@ static BOOL need_rimuldar(dw_map *map)
     warp = map->warps_from[WARP_TANTEGEL_BASEMENT];
     if (warp.map == 1) {
         lm = map->walkable[warp.x][warp.y];
-        if (lm == tantegel_lm && map->have_keys & KEY_IN_BASEMENT) {
+        if (lm == tantegel_lm && map->key_access & KEY_IN_BASEMENT) {
             return FALSE;
         }
     }
@@ -730,7 +723,7 @@ static BOOL need_rimuldar(dw_map *map)
     warp = map->warps_from[WARP_ERDRICKS_CAVE];
     if (warp.map == 1) {
         lm = map->walkable[warp.x][warp.y];
-        if (lm == tantegel_lm && map->have_keys & KEY_IN_TABLET) {
+        if (lm == tantegel_lm && map->key_access & KEY_IN_TABLET) {
             return FALSE;
         }
     }
@@ -738,7 +731,7 @@ static BOOL need_rimuldar(dw_map *map)
     warp = map->warps_from[WARP_MOUNTAIN_CAVE];
     if (warp.map == 1) {
         lm = map->walkable[warp.x][warp.y];
-        if (lm == tantegel_lm && map->have_keys & KEY_IN_MOUNTAIN) {
+        if (lm == tantegel_lm && map->key_access & KEY_IN_MOUNTAIN) {
             return FALSE;
         }
     }
@@ -746,7 +739,7 @@ static BOOL need_rimuldar(dw_map *map)
     warp = map->warps_from[WARP_GARINS_GRAVE];
     if (warp.map == 1) {
         lm = map->walkable[warp.x][warp.y];
-        if (lm == tantegel_lm && map->have_keys & KEY_IN_GRAVE) {
+        if (lm == tantegel_lm && map->key_access & KEY_IN_GRAVE) {
             return FALSE;
         }
     }
@@ -929,24 +922,12 @@ static void check_keys(dw_rom *rom)
 
     printf("Checking for key availability...\n");
     chest_end = rom->chests + CHEST_COUNT;
-    rom->map.have_keys = 0;
 
     for ( chest = rom->chests; chest < chest_end; chest++) {
         if (chest->item == KEY) {
             switch(chest->map) {
                 case 12:
-                    rom->map.have_keys |= KEY_IN_BASEMENT;
-                    break;
-                case 29:
-                    rom->map.have_keys |= KEY_IN_TABLET;
-                    break;
-                case 22:
-                case 23:
-                    rom->map.have_keys |= KEY_IN_MOUNTAIN;
-                    break;
-                case 24:
-                    rom->map.have_keys |= KEY_IN_GRAVE;
-                default:
+                    rom->map.key_access |= KEY_IN_BASEMENT;
                     break;
             }
         }

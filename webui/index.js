@@ -106,7 +106,7 @@ function setup_ui() {
         'HEAL must come before HEALMORE; HURT before HURTMORE.');
     ui.addTriOption('Gameplay',  9,  2, 4, 'Randomly Rotate/Mirror Dungeons',
         'All dungeons will be rotated at random angles and/or mirrored.');
-    ui.addTriOption('Gameplay', 10,  2, 2, 'Stair Shuffle (needs testing)',
+    ui.addTriOption('Gameplay', 10,  2, 2, 'Stair Shuffle',
         'Where stairs take you inside dungeons will be randomized.');
     ui.addTriOption('Gameplay', 11, 13, 0, 'Treasure Guards',
         'Important items will have a mid-level monster guarding them.');

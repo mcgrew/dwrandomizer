@@ -45,7 +45,7 @@ tab:hover, tab.active {
 tabcontent {
     display: grid;
     grid-template-columns: 50% 50%;
-    grid-template-rows: 50px 50px 50px 50px 50px;
+    grid-template-rows: 50px 50px 50px 50px 50px 50px;
     border: 1px solid black;
     border-radius: 0 0 4px 4px;
     padding: 3em;

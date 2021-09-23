@@ -1300,7 +1300,7 @@ static void summer_sale(dw_rom *rom)
 
     for (i=0; i < 17; i++) {
         /* if it's a maybe flag, only apply about half the time */
-        if (SUMMER_SALE(rom) == 2 && mt_rand_bool())
+        if (SUMMER_SALE(rom) & 0xAA && mt_rand_bool())
             continue;
         discount = mt_rand_double_ranged(0.35, 0.65);
         rom->weapon_price_display[i] = rom->weapon_prices[i] =
@@ -1749,7 +1749,7 @@ static void treasure_guards(dw_rom *rom)
     for (i=0; i < 2; i++){
         if (should_be_guarded(search->item[i])) {
             /* if it's a maybe flag, only apply about half the time */
-            if (TREASURE_GUARDS(rom) == 2 && mt_rand_bool())
+            if (TREASURE_GUARDS(rom) & 0xAA && mt_rand_bool())
                 continue;
             spike->map[spike_entry] = search->map[i];
             spike->x[spike_entry] = search->x[i];

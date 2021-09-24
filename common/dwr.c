@@ -1308,6 +1308,51 @@ static void summer_sale(dw_rom *rom)
     }
 }
 
+static void death_counter(dw_rom *rom)
+{
+
+    if (!DEATH_COUNTER(rom))
+        return;
+
+    /* hook the "Thou art dead" jump */
+    vpatch(rom, 0x06379,    2,  0xc5,  0xc2);
+
+    /* patch the status window pointer */
+    vpatch(rom, 0x06f6e,    1,  0xcb);
+
+
+    /* patch the pop-up stats window and status window */
+    vpatch(rom, 0x06fb1,    1,  0x07);
+    vpatch(rom, 0x06fc7,   12,
+            0x27,  0x99,  0xff,  0xff,  0x21,  0x0b,  0x14,  0x35,  0x88,
+            0x85,  0xb1,  0x85);
+
+    vpatch(rom, 0x0c2c5, 48,
+                                /* display_deaths:                           */
+            0xad,  0xdf,  0x64, /*       lda $64df                           */
+            0xd0,  0x03,        /*       bne +                               */
+            0x4c,  0xba,  0xa8, /*       jmp $a8ba                           */
+            0xa9,  0x05,        /*   +   lda #05                             */
+            0x8d,  0xe2,  0x64, /*       sta $64e2                           */
+            0xad,  0x30,  0x66, /*       lda $6630                           */
+            0x85,  0x1a,        /*       sta $1a                             */
+            0xad,  0x31,  0x66, /*       lda $6631                           */
+            0x85,  0x1b,        /*       sta $1b                             */
+            0xa9,  0x00,        /*       lda #00                             */
+            0x85,  0x1c,        /*       sta $1c                             */
+            0x20,  0x53,  0xa7, /*       jsr $a753                           */
+            0x4c,  0x64,  0xa7, /*       jmp $a764                           */
+                                /* inc_death_ctr:                            */
+            0xac,  0x30,  0x66, /*       ldy $6630                           */
+            0xc8,               /*       iny                                 */
+            0xd0,  0x03,        /*       bne +                               */
+            0xee,  0x31,  0x66, /*       inc $6631                           */
+            0x8c,  0x30,  0x66, /*   +   sty $6630                           */
+            0x4c,  0xcb,  0xc7  /*       jmp b3_c7cb                         */
+    );
+    vpatch(rom, 0x0edb5,    2,  0xe6,  0xc2);
+}
+
 /**
  * Other various patches for gameplay, such as silver harp enemies, town and
  * dungeon map changes and moving some NPCs.
@@ -2191,6 +2236,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 
     crc = crc64(0, rom.content, 0x10000);
 
+    death_counter(&rom);
     update_title_screen(&rom);
     sprite(&rom, sprite_name);
     no_screen_flash(&rom);

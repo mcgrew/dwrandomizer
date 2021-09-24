@@ -50,7 +50,7 @@ BOOL is_quest_item(uint8_t item)
  *
  * @param rom The rom struct.
  */
-static inline void check_quest_items(dw_rom *rom)
+void check_quest_items(dw_rom *rom)
 {
     int i, tmp_index;
     uint8_t tmp_item;
@@ -589,10 +589,10 @@ static void shuffle_chests(dw_rom *rom)
         (chest++)->item = *(cont++);
     }
 
-    check_quest_items(rom);
 }
 
 void do_chest_flags(dw_rom *rom) {
     move_chests(rom);
     shuffle_chests(rom);
 }
+

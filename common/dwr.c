@@ -2146,6 +2146,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 
     do_chest_flags(&rom);
     stair_shuffle(&rom);
+    check_quest_items(&rom);
     map_generate_terrain(&rom);
     spike_rewrite(&rom);
     randomize_attack_patterns(&rom);

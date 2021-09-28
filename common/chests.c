@@ -45,6 +45,18 @@ BOOL is_quest_item(uint8_t item)
 }
 
 /**
+ * Determines if a chest should be left alone when randomizing
+ *
+ * @param chest The chest to be checked
+ */
+static inline BOOL is_static_chest(dw_chest *chest)
+{
+    return (chest->map == TANTEGEL_THRONE_ROOM && chest->item == KEY) ||
+                    chest->item == STAFF;
+}
+
+
+/**
  * Looks for quest items which may be in Charlock due to shuffling and moves
  * them to a chest outside Charlock.
  *
@@ -62,7 +74,8 @@ void check_quest_items(dw_rom *rom)
             if (is_quest_item(rom->chests[i].item)) {
                 do {
                     tmp_index = non_charlock_chest(rom);
-                } while (is_quest_item(rom->chests[tmp_index].item));
+                } while (is_quest_item(rom->chests[tmp_index].item) 
+                        || is_static_chest(&rom->chests[tmp_index]));
                 tmp_item = rom->chests[tmp_index].item;
                 rom->chests[tmp_index].item = rom->chests[i].item;
                 rom->chests[i].item = tmp_item;
@@ -188,17 +201,6 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
         0xff,  0xff,  0xff,  0xff);
 }
 
-
-/**
- * Determines if a chest should be left alone when randomizing
- *
- * @param chest The chest to be checked
- */
-static inline BOOL is_static_chest(dw_chest *chest)
-{
-    return (chest->map == TANTEGEL_THRONE_ROOM && chest->item == KEY) ||
-                    chest->item == STAFF;
-}
 
 /**
  * Called when the player chooses not to shuffle items in chests. This sets

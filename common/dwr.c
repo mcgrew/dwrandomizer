@@ -740,18 +740,23 @@ static void randomize_spells(dw_rom *rom)
  */
 static void short_charlock(dw_rom *rom)
 {
+    dw_warp tmp;
     if (!SHORT_CHARLOCK(rom))
         return;
 
     printf("Shortening Charlock Castle...\n");
 
-    rom->map.warps_to[WARP_CHARLOCK_SURFACE_1].map = CHARLOCK_THRONE_ROOM;
-    rom->map.warps_to[WARP_CHARLOCK_SURFACE_1].x = 10;
-    rom->map.warps_to[WARP_CHARLOCK_SURFACE_1].y = 29;
-    rom->map.warps_from[WARP_CHARLOCK_CHEST].map = CHARLOCK_THRONE_ROOM;
-    rom->map.warps_from[WARP_CHARLOCK_CHEST].x = 18;
-    rom->map.warps_from[WARP_CHARLOCK_CHEST].y = 9;
-    vpatch(rom, 0x4c4, 1, 0x76); /* Add some downward stairs near the chests */
+    /* swap these 2 warps */
+    tmp = rom->map.warps_to[WARP_CHARLOCK_SURFACE_1];
+    rom->map.warps_to[WARP_CHARLOCK_SURFACE_1] = 
+        rom->map.warps_to[WARP_CHARLOCK_THRONE];
+    rom->map.warps_to[WARP_CHARLOCK_THRONE] = tmp;
+
+    /* swap these 2 warps */
+    tmp = rom->map.warps_to[WARP_CHARLOCK_SURFACE_2];
+    rom->map.warps_to[WARP_CHARLOCK_SURFACE_2] = 
+        rom->map.warps_to[WARP_CHARLOCK_CHEST];
+    rom->map.warps_to[WARP_CHARLOCK_CHEST] = tmp;
 }
 
 /**
@@ -2188,7 +2193,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     /* Clear the unused code so we can make sure it's unused */
     memset(&rom.content[0xc288], 0xff, 0xc4f5 - 0xc288);
     other_patches(&rom);
-
+    short_charlock(&rom);
     do_chest_flags(&rom);
     stair_shuffle(&rom);
     check_quest_items(&rom);
@@ -2211,7 +2216,6 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     open_charlock(&rom);
     dwr_token_dialogue(&rom);
     chaos_mode(&rom);
-    short_charlock(&rom);
     no_keys(&rom);
     cursed_princess(&rom);
     threes_company(&rom);

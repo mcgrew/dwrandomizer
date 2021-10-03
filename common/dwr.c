@@ -137,7 +137,6 @@ static BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->map.rainbow_drop = (dw_rainbow_drop*)&rom->content[0xde8b];
     rom->map.rainbow_bridge = (dw_rainbow_drop*)&rom->content[0x2c3b];
     rom->stats = (dw_stats*)&rom->content[0x60cd];
-    rom->new_spells = (dw_new_spell*)&rom->content[0xeae8];
     rom->mp_reqs = &rom->content[0x1d53];
     rom->xp_reqs = (uint16_t*)&rom->content[0xf35b];
     rom->enemies = (dw_enemy*)&rom->content[0x5e4b];
@@ -686,6 +685,7 @@ static void randomize_spells(dw_rom *rom)
 {
     int i, j, tmp;
     dw_stats *stats;
+    uint8_t spell_levels[HURTMORE+1];
 
     if (!RANDOMIZE_SPELLS(rom))
         return;
@@ -694,19 +694,24 @@ static void randomize_spells(dw_rom *rom)
 
     /* choose levels for each spell */
     for (i=HEAL; i <= HURTMORE; i++) {
-        rom->new_spells[i].level = mt_rand(1, 16);
+        spell_levels[i] = mt_rand(1, 16);
     }
 
+    if (PERMANENT_REPEL(rom))
+        spell_levels[REPEL] = 255;
+    if (NO_HURTMORE(rom))
+        spell_levels[HURTMORE] = 255;
+
     if (HEAL_HURT_B4_MORE(rom)) {
-        if (rom->new_spells[HEAL].level > rom->new_spells[HEALMORE].level) {
-            tmp = rom->new_spells[HEAL].level;
-            rom->new_spells[HEAL].level = rom->new_spells[HEALMORE].level;
-            rom->new_spells[HEALMORE].level = tmp;
+        if (spell_levels[HEAL] > spell_levels[HEALMORE]) {
+            tmp = spell_levels[HEAL];
+            spell_levels[HEAL] = spell_levels[HEALMORE];
+            spell_levels[HEALMORE] = tmp;
         }
-        if (rom->new_spells[HURT].level > rom->new_spells[HURTMORE].level) {
-            tmp = rom->new_spells[HURT].level;
-            rom->new_spells[HURT].level = rom->new_spells[HURTMORE].level;
-            rom->new_spells[HURTMORE].level = tmp;
+        if (spell_levels[HURT] > spell_levels[HURTMORE]) {
+            tmp = spell_levels[HURT];
+            spell_levels[HURT] = spell_levels[HURTMORE];
+            spell_levels[HURTMORE] = tmp;
         }
     }
 
@@ -714,13 +719,8 @@ static void randomize_spells(dw_rom *rom)
         stats = &rom->stats[i];
         stats->spells = 0;
         for (j=HEAL; j <= HURTMORE; j++) {
-            if ((j == REPEL && PERMANENT_REPEL(rom)) ||
-                (j == HURTMORE && NO_HURTMORE(rom))) {
-                rom->new_spells[j].level = 31; // this spell is never learned.
-                continue;
-            }
             /* spell masks are in big endian format */
-            if (rom->new_spells[j].level <= i+1) {
+            if (spell_levels[j] <= i+1) {
                 stats->spells |= 1 << (j + 8) % 16;
             }
         }
@@ -1353,6 +1353,61 @@ static void death_counter(dw_rom *rom)
             0x4c,  0xcb,  0xc7  /*       jmp b3_c7cb                         */
     );
     vpatch(rom, 0x0edb5,    2,  0xe6,  0xc2);
+}
+
+static void show_spells_learned(dw_rom *rom)
+{
+    /* patch the level up text */
+    vpatch(rom, 0x0ae97,    1,  0xfb); /* replace CR with wait arrow */
+    vpatch(rom, 0x0aeab,   11,
+            /* t      h     e            s      p     e      l      l        */
+            0x1d,  0x11, 0x0e,  0x5f, 0x1c,  0x19, 0x0e,  0x15,  0x15,  0x5f,
+            /* spell name */
+            0xf6);
+
+    vpatch(rom, 0x03fe0,   14,
+                                /* save_spells:                              */
+            0xa5,  0xce,        /*   lda $ce     ; load current spells (lo)  */
+            0x85,  0xdc,        /*   sta $dc     ; store at $dc              */
+            0xa5,  0xcf,        /*   lda $cf     ; load current spells (hi)  */
+            0x85,  0xdd,        /*   sta $dd     ; store at $dd              */
+            0x4c,  0x50,  0xf0, /*   jmp b3_f050 ; update to new level stats */
+            0xff,  0xff,  0xff);
+    vpatch(rom, 0x0ea76,    3,
+            0x20, 0xe0,  0xbf   /*   jsr save_spells                         */
+            );
+    vpatch(rom, 0x0eae6,   46,
+            0xa0,  0x10,        /*   ldy #$10    ; Start at 16               */
+            0xa5,  0xdc,        /*   lda $dc     ; load old spells known     */
+            0x45,  0xce,        /*   eor $ce     ; xor with new spells known */
+            0x48,               /* - pha         ; push on the stack         */
+            0x29,  0x01,        /*   and #1      ; is the current spell new? */
+            0xf0, 0x0b,         /*   beq +       ; no, go to next spell      */
+            0x98,               /*   tya         ; transfer the index to A   */
+            0x48,               /*   pha         ; push to the stack         */
+            0x20,  0xf0,  0xdb, /*   jsr b3_dbf0 ; prepare spell name        */
+            0x20,  0xcb,  0xc7, /*   jsr b3_c7cb ; print new spell text      */
+            0xf2,               /*   hex f2                                  */
+            0x68,               /*   pla         ; pull the Y value          */
+            0xa8,               /*   tay         ; transfer to Y             */
+            0x68,               /* + pla         ; pull stored new spells    */
+            0x4a,               /*   lsr         ; shift right               */
+            0xc8,               /*   iny         ; increment spell index     */
+            0xc0,  0x1a,        /*   cpy #$1a    ; if Y is 26, we're done    */
+            0xf0,  0x11,        /*   beq +                                   */
+            0xc0,  0x18,        /*   cpy #$18    ; if Y is 18,               */
+            0xd0,  0xe5,        /*   bne -       ;                           */
+            0xa5,  0xdd,        /*   lda $dd     ; load second spell byte    */
+            0x45,  0xcf,        /*   eor $cf     ; xor with new spells       */
+            0x29,  0x03,        /*   and #$3     ; we only need 2 bits here  */
+            0xd0,  0xdd,        /*   bne -       ; if it's not empty,        */
+            0xea,               /*   nop         ;    continue               */
+            0xea,               /*   nop                                     */
+            0xea,               /*   nop                                     */
+            0xea,               /*   nop                                     */
+            0xea                /*   nop                                     */
+                                /*   +                                       */
+        );
 }
 
 /**
@@ -2189,6 +2244,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 
     /* Clear the unused code so we can make sure it's unused */
     memset(&rom.content[0xc288], 0xff, 0xc4f5 - 0xc288);
+    show_spells_learned(&rom);
     other_patches(&rom);
     short_charlock(&rom);
     do_chest_flags(&rom);

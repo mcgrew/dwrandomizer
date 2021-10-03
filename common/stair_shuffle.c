@@ -112,7 +112,7 @@ static BOOL tile_is_walkable(dw_dungeon_tile tile, BOOL have_keys)
     }
 }
 
-static void map_dungeon(dungeon_map *map, uint8_t x, uint8_t y, BOOL have_keys);
+static void map_dungeon(dungeon_map *, uint8_t, uint8_t, BOOL);
 
 static void follow_warp(dungeon_map *map, uint8_t x, uint8_t y, BOOL have_keys)
 {
@@ -308,13 +308,11 @@ static void stair_shuffle_init(dw_rom *rom)
     warps_to = warps_from + 15;
     j = 0;
     for (i=0; i < 102; i++) {
-        if (SHORT_CHARLOCK(rom) && (i % 51) == WARP_CHARLOCK_SURFACE_1)
-            continue;
+//         if (SHORT_CHARLOCK(rom) && (i % 51) == WARP_CHARLOCK_SURFACE_1)
+//             continue;
         if (indexes_contains(indexes, rom->map.warps_from[i%51].map) &&
             indexes_contains(indexes, rom->map.warps_to[i%51].map)) {
-            warps_from[j].map = rom->map.warps_from[i].map;
-            warps_from[j].x = rom->map.warps_from[i].x;
-            warps_from[j].y = rom->map.warps_from[i].y;
+            warps_from[j] = rom->map.warps_from[i];
             j++;
         }
         if (i == 51)
@@ -352,7 +350,8 @@ static BOOL all_chests_accessible()
     return TRUE;
 }
 
-static void do_shuffle()
+static void print_all_maps();
+static void do_shuffle(dw_rom *rom)
 {
     dungeon_map *charlock = get_map(CHARLOCK);
     dungeon_map *charlock_throne = get_map(CHARLOCK_THRONE_ROOM);
@@ -363,14 +362,18 @@ static void do_shuffle()
         map_dungeon(get_map(GARINS_GRAVE_1), 6, 11, TRUE);
         map_dungeon(get_map(MOUNTAIN_CAVE), 6, 5, TRUE);
         map_dungeon(get_map(ERDRICKS_CAVE), 0, 0, TRUE);
-        if ((charlock_throne->tiles[10][29] | charlock->tiles[10][19]) & 8)
+        if ((charlock_throne->tiles[10][29] | charlock->tiles[10][19]) & 8) {
             /* DL/Charlock accessible from outside. Try again */
             continue;
+        }
 
         map_dungeon(get_map(CHARLOCK), 10, 19, TRUE);
-        if (!all_chests_accessible())
+//         if (SHORT_CHARLOCK(rom))
+//             map_dungeon(get_map(CHARLOCK_THRONE_ROOM), 10, 29, TRUE);
+        if (!all_chests_accessible()) {
             /* inaccessible chests, try again. */
             continue;
+        }
         clear_all_flags();
         map_dungeon(charlock, 10, 19, TRUE);
         if (charlock_throne->tiles[10][29] & 8)
@@ -430,9 +433,13 @@ static void chest_paths(dw_rom *rom)
 
     clear_all_flags();
     map_dungeon(get_map(CHARLOCK), 10, 19, FALSE);
+//     if (SHORT_CHARLOCK(rom))
+//         map_dungeon(get_map(CHARLOCK_THRONE_ROOM), 10, 29, FALSE);
     mark_chests(rom, 0x8);
     clear_all_flags();
     map_dungeon(get_map(CHARLOCK), 10, 19, TRUE);
+//     if (SHORT_CHARLOCK(rom))
+//         map_dungeon(get_map(CHARLOCK_THRONE_ROOM), 10, 29, TRUE);
     mark_chests(rom, 0x80);
 }
 
@@ -441,16 +448,12 @@ static void write_back_warps(dw_rom *rom)
     size_t i, j;
     j = 0;
     for (i=0; i < 51; i++) {
-        if (SHORT_CHARLOCK(rom) && i == WARP_CHARLOCK_SURFACE_1)
-            continue;
+//         if (SHORT_CHARLOCK(rom) && i == WARP_CHARLOCK_SURFACE_1)
+//             continue;
         if (indexes_contains(indexes, rom->map.warps_from[i].map) &&
             indexes_contains(indexes, rom->map.warps_to[i].map)) {
-            rom->map.warps_from[i].map = warps_from[j].map;
-            rom->map.warps_from[i].x = warps_from[j].x;
-            rom->map.warps_from[i].y = warps_from[j].y;
-            rom->map.warps_to[i].map = warps_to[j].map;
-            rom->map.warps_to[i].x = warps_to[j].x;
-            rom->map.warps_to[i].y = warps_to[j].y;
+            rom->map.warps_from[i] = warps_from[j];
+            rom->map.warps_to[i] = warps_to[j];
             j++;
         }
     }
@@ -462,58 +465,15 @@ void stair_shuffle(dw_rom *rom)
     stair_shuffle_init(rom);
     if (STAIR_SHUFFLE(rom)) {
         printf("Shuffling stairs...\n");
-        do_shuffle();
+        do_shuffle(rom);
         code_patches(rom);
         write_back_warps(rom);
     }
     chest_paths(rom);
 
-//     for (int i=0; i < CHEST_COUNT; i++) {
-//         printf("%02X ", rom->chest_access[i]);
-//     }
-//     printf("\n");
-//     printf("%X\n", rom->map.key_access);
-
 }
 
 #if 0
-/* test code */
-
-#include "string.h"
-
-BOOL dwr_init(dw_rom *rom, const char *input_file)
-{
-    FILE *input;
-    int read;
-
-    rom->header = malloc(ROM_SIZE);
-    input = fopen(input_file, "rb");
-    if (!input) {
-        fprintf(stderr, "Unable to open ROM file '%s'", input_file);
-        return FALSE;
-    }
-    read = fread(rom->header, 1, ROM_SIZE, input);
-    if (read < ROM_SIZE) {
-        fprintf(stderr, "File '%s' is too small and may be corrupt, aborting.",
-                input_file);
-        fclose(input);
-        return FALSE;
-    }
-    fclose(input);
-
-    rom->content = &rom->header[0x10];
-    rom->map.warps_from = (dw_warp*)&rom->content[0xf3c8];
-    rom->map.warps_to   = (dw_warp*)&rom->content[0xf461];
-    rom->chests = (dw_chest*)&rom->content[0x5dcd];
-
-    rom->map.flags = rom->flags;
-    memset(rom->chest_access, 0, 31);
-    rom->map.key_access = 0;
-
-    rom->map.meta = (dw_map_meta*)&rom->content[0x1a];
-    return TRUE;
-}
-
 static void print_map(dungeon_map *map)
 {
     size_t x, y;
@@ -551,6 +511,44 @@ static void print_all_maps()
     print_map(get_map(ERDRICKS_CAVE));
     print_map(get_map(ERDRICKS_CAVE_2));
 }
+
+/* test code */
+
+#include "string.h"
+
+BOOL dwr_init(dw_rom *rom, const char *input_file)
+{
+    FILE *input;
+    int read;
+
+    rom->header = malloc(ROM_SIZE);
+    input = fopen(input_file, "rb");
+    if (!input) {
+        fprintf(stderr, "Unable to open ROM file '%s'", input_file);
+        return FALSE;
+    }
+    read = fread(rom->header, 1, ROM_SIZE, input);
+    if (read < ROM_SIZE) {
+        fprintf(stderr, "File '%s' is too small and may be corrupt, aborting.",
+                input_file);
+        fclose(input);
+        return FALSE;
+    }
+    fclose(input);
+
+    rom->content = &rom->header[0x10];
+    rom->map.warps_from = (dw_warp*)&rom->content[0xf3c8];
+    rom->map.warps_to   = (dw_warp*)&rom->content[0xf461];
+    rom->chests = (dw_chest*)&rom->content[0x5dcd];
+
+    rom->map.flags = rom->flags;
+    memset(rom->chest_access, 0, 31);
+    rom->map.key_access = 0;
+
+    rom->map.meta = (dw_map_meta*)&rom->content[0x1a];
+    return TRUE;
+}
+
 
 int main(int argc, char **argv)
 {

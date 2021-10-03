@@ -39,13 +39,10 @@ const char *prg1sums[2] = {
 
 /* The [ and ] are actually opening/closing quotes. The / is .' */
 const char alphabet[] = "0123456789abcdefghijklmnopqrstuvwxyz"
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ[]'*>_:__.,-_?!;)(``/'___________  ";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ[]'*>_:__.,-_?!;)(``/'___________ \n";
 
 const char title_alphabet[] = "0123456789__________________________"
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ__________________________________!.c-     ";
-
-const char flag_order[] =
-        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 /**
  * Returns the version number. Mosltly for use with emscripten.
@@ -749,13 +746,13 @@ static void short_charlock(dw_rom *rom)
     /* swap these 2 warps */
     tmp = rom->map.warps_to[WARP_CHARLOCK_SURFACE_1];
     rom->map.warps_to[WARP_CHARLOCK_SURFACE_1] = 
-        rom->map.warps_to[WARP_CHARLOCK_THRONE];
+            rom->map.warps_to[WARP_CHARLOCK_THRONE];
     rom->map.warps_to[WARP_CHARLOCK_THRONE] = tmp;
 
     /* swap these 2 warps */
     tmp = rom->map.warps_to[WARP_CHARLOCK_SURFACE_2];
     rom->map.warps_to[WARP_CHARLOCK_SURFACE_2] = 
-        rom->map.warps_to[WARP_CHARLOCK_CHEST];
+            rom->map.warps_to[WARP_CHARLOCK_CHEST];
     rom->map.warps_to[WARP_CHARLOCK_CHEST] = tmp;
 }
 

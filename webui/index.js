@@ -209,11 +209,24 @@ function setup_ui() {
         if (sprite_choices.includes(this.value)) {
             this.classList.remove('invalid');
             localStorage.setItem('sprite', this.value);
+            spritePreview.setAttribute('src', 'sprites/' + spriteBox.getValue() 
+                + '.png');
         } else {
             this.classList.add('invalid');
         }
         ui.updateSummary();
     });
+    let spritePreview = ui.create('img', null, {
+        'background-color': '#ccc',
+        'border': '2px solid #ccc',
+        'float': 'right',
+        'height': '32px',
+        'width': '32px'
+    })
+    spritePreview.id = 'sprite-preview';
+    spritePreview.setAttribute('src', 'sprites/' + spriteBox.getValue() 
+        + '.png');
+    spriteBox.parentElement.append(spritePreview);
     ui.updateSummary();
 }
 

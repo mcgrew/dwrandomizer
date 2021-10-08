@@ -3,6 +3,9 @@ body {
     font-family: Helvetica, Arial, sans-serif;
     background-color: #888;
     margin: 0;
+    font-size: 16px;
+    /* prevent chrome mobile from being stupid */
+    -webkit-text-size-adjust: none;
 }
 
 #application {

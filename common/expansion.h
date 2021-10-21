@@ -1,5 +1,5 @@
 
-#ifndef _DWR_EXPANSION_H
+#ifndef _DWR_EXPANSION_H_
 #define _DWR_EXPANSION_H_
 
 #include "dwr_types.h"

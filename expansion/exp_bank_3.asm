@@ -422,7 +422,7 @@ credits_data:
     .db "CaitSith2    "
     .db INSTR_SET_PPU
     .word $21c8
-    .db "DVJ          "
+    .db "dvj          "
     .db INSTR_SET_PPU
     .word $2208
     .db "bunder2015   "

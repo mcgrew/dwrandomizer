@@ -334,6 +334,7 @@ typedef struct {
 typedef struct {
     uint8_t *header;
     uint8_t *content;
+    uint8_t *expansion;
     unsigned char flags_encoded[25];
     uint8_t flags[15];
     uint8_t chest_access[31];

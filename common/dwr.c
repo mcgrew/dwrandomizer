@@ -20,6 +20,7 @@
 #include "polyfit.h"
 #include "base32.h"
 #include "sprites.h"
+#include "expansion.h"
 
 const char *prg0sums[8] = {
       "6a50ce57097332393e0e8751924fd56456ef083c", /* Dragon Warrior (U) (PRG0) [!].nes      */
@@ -102,7 +103,10 @@ static BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     int read;
 
     rom->header = malloc(ROM_SIZE);
-    memset(rom->header, 0, ROM_SIZE);
+    memset(rom->header, 0xff, ROM_SIZE);
+    rom->expansion = (uint8_t*)malloc(0x10000);
+    memset(rom->expansion, 0xff, 0x10000);
+
     input = fopen(input_file, "rb");
     if (!input) {
         fprintf(stderr, "Unable to open ROM file '%s'", input_file);
@@ -120,11 +124,11 @@ static BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->content = &rom->header[0x10];
     strncpy((char *)rom->flags_encoded, flags, 24);
     rom->flags_encoded[24] = '\0'; /* Make sure it's null terminated */
-
     rom->map.flags = rom->flags;
     memset(rom->flags, 0, 15);
     base32_decode(rom->flags_encoded, rom->flags);
     update_flags(rom);
+
     rom->map.chest_access = rom->chest_access;
     /* subtract 0x9d5d from these pointers */
     rom->map.pointers = (uint16_t*)&rom->content[0x2653];
@@ -1317,7 +1321,7 @@ static void death_counter(dw_rom *rom)
         return;
 
     /* hook the "Thou art dead" jump */
-    vpatch(rom, 0x06379,    2,  0xc5,  0xc2);
+//     vpatch(rom, 0x06379,    2,  0x30,  0xc3);
 
     /* patch the status window pointer */
     vpatch(rom, 0x06f6e,    1,  0xcb);
@@ -1329,30 +1333,30 @@ static void death_counter(dw_rom *rom)
             0x27,  0x99,  0xff,  0xff,  0x21,  0x0b,  0x14,  0x35,  0x88,
             0x85,  0xb1,  0x85);
 
-    vpatch(rom, 0x0c2c5, 48,
-                                /* display_deaths:                           */
-            0xad,  0xdf,  0x64, /*       lda $64df                           */
-            0xd0,  0x03,        /*       bne +                               */
-            0x4c,  0xba,  0xa8, /*       jmp $a8ba                           */
-            0xa9,  0x05,        /*   +   lda #05                             */
-            0x8d,  0xe2,  0x64, /*       sta $64e2                           */
-            0xad,  0x30,  0x66, /*       lda $6630                           */
-            0x85,  0x1a,        /*       sta $1a                             */
-            0xad,  0x31,  0x66, /*       lda $6631                           */
-            0x85,  0x1b,        /*       sta $1b                             */
-            0xa9,  0x00,        /*       lda #00                             */
-            0x85,  0x1c,        /*       sta $1c                             */
-            0x20,  0x53,  0xa7, /*       jsr $a753                           */
-            0x4c,  0x64,  0xa7, /*       jmp $a764                           */
-                                /* inc_death_ctr:                            */
-            0xac,  0x30,  0x66, /*       ldy $6630                           */
-            0xc8,               /*       iny                                 */
-            0xd0,  0x03,        /*       bne +                               */
-            0xee,  0x31,  0x66, /*       inc $6631                           */
-            0x8c,  0x30,  0x66, /*   +   sty $6630                           */
-            0x4c,  0xcb,  0xc7  /*       jmp b3_c7cb                         */
-    );
-    vpatch(rom, 0x0edb5,    2,  0xe6,  0xc2);
+//     vpatch(rom, 0x0c330, 48,
+//                                 /* display_deaths:                           */
+//             0xad,  0xdf,  0x64, /*       lda $64df                           */
+//             0xd0,  0x03,        /*       bne +                               */
+//             0x4c,  0xba,  0xa8, /*       jmp $a8ba                           */
+//             0xa9,  0x05,        /*   +   lda #05                             */
+//             0x8d,  0xe2,  0x64, /*       sta $64e2                           */
+//             0xad,  0x30,  0x66, /*       lda $6630                           */
+//             0x85,  0x1a,        /*       sta $1a                             */
+//             0xad,  0x31,  0x66, /*       lda $6631                           */
+//             0x85,  0x1b,        /*       sta $1b                             */
+//             0xa9,  0x00,        /*       lda #00                             */
+//             0x85,  0x1c,        /*       sta $1c                             */
+//             0x20,  0x53,  0xa7, /*       jsr $a753                           */
+//             0x4c,  0x64,  0xa7, /*       jmp $a764                           */
+//                                 /* inc_death_ctr:                            */
+//             0xac,  0x30,  0x66, /*       ldy $6630                           */
+//             0xc8,               /*       iny                                 */
+//             0xd0,  0x03,        /*       bne +                               */
+//             0xee,  0x31,  0x66, /*       inc $6631                           */
+//             0x8c,  0x30,  0x66, /*   +   sty $6630                           */
+//             0x4c,  0xcb,  0xc7  /*       jmp b3_c7cb                         */
+//     );
+//     vpatch(rom, 0x0edb5,    2,  0xe6,  0xc2);
 }
 
 static void show_spells_learned(dw_rom *rom)
@@ -1473,120 +1477,120 @@ static void other_patches(dw_rom *rom)
     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");
 }
 
-/**
- * Patches the credits to add contributors to the randomizer
- *
- * @param rom The rom struct
- */
-static void credits(dw_rom *rom)
-{
-    printf("Patching credits...\n");
 
-    vpatch(rom, 0x057e9,    1,  0x8b);
-    vpatch(rom, 0x057f1,  272,  0x32,
-            /* A few edits to save space */
-            /* PRODUCE BY -> PRODUCER */
-            0x35,
-
-            0xfc, 0xe8, 0x21, /* Write PPU Address 2043 */
-            /* K     O     I     C     H     I       */
-            0x2e, 0x32, 0x2c, 0x26, 0x2b, 0x2c, 0x5f,
-            /* N     A     K     A     M     U     R     A */
-            0x31, 0x24, 0x2e, 0x24, 0x30, 0x38, 0x35, 0x24,
-
-            0xfc, 0xc0, 0x23,  /* Write PPU Address 23C0 (start of attrs) */
-            /* PPU Attributes */
-            0xf7, 0x20, 0x0a,
-
-            /* Next page */
-            0xfd, 0x8b, 0x21, /* Write PPU Address 2043 */
-            /* D     I     R     E     C     T     O     R */
-            0x33, 0x35, 0x32, 0x27, 0x38, 0x26, 0x28, 0x35,
-
-            0xfc, 0xe8, 0x21, /* Write PPU Address 2043 */
-            /* Y     U     K     I     N     O     B     U       */
-            0x3c, 0x38, 0x2e, 0x2c, 0x31, 0x32, 0x25, 0x38, 0x5f,
-            /* C     H     I     D     A */
-            0x26, 0x2b, 0x2c, 0x27, 0x24,
-
-            0xfc, 0xc0, 0x23, /* Write PPU Address 2043 */
-            /* PPU Attributes */
-            0xf7, 0x20, 0x0f,
-
-            /* Next page */
-            0xfd, 0x43, 0x20, /* Write PPU Address 2043 */
-            /* D     R     A     G     O     N        */
-            0x27, 0x35, 0x24, 0x2a, 0x32, 0x31, 0x5f,
-            /* W     A     R     R     I     O     R        */
-            0x3a, 0x24, 0x35, 0x35, 0x2c, 0x32, 0x35, 0x5f,
-            /* R     A     N     D     O     M     I     Z     E     R */
-            0x35, 0x24, 0x31, 0x27, 0x32, 0x30, 0x2c, 0x3d, 0x28, 0x35,
-
-            0xfc, 0xa3, 0x20,  /* Write PPU Address 20A3 */
-            /* D     E     V     E     L     O     P     E     R */
-            0x27, 0x28, 0x39, 0x28, 0x2f, 0x32, 0x33, 0x28, 0x35,
-
-            0xfc, 0xb7, 0x20,  /* Write PPU Address 20b7 */
-            /* M     C     G     R     E     W */
-            0x30, 0x26, 0x2a, 0x35, 0x28, 0x3a,
-
-            0xfc, 0x03, 0x21,  /* Write PPU Address 2103 */
-            /* C     O     N     T     R     I     B     U     T     O     R */
-            0x26, 0x32, 0x31, 0x37, 0x35, 0x2c, 0x25, 0x38, 0x37, 0x32, 0x35,
-            /* S */
-            0x36,
-
-            0xfc, 0x14, 0x21,  /* Write PPU Address 2114 */
-            /* G     A     M     E     B     O     Y     F     9 */
-            0x2a, 0x24, 0x30, 0x28, 0x25, 0x32, 0x3c, 0x29, 0x09,
-
-            0xfc, 0x54, 0x21,  /* Write PPU Address 2154 */
-            /* C     A     I     T     S     I     T     H     2 */
-            0x26, 0x24, 0x2c, 0x37, 0x36, 0x2c, 0x37, 0x2b, 0x02,
-
-            0xfc, 0x9a, 0x21,  /* Write PPU Address 219A */
-            /* D     V     J */
-            0x27, 0x39, 0x2d,
-
-            0xfc, 0xd3, 0x21,  /* Write PPU Address 21D3 */
-            /* B     U     N     D     E     R     2     0     1     5 */
-            0x25, 0x38, 0x31, 0x27, 0x28, 0x35, 0x02, 0x00, 0x01, 0x05,
-
-            0xfc, 0x17, 0x22,  /* Write PPU Address 2217 */
-            /* D     W     E     D     I     T */
-            0x27, 0x3a, 0x28, 0x27, 0x2c, 0x37,
-
-            0xfc, 0x63, 0x22,  /* Write PPU Address 2263 */
-            /* S     P     R     I     T     E     S */
-            0x36, 0x33, 0x35, 0x2c, 0x37, 0x28, 0x36,
-
-            0xfc, 0x75, 0x22,  /* Write PPU Address 2275 */
-            /* X     A     R     N     A     X     4     2 */
-            0x3b, 0x24, 0x35, 0x31, 0x24, 0x3b, 0x04, 0x02,
-
-            0xfc, 0xb3, 0x22,  /* Write PPU Address 22B3 */
-            /* R     Y     U     S     E     I     S     H     I     N */
-            0x35, 0x3c, 0x38, 0x36, 0x28, 0x2c, 0x36, 0x2b, 0x2c, 0x31,
-
-            0xfc, 0xf7, 0x22,  /* Write PPU Address 22F7 */
-            /* M     C     G     R     E     W */
-            0x30, 0x26, 0x2a, 0x35, 0x28, 0x3a,
-
-            0xfc, 0x32, 0x23,  /* Write PPU Address 2332 */
-            /* M     I     S     T     E     R     H     O     M     E     S */
-            0x30, 0x2c, 0x36, 0x37, 0x28, 0x35, 0x2b, 0x32, 0x30, 0x28, 0x36,
-
-            0xfc, 0x72, 0x23,  /* Write PPU Address 2372 */
-            /* I     N     V     E     N     E     R     A     B     L     E */
-            0x2c, 0x31, 0x39, 0x28, 0x31, 0x28, 0x35, 0x24, 0x25, 0x2f, 0x28,
-            0x5f, 0x5f,
-
-            0xfc, 0xc0, 0x23,  /* Write PPU Address 23C0 (start of attrs) */
-            /* PPU Attributes */
-            /* 0xf7 means the next number is a count followed by a value */
-            0xf7, 0x08, 0xff, 0xf7, 0x04, 0x55, 0xf7, 0x04, 0xaa, 0xf7,
-            0x04, 0x55, 0xf7, 0x0c, 0xaa, 0xf7, 0x04, 0x55, 0xf7, 0x1c);
-}
+//  * Patches the credits to add contributors to the randomizer
+//  *
+//  * @param rom The rom struct
+//  */
+// static void credits(dw_rom *rom)
+// {
+//     printf("Patching credits...\n");
+// 
+//     vpatch(rom, 0x057e9,    1,  0x8b);
+//     vpatch(rom, 0x057f1,  272,  0x32,
+//             /* A few edits to save space */
+//             /* PRODUCE BY -> PRODUCER */
+//             0x35,
+// 
+//             0xfc, 0xe8, 0x21, /* Write PPU Address 2043 */
+//             /* K     O     I     C     H     I       */
+//             0x2e, 0x32, 0x2c, 0x26, 0x2b, 0x2c, 0x5f,
+//             /* N     A     K     A     M     U     R     A */
+//             0x31, 0x24, 0x2e, 0x24, 0x30, 0x38, 0x35, 0x24,
+// 
+//             0xfc, 0xc0, 0x23,  /* Write PPU Address 23C0 (start of attrs) */
+//             /* PPU Attributes */
+//             0xf7, 0x20, 0x0a,
+// 
+//             /* Next page */
+//             0xfd, 0x8b, 0x21, /* Write PPU Address 2043 */
+//             /* D     I     R     E     C     T     O     R */
+//             0x33, 0x35, 0x32, 0x27, 0x38, 0x26, 0x28, 0x35,
+// 
+//             0xfc, 0xe8, 0x21, /* Write PPU Address 2043 */
+//             /* Y     U     K     I     N     O     B     U       */
+//             0x3c, 0x38, 0x2e, 0x2c, 0x31, 0x32, 0x25, 0x38, 0x5f,
+//             /* C     H     I     D     A */
+//             0x26, 0x2b, 0x2c, 0x27, 0x24,
+// 
+//             0xfc, 0xc0, 0x23, /* Write PPU Address 2043 */
+//             /* PPU Attributes */
+//             0xf7, 0x20, 0x0f,
+// 
+//             /* Next page */
+//             0xfd, 0x43, 0x20, /* Write PPU Address 2043 */
+//             /* D     R     A     G     O     N        */
+//             0x27, 0x35, 0x24, 0x2a, 0x32, 0x31, 0x5f,
+//             /* W     A     R     R     I     O     R        */
+//             0x3a, 0x24, 0x35, 0x35, 0x2c, 0x32, 0x35, 0x5f,
+//             /* R     A     N     D     O     M     I     Z     E     R */
+//             0x35, 0x24, 0x31, 0x27, 0x32, 0x30, 0x2c, 0x3d, 0x28, 0x35,
+// 
+//             0xfc, 0xa3, 0x20,  /* Write PPU Address 20A3 */
+//             /* D     E     V     E     L     O     P     E     R */
+//             0x27, 0x28, 0x39, 0x28, 0x2f, 0x32, 0x33, 0x28, 0x35,
+// 
+//             0xfc, 0xb7, 0x20,  /* Write PPU Address 20b7 */
+//             /* M     C     G     R     E     W */
+//             0x30, 0x26, 0x2a, 0x35, 0x28, 0x3a,
+// 
+//             0xfc, 0x03, 0x21,  /* Write PPU Address 2103 */
+//             /* C     O     N     T     R     I     B     U     T     O     R */
+//             0x26, 0x32, 0x31, 0x37, 0x35, 0x2c, 0x25, 0x38, 0x37, 0x32, 0x35,
+//             /* S */
+//             0x36,
+// 
+//             0xfc, 0x14, 0x21,  /* Write PPU Address 2114 */
+//             /* G     A     M     E     B     O     Y     F     9 */
+//             0x2a, 0x24, 0x30, 0x28, 0x25, 0x32, 0x3c, 0x29, 0x09,
+// 
+//             0xfc, 0x54, 0x21,  /* Write PPU Address 2154 */
+//             /* C     A     I     T     S     I     T     H     2 */
+//             0x26, 0x24, 0x2c, 0x37, 0x36, 0x2c, 0x37, 0x2b, 0x02,
+// 
+//             0xfc, 0x9a, 0x21,  /* Write PPU Address 219A */
+//             /* D     V     J */
+//             0x27, 0x39, 0x2d,
+// 
+//             0xfc, 0xd3, 0x21,  /* Write PPU Address 21D3 */
+//             /* B     U     N     D     E     R     2     0     1     5 */
+//             0x25, 0x38, 0x31, 0x27, 0x28, 0x35, 0x02, 0x00, 0x01, 0x05,
+// 
+//             0xfc, 0x17, 0x22,  /* Write PPU Address 2217 */
+//             /* D     W     E     D     I     T */
+//             0x27, 0x3a, 0x28, 0x27, 0x2c, 0x37,
+// 
+//             0xfc, 0x63, 0x22,  /* Write PPU Address 2263 */
+//             /* S     P     R     I     T     E     S */
+//             0x36, 0x33, 0x35, 0x2c, 0x37, 0x28, 0x36,
+// 
+//             0xfc, 0x75, 0x22,  /* Write PPU Address 2275 */
+//             /* X     A     R     N     A     X     4     2 */
+//             0x3b, 0x24, 0x35, 0x31, 0x24, 0x3b, 0x04, 0x02,
+// 
+//             0xfc, 0xb3, 0x22,  /* Write PPU Address 22B3 */
+//             /* R     Y     U     S     E     I     S     H     I     N */
+//             0x35, 0x3c, 0x38, 0x36, 0x28, 0x2c, 0x36, 0x2b, 0x2c, 0x31,
+// 
+//             0xfc, 0xf7, 0x22,  /* Write PPU Address 22F7 */
+//             /* M     C     G     R     E     W */
+//             0x30, 0x26, 0x2a, 0x35, 0x28, 0x3a,
+// 
+//             0xfc, 0x32, 0x23,  /* Write PPU Address 2332 */
+//             /* M     I     S     T     E     R     H     O     M     E     S */
+//             0x30, 0x2c, 0x36, 0x37, 0x28, 0x35, 0x2b, 0x32, 0x30, 0x28, 0x36,
+// 
+//             0xfc, 0x72, 0x23,  /* Write PPU Address 2372 */
+//             /* I     N     V     E     N     E     R     A     B     L     E */
+//             0x2c, 0x31, 0x39, 0x28, 0x31, 0x28, 0x35, 0x24, 0x25, 0x2f, 0x28,
+//             0x5f, 0x5f,
+// 
+//             0xfc, 0xc0, 0x23,  /* Write PPU Address 23C0 (start of attrs) */
+//             /* PPU Attributes */
+//             /* 0xf7 means the next number is a count followed by a value */
+//             0xf7, 0x08, 0xff, 0xf7, 0x04, 0x55, 0xf7, 0x04, 0xaa, 0xf7,
+//             0x04, 0x55, 0xf7, 0x0c, 0xaa, 0xf7, 0x04, 0x55, 0xf7, 0x1c);
+// }
 
 /**
  * Enables top to bottom wrapping of the menu cursor.
@@ -1878,50 +1882,50 @@ static void treasure_guards(dw_rom *rom)
 static void sorted_inventory(dw_rom *rom)
 {
     /* patch some jump addresses */
-    vpatch(rom, 0x0d388,    2,  0x88,  0xc2);
-    vpatch(rom, 0x0d3bf,    2,  0x88,  0xc2);
-    vpatch(rom, 0x0d3e9,    2,  0x88,  0xc2);
-    vpatch(rom, 0x0d72c,    2,  0x88,  0xc2);
-    vpatch(rom, 0x0d875,    2,  0x88,  0xc2);
-    vpatch(rom, 0x0e0f5,    2,  0x88,  0xc2);
+    vpatch(rom, 0x0d388,    2,  0xfa,  0xc2);
+    vpatch(rom, 0x0d3bf,    2,  0xfa,  0xc2);
+    vpatch(rom, 0x0d3e9,    2,  0xfa,  0xc2);
+    vpatch(rom, 0x0d72c,    2,  0xfa,  0xc2);
+    vpatch(rom, 0x0d875,    2,  0xfa,  0xc2);
+    vpatch(rom, 0x0e0f5,    2,  0xfa,  0xc2);
 //     vpatch(rom, 0x0e13c,    2,  0x88,  0xc2);
-    vpatch(rom, 0x0e27a,    2,  0x88,  0xc2);
+    vpatch(rom, 0x0e27a,    2,  0xfa,  0xc2);
 
-    vpatch(rom, 0x0c288, 61,
-            0x20, 0x1b, 0xe0,  /*      jsr b3_e01b ; add the new item        */
-            0xe0, 0x04,        /*      cpx #$04                              */
-            0xf0, 0x35,        /*      beq ++                                */
-            0xa2, 0x03,        /*      ldx #$03                              */
-            0xb5, 0xc1,        /*  -   lda ITEMS,x                           */
-            0x29, 0x0f,        /*      and #$0f                              */
-            0x95, 0xa8,        /*      sta $a8,x                             */
-            0xb5, 0xc1,        /*      lda ITEMS,x                           */
-            0x4a,              /*      lsr a                                 */
-            0x4a,              /*      lsr a                                 */
-            0x4a,              /*      lsr a                                 */
-            0x4a,              /*      lsr a                                 */
-            0x95, 0xac,        /*      sta $ac,x                             */
-            0xa9, 0x00,        /*      lda #$00                              */
-            0x95, 0xc1,        /*      sta ITEMS,x                           */
-            0xca, 0x10,        /*      dex                                   */
-            0xeb,              /*      bpl -                                 */
-            0xa9, 0x00,        /*      lda #$00                              */
-            0xa2, 0x07,        /*  --  ldx #$07                              */
-            0xd5, 0xa8,        /*  -   cmp $a8,x                             */
-            0xb0, 0x04,        /*      bcs +                                 */
-            0xb5, 0xa8,        /*      lda $a8,x                             */
-            0x86, 0xa7,        /*      stx $a7                               */
-            0xca,              /*  +   dex                                   */
-            0x10, 0xf5,        /*      bpl -                                 */
-            0xc9, 0x00,        /*      cmp #$00                              */
-            0xf0, 0x0b,        /*      beq ++                                */
-            0x20, 0x1b, 0xe0,  /*      jsr b3_e01b ; add the next item       */
-            0xa6, 0xa7,        /*      ldx $a7                               */
-            0xa9, 0x00,        /*      lda #$00                              */
-            0x95, 0xa8,        /*      sta $a8,x                             */
-            0xf0, 0xe4,        /*      beq --                                */
-            0x60               /*  ++  rts                                   */
-    );
+//     vpatch(rom, 0x0c2fb, 61,
+//             0x20, 0x1b, 0xe0,  /*      jsr b3_e01b ; add the new item        */
+//             0xe0, 0x04,        /*      cpx #$04                              */
+//             0xf0, 0x35,        /*      beq ++                                */
+//             0xa2, 0x03,        /*      ldx #$03                              */
+//             0xb5, 0xc1,        /*  -   lda ITEMS,x                           */
+//             0x29, 0x0f,        /*      and #$0f                              */
+//             0x95, 0xa8,        /*      sta $a8,x                             */
+//             0xb5, 0xc1,        /*      lda ITEMS,x                           */
+//             0x4a,              /*      lsr a                                 */
+//             0x4a,              /*      lsr a                                 */
+//             0x4a,              /*      lsr a                                 */
+//             0x4a,              /*      lsr a                                 */
+//             0x95, 0xac,        /*      sta $ac,x                             */
+//             0xa9, 0x00,        /*      lda #$00                              */
+//             0x95, 0xc1,        /*      sta ITEMS,x                           */
+//             0xca, 0x10,        /*      dex                                   */
+//             0xeb,              /*      bpl -                                 */
+//             0xa9, 0x00,        /*      lda #$00                              */
+//             0xa2, 0x07,        /*  --  ldx #$07                              */
+//             0xd5, 0xa8,        /*  -   cmp $a8,x                             */
+//             0xb0, 0x04,        /*      bcs +                                 */
+//             0xb5, 0xa8,        /*      lda $a8,x                             */
+//             0x86, 0xa7,        /*      stx $a7                               */
+//             0xca,              /*  +   dex                                   */
+//             0x10, 0xf5,        /*      bpl -                                 */
+//             0xc9, 0x00,        /*      cmp #$00                              */
+//             0xf0, 0x0b,        /*      beq ++                                */
+//             0x20, 0x1b, 0xe0,  /*      jsr b3_e01b ; add the next item       */
+//             0xa6, 0xa7,        /*      ldx $a7                               */
+//             0xa9, 0x00,        /*      lda #$00                              */
+//             0x95, 0xa8,        /*      sta $a8,x                             */
+//             0xf0, 0xe4,        /*      beq --                                */
+//             0x60               /*  ++  rts                                   */
+//     );
 }
 
 /**
@@ -2202,7 +2206,10 @@ static BOOL dwr_write(dw_rom *rom, const char *output_file)
         fprintf(stderr, "Unable to open file '%s' for writing", output_file);
         return FALSE;
     }
-    fwrite(rom->header, 1, ROM_SIZE, output);
+    fwrite(rom->header, 1, 0x10, output);
+    fwrite(rom->content, 1, 0xc000, output);
+    fwrite(rom->expansion, 1, 0x10000, output);
+    fwrite(&rom->content[0xc000], 1, 0x8000, output);
     fclose(output);
     return TRUE;
 }
@@ -2281,8 +2288,8 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     treasure_guards(&rom);
     sorted_inventory(&rom);
     summer_sale(&rom);
-    credits(&rom);
 
+    setup_expansion(&rom);
     modern_spell_names(&rom);
     randomize_music(&rom);
     disable_music(&rom);
@@ -2304,5 +2311,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
         return 0;
     }
     free(rom.header);
+    if (rom.expansion)
+        free(rom.expansion);
     return crc;
 }

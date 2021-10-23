@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
-#include <time.h>
 
 #include "sprites.h"
 #include "dwr.h"
@@ -2038,8 +2037,6 @@ void sprite(dw_rom *rom, const char *sprite_name)
     sprite_func[i++] = &barry_sanders;
 
     if (!strcmp("Random", sprite_name)) {
-        /* reseed the RNG so this isn't deterministic */
-        mt_init(time(NULL));
 
         i = mt_rand(2, sprite_count()-1);
         printf("Setting player sprite to %s...\n", dwr_sprite_names[i]);

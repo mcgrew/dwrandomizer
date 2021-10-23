@@ -6,6 +6,7 @@
 #include <math.h>
 #include <ctype.h>
 #include <assert.h>
+#include <time.h>
 
 #include "dwr.h"
 #include "patch.h"
@@ -2280,7 +2281,6 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     sorted_inventory(&rom);
     summer_sale(&rom);
 
-    setup_expansion(&rom);
     modern_spell_names(&rom);
     randomize_music(&rom);
     disable_music(&rom);
@@ -2293,16 +2293,20 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 
     death_counter(&rom);
     update_title_screen(&rom);
-    sprite(&rom, sprite_name);
     no_screen_flash(&rom);
     noir_mode(&rom);
+
+    /* reseed the RNG so the rest isn't deterministic */
+    mt_init(time(NULL));
+
+    setup_expansion(&rom);
+    sprite(&rom, sprite_name);
 
     printf("Checksum: %016"PRIx64"\n", crc);
     if (!dwr_write(&rom, output_file)) {
         return 0;
     }
     free(rom.header);
-    if (rom.expansion)
-        free(rom.expansion);
+    free(rom.expansion);
     return crc;
 }

@@ -55,7 +55,7 @@ static void code_patches(dw_rom *rom)
         0xf0, 0x04,       /*             beq +                               */
         0xc9, 0x0f,       /*             cmp #15                             */
         0x90, 0xa8,       /*             bcc b3_da55                         */
-        0xae, 0x80, 0x66, /*         +   ldx $6680                           */
+        0xae, 0x2f, 0x66, /*         +   ldx $6680                           */
         0xa9,  0x02,      /*             lda #$02                            */
         0x4c, 0xe2, 0xd9, /*             jmp b3_d9e2                         */
                           /*                                                 */
@@ -65,7 +65,7 @@ static void code_patches(dw_rom *rom)
         0xf0, 0x07,       /*             beq +                               */
         0xc9, 0x0f,       /*             cmp #15                             */
         0xb0, 0x03,       /*             bcs +                               */
-        0x8e, 0x80, 0x66, /*             stx $6680                           */
+        0x8e, 0x2f, 0x66, /*             stx $6680                           */
         0xbd, 0x61, 0xf4, /*         +   lda tab_warp_to,x                   */
         0x60,             /*             rts                                 */
                           /*                                                 */

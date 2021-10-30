@@ -1,8 +1,6 @@
 
 .base $c000
 
-.org $c400
-
 game_start:
 
     ; write some code to ram and jump to it
@@ -129,6 +127,8 @@ sort_inventory:
             jsr b3_ff96
             jmp exp_sort_inventory
 
+.org $c7cb
+show_window: rts ; dummy subroutine
 
 .org $e01b
 b3_e01b:    rts  ; dummy subroutine

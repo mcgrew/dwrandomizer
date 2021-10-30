@@ -28,7 +28,8 @@ set(SOURCE_FILES
         common/patch.c
         common/challenge.c
         common/polyfit.c
-        common/base32.c)
+        common/base32.c
+        common/credit_music.c)
 
 if (ALPHA)
     add_definitions(-DDWR_ALPHA)

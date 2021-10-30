@@ -13,22 +13,22 @@ FAMISTUDIO_ASM6_BSS_ENUM  = $0400
 ;======================================================================================================================
 
 ; Konami VRC6 (2 extra square + saw)
-; FAMISTUDIO_EXP_VRC6          = 1 
+; FAMISTUDIO_EXP_VRC6          = 1
 
 ; Konami VRC7 (6 FM channels)
-; FAMISTUDIO_EXP_VRC7          = 1 
+; FAMISTUDIO_EXP_VRC7          = 1
 
 ; Nintendo MMC5 (2 extra squares, extra DPCM not supported)
-; FAMISTUDIO_EXP_MMC5          = 1 
+; FAMISTUDIO_EXP_MMC5          = 1
 
 ; Sunsoft S5B (2 extra squares, advanced features not supported.)
-; FAMISTUDIO_EXP_S5B           = 1 
+; FAMISTUDIO_EXP_S5B           = 1
 
 ; Famicom Disk System (extra wavetable channel)
-; FAMISTUDIO_EXP_FDS           = 1 
+; FAMISTUDIO_EXP_FDS           = 1
 
 ; Namco 163 (between 1 and 8 extra wavetable channels) + number of channels.
-; FAMISTUDIO_EXP_N163          = 1 
+; FAMISTUDIO_EXP_N163          = 1
 ; FAMISTUDIO_EXP_N163_CHN_CNT  = 4
 
 ;======================================================================================================================
@@ -39,12 +39,12 @@ FAMISTUDIO_ASM6_BSS_ENUM  = $0400
 FAMISTUDIO_CFG_NTSC_SUPPORT  = 1
 
 ; Support for sound effects playback + number of SFX that can play at once.
-FAMISTUDIO_CFG_SFX_SUPPORT   = 1 
-FAMISTUDIO_CFG_SFX_STREAMS   = 2
+FAMISTUDIO_CFG_SFX_SUPPORT   = 0
+FAMISTUDIO_CFG_SFX_STREAMS   = 0
 
 ; Blaarg's smooth vibrato technique. Eliminates phase resets ("pops") on square channels. Will be ignored if SFX are
 ; enabled since they are currently incompatible with each other. This might change in the future.
-; FAMISTUDIO_CFG_SMOOTH_VIBRATO = 1 
+FAMISTUDIO_CFG_SMOOTH_VIBRATO = 1
 
 ; Enables DPCM playback support.
 FAMISTUDIO_CFG_DPCM_SUPPORT   = 1

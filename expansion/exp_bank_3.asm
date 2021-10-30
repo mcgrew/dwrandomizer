@@ -28,23 +28,11 @@ INSTR_FINISH       EQU $ff
 .base $c000
 
 FAMISTUDIO_DPCM_OFF:
-; .incbin music/bat.dmc
-; .incbin music/ninja.dmc
-; .incbin music/silius.dmc
-; .incbin music/vania.dmc
+; .incbin music/music.dmc
 
 .org $d600
-; .include music/bat.asm
-; .include music/bubble.asm
-; .include music/flash.asm
-; .include music/ninja.asm
-; .include music/moon.asm
-.include music/shatter.asm
-; .include music/silius.asm
-; .include music/surfer.asm
-; .include music/vania.asm
-; .include music/wily.asm
-; .include music/wood.asm
+music_data:
+; .include music/music.asm
 
 
 .org $e800

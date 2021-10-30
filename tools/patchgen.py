@@ -26,9 +26,11 @@ def main():
         else:
             print("    pvpatch(&rom->header[0x%05x], %4d," %
                 (r.address, len(r.content)), end=" ")
-        for b in r.content[:-1]:
-            print("0x%02x," % b, end=" ")
-        print("0x%02x);" % r.content[-1])
+        for i,b in enumerate(r.content[:-1]):
+            if not i % 12:
+                print("\n       ", end="")
+            print(" 0x%02x," % b, end="")
+        print(" 0x%02x);" % r.content[-1])
 
     if expansion:
         empty = [0xff] * len(expansion)
@@ -36,14 +38,16 @@ def main():
         for r in p.records:
             print("    pvpatch(&rom->expansion[0x%05x], %4d," %
                     (r.address, len(r.content)), end=" ")
-            for b in r.content[:-1]:
-                print("0x%02x," % b, end=" ")
-            print("0x%02x);" % r.content[-1])
+            for i,b in enumerate(r.content[:-1]):
+                if not i % 12:
+                    print("\n       ", end="")
+                print(" 0x%02x," % b, end="")
+            print(" 0x%02x);" % r.content[-1])
 
 
 if __name__ == "__main__":
     main()
-        
+
 
 
 

@@ -1867,7 +1867,10 @@ static void treasure_guards(dw_rom *rom)
             spike->map[spike_entry] = chest[i].map;
             spike->x[spike_entry] = chest[i].x;
             spike->y[spike_entry] = chest[i].y;
-            spike->monster[spike_entry++] = mt_rand(WYVERN, WIZARD);
+            do {
+                spike->monster[spike_entry] = mt_rand(WYVERN, WIZARD);
+            } while(spike->monster[spike_entry] == GOLEM);
+            spike_entry++;
         }
     }
 }

@@ -1687,7 +1687,8 @@ static void spike_rewrite(dw_rom *rom)
 {
     size_t i=0;
     const dw_enemies spike_enemies[] = {
-        AXE_KNIGHT, BLUE_DRAGON, STONEMAN, ARMORED_KNIGHT, RED_DRAGON, GOLEM };
+        GREEN_DRAGON, AXE_KNIGHT, BLUE_DRAGON, STONEMAN, ARMORED_KNIGHT,
+        RED_DRAGON, GOLEM };
     const size_t spike_enemy_count = sizeof(spike_enemies)/sizeof(dw_enemies);
     uint8_t spikes[] = {
         AXE_KNIGHT, GREEN_DRAGON, GOLEM, SLIME, SLIME, SLIME, SLIME, SLIME };

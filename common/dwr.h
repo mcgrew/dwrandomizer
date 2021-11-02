@@ -57,7 +57,7 @@
 #define OPEN_CHARLOCK(x)          (x->flags[ 7] & 0x0c)
 #define SHORT_CHARLOCK(x)         (x->flags[ 7] & 0x03)
 #define NO_KEYS(x)                (x->flags[ 8] & 0xc0)
-#define SUMMER_SALE(x)            (x->flags[13] & 0x30)
+#define SUMMER_SALE(x)            (x->flags[13] & 0x0c)
 #define FAST_XP(x)                (x->flags[14] & 0x01)
 #define VERY_FAST_XP(x)           (x->flags[14] & 0x02)
 #define SMALL_MAP(x)              (x->flags[14] & 0x04)
@@ -79,6 +79,7 @@
 #define NO_SCREEN_FLASH(x)        (x->flags[14] & 0x20)
 #define DEATH_COUNTER(x)          (x->flags[14] & 0x10)
 #define CUSTOM_SPELLS(x)          (x->flags[13] & 0x80)
+#define SKIP_VANILLA_CREDITS(x)   (x->flags[13] & 0x40)
 
 #ifdef __cplusplus
 extern "C" {

@@ -2167,6 +2167,14 @@ static void no_screen_flash(dw_rom *rom)
     vpatch(rom, 0x0db40,    1,  0x18);
 }
 
+static void skip_vanilla_credits(dw_rom *rom)
+{
+    if (SKIP_VANILLA_CREDITS(rom)) {
+        printf("Skipping Original Credits...");
+        JMP_START_DWR_CREDITS(0x542b);
+    }
+}
+
 void setup_expansion(dw_rom *rom)
 {
     rom->header[4] = 8; /* set to 8 PRG banks */
@@ -2322,6 +2330,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     /* reseed the RNG so the rest isn't deterministic */
     mt_init(time(NULL));
 
+    skip_vanilla_credits(&rom);
     setup_expansion(&rom);
     sprite(&rom, sprite_name);
 

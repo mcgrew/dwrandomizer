@@ -169,7 +169,11 @@ function encode(input) {
 function decode(input) {
     var decoder = new Decoder()
     var output = decoder.update(input, true)
-    return output
+    let outputBytes = new Uint8Array(output.length);
+    for (let i=0; i < output.length; i++) {
+        outputBytes[i] = output.charCodeAt(i);
+    }
+    return outputBytes;
 }
 
 var base32 = {

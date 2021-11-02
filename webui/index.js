@@ -152,7 +152,7 @@ function setup_ui() {
         'Charlock Dungeon will be much shorter.');
     ui.addTriOption('Shortcuts',  8,  8, 6, "Don't Require Magic Keys",
         'All of the doors are unlocked. Just open them.');
-    ui.addTriOption('Shortcuts', 10, 13, 4, "Summer Sale",
+    ui.addTriOption('Shortcuts', 10, 13, 2, "Summer Sale",
         'All weapons and armor 35-65% off!');
     ui.addTriOption('Shortcuts',  1,  8, 2, 'Cursed Princess',
         'Get Gwaelin to take a Cursed Belt when you return her to win.');
@@ -188,12 +188,14 @@ function setup_ui() {
         'Music in each area will be randomized.');
     ui.addOption   ('Cosmetic',  2, 14, 6, 'Disable Music',
         'This disables the game music in most situations.');
-    ui.addOption   ('Cosmetic',  8, 14, 5, 'Disable Spell Flashing',
-        'Prevents the screen from flashing when you cast spells.');
-    ui.addOption   ('Cosmetic',  10, 14, 4, 'Show Death Counter',
-        'The stats window will also have a death counter.');
-    ui.addOption   ('Cosmetic',  3, 13, 7, 'Allow Custom Spell Names',
-        'Allow spell names to be changed based on the chosen sprite.');
+    ui.cosmetic(ui.addOption   ('Cosmetic',  8, 14, 5, 'Disable Spell Flashing',
+        'Prevents the screen from flashing when you cast spells.'));
+    ui.cosmetic(ui.addOption   ('Cosmetic',  10, 14, 4, 'Show Death Counter',
+        'The stats window will also have a death counter.'));
+    ui.cosmetic(ui.addOption   ('Cosmetic',  3, 13, 7, 'Allow Custom Spell Names',
+        'Allow spell names to be changed based on the chosen sprite.'));
+    ui.cosmetic(ui.addOption   ('Cosmetic',  5, 13, 6, 'Skip Original Credits',
+        'Skip the original credits and go straight to stat scroll.'));
 
     // player sprite
     let spriteBox = ui.addTextBox('Cosmetic', 1, 'Player Sprite: ');

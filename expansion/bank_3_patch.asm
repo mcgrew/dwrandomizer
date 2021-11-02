@@ -6,6 +6,12 @@ start_dwr_credits:
     jsr $ff96  ; load prg_bank
     jmp exp_start_dwr_credits
 
+init_save_ram:
+    sta $62e8,x
+    sta $6630,x
+    sta $6730,x
+    rts
+
 inc_attack_ctr:
     sta $0e
     lda #2

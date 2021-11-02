@@ -304,7 +304,6 @@ static uint8_t *dwr_str_replace(dw_rom *rom, const char *text,
  * @param rom The rom struct
  */
 static void torch_in_battle(dw_rom *rom) {
-    /* change the jump address in the item use code */
 
     if (!TORCH_IN_BATTLE(rom))
         return;
@@ -1889,14 +1888,22 @@ static void treasure_guards(dw_rom *rom)
 static void sorted_inventory(dw_rom *rom)
 {
     /* patch some jump addresses */
-    vpatch(rom, 0x0d388,    2,  0xfa,  0xc2);
-    vpatch(rom, 0x0d3bf,    2,  0xfa,  0xc2);
-    vpatch(rom, 0x0d3e9,    2,  0xfa,  0xc2);
-    vpatch(rom, 0x0d72c,    2,  0xfa,  0xc2);
-    vpatch(rom, 0x0d875,    2,  0xfa,  0xc2);
-    vpatch(rom, 0x0e0f5,    2,  0xfa,  0xc2);
+//     vpatch(rom, 0x0d388,    2,  0xfa,  0xc2);
+//     vpatch(rom, 0x0d3bf,    2,  0xfa,  0xc2);
+//     vpatch(rom, 0x0d3e9,    2,  0xfa,  0xc2);
+//     vpatch(rom, 0x0d72c,    2,  0xfa,  0xc2);
+//     vpatch(rom, 0x0d875,    2,  0xfa,  0xc2);
+//     vpatch(rom, 0x0e0f5,    2,  0xfa,  0xc2);
 //     vpatch(rom, 0x0e13c,    2,  0x88,  0xc2);
-    vpatch(rom, 0x0e27a,    2,  0xfa,  0xc2);
+//     vpatch(rom, 0x0e27a,    2,  0xfa,  0xc2);
+    JSR_SORT_INVENTORY(0xd387);
+    JSR_SORT_INVENTORY(0xd3be);
+    JSR_SORT_INVENTORY(0xd3e8);
+    JSR_SORT_INVENTORY(0xd72b);
+    JSR_SORT_INVENTORY(0xd874);
+    JSR_SORT_INVENTORY(0xe0f4);
+//     JSR_SORT_INVENTORY(0xe13b);
+    JSR_SORT_INVENTORY(0xe279);
 
 }
 
@@ -2176,6 +2183,7 @@ void setup_expansion(dw_rom *rom)
     JSR_COUNT_WIN(0xe98c);
     JSR_INC_ENEMY_DEATH_CTR(0xed9e);
     JSR_INC_DEATH_CTR(0xeda9);
+    JSR_INIT_SAVE_RAM(0xf720);
 //     vpatch(rom, 0x031eb,    3, 0x20, 0xac, 0xc2);
 //     vpatch(rom, 0x0ccf0,    6, 0x4c, 0x88, 0xc2, 0xea, 0xea, 0xea);
 //     vpatch(rom, 0x0dbb2,    3, 0x20, 0xef, 0xc2);

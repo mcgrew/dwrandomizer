@@ -3394,7 +3394,7 @@ static void add_dcpm(dw_rom *rom, int track)
     };
     struct music_data *dmc = &dmc_choice[track];
     if (dmc->start)
-        ppatch(&rom->expansion[0x0000], dmc->size, dmc->start);
+        ppatch(&rom->expansion[0x8000], dmc->size, dmc->start);
 }
 
 void add_music(dw_rom *rom, int track)
@@ -3417,7 +3417,7 @@ void add_music(dw_rom *rom, int track)
         { .start = music_moon_start, .size = 1632 }
     };
     struct music_data *music = &music_choice[track];
-    ppatch(&rom->expansion[0x1600], music->size, music->start);
+    ppatch(&rom->expansion[0x9600], music->size, music->start);
     add_dcpm(rom, track);
 }
 

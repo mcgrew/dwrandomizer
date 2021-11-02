@@ -1,35 +1,6 @@
 
 .base $c000
 
-game_start:
-
-    ; write some code to ram and jump to it
-    ; This will switch bank modes and load the expansion bank
-    lda #$a9
-    sta $7fd0
-    lda #%00011010
-    sta $7fd1
-    ldx #$12
--   lda b3_fe09+3, x
-    sta $7fd2,x
-    dex
-    bpl -
-
-    lda #$a9
-    sta $7fe5
-    lda #3
-    sta $7fe6
-    ldx #$15
--   lda b3_ff96, x
-    sta $7fe7,x
-    dex
-    bpl -
-    lda #>(credit_start-1)
-    pha
-    lda #<(credit_start-1)
-    pha
-    jmp $7fd0
-
 set_first_bank:
     sta $dfff
     lsr a
@@ -44,88 +15,97 @@ set_first_bank:
     nop
     rts
 
-.org $c288
-start_dwr_credits:
-    lda #4
-    jsr b3_ff96
-    jmp exp_start_dwr_credits
+.org $c287
+game_start:
+    nop
+.include bank_3_patch.asm
 
-inc_attack_ctr:
-            sta $0e
-            lda #2
-            pha
-            bne inc_counter
+first_vblank:
+    jsr load_pal
 
-inc_crit_ctr:
-            sta $0e
-            lda #4
-            pha
-            bne inc_counter
+    lda #$20
+    sta PPUADDR
+    lda #$00
+    sta PPUADDR
+    jsr load_bg
+    lda #$24
+    sta PPUADDR
+    lda #$00
+    sta PPUADDR
+    jsr load_bg
 
-inc_miss_ctr:
-            sta $0e
-            lda #6
-            pha
-            bne inc_counter
+    lda #$00
+;     sta SCROLLX
+    sta PPUSCROLL
+;     lda SCROLLY
+    sta PPUSCROLL
+    rts
 
-inc_dodge_ctr:
-            sta $0e
-            lda #8
-            pha
-            bne inc_counter
-inc_bonk_ctr:
-            sta $0e
-            lda #10
-            pha
-            bne inc_counter
+load_pal:
+    lda #$3f
+    sta PPUADDR
+    lda #$00
+    sta PPUADDR
+    ldx #$00
+-   lda bg_palette, x
+    sta PPUDATA
+    inx
+    cpx #$10
+    bne -
+    rts
 
-inc_enemy_death_ctr:
-            pha
-            lda #4
-            jsr b3_ff96
-            jsr exp_inc_enemy_death_ctr
-            lda $6004
-            jsr b3_ff96
-            pla
-inc_death_ctr:
-            sta $0e
-            lda #0
-            pha
-inc_counter:
-            lda $0e
-            brk
-            hex 04 17
-            lda #4
-            jsr b3_ff96
-            pla
-            jmp exp_inc_counter
+load_bg:
+    ldy #$04
+--  ldx #$f0
+-   lda #$5f
+++  sta PPUDATA
+    dex
+    bne -
+    dey
+    bmi +    ; this will trigger on our final write loop
+    bne --
+;     ldx #$c0 ; start the final write loop
+; -   sta PPUDATA
+;     dex
+;     bne -
+    ldx #0
+--  lda the_end,x
+    inx
+    cmp #$fd
+    beq +
+    pha
+    lda the_end,x
+    inx
+    sta PPUADDR
+    pla
+    sta PPUADDR
+-   lda the_end,x
+    inx
+    cmp #$fc
+    beq --
+    sta PPUDATA
+    bne -
++   rts
 
-count_encounter:
-            brk
-            hex 04 17
-            lda #4
-            jsr b3_ff96
-            jsr exp_count_encounter
-            jmp exp_load_last_bank
-count_win:
-            lda #4
-            jsr b3_ff96
-            jsr exp_count_win
-            jmp exp_load_last_bank
+game_init:
 
-count_spell_use:
-            lda #4
-            jsr b3_ff96
-            jsr exp_count_spell_use
-            jmp show_window
-sort_inventory:
-            jsr b3_e01b ; add the new item
-            cpx #$04
-            bne + 
-            rts
-        +   lda #4
-            jsr b3_ff96
-            jmp exp_sort_inventory
++   rts
+
+bg_palette:
+    .hex 0f 0f 30 30
+    .hex 0f 0f 24 24
+    .hex 0f 0f 27 27
+    .hex 0f 0f 2a 2a
+
+the_end:
+    ; The follwing is for "THE END" text
+    .word $21aa ; PPU address
+    .hex 3e 3f 40 41 42 43 44 45 46 47 48 49 fc
+    .word $21ca ; PPU address
+    .hex 4a 4b 4c 4d 4e 4f 50 51 52 53 54 55 fc
+    .hex fd
+
+.include base.asm
 
 .org $c7cb
 show_window: rts ; dummy subroutine

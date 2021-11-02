@@ -9,7 +9,9 @@ def main():
         print(f"Usage: {argv[0]} <original rom> <modified rom>")
         exit(1)
     with open(argv[1], 'rb') as original_file:
-        original = original_file.read()
+        original = bytearray(original_file.read())
+        # blank out the unused code since it's often blanked in edits
+        original[0xc298:0xc505] = [0xff] * (0xc4f5 - 0xc288)
 
     expansion = None
     with open(argv[2], 'rb') as changed_file:
@@ -43,7 +45,6 @@ def main():
                     print("\n       ", end="")
                 print(" 0x%02x," % b, end="")
             print(" 0x%02x);" % r.content[-1])
-
 
 if __name__ == "__main__":
     main()

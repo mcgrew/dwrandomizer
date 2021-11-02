@@ -5,7 +5,6 @@ from subprocess import run
 from os.path import dirname, basename, realpath, join, exists
 from os import chdir, remove, getcwd
 from distutils.spawn import find_executable
-from sys import argv
 
 class Music:
     def __init__(self, name):
@@ -136,7 +135,7 @@ def create_c_file(music:list[Music], music_data):
         c.write('\n    };\n')
         c.write('    struct music_data *dmc = &dmc_choice[track];\n')
         c.write('    if (dmc->start)\n')
-        c.write('        ppatch(&rom->expansion[0x0000], dmc->size, dmc->start);\n')
+        c.write('        ppatch(&rom->expansion[0x8000], dmc->size, dmc->start);\n')
         c.write('}\n\n')
 
         c.write('void add_music(dw_rom *rom, int track)\n')
@@ -147,7 +146,7 @@ def create_c_file(music:list[Music], music_data):
         c.write('\n')
         c.write('    };\n')
         c.write('    struct music_data *music = &music_choice[track];\n')
-        c.write('    ppatch(&rom->expansion[0x1600], music->size, music->start);\n')
+        c.write('    ppatch(&rom->expansion[0x9600], music->size, music->start);\n')
         c.write('    add_dcpm(rom, track);\n')
         c.write('}\n\n')
 

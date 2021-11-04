@@ -150,8 +150,6 @@ static BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->zone_layout = &rom->content[0xf522];
     rom->chests = (dw_chest*)&rom->content[0x5dcd];
     rom->spike_table = (dwr_spike_table*)&rom->content[0xcd7a];
-    // FIXME: these should be removed or modified for the new treasure code.
-    // check to see if this has been done.
     rom->search_table = (dwr_search_table*)&rom->content[0xe136];
     rom->repel_table = &rom->content[0xf4fa];
     rom->weapon_shops = &rom->content[0x1991];

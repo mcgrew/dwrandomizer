@@ -4,6 +4,7 @@
 *.zip
 *.exe
 *.o
+.vim
 map.html
 report.py
 .idea

@@ -4,7 +4,7 @@
 exp_start_dwr_credits:
     lda #$a9        ; lda
     sta $200
-    lda #%00011010  ; Change banking mode
+    lda #%00000010  ; Change banking mode
     sta $201
     ldx #$12
 -   lda b3_fe09+3, x

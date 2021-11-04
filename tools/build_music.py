@@ -6,6 +6,8 @@ from os.path import dirname, basename, realpath, join, exists
 from os import chdir, remove, getcwd
 from distutils.spawn import find_executable
 
+MUSIC_ADDR = 0x8000
+
 class Music:
     def __init__(self, name):
         self.name = name
@@ -32,7 +34,7 @@ class Music:
         self.generate_asm()
         with open('_m.asm', 'w') as f:
             f.write('FAMISTUDIO_DPCM_PTR EQU $00\n')
-            f.write('.org $d600\n')
+            f.write(f'.org ${MUSIC_ADDR:X}\n')
             f.write(f'include _{self.name}.asm\n')
         print('Assembling...')
         if run([self.asm6, '-q', '_m.asm', f'_{self.name}.bin']).returncode:
@@ -58,27 +60,25 @@ class Music:
     def total_size(self):
         return len(self.music) + len(self.dmc)
 
-    def constants(self):
+    def music_constant(self):
         if self.addr is None:
             raise ValueError(f"No address set for {self.name}")
-        dmc_const = ''
+        return (f"const uint8_t *music_{self.name}_start = "
+                f"&music_bytes[{self.addr}];\n")
+
+    def dmc_constant(self):
         if self.dmc:
-            dmc_const = (
-                f"static const uint8_t *dmc_{self.name}_start = "
-                    f"&music_bytes[{self.addr+self.music_size()}];\n"
-            )
-        return (
-            f"static const uint8_t *music_{self.name}_start = "
-                f"&music_bytes[{self.addr}];\n" + dmc_const
-            )
+            return (f"const uint8_t *dmc_{self.name}_start = "
+                    f"&music_bytes[{self.addr+self.music_size()}];\n")
+        return ''
 
     def music_struct(self):
-        return ("{ .start = music_%s_start, .size = %d }"
+        return ("{ .start = music_%s_start, .size = 0x%x }"
                 % (self.name, len(self.music)))
 
     def dmc_struct(self):
         if self.dmc:
-             return ("{ .start = dmc_%s_start, .size = %d }"
+             return ("{ .start = dmc_%s_start, .size = 0x%x }"
                  % (self.name, len(self.dmc)))
         else:
             return "{ .start = NULL, .size = 0 }"
@@ -124,11 +124,11 @@ def create_c_file(music:list[Music], music_data):
         c.write('\n};\n\n')
         c.write(f'const size_t track_count = {len(music)};\n\n')
 
-        c.write(''.join([m.constants() for m in music]))
-        c.write('\n\n')
-
-        c.write('static void add_dcpm(dw_rom *rom, int track)\n')
-        c.write('{\n')
+        c.write('static void add_dpcm(dw_rom *rom, int track)\n')
+        c.write('{\n    ')
+        consts = [m.dmc_constant() for m in music if m.dmc_constant()]
+        c.write('    '.join([const for const in consts if const]))
+        c.write('\n')
         c.write('    struct music_data dmc_choice[] = {\n')
         c.write('        ')
         c.write(',\n        '.join([m.dmc_struct() for m in music]))
@@ -139,15 +139,18 @@ def create_c_file(music:list[Music], music_data):
         c.write('}\n\n')
 
         c.write('void add_music(dw_rom *rom, int track)\n')
-        c.write('{\n')
+        c.write('{\n    ')
+        c.write('    '.join([m.music_constant() for m in music]))
+        c.write('\n')
         c.write('    struct music_data music_choice[] = {\n')
+
         c.write('        ')
         c.write(',\n        '.join([m.music_struct() for m in music]))
         c.write('\n')
         c.write('    };\n')
         c.write('    struct music_data *music = &music_choice[track];\n')
-        c.write('    ppatch(&rom->expansion[0x9600], music->size, music->start);\n')
-        c.write('    add_dcpm(rom, track);\n')
+        c.write('    ppatch(&rom->expansion[0x4000], music->size, music->start);\n')
+        c.write('    add_dpcm(rom, track);\n')
         c.write('}\n\n')
 
         print("Generated C file")

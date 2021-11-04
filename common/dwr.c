@@ -40,7 +40,7 @@ const char *prg1sums[2] = {
 };
 
 
-/* The [ and ] are actually opening/closing quotes. The / is .'. $ is .. */
+/* The [ and ] are actually opening/closing quotes. The / is .'. = is .. */
 const char alphabet[] = "0123456789abcdefghijklmnopqrstuvwxyz"
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ[]'*>_:=_.,-_?!;)(``/'___________ \n";
 
@@ -270,32 +270,32 @@ size_t set_text(dw_rom *rom, const size_t address, char *text)
  * @return returns a pointer to the beginning of the string that was replaced,
  *      or NULL if the string is not found.
  */
-static uint8_t *dwr_str_replace(dw_rom *rom, const char *text,
-                                const char *replacement)
-{
-    int len;
-    uint8_t *start, *end;
-    char dw_text[256], dw_repl[256];
-
-    len = strlen(text);
-    if (!len)
-        return NULL;
-    end = &rom->content[ROM_SIZE - len - 0x10];
-
-    strncpy(dw_text, text, 256);
-    strncpy(dw_repl, replacement, 256);
-    ascii2dw((unsigned char *)dw_text);
-    ascii2dw((unsigned char *)dw_repl);
-
-    for (start = rom->content; start < end; start++) {
-        if (!memcmp(start, dw_text, len)) {
-            memcpy(start, dw_repl, len);
-            return start;
-        }
-    }
-    return NULL;
-}
-
+// static uint8_t *dwr_str_replace(dw_rom *rom, const char *text,
+//                                 const char *replacement)
+// {
+//     int len;
+//     uint8_t *start, *end;
+//     char dw_text[256], dw_repl[256];
+// 
+//     len = strlen(text);
+//     if (!len)
+//         return NULL;
+//     end = &rom->content[ROM_SIZE - len - 0x10];
+// 
+//     strncpy(dw_text, text, 256);
+//     strncpy(dw_repl, replacement, 256);
+//     ascii2dw((unsigned char *)dw_text);
+//     ascii2dw((unsigned char *)dw_repl);
+// 
+//     for (start = rom->content; start < end; start++) {
+//         if (!memcmp(start, dw_text, len)) {
+//             memcpy(start, dw_repl, len);
+//             return start;
+//         }
+//     }
+//     return NULL;
+// }
+// 
 /**
  * Patches the game to allow the use of torches and fairy water in battle
  *
@@ -309,60 +309,27 @@ static void torch_in_battle(dw_rom *rom) {
     printf("Making torches and fairy water more deadly...\n");
     /* patch the jump address */
     JMP_TORCH_IN_BATTLE(0xe87c);
-//     vpatch(rom, 0x0e87d,   2, 0x75, 0xc4);
-
-//     vpatch(rom, 0x0c475, 71,
-//         0xc9, 0x04,
-//         0xd0, 0x2a,
-//         0xa9, 0x01,
-//         0x20, 0x4b, 0xe0,
-//         0x20, 0xc5, 0xc7,
-//         0x29,
-//         0xa5, 0xe0,
-//         0xc9, 0x10,
-//         0xd0, 0x0f,
-//         0x20, 0x5b, 0xc5,
-//         0xa5,
-//         0x95, 0x29, 0x01,
-//         0xd0, 0x03,
-//         0x4c, 0x58, 0xe6,
-//         0x4c, 0x94, 0xe6,
-//         0x20, 0x5b, 0xc5,
-//         0xa5, 0x95,
-//         0x29, 0x03,
-//         0x69, 0x06,
-//         0x4c, 0x94, 0xe6,
-//         0xc9, 0x05,
-//         0xd0, 0x12,
-//         0xa9, 0x02,
-//         0x20, 0x4b, 0xe0,
-//         0x20, 0xc5, 0xc7,
-//         0x2a,
-//         0xa5, 0xe0,
-//         0xc9, 0x10,
-//         0xf0, 0xd2,
-//         0x4c, 0x44, 0xe7,
-//         0x4c, 0xfd, 0xe6
-//     );
-
-    vpatch(rom, 0x0bc6c, 68,
-     /* NAME           h     u     r     l     e     d           a        */
-        0xf8, 0x5f, 0x11, 0x1e, 0x1b, 0x15, 0x0e, 0x0d, 0x5f, 0x0a, 0x5f,
-    /*     t     o     r     c     h           a     t           t     h  */
-        0x1d, 0x18, 0x1b, 0x0c, 0x11, 0x5f, 0x0a, 0x1d, 0x5f, 0x1d, 0x11,
-    /*     e        ENMY     !   END                                      */
-        0x0e, 0x5f, 0xf4, 0x4c, 0xfc,
-    /*  NAME           s     p     r     i     n     k     l     e     d  */
-        0xf8, 0x5f, 0x1c, 0x19, 0x1b, 0x12, 0x17, 0x14, 0x15, 0x0e, 0x0d,
-    /*           f     a     i     r     y           w     a     t     e  */
-        0x5f, 0x0f, 0x0a, 0x12, 0x1b, 0x22, 0x5f, 0x20, 0x0a, 0x1d, 0x0e,
-    /*     r           o     n           t     h     e        ENMY     .  */
-        0x1b, 0x5f, 0x18, 0x17, 0x5f, 0x1d, 0x11, 0x0e, 0x5f, 0xf4, 0x47,
-    /*  END                                                               */
-        0xfc,
-
-        /* pad the end */
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
+    set_text(rom, 0xbc6c, "\xf8 hurled a torch at the \xf4!\xfc"
+            "\xf8 sprinkled fairy water on the \xf4.\xfc"
+            "\xff\xff\xff\xff\xff\xff\xff");
+//     vpatch(rom, 0x0bc6c, 68,
+//      /* NAME           h     u     r     l     e     d           a        */
+//         0xf8, 0x5f, 0x11, 0x1e, 0x1b, 0x15, 0x0e, 0x0d, 0x5f, 0x0a, 0x5f,
+//     /*     t     o     r     c     h           a     t           t     h  */
+//         0x1d, 0x18, 0x1b, 0x0c, 0x11, 0x5f, 0x0a, 0x1d, 0x5f, 0x1d, 0x11,
+//     /*     e        ENMY     !   END                                      */
+//         0x0e, 0x5f, 0xf4, 0x4c, 0xfc,
+//     /*  NAME           s     p     r     i     n     k     l     e     d  */
+//         0xf8, 0x5f, 0x1c, 0x19, 0x1b, 0x12, 0x17, 0x14, 0x15, 0x0e, 0x0d,
+//     /*           f     a     i     r     y           w     a     t     e  */
+//         0x5f, 0x0f, 0x0a, 0x12, 0x1b, 0x22, 0x5f, 0x20, 0x0a, 0x1d, 0x0e,
+//     /*     r           o     n           t     h     e        ENMY     .  */
+//         0x1b, 0x5f, 0x18, 0x17, 0x5f, 0x1d, 0x11, 0x0e, 0x5f, 0xf4, 0x47,
+//     /*  END                                                               */
+//         0xfc,
+// 
+//         /* pad the end */
+//         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
 
 }
 
@@ -938,8 +905,6 @@ static void update_title_screen(dw_rom *rom)
     unsigned char text[33];
     uint8_t *pos, *end;
 
-//    pos = rom->title_text;
-//    end = &rom->title_text + 143;
     pos = &rom->content[0x3f26];
     end = &rom->content[0x3fb5];
     text[32] = '\0';
@@ -1055,95 +1020,49 @@ static void support_2_byte_xp_gold(dw_rom *rom)
      * metal slimes are set to give more than 255XP. If that is changed then
      * this code will need to be reworked.
      */
-//     vpatch(rom, 0x0ea0a, 84,
-//             0xad, 0x06, 0x01,  /*   lda $0106   ; Load low byte of XP        */
-//             0x85, 0x00,        /*   sta $00     ; Store at $00               */
-//             0xad, 0x07, 0x01,  /*   lda $0107   ; Load High byte of XP       */
-//             0x85, 0x01,        /*   sta $01     ; Store at $01               */
-//             0xa5, 0xe0,        /*   lda $e0     ; Load Monster ID            */
-//             0xc9, 0x10,        /*   cmp #16     ; Is it a metal slime?       */
-//             0xd0, 0x0d,        /*   bne +       ; No, skip to loading XP     */
-//             0xa5, 0xc7,        /*   lda $c7     ; Load player level          */
-//             0xc9, ss_lvl,      /*   cmp #ss_lvl ; Is it 8 or higher?         */
-//             0xb0, 0x07,        /*   bcs +       ; Yes, skip to print XP      */
-//             0x0a,              /*   asl         ;                            */
-//             0x0a,              /*   asl         ; Multiply level by 32 and   */
-//             0x0a,              /*   asl         ; use this value for XP      */
-//             0x0a,              /*   asl         ; gained                     */
-//             0x0a,              /*   asl         ;                            */
-//             0x85, 0x00,        /*   sta $00     ; Store XP at $00            */
-//             0x20, 0xcb, 0xc7,  /* + jsr $c7cb   ; Print XP gained            */
-//             0xef,              /*   hex ef                                   */
-//             0xa5, 0x00,        /*   lda $00     ; Load Low byte of XP        */
-//             0x18,              /*   clc                                      */
-//             0x65, 0xba,        /*   adc $ba     ; Add it to low byte of      */
-//             0x85, 0xba,        /*   sta $ba     ; player XP                  */
-//             0xa5, 0x01,        /*   lda $01     ; Load high byte of XP       */
-//             0x65, 0xbb,        /*   adc $bb     ; Add it to low byte of      */
-//             0x85, 0xbb,        /*   sta $bb     ; player XP                  */
-//             0x90, 0x06,        /*   bcc +       ; No overflow, go to gold    */
-//             0xa9, 0xff,        /*   lda #$ff    ; Overflow, set player XP    */
-//             0x85, 0xba,        /*   sta $ba     ; to 65535                   */
-//             0x85, 0xbb,        /*   sta $bb                                  */
-//             0xad, 0x08, 0x01,  /* + lda $0108   ; Load low byte of gold      */
-//             0x85, 0x00,        /*   sta $00     ; Store at $00               */
-//             0xad, 0x09, 0x01,  /*   lda $0109   ; Load high byte of gold     */
-//             0x85, 0x01,        /*   sta $01     ; Store at $01               */
-//             0x20, 0xcb, 0xc7,  /*   jsr $c7cb   ; Print GOLD gained          */
-//             0xf0,              /*   hex f0                                   */
-//             0xa5, 0x00,        /*   lda $00     ; Load low byte of gold      */
-//             0x18,              /*   clc                                      */
-//             0x65, 0xbc,        /*   adc $bc     ; Add to low byte of player  */
-//             0x85, 0xbc,        /*   sta $bc     ; gold                       */
-//             0xa5, 0x01,        /*   lda $01     ; Load high byte of gold     */
-//             0x65, 0xbd,        /*   adc $bd     ; Add to high byte of player */
-//             0x85, 0xbd,        /*   sta $bd     ; gold                       */
-//             0x90, 0x63, 0xea   /*   bcc $ea63   ; no overflow, continue      */
-//     );
-
     vpatch(rom, 0x0ea0f,   77,
-            0xad,  0x07,  0x01,
-            0x85,  0x01,
-            0xa5,  0xe0,
-            0xc9,  0x10,
-            0xd0,  0x0d,
-            0xa5,  0xc7,
-            0xc9,  ss_lvl,
-            0xb0,  0x07,
-            0x0a,
-            0x0a,
-            0x0a,
-            0x0a,
-            0x0a,
-            0x85,  0x00,
-            0x20,  0xcb,  0xc7,
-            0xef,
-            0xa5,  0x00,
-            0x18,
-            0x65,  0xba,
-            0x85,  0xba,
-            0xa5,  0x01,
-            0x65,  0xbb,
-            0x85,  0xbb,
-            0x90,  0x06,
-            0xa9,  0xff,
-            0x85,  0xba,
-            0x85,  0xbb,
-            0xad,  0x08,  0x01,
-            0x85,  0x00,
-            0xad,  0x09,  0x01,
-            0x85,  0x01,
-            0x20,  0xcb,  0xc7,
-            0xf0,
-            0xa5,  0x00,
-            0x18,
-            0x65,  0xbc,
-            0x85,  0xbc,
-            0xa5,  0x01,
-            0x65,  0xbd,
-            0x85,  0xbd,
-            0x90
-        );
+        0xad,  0x07,  0x01,  /*     lda $0107                                */
+        0x85,  0x01,         /*     sta $01                                  */
+        0xa5,  0xe0,         /*     lda $e0  ;                               */
+        0xc9,  0x10,         /*     cmp #16  ;                               */
+        0xd0,  0x0d,         /*     bne +                                    */
+        0xa5,  0xc7,         /*     lda $c7                                  */
+        0xc9,  ss_lvl,       /*     cmp ss_lvl                               */
+        0xb0,  0x07,         /*     bcs +                                    */
+        0x0a,                /*     asl                                      */
+        0x0a,                /*     asl                                      */
+        0x0a,                /*     asl                                      */
+        0x0a,                /*     asl                                      */
+        0x0a,                /*     asl                                      */
+        0x85,  0x00,         /*     sta $00                                  */
+        0x20,  0xcb,  0xc7,  /* +   jsr b3_c7cb                              */
+        0xef,                /*     hex ef                                   */
+        0xa5,  0x00,         /*     lda $00                                  */
+        0x18,                /*     clc                                      */
+        0x65,  0xba,         /*     adc $ba                                  */
+        0x85,  0xba,         /*     sta $ba                                  */
+        0xa5,  0x01,         /*     lda $01                                  */
+        0x65,  0xbb,         /*     adc $bb                                  */
+        0x85,  0xbb,         /*     sta $bb                                  */
+        0x90,  0x06,         /*     bcc +                                    */
+        0xa9,  0xff,         /*     lda #$ff                                 */
+        0x85,  0xba,         /*     sta $ba                                  */
+        0x85,  0xbb,         /*     sta $bb                                  */
+        0xad,  0x08,  0x01,  /* +   lda $0108                                */
+        0x85,  0x00,         /*     sta $00                                  */
+        0xad,  0x09,  0x01,  /*     lda $0109                                */
+        0x85,  0x01,         /*     sta $01                                  */
+        0x20,  0xcb,  0xc7,  /*     jsr b3_c7cb                              */
+        0xf0,                /*     hex f0                                   */
+        0xa5,  0x00,         /*     lda $00                                  */
+        0x18,                /*     clc                                      */
+        0x65,  0xbc,         /*     adc $bc                                  */
+        0x85,  0xbc,         /*     sta $bc                                  */
+        0xa5,  0x01,         /*     lda $01                                  */
+        0x65,  0xbd,         /*     adc $bd                                  */
+        0x85,  0xbd,         /*     sta $bd                                  */
+        0x90                 /*     bcc b3_ea63                              */
+    );
 }
 
 /**
@@ -1160,19 +1079,6 @@ static void scared_metal_slimes(dw_rom *rom)
 
     printf("Terrorizing the Metal Slimes...\n");
     /* having the carry set upon returning gives the enemy a chance to run */
-//     vpatch(rom, 0x0c4e8,   13,
-//             0xcd,  0x00,  0x01, /* CMP $0100 ; Replace the code from $EFBA */
-//             0xb0,  0x07,        /* BCS c4fa  ; Return, everything is fine. */
-//             0xa5,  0xe0,        /* LDA $E0   ; Load the enemy type         */
-//             0xc9,  0x10,        /* CMP #$10  ; Is it a metal slime?        */
-//             0xf0,  0x01,        /* BEQ c4fa                                */
-//             0x18,               /* CLC       ; It's not, enemy doesn't run */
-//             /* c4fa: */
-//             0x60                /* RTS                                     */
-//     );
-//     vpatch(rom, 0x0efba,    3,
-//             0x20,  0xe8,  0xc4 /* JSR $C4E8  ; Jump to the new code        */
-//     );
     JSR_SCARED_SLIMES(0xefba);
 }
 
@@ -1191,34 +1097,7 @@ static void cursed_princess(dw_rom *rom)
 
     /* new dialogue */
     set_text(rom, 0x9f40, "Oh my, what a lovely corset.           ");
-//     vpatch(rom, 0x09f40,   39,
-//             /* O      h             m      y      ,             w      h      a */
-//             0x32,  0x11,  0x5f,  0x16,  0x22,  0x48,  0x5f,  0x20,  0x11,  0x0a,
-//             /* t             a             l      o      v      e      l      y */
-//             0x1d,  0x5f,  0x0a,  0x5f,  0x15,  0x18,  0x1f,  0x0e,  0x15,  0x22,
-//             /*        c      o      r      s      e      t      .             */
-//             0x5f,  0x0c,  0x18,  0x1b,  0x1c,  0x0e,  0x1d,  0x45,  0x52,  0x5f,
-//             0x5f,  0x5f,  0x5f,  0x5f,  0x5f,  0x5f,  0x5f,  0x5f,  0x5f);
-//
-//     vpatch(rom, 0x0c4ce,  26,
-//             0x85,  0x0e,        /* STA $OE    Store the item Gwaelin took     */
-//             0x4c,  0x4b,  0xe0, /* JMP $E04B  Continue on                     */
-//             /* C4D0: */
-//             0x48,               /* PHA        ; Store register                */
-//             0xa5,  0x0e,        /* LDA $OE    ; Load the item Gwaelin took    */
-//             0xc9,  0x09,        /* CMP $09    ; It is a cursed belt?          */
-//             0xd0,  0x0a,        /* BNE C4E1   ; No, keep playing              */
-//             0x20,  0xcb,  0xc7, /* JSR $C7CB  ; Yes, Display dialogue         */
-//             0xa0,               /* .DB $A0    ; Oh my...                      */
-//             0x20,  0xfa,  0xdf, /* JSR $DFFA  ; Play the curse music          */
-//             0x4c,  0xb8,  0xcc, /* JMP $CCB8  ; Jump to the ending            */
-//             /* C4E1: */
-//             0x68,               /* PLA        ; Restore register and continue */
-//             0x4c,  0x33,  0xd4  /* JMP $D433                                  */
-//     );
-    /* Change a few JSR addresses */
-//     vpatch(rom, 0x0d3dd,    2,  0xce,  0xc4);
-//     vpatch(rom, 0x0d40e,    2,  0xd3,  0xc4);
+    /* Change a few jump addresses */
     JSR_STORE_PRINCESS_ITEM(0xd3dc);
     JMP_CURSED_PRINCESS_CHECK(0xd40d);
 }
@@ -1235,26 +1114,9 @@ static void threes_company(dw_rom *rom)
 
     printf("Shall we join the Dragonlord?\n");
 
-    set_text(rom, 0x9f69, "I have some great ideas to spruce up this place.\n"
-            "I was thinking of putting in some new curtains, maybe a hot tub, "
-            "a disco ball over here=/   ");
-    /* new dialogue */
-//     vpatch(rom, 0x09f69,  141,
-//             0x50,  0x2c,  0x5f,  0x11,  0x0a,  0x1f,  0x0e,  0x5f,  0x1c,  0x18,
-//             0x16,  0x0e,  0x5f,  0x10,  0x1b,  0x0e,  0x0a,  0x1d,  0x5f,  0x12,
-//             0x0d,  0x0e,  0x0a,  0x1c,  0x5f,  0x1d,  0x18,  0x5f,  0x1c,  0x19,
-//             0x1b,  0x1e,  0x0c,  0x0e,  0x5f,  0x1e,  0x19,  0x5f,  0x1d,  0x11,
-//             0x12,  0x1c,  0x5f,  0x19,  0x15,  0x0a,  0x0c,  0x0e,  0x47,  0x5f,
-//             0x2c,  0x5f,  0x20,  0x0a,  0x1c,  0x5f,  0x1d,  0x11,  0x12,  0x17,
-//             0x14,  0x12,  0x17,  0x10,  0x5f,  0x18,  0x0f,  0x5f,  0x19,  0x1e,
-//             0x1d,  0x1d,  0x12,  0x17,  0x10,  0x5f,  0x12,  0x17,  0x5f,  0x1c,
-//             0x18,  0x16,  0x0e,  0x5f,  0x17,  0x0e,  0x20,  0x5f,  0x0c,  0x1e,
-//             0x1b,  0x1d,  0x0a,  0x12,  0x17,  0x1c,  0x48,  0x5f,  0x16,  0x0a,
-//             0x22,  0x0b,  0x0e,  0x5f,  0x0a,  0x5f,  0x11,  0x18,  0x1d,  0x5f,
-//             0x1d,  0x1e,  0x0b,  0x48,  0x5f,  0x0a,  0x5f,  0x0d,  0x12,  0x1c,
-//             0x0c,  0x18,  0x5f,  0x0b,  0x0a,  0x15,  0x15,  0x5f,  0x18,  0x1f,
-//             0x0e,  0x1b,  0x5f,  0x11,  0x0e,  0x1b,  0x0e,  0x45,  0x52,  0x5f,
-//             0x5f);
+    set_text(rom, 0x9f69, "`I have some great ideas to spruce up this place."
+            "\xfd\xfbI was thinking of putting in some new curtains, maybe a "
+            "hot tub, a disco ball over here=/ ");
     vpatch(rom, 0x0d509,    8,
             0xea,               /* NOP       ; Don't reset the quest byte     */
             0xea,               /* NOP       ; So we know if Gwaelin is here  */
@@ -1263,18 +1125,6 @@ static void threes_company(dw_rom *rom)
             0xea                /* NOP                                        */
     );
     JSR_THREES_COMPANY_CHECK(0xd50d);
-//     vpatch(rom, 0x0c4bc,  18,
-//             0xa5,  0xdf,        /* LDA $DF   ; Load the status bits           */
-//             0x29,  0x01,        /* AND #$01  ; Are we carrying Gwaelin?       */
-//             0xf0,  0x07,        /* BEQ $C4CD ; No, back to original code      */
-//             0x20,  0xcb,  0xc7, /* JSR $CBC7 ; Show dialogue                  */
-//             0xa1,               /* .DB $A1   ; I have some great ideas....    */
-//             0x4c,  0xb8,  0xcc, /* JMP $CCB8 ; Jump to the ending credits     */
-//             /* c4cd: */
-//             0x20,  0xcb,  0xc7, /* JSR $CBC7 ; Show dialoge                   */
-//             0xc3,               /* .DB $A1   ; Now take a long rest...        */
-//             0x60                /* RTS                                        */
-//     );
 }
 
 /**
@@ -1330,7 +1180,6 @@ static void death_counter(dw_rom *rom)
 
     /* hook the stats display code */
     JSR_DISPLAY_DEATHS(0x6378);
-//     vpatch(rom, 0x06378,    3,  0x20, 0x0a,  0xc3);
 
     /* patch the status window pointer */
     vpatch(rom, 0x06f6e,    1,  0xcb);
@@ -1340,34 +1189,18 @@ static void death_counter(dw_rom *rom)
     vpatch(rom, 0x06fc7,   12,
             0x27,  0x99,  0xff,  0xff,  0x21,  0x0b,  0x14,  0x35,  0x88,
             0x85,  0xb1,  0x85);
-
-//     vpatch(rom, 0x0c30a, 33,
-//                                 /* display_deaths:                           */
-//             0xad,  0xdf,  0x64, /*       lda $64df                           */
-//             0xd0,  0x03,        /*       bne +                               */
-//             0x4c,  0xba,  0xa8, /*       jmp $a8ba                           */
-//             0xa9,  0x05,        /*   +   lda #05                             */
-//             0x8d,  0xe2,  0x64, /*       sta $64e2                           */
-//             0xad,  0x30,  0x66, /*       lda $6630                           */
-//             0x85,  0x1a,        /*       sta $1a                             */
-//             0xad,  0x31,  0x66, /*       lda $6631                           */
-//             0x85,  0x1b,        /*       sta $1b                             */
-//             0xa9,  0x00,        /*       lda #00                             */
-//             0x85,  0x1c,        /*       sta $1c                             */
-//             0x20,  0x53,  0xa7, /*       jsr $a753                           */
-//             0x4c,  0x64,  0xa7  /*       jmp $a764                           */
-//     );
 }
 
 static void show_spells_learned(dw_rom *rom)
 {
     /* patch the level up text */
     vpatch(rom, 0x0ae97,    1,  0xfb); /* replace CR with wait arrow */
-    vpatch(rom, 0x0aeab,   11,
-            /* t      h     e            s      p     e      l      l        */
-            0x1d,  0x11, 0x0e,  0x5f, 0x1c,  0x19, 0x0e,  0x15,  0x15,  0x5f,
-            /* spell name */
-            0xf6);
+    set_text(rom, 0xaeab, "the spell \xf6"); /* F6 = spell name */
+//     vpatch(rom, 0x0aeab,   11,
+//             /* t      h     e            s      p     e      l      l        */
+//             0x1d,  0x11, 0x0e,  0x5f, 0x1c,  0x19, 0x0e,  0x15,  0x15,  0x5f,
+//             /* spell name */
+//             0xf6);
 
     vpatch(rom, 0x03fe0,   14,
                                 /* save_spells:                              */
@@ -1474,123 +1307,9 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0xf131, 2, 0x69, 0x03); /* Lock the stat build modifier at 3 */
 
     /* I always hated this wording */
-    dwr_str_replace(rom, "The spell will not work", "The spell had no effect");
+//     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");
+    set_text(rom, 0xad85,  "The spell had no effect");
 }
-
-
-//  * Patches the credits to add contributors to the randomizer
-//  *
-//  * @param rom The rom struct
-//  */
-// static void credits(dw_rom *rom)
-// {
-//     printf("Patching credits...\n");
-//
-//     vpatch(rom, 0x057e9,    1,  0x8b);
-//     vpatch(rom, 0x057f1,  272,  0x32,
-//             /* A few edits to save space */
-//             /* PRODUCE BY -> PRODUCER */
-//             0x35,
-//
-//             0xfc, 0xe8, 0x21, /* Write PPU Address 2043 */
-//             /* K     O     I     C     H     I       */
-//             0x2e, 0x32, 0x2c, 0x26, 0x2b, 0x2c, 0x5f,
-//             /* N     A     K     A     M     U     R     A */
-//             0x31, 0x24, 0x2e, 0x24, 0x30, 0x38, 0x35, 0x24,
-//
-//             0xfc, 0xc0, 0x23,  /* Write PPU Address 23C0 (start of attrs) */
-//             /* PPU Attributes */
-//             0xf7, 0x20, 0x0a,
-//
-//             /* Next page */
-//             0xfd, 0x8b, 0x21, /* Write PPU Address 2043 */
-//             /* D     I     R     E     C     T     O     R */
-//             0x33, 0x35, 0x32, 0x27, 0x38, 0x26, 0x28, 0x35,
-//
-//             0xfc, 0xe8, 0x21, /* Write PPU Address 2043 */
-//             /* Y     U     K     I     N     O     B     U       */
-//             0x3c, 0x38, 0x2e, 0x2c, 0x31, 0x32, 0x25, 0x38, 0x5f,
-//             /* C     H     I     D     A */
-//             0x26, 0x2b, 0x2c, 0x27, 0x24,
-//
-//             0xfc, 0xc0, 0x23, /* Write PPU Address 2043 */
-//             /* PPU Attributes */
-//             0xf7, 0x20, 0x0f,
-//
-//             /* Next page */
-//             0xfd, 0x43, 0x20, /* Write PPU Address 2043 */
-//             /* D     R     A     G     O     N        */
-//             0x27, 0x35, 0x24, 0x2a, 0x32, 0x31, 0x5f,
-//             /* W     A     R     R     I     O     R        */
-//             0x3a, 0x24, 0x35, 0x35, 0x2c, 0x32, 0x35, 0x5f,
-//             /* R     A     N     D     O     M     I     Z     E     R */
-//             0x35, 0x24, 0x31, 0x27, 0x32, 0x30, 0x2c, 0x3d, 0x28, 0x35,
-//
-//             0xfc, 0xa3, 0x20,  /* Write PPU Address 20A3 */
-//             /* D     E     V     E     L     O     P     E     R */
-//             0x27, 0x28, 0x39, 0x28, 0x2f, 0x32, 0x33, 0x28, 0x35,
-//
-//             0xfc, 0xb7, 0x20,  /* Write PPU Address 20b7 */
-//             /* M     C     G     R     E     W */
-//             0x30, 0x26, 0x2a, 0x35, 0x28, 0x3a,
-//
-//             0xfc, 0x03, 0x21,  /* Write PPU Address 2103 */
-//             /* C     O     N     T     R     I     B     U     T     O     R */
-//             0x26, 0x32, 0x31, 0x37, 0x35, 0x2c, 0x25, 0x38, 0x37, 0x32, 0x35,
-//             /* S */
-//             0x36,
-//
-//             0xfc, 0x14, 0x21,  /* Write PPU Address 2114 */
-//             /* G     A     M     E     B     O     Y     F     9 */
-//             0x2a, 0x24, 0x30, 0x28, 0x25, 0x32, 0x3c, 0x29, 0x09,
-//
-//             0xfc, 0x54, 0x21,  /* Write PPU Address 2154 */
-//             /* C     A     I     T     S     I     T     H     2 */
-//             0x26, 0x24, 0x2c, 0x37, 0x36, 0x2c, 0x37, 0x2b, 0x02,
-//
-//             0xfc, 0x9a, 0x21,  /* Write PPU Address 219A */
-//             /* D     V     J */
-//             0x27, 0x39, 0x2d,
-//
-//             0xfc, 0xd3, 0x21,  /* Write PPU Address 21D3 */
-//             /* B     U     N     D     E     R     2     0     1     5 */
-//             0x25, 0x38, 0x31, 0x27, 0x28, 0x35, 0x02, 0x00, 0x01, 0x05,
-//
-//             0xfc, 0x17, 0x22,  /* Write PPU Address 2217 */
-//             /* D     W     E     D     I     T */
-//             0x27, 0x3a, 0x28, 0x27, 0x2c, 0x37,
-//
-//             0xfc, 0x63, 0x22,  /* Write PPU Address 2263 */
-//             /* S     P     R     I     T     E     S */
-//             0x36, 0x33, 0x35, 0x2c, 0x37, 0x28, 0x36,
-//
-//             0xfc, 0x75, 0x22,  /* Write PPU Address 2275 */
-//             /* X     A     R     N     A     X     4     2 */
-//             0x3b, 0x24, 0x35, 0x31, 0x24, 0x3b, 0x04, 0x02,
-//
-//             0xfc, 0xb3, 0x22,  /* Write PPU Address 22B3 */
-//             /* R     Y     U     S     E     I     S     H     I     N */
-//             0x35, 0x3c, 0x38, 0x36, 0x28, 0x2c, 0x36, 0x2b, 0x2c, 0x31,
-//
-//             0xfc, 0xf7, 0x22,  /* Write PPU Address 22F7 */
-//             /* M     C     G     R     E     W */
-//             0x30, 0x26, 0x2a, 0x35, 0x28, 0x3a,
-//
-//             0xfc, 0x32, 0x23,  /* Write PPU Address 2332 */
-//             /* M     I     S     T     E     R     H     O     M     E     S */
-//             0x30, 0x2c, 0x36, 0x37, 0x28, 0x35, 0x2b, 0x32, 0x30, 0x28, 0x36,
-//
-//             0xfc, 0x72, 0x23,  /* Write PPU Address 2372 */
-//             /* I     N     V     E     N     E     R     A     B     L     E */
-//             0x2c, 0x31, 0x39, 0x28, 0x31, 0x28, 0x35, 0x24, 0x25, 0x2f, 0x28,
-//             0x5f, 0x5f,
-//
-//             0xfc, 0xc0, 0x23,  /* Write PPU Address 23C0 (start of attrs) */
-//             /* PPU Attributes */
-//             /* 0xf7 means the next number is a count followed by a value */
-//             0xf7, 0x08, 0xff, 0xf7, 0x04, 0x55, 0xf7, 0x04, 0xaa, 0xf7,
-//             0x04, 0x55, 0xf7, 0x0c, 0xaa, 0xf7, 0x04, 0x55, 0xf7, 0x1c);
-// }
 
 /**
  * Enables top to bottom wrapping of the menu cursor.
@@ -1886,14 +1605,6 @@ static void treasure_guards(dw_rom *rom)
 static void sorted_inventory(dw_rom *rom)
 {
     /* patch some jump addresses */
-//     vpatch(rom, 0x0d388,    2,  0xfa,  0xc2);
-//     vpatch(rom, 0x0d3bf,    2,  0xfa,  0xc2);
-//     vpatch(rom, 0x0d3e9,    2,  0xfa,  0xc2);
-//     vpatch(rom, 0x0d72c,    2,  0xfa,  0xc2);
-//     vpatch(rom, 0x0d875,    2,  0xfa,  0xc2);
-//     vpatch(rom, 0x0e0f5,    2,  0xfa,  0xc2);
-//     vpatch(rom, 0x0e13c,    2,  0x88,  0xc2);
-//     vpatch(rom, 0x0e27a,    2,  0xfa,  0xc2);
     JSR_SORT_INVENTORY(0xd387);
     JSR_SORT_INVENTORY(0xd3be);
     JSR_SORT_INVENTORY(0xd3e8);
@@ -2048,38 +1759,19 @@ static void modern_spell_names(dw_rom *rom)
     if (!MODERN_SPELLS(rom))
         return;
 
-    vpatch(rom, 0x07e5b,   67,
-            /* S     I     Z     Z  */
-            0x36, 0x2c, 0x3d, 0x3d, 0xff,
-            /* S     N     O     O     Z     E  */
-            0x36, 0x31, 0x32, 0x32, 0x3d, 0x28, 0xff,
-            /* G     L     O     W  */
-            0x2a, 0x2f, 0x32, 0x3a, 0xff,
-            /* F     I     Z     Z     L     E   */
-            0x29, 0x2c, 0x3d, 0x3d, 0x2f, 0x28, 0xff,
-            /* E     V     A     C  */
-            0x28, 0x39, 0x24, 0x26, 0xff,
-            /* Z     O     O     M   */
-            0x3d, 0x32, 0x32, 0x30, 0xff,
-            /* P     R     O     T     E     C     T    */
-            0x33, 0x35, 0x32, 0x37, 0x28, 0x26, 0x37, 0xff,
-            /* M     I     D     H     E     A     L   */
-            0x30, 0x2C, 0x27, 0x2b, 0x28, 0x24, 0x2f, 0xff,
-            /* K     A     S     I     Z     Z     L     E   */
-            0x2e, 0x24, 0x36, 0x2c, 0x3d, 0x3d, 0x2f, 0x28, 0xff,
-
-            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
-    );
-
+    set_text(rom, 0x7e56, "HEAL\xff"
+                          "SIZZ\xff"
+                          "SNOOZE\xff"
+                          "GLOW\xff"
+                          "FIZZLE\xff"
+                          "EVAC\xff"
+                          "ZOOM\xff"
+                          "PROTECT\xff"
+                          "MIDHEAL\xff"
+                          "KASIZZLE\xff"
+                          "\xff\xff\xff\xff\xff\xff\xff\xff");
     /* fix the repel end text */
-    vpatch(rom, 0x08774,   26,
-            /* P      R      O      T      E      C      T     */
-            0x33,  0x35,  0x32,  0x37,  0x28,  0x26,  0x37,  0x5f,
-            /* l      o      s      t             i      t      s        */
-            0x15,  0x18,  0x1c,  0x1d,  0x5f,  0x12,  0x1d,  0x1c,  0x5f,
-            /* e      f      f      e      c      t      .               */
-            0x0e,  0x0f,  0x0f,  0x0e,  0x0c,  0x1d,  0x47,  0x5f,  0x5f
-    );
+    set_text(rom, 0x8774,  "PROTECT lost its effect.  ");
 }
 
 /**
@@ -2091,34 +1783,29 @@ static void modern_spell_names(dw_rom *rom)
  */
 static void dwr_token_dialogue(dw_rom *rom)
 {
-    uint8_t text1[24], text2[75];
+    char text[75];
     int dx, dy;
 
     if (!rom->search_table->item[0]) {
-        strcpy((char*)text1, "Thou must go and fight!");
-        strcpy((char*)text2, "Go forth, descendant of Erdrick, "
-                "I have complete faith in thy victory! ");
-        ascii2dw(text1);
-        patch(rom, 0xa228, 23, text1);
-        vpatch(rom, 0xa288, 1, 0x53); /* replace .' with ' */
+        set_text(rom, 0xa228, "Thou must go and fight!'");
+        set_text(rom, 0xa242, "Go forth, descendant of Erdrick, "
+                "I have complete faith in thy victory!'  ");
     } else {
         dx = rom->search_table->x[0] - rom->map.warps_from[WARP_TANTEGEL].x;
         dy = rom->search_table->y[0] - rom->map.warps_from[WARP_TANTEGEL].y;
-//        strcpy((char*)text1, "Thou may go and search.");
         if (ABS(dx) > 100 || ABS(dy) > 100) {
-            snprintf((char*)text2, 75, "From Tantegel Castle travel %3d "
-                    "leagues to the %s and %3d %s/    ",
+            snprintf((char*)text, 72, "From Tantegel Castle travel %d leagues "
+                    "to the %s and %d %s/         ",
                     ABS(dy), (dy < 0) ? "north" : "south",
                     ABS(dx), (dx < 0) ? "west" : "east");
         } else {
-            snprintf((char*)text2, 75, "From Tantegel Castle travel %2d "
-                    "leagues to the %s and %2d to the %s/",
+            snprintf((char*)text, 72, "From Tantegel Castle travel %d "
+                    "leagues to the %s and %d to the %s/  ",
                     ABS(dy), (dy < 0) ? "north" : "south",
                     ABS(dx), (dx < 0) ? "west" : "east");
         }
+        set_text(rom, 0xa242, text);
     }
-    ascii2dw(text2);
-    patch(rom, 0xa242, 70, text2);
 }
 
 /**
@@ -2190,17 +1877,6 @@ void setup_expansion(dw_rom *rom)
     JSR_INC_ENEMY_DEATH_CTR(0xed9e);
     JSR_INC_DEATH_CTR(0xeda9);
     JSR_INIT_SAVE_RAM(0xf720);
-//     vpatch(rom, 0x031eb,    3, 0x20, 0xac, 0xc2);
-//     vpatch(rom, 0x0ccf0,    6, 0x4c, 0x88, 0xc2, 0xea, 0xea, 0xea);
-//     vpatch(rom, 0x0dbb2,    3, 0x20, 0xef, 0xc2);
-//     vpatch(rom, 0x0e4ed,    3, 0x20, 0xd6, 0xc2);
-//     vpatch(rom, 0x0e605,    3, 0x20, 0x90, 0xc2);
-//     vpatch(rom, 0x0e62a,    3, 0x20, 0x97, 0xc2);
-//     vpatch(rom, 0x0e65a,    3, 0x20, 0x9e, 0xc2);
-//     vpatch(rom, 0x0e68a,    3, 0x20, 0xa5, 0xc2);
-//     vpatch(rom, 0x0e98c,    3, 0x20, 0xe4, 0xc2);
-//     vpatch(rom, 0x0ed9e,    3, 0x20, 0xb3, 0xc2);
-//     vpatch(rom, 0x0eda9,    3, 0x20, 0xc3, 0xc2);
 
     bank_3_patch(rom);
     fill_expansion(rom);

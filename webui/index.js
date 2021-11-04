@@ -76,6 +76,10 @@ class Rom extends Uint8Array {
 }
 
 function setup_ui() {
+    if (!localStorage.flags)
+        localStorage.flags = 'IVIAAVCQKACAAAAAAAAAAAAB'
+    if (!localStorage.retainFlags)
+        localStorage.retainFlags = 'AAAAAAAAAAAAAAAAAAAAAAAA'
     ui = new Interface(15);
     ui.addTab('Gameplay');
     ui.addTab('Features');
@@ -188,14 +192,14 @@ function setup_ui() {
         'Music in each area will be randomized.');
     ui.addOption   ('Cosmetic',  2, 14, 6, 'Disable Music',
         'This disables the game music in most situations.');
-    ui.cosmetic(ui.addOption   ('Cosmetic',  8, 14, 5, 'Disable Spell Flashing',
-        'Prevents the screen from flashing when you cast spells.'));
-    ui.cosmetic(ui.addOption   ('Cosmetic',  10, 14, 4, 'Show Death Counter',
-        'The stats window will also have a death counter.'));
-    ui.cosmetic(ui.addOption   ('Cosmetic',  3, 13, 7, 'Allow Custom Spell Names',
-        'Allow spell names to be changed based on the chosen sprite.'));
-    ui.cosmetic(ui.addOption   ('Cosmetic',  5, 13, 6, 'Skip Original Credits',
-        'Skip the original credits and go straight to stat scroll.'));
+    ui.addOption   ('Cosmetic',  8, 14, 5, 'Disable Spell Flashing',
+        'Prevents the screen from flashing when you cast spells.', true);
+    ui.addOption   ('Cosmetic',  10, 14, 4, 'Show Death Counter',
+        'The stats window will also have a death counter.', true);
+    ui.addOption   ('Cosmetic',  3, 13, 7, 'Allow Custom Spell Names',
+        'Allow spell names to be changed based on the chosen sprite.', true);
+    ui.addOption   ('Cosmetic',  5, 13, 6, 'Skip Original Credits',
+        'Skip the original credits and go straight to stat scroll.', true);
 
     // player sprite
     let spriteBox = ui.addTextBox('Cosmetic', 1, 'Player Sprite: ');

@@ -149,7 +149,7 @@ class Interface {
         this.flagsEl = this.create('input', null, {
             'width':  '210px'
         });
-        this.flagsEl.value = localStorage.flags || 'IVIAAVCQKACAAAAAAAAAAAAB'
+        this.flagsEl.value = localStorage.flags
         this.updateFlagBytes();
         flagsDiv.append(this.flagsEl);
         flagsSeed.append(flagsDiv);
@@ -266,9 +266,9 @@ class Interface {
     setHash() {
         window.ignoreHashChange = true;
         let decoded = base32.decode(this.flagsEl.value)
-        let cosmetic = base32.decode(localStorage.cosmetic);
+        let retain = base32.decode(localStorage.retainFlags);
         for (let i=0; i < decoded.length; i++) {
-            decoded[i] &= ~cosmetic[i];
+            decoded[i] &= ~retain[i];
         }
         let flags = base32.encode(decoded);
         location.hash = ('flags=' + flags + '&seed=' + this.seedEl.value);
@@ -290,18 +290,18 @@ class Interface {
 
     updateFlags() {
         this.flagBytes.fill(0);
-        let cosmetic = new Uint8Array(this.flagSize)
+        let retain = new Uint8Array(this.flagSize)
         for (let i=0; i < this.inputs.length; i++) {
             let input = this.inputs[i];
             let bytepos = Number(input.dataset.bytepos)
             let shift =  Number(input.dataset.shift)
             this.flagBytes[bytepos] |= input.getValue() << shift;
-            if (input.dataset.cosmetic)
-                cosmetic[bytepos] |= input.getValue() << shift;
+            if (input.dataset.retain)
+                retain[bytepos] |= input.getValue() << shift;
         }
         let encoded = base32.encode(this.flagBytes);
         localStorage.setItem('flags', encoded); 
-        localStorage.setItem('cosmetic', base32.encode(cosmetic)); 
+        localStorage.setItem('retainFlags', base32.encode(retain)); 
         this.flagsEl.value = encoded;
         this.updateSummary()
         this.setHash();
@@ -310,8 +310,8 @@ class Interface {
 
     updateFlagBytes() {
         this.flagBytes = base32.decode(this.flagsEl.value);
-        if (localStorage.cosmetic) {
-            let decoded = base32.decode(localStorage.cosmetic);
+        if (localStorage.retainFlags) {
+            let decoded = base32.decode(localStorage.retainFlags);
             for (let i=0; i < decoded.length; i++) {
                 this.flagBytes[i] |= decoded[i];
             }
@@ -467,7 +467,8 @@ class Interface {
         return select;
     }
 
-    addOption(tab, position, bytepos, shift, title, description, skipFlags) {
+    addOption(tab, position, bytepos, shift, title, description, retain,
+            skipFlags) {
         let input = this.create('input')
         input.type = 'checkbox';
         input.name = tab + position;
@@ -490,13 +491,11 @@ class Interface {
             });
             container.append(descriptionEl);
         }
+        if (retain)
+            input.dataset.retain = 'true';
         this.inputs.push(input);
         this.updateInputs();
         return input;
-    }
-
-    cosmetic(input) {
-        input.dataset.cosmetic = 'true';
     }
 
     addTriOption(tab, position, bytepos, shift , title, description) {

@@ -28,7 +28,10 @@ INSTR_WAIT         EQU $fe
 INSTR_FINISH       EQU $ff
 
 music_data:
-; .include music/music.asm
+; .include music.asm
+IFNDEF DWR_BUILD
+    .db 0 ; so famistudio won't choke if there's no music
+ENDIF
 
 
 .org $a000
@@ -67,14 +70,6 @@ credit_start:
     lda #$ff
     sta $22e
 
-;     lda #1
-;     ldx #<sounds
-;     ldy #>sounds
-;     jsr famistudio_sfx_init
-    lda #1
-    ldx #<music_data
-    ldy #>music_data
-    jsr famistudio_init
     lda #0
     sta FRAMECOUNT
     ; wait for 240 frames
@@ -83,6 +78,14 @@ credit_start:
     dex
     bne -
 
+;     lda #1
+;     ldx #<sounds
+;     ldy #>sounds
+;     jsr famistudio_sfx_init
+    lda #1
+    ldx #<music_data
+    ldy #>music_data
+    jsr famistudio_init
     lda #0
     jsr famistudio_music_play
 
@@ -742,37 +745,49 @@ stats_data:
 
     .db INSTR_SET_PPU
     .word $2111 ; PPU address
-    .db "Deaths  "
+    .db "Deaths   "
     .db INSTR_SHOW_NUMBER
     .word $6630 ; Data address
 
     .db INSTR_SET_PPU
     .word $2151
-    .db "Attacks "
+    .db "Attacks  "
     .db INSTR_SHOW_NUMBER
     .word $6632 ; Data address
 
     .db INSTR_SET_PPU
     .word $2191 ; PPU address
-    .db "Crits   "
+    .db "Crits    "
     .db INSTR_SHOW_NUMBER
     .word $6634 ; Data address
 
     .db INSTR_SET_PPU
     .word $21d1 ; PPU address
-    .db "Misses  "
+    .db "Misses   "
     .db INSTR_SHOW_NUMBER
     .word $6636 ; Data address
 
     .db INSTR_SET_PPU
     .word $2211 ; PPU address
-    .db "Dodges  "
+    .db "Dodges   "
     .db INSTR_SHOW_NUMBER
     .word $6638 ; Data address
 
     .db INSTR_SET_PPU
     .word $2251 ; PPU address
-    .db "Bonks   "
+    .db "Run Fail "
+    .db INSTR_SHOW_NUMBER
+    .word $663c ; Data address
+
+    .db INSTR_SET_PPU
+    .word $2291 ; PPU address
+    .db "Ambushes "
+    .db INSTR_SHOW_NUMBER
+    .word $663e ; Data address
+
+    .db INSTR_SET_PPU
+    .word $22d1 ; PPU address
+    .db "Bonks    "
     .db INSTR_SHOW_NUMBER
     .word $663a ; Data address
 

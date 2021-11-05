@@ -2,7 +2,7 @@
 
 echo -n "Compiling... "
 
-asm6f -q -f -dDEBUG credits.asm credits.nes
+asm6f -q -m -f -dDEBUG credits.asm credits.nes
 
 echo "Done."
 

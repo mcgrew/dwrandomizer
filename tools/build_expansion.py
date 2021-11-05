@@ -21,7 +21,11 @@ def generate_header():
         h.write('void bank_3_patch(dw_rom *rom);\n')
         h.write('void fill_expansion(dw_rom *rom);\n')
         h.write('\n')
-        h.write('/* Defines for jump labels in bank 3 patch code */\n')
+        h.write('/* Defines for jump labels in bank 3 patch code\n')
+        h.write(' * JMP -> hook with jmp instruction\n')
+        h.write(' * JSR -> hook with jsr instruction\n')
+        h.write(' * DHOOK -> hook dialogue (replace dialogue index with nop)\n')
+        h.write(' */\n')
         for entry in f:
             k,v = [x.strip() for x in entry.split('=')]
             if not k[0].isalpha():
@@ -32,6 +36,8 @@ def generate_header():
                         f'0x4C, 0x{v & 0xff:X}, 0x{v >> 8:X})\n')
                 h.write(f'#define JSR_{k.upper()}(addr) vpatch(rom, addr, 3, '
                         f'0x20, 0x{v & 0xff:X}, 0x{v >> 8:X})\n')
+                h.write(f'#define DHOOK_{k.upper()}(addr) vpatch(rom, addr, 4, '
+                        f'0x20, 0x{v & 0xff:X}, 0x{v >> 8:X}, 0xea)\n')
         h.write('\n')
         h.write('#endif\n')
 
@@ -48,14 +54,18 @@ def generate_c_file(b3_patch:bytes, expansion:bytes):
         c.write('\n')
         c.write('void bank_3_patch(dw_rom *rom)\n')
         c.write('{\n')
-        c.write('    vpatch(rom, 0xc288, 621,')
-        for i,b in enumerate(b3_patch):
-            if i:
-                c.write(', ')
-            if not i % 12:
-                c.write('\n        ')
-            c.write(f'0x{b:02x}')
-        c.write('\n    );\n')
+        empty = [0xff] * len(b3_patch)
+        p = Patch.create(empty, b3_patch)
+        for r in p.records:
+            c.write(f'    pvpatch(&rom->expansion[0x{r.address+0xc288:04x}],'
+                    f'{len(r.content):4d},')
+            for i,b in enumerate(r.content):
+                if i:
+                    c.write(',')
+                if not i % 12:
+                    c.write('\n       ')
+                c.write(f' 0x{b:02x}')
+            c.write('\n    );\n')
         c.write('}\n\n')
 
         c.write('void fill_expansion(dw_rom *rom)\n')
@@ -63,6 +73,8 @@ def generate_c_file(b3_patch:bytes, expansion:bytes):
         empty = [0xff] * len(expansion)
         p = Patch.create(empty, expansion)
         for r in p.records:
+            if r.address == 0x4000:
+                continue  # single byte placeholder for music, ignore it
             c.write(f'    pvpatch(&rom->expansion[0x{r.address:04x}],'
                     f'{len(r.content):4d},')
             for i,b in enumerate(r.content):
@@ -77,7 +89,8 @@ def generate_c_file(b3_patch:bytes, expansion:bytes):
 def main():
     chdir(join(dirname(realpath(__file__)), '..', 'expansion'))
     asm6 = find_executable('asm6f') or find_executable('asm6')
-    if run([asm6, '-q', '-f', 'credits.asm', 'credits.nes']).returncode:
+    if run([asm6, '-q', '-f', '-dDWR_BUILD', 'credits.asm', 'credits.nes']
+            ).returncode:
         return -1
 
     with open('credits.nes', 'rb') as f:

@@ -107,9 +107,6 @@ the_end:
 
 .include base.asm
 
-.org $c7cb
-show_window: rts ; dummy subroutine
-
 .org $e01b
 b3_e01b:    rts  ; dummy subroutine
 

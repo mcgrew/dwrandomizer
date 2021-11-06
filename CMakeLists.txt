@@ -11,6 +11,24 @@ if (DEBUG)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+#  file(GLOB music_files "${CMAKE_SOURCE_DIR}/expansion/music/*.txt")
+#  foreach(music_file IN ITEMS ${music_files})
+#      if(${music_file} IS_NEWER_THAN "${CMAKE_SOURCE_DIR}/common/credits_music.c")
+#          message("${music_file} has changed, Rebuilding music file...")
+#          execute_process(COMMAND "${CMAKE_SOURCE_DIR}/tools/build_music.py")
+#          break()
+#      endif()
+#  endforeach()
+#  
+#  file(GLOB asm_files "${CMAKE_SOURCE_DIR}/expansion/*.asm")
+#  foreach(asm_file IN ITEMS ${asm_files})
+#      if(${asm_file} IS_NEWER_THAN "${CMAKE_SOURCE_DIR}/common/expansion.c")
+#          message("${asm_file} has changed, Rebuilding expansion file...")
+#          execute_process(COMMAND "${CMAKE_SOURCE_DIR}/tools/build_expansion.py")
+#          break()
+#      endif()
+#  endforeach()
+
 # Compile the command line version
 include_directories(common)
 

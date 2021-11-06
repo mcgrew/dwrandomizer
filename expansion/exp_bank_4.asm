@@ -811,60 +811,60 @@ stats_data:
     .db INSTR_REPEAT_CHAR, 16, " "
 
     .db INSTR_SET_PPU
-    .word $20d1
+    .word $20d2
     .db "OTHER STATS"
 
     .db INSTR_SET_PPU
-    .word $2110 ; PPU address
-    .db "Deaths    "
+    .word $2111 ; PPU address
+    .db "Deaths   "
     .db INSTR_SHOW_NUMBER
     .word $6630 ; Data address
 
     .db INSTR_SET_PPU
-    .word $2150
-    .db "Attacks   "
+    .word $2151
+    .db "Attacks  "
     .db INSTR_SHOW_NUMBER
     .word $6632 ; Data address
 
     .db INSTR_SET_PPU
-    .word $2190 ; PPU address
-    .db "Crits     "
+    .word $2191 ; PPU address
+    .db "Crits    "
     .db INSTR_SHOW_NUMBER
     .word $6634 ; Data address
 
 ;     .db INSTR_SET_PPU
 ;     .word $21d0 ; PPU address
-;     .db "Misses    "
+;     .db "Misses   "
 ;     .db INSTR_SHOW_NUMBER
 ;     .word $6636 ; Data address
 
     .db INSTR_SET_PPU
-    .word $21d0 ; PPU address
-    .db "Dodges    "
+    .word $21d1 ; PPU address
+    .db "Dodges   "
     .db INSTR_SHOW_NUMBER
     .word $6638 ; Data address
 
     .db INSTR_SET_PPU
-    .word $2210 ; PPU address
-    .db "Run Fails "
+    .word $2211 ; PPU address
+    .db "Blocks   "
     .db INSTR_SHOW_NUMBER
     .word $663c ; Data address
 
     .db INSTR_SET_PPU
-    .word $2250 ; PPU address
-    .db "Ambushes  "
+    .word $2251 ; PPU address
+    .db "Ambushes "
     .db INSTR_SHOW_NUMBER
     .word $663e ; Data address
 
     .db INSTR_SET_PPU
-    .word $2290 ; PPU address
-    .db "Bonks     "
+    .word $2291 ; PPU address
+    .db "Bonks    "
     .db INSTR_SHOW_NUMBER
     .word $663a ; Data address
 
     .db INSTR_SET_PPU
-    .word $2310 ; PPU address
-    .db "Play Time "
+    .word $2311 ; PPU address
+    .db "Play Time"
     .db INSTR_SET_PPU
     .word $2353 ; PPU address
     .db INSTR_PLAY_TIME

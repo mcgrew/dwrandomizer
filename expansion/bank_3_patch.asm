@@ -220,11 +220,13 @@ display_deaths:
     jmp $a764
 
 count_frame:
-    ldx MAP_INDEX
+    ldx MAP_INDEX  ; Start the timer once the map is no longer zero
     bne +
-    ldx $662c
+    lda $662c      ; continue counting if the timer is greater than zero.
+    ora $662d
+    ora $662e
     beq ++
-+   ldx $662c
++   ldx $662c      ; increment the timer
     inx
     stx $662c
     bne ++

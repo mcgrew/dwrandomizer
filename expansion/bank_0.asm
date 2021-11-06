@@ -28,10 +28,11 @@ OAMDMA     EQU $4014
 
 ; DW labels
 
-X_POS EQU $003A
-X_POS_2 EQU $008E
-Y_POS EQU $003B
-Y_POS_2 EQU $008F
+X_POS EQU $3A
+X_POS_2 EQU $8E
+Y_POS EQU $3B
+Y_POS_2 EQU $8F
+MAP_INDEX EQU $45
 ; _UNUSED_D5 EQU $00D5
 ; _UNUSED_DC EQU $00DC
 ; _UNUSED_DD EQU $00DD
@@ -55,7 +56,8 @@ Y_POS_2 EQU $008F
 ; desc_ptr_table          EQU $A830
 ; detect_vowel            EQU $BA3C
 ; dialog_win              EQU $B04B
-do_dialog_hi            EQU $C7BD
+; do_dialog_hi            EQU $C7BD
+do_dialog_hi            EQU $C7C5
 do_dialog_lo            EQU $C7CB
 ; do_item                 EQU $B757
 ; do_spell                EQU $B7D8

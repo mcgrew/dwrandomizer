@@ -57,7 +57,7 @@ def generate_c_file(b3_patch:bytes, expansion:bytes):
         empty = [0xff] * len(b3_patch)
         p = Patch.create(empty, b3_patch)
         for r in p.records:
-            c.write(f'    pvpatch(&rom->expansion[0x{r.address+0xc288:04x}],'
+            c.write(f'    vpatch(rom, 0x{r.address+0xc288:04x},'
                     f'{len(r.content):4d},')
             for i,b in enumerate(r.content):
                 if i:

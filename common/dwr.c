@@ -1868,6 +1868,7 @@ void setup_expansion(dw_rom *rom)
     JSR_INC_BONK_CTR(0x31eb);
     JMP_START_DWR_CREDITS(0xccf0);
     JSR_COUNT_SPELL_USE(0xdbb2);
+    JSR_SNAPSHOT_TIMER(0xccb8);
     JSR_COUNT_ENCOUNTER(0xe4ed);
     DHOOK_PLAYER_AMBUSHED(0xe5c7);
     JSR_INC_ATTACK_CTR(0xe605);
@@ -1879,6 +1880,7 @@ void setup_expansion(dw_rom *rom)
     JSR_INC_ENEMY_DEATH_CTR(0xed9e);
     JSR_INC_DEATH_CTR(0xeda9);
     JSR_INIT_SAVE_RAM(0xf720);
+    JSR_COUNT_FRAME(0xfee0);
 
     bank_3_patch(rom);
     fill_expansion(rom);

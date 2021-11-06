@@ -13,10 +13,24 @@
     RAW_CHAR_FLAG  .dsb 1
     PPUATTR_LEN    .dsb 1
 .ende
+.enum $40
+    PRODUCT
+    REMAINDER      .dsb 3
+    MULTIPLIER
+    DIVISOR        .dsb 3
+    MULTIPLICAND
+    DIVIDEND       .dsb 3
+    PZTEMP         .dsb 1
+    FRAMES         .dsb 1
+    SECONDS        .dsb 1
+    MINUTES        .dsb 1
+    HOURS          .dsb 1
+.ende
 
 NMI_INIT_PPU       EQU %00010000
 NMI_SKIP_TILE      EQU #$f7
 
+INSTR_PLAY_TIME    EQU $f6
 INSTR_MON_STAT     EQU $f7
 INSTR_LOAD_CHR     EQU $f8
 INSTR_WRITE_ZP     EQU $f9
@@ -77,11 +91,19 @@ credit_start:
 -   jsr exp_wait_for_nmi
     dex
     bne -
+    
+IFDEF test_frames
+    ldx #2
+    lda test_frames,x
+    sta $6f00,x
+ENDIF
 
+    jsr calculate_play_time
 ;     lda #1
 ;     ldx #<sounds
 ;     ldy #>sounds
 ;     jsr famistudio_sfx_init
+start_music:
     lda #1
     ldx #<music_data
     ldy #>music_data
@@ -256,6 +278,51 @@ handle_instruction:
     rts
 
 +next_instr:
+    cmp #INSTR_PLAY_TIME
+    bne +next_instr
+    lda #0
+    sta BCD_INPUT+1
+    lda HOURS
+    sta BCD_INPUT
+    jsr bin_to_bcd
+    jsr clear_bcd_zeros
+    ldx #2
+    jsr print_bcd_x
+
+    lda #$44
+    sta NEXT_TILE
+    jsr exp_wait_for_nmi
+    jsr inc_ppu_position
+
+    lda MINUTES
+    sta BCD_INPUT
+    jsr bin_to_bcd
+    ldx #2
+    jsr print_bcd_x
+
+    lda #$44
+    sta NEXT_TILE
+    jsr exp_wait_for_nmi
+    jsr inc_ppu_position
+
+    lda SECONDS
+    sta BCD_INPUT
+    jsr bin_to_bcd
+    ldx #2
+    jsr print_bcd_x
+
+    lda #$47
+    sta NEXT_TILE
+    jsr exp_wait_for_nmi
+    jsr inc_ppu_position
+
+    lda FRAMES
+    sta BCD_INPUT
+    jsr bin_to_bcd
+    ldx #2
+    jsr print_bcd_x
+
++next_instr:
     cmp #INSTR_SHOW_NUMBER
     bne +next_instr
     ldy #0
@@ -265,6 +332,7 @@ handle_instruction:
     lda (STATS_ADDR),y
     sta TMP_ADDR + 1
     jsr addr_to_bcd
+    ldx #4
     jsr print_bcd
     lda #2
     jsr add_stats_addr
@@ -297,12 +365,15 @@ addr_to_bcd:
     lda (TMP_ADDR),y
     sta BCD_INPUT,y
     jsr bin_to_bcd
+    jsr clear_bcd_zeros
     pla
     tay
     rts
 
 print_bcd:
-    ldx #3
+    ldx #4
+print_bcd_x:
+    dex
 -   lda BCD_RESULT,x
     sta NEXT_TILE
     jsr exp_wait_for_nmi
@@ -744,58 +815,210 @@ stats_data:
     .db "OTHER STATS"
 
     .db INSTR_SET_PPU
-    .word $2111 ; PPU address
-    .db "Deaths   "
+    .word $2110 ; PPU address
+    .db "Deaths    "
     .db INSTR_SHOW_NUMBER
     .word $6630 ; Data address
 
     .db INSTR_SET_PPU
-    .word $2151
-    .db "Attacks  "
+    .word $2150
+    .db "Attacks   "
     .db INSTR_SHOW_NUMBER
     .word $6632 ; Data address
 
     .db INSTR_SET_PPU
-    .word $2191 ; PPU address
-    .db "Crits    "
+    .word $2190 ; PPU address
+    .db "Crits     "
     .db INSTR_SHOW_NUMBER
     .word $6634 ; Data address
 
-    .db INSTR_SET_PPU
-    .word $21d1 ; PPU address
-    .db "Misses   "
-    .db INSTR_SHOW_NUMBER
-    .word $6636 ; Data address
+;     .db INSTR_SET_PPU
+;     .word $21d0 ; PPU address
+;     .db "Misses    "
+;     .db INSTR_SHOW_NUMBER
+;     .word $6636 ; Data address
 
     .db INSTR_SET_PPU
-    .word $2211 ; PPU address
-    .db "Dodges   "
+    .word $21d0 ; PPU address
+    .db "Dodges    "
     .db INSTR_SHOW_NUMBER
     .word $6638 ; Data address
 
     .db INSTR_SET_PPU
-    .word $2251 ; PPU address
-    .db "Run Fail "
+    .word $2210 ; PPU address
+    .db "Run Fails "
     .db INSTR_SHOW_NUMBER
     .word $663c ; Data address
 
     .db INSTR_SET_PPU
-    .word $2291 ; PPU address
-    .db "Ambushes "
+    .word $2250 ; PPU address
+    .db "Ambushes  "
     .db INSTR_SHOW_NUMBER
     .word $663e ; Data address
 
     .db INSTR_SET_PPU
-    .word $22d1 ; PPU address
-    .db "Bonks    "
+    .word $2290 ; PPU address
+    .db "Bonks     "
     .db INSTR_SHOW_NUMBER
     .word $663a ; Data address
 
-    .db INSTR_WAIT, 120
+    .db INSTR_SET_PPU
+    .word $2310 ; PPU address
+    .db "Play Time "
+    .db INSTR_SET_PPU
+    .word $2353 ; PPU address
+    .db INSTR_PLAY_TIME
+
+    .db INSTR_WAIT, 240
     .db INSTR_FINISH
 
 stats_done:
         jmp stats_done
+
+calculate_play_time:
+    ; divide frames into hours
+    ldx #2
+-   lda $6f00,x
+    sta DIVIDEND,x
+    lda hours_divisor,x
+    sta DIVISOR,x
+    dex
+    bpl -
+    jsr divide_24_bit
+    lda DIVIDEND
+    sta HOURS
+
+    ; divide the remainder into minutes
+    ldx #2
+-   lda REMAINDER,x
+    sta DIVIDEND,x
+    lda minutes_divisor,x
+    sta DIVISOR,x
+    dex
+    bpl -
+    jsr divide_24_bit
+    lda DIVIDEND
+    sta MINUTES
+
+    ; divide the remainder into seconds
+    ; multiply seconds by 10 and divide by 601 for more accuracy
+    ldx #2
+-   lda REMAINDER,x
+    sta MULTIPLICAND,x
+    lda seconds_multiplier,x
+    sta MULTIPLIER,x
+    dex
+    bpl -
+    jsr multiply_16_bit
+    ldx #2
+-   lda PRODUCT,x
+    sta DIVIDEND,x
+    lda seconds_divisor,x
+    sta DIVISOR,x
+    dex
+    bpl -
+    jsr divide_24_bit
+    lda DIVIDEND
+    sta SECONDS
+
+    ; the remainder is frames x 10 (range 0-600).
+    ; if it's > 255, subtract 1 to get in the range 0-599.
+    lda REMAINDER+1
+    beq +
+    lda REMAINDER
+    sec
+    sbc #1
+    sta REMAINDER
+    lda REMAINDER+1
+    sbc #1
+    sta REMAINDER+1
+    +
+    ; divide by 6 to get centiseconds
+    ldx #2
+-   lda REMAINDER,x
+    sta DIVIDEND,x
+    lda frames_divisor,x
+    sta DIVISOR,x
+    dex
+    bpl -
+    jsr divide_24_bit
+    lda DIVIDEND
+    sta FRAMES
++   rts
+
+
+multiply_16_bit:
+    ; multiplicand is 16 bits, multiplier is 8 bits.
+    ; this function will not work properly if the result is > 16 bits
+    lda #0
+    sta PRODUCT
+    sta PRODUCT+1
+    sta PRODUCT+2
+    ldx MULTIPLIER
+    beq +
+    lda MULTIPLICAND
+    sta PRODUCT
+    lda MULTIPLICAND+1
+    sta PRODUCT+1
+    dex
+    beq +
+-   lda PRODUCT
+    clc
+    adc MULTIPLICAND
+    sta PRODUCT
+    lda PRODUCT+1
+    adc MULTIPLICAND+1
+    sta PRODUCT+1
+    dex
+    bne -
++   rts
+
+divide_24_bit:
+    ldx #24           ;repeat for each bit
+    lda #0            ;preset remainder to 0
+    sta REMAINDER
+    sta REMAINDER+1
+    sta REMAINDER+2
+
+-divloop:
+    asl DIVIDEND    ;dividend lb & hb*2, msb -> Carry
+    rol DIVIDEND+1
+    rol DIVIDEND+2
+    rol REMAINDER    ;remainder lb & hb * 2 + msb from carry
+    rol REMAINDER+1
+    rol REMAINDER+2
+    lda REMAINDER
+    sec
+    sbc DIVISOR    ;substract divisor to see if it fits in
+    tay            ;lb result -> Y, for we may need it later
+    lda REMAINDER+1
+    sbc DIVISOR+1
+    sta PZTEMP
+    lda REMAINDER+2
+    sbc DIVISOR+2
+    bcc +skip   ;if carry=0 then divisor didn't fit in yet
+
+    sta REMAINDER+2    ;else save substraction result as new remainder,
+    lda PZTEMP
+    sta REMAINDER+1
+    sty REMAINDER
+    inc DIVIDEND     ;and INCrement result cause divisor fit in 1 times
+
++skip:
+    dex
+    bne -divloop
+    rts
+
+hours_divisor:
+    hex 28 4d 03 ; 216,360 - frames per hour
+minutes_divisor:
+    hex 16 0e 00 ;   3,606 - frames per minute
+seconds_multiplier:
+    hex 0a 00 00 ;      10
+seconds_divisor:
+    hex 59 02 00 ;     601 - 60.1 frames per second
+frames_divisor:
+    hex 06 00 00 ;       6
 
 bin_to_bcd:
     lda #$00
@@ -827,7 +1050,9 @@ bin_to_bcd:
     rol BCD_RESULT+4
     dex
     bne -
-clear_zeros:
+    rts
+
+clear_bcd_zeros:
     ldx #$05
     dex
 -   lda BCD_RESULT,x

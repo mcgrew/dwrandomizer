@@ -200,8 +200,8 @@ scared_slimes:
 
 init_save_ram:
     sta $62e8,x
-    sta $6630,x
-    sta $6730,x
+    sta $662c,x
+    sta $672c,x
     rts
 
 display_deaths:
@@ -218,6 +218,31 @@ display_deaths:
     sta $1c
     jsr $a753
     jmp $a764
+
+count_frame:
+    ldx MAP_INDEX
+    bne +
+    ldx $662c
+    beq ++
++   ldx $662c
+    inx
+    stx $662c
+    bne ++
+    ldx $662d
+    inx
+    stx $662d
+    bne ++
+    inc $662e
+++  jmp $fdf4
+
+snapshot_timer:
+    ldx #2
+-   lda $662c,x
+    sta $6f00,x
+    dex
+    bpl -
+    jmp do_dialog_hi
+    
 
 
 .org $c4f5

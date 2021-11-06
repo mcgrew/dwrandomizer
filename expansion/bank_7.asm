@@ -15,9 +15,8 @@ set_first_bank:
     nop
     rts
 
-.org $c287
 game_start:
-    nop
+    jmp start_dwr_credits
 .include bank_3_patch.asm
 
 first_vblank:

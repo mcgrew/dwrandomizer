@@ -10,7 +10,7 @@
 .word exp_count_spell_use      ; 12
 .word exp_load_last_bank       ; 14
 .word exp_sort_inventory       ; 16
-.word exp_torch_in_battle      ; 18
+; .word exp_torch_in_battle      ; 18
 
 start_dwr_credits:
     ldy #0
@@ -81,8 +81,8 @@ player_ambushed:
 
 exec_expansion_sub:
     pha
-    lda #$4c
-    sta $7f00
+;     lda #$4c
+;     sta $7f00
     lda $c288,y
     sta $7f01
     lda $c289,y
@@ -90,7 +90,7 @@ exec_expansion_sub:
     lda #3
     jsr load_prg_bank
     pla
-    jmp $7f00
+    jmp ($7f01)
 
 inc_enemy_death_ctr:
     brk
@@ -127,40 +127,40 @@ sort_inventory:
 ;     jmp exp_sort_inventory
 
 torch_in_battle:
-    ldy #18
-    bne exec_expansion_sub
-;     cmp #$04            ; is this a torch?
-;     bne +++             ; no, go to next check
-;     lda #$01
-;     jsr $e04b           ; remove the item from inventory
-;     jsr $c7c5           ; show the "hurled a torch" message
-;     hex 29
-;     lda $e0
-;     cmp #$10            ; are we fighting a metal slime?
-;     bne ++              ; no, go to higher damage
-; -   jsr $c55b           ; run the rng cycle routine
-;     lda $95             ; load a random number
-;     and #$01            ; limit to 0-1
-;     bne +               ; did we hit it?
-;     jmp $e658           ; A miss!
-; +   jmp $e694           ; yes, go to damage routine
-; ++  jsr $c55b           ; run the rng cycle routine
-;     lda $95             ; load a random number
-;     and #$03            ; limit to 0-3
-;     clc
-;     adc #$06            ; add 6
-;     jmp $e694           ; jump to damage routine
-; +++ cmp #$05            ; c9 04      ; Fairy Water
-;     bne +
-;     lda #$02
-;     jsr $e04b           ; remove the item from inventory
-;     jsr $c7c5           ; show the "sprinked fairy water" message
-;     hex 2a
-;     lda $e0
-;     cmp #$10            ; metal slime
-;     beq - 
-;     jmp $e744
-; +   jmp $e6fd           ; 4c fd e6
+;     ldy #18
+;     bne exec_expansion_sub
+    cmp #$04            ; is this a torch?
+    bne +++             ; no, go to next check
+    lda #$01
+    jsr $e04b           ; remove the item from inventory
+    jsr $c7c5           ; show the "hurled a torch" message
+    hex 29
+    lda $e0
+    cmp #$10            ; are we fighting a metal slime?
+    bne ++              ; no, go to higher damage
+-   jsr $c55b           ; run the rng cycle routine
+    lda $95             ; load a random number
+    and #$01            ; limit to 0-1
+    bne +               ; did we hit it?
+    jmp $e658           ; A miss!
++   jmp $e694           ; yes, go to damage routine
+++  jsr $c55b           ; run the rng cycle routine
+    lda $95             ; load a random number
+    and #$03            ; limit to 0-3
+    clc
+    adc #$06            ; add 6
+    jmp $e694           ; jump to damage routine
++++ cmp #$05            ; c9 04      ; Fairy Water
+    bne +
+    lda #$02
+    jsr $e04b           ; remove the item from inventory
+    jsr $c7c5           ; show the "sprinked fairy water" message
+    hex 2a
+    lda $e0
+    cmp #$10            ; metal slime
+    beq - 
+    jmp $e744
++   jmp $e6fd           ; 4c fd e6
 
 threes_company_check:
     lda $df   ; Load the status bits

@@ -104,38 +104,38 @@ exp_sort_inventory:
     beq --
 +   jmp exp_load_last_bank
 
-exp_torch_in_battle:
-    cmp #$04            ; is this a torch?
-    bne +++             ; no, go to next check
-    lda #$01
-    jsr $e04b           ; remove the item from inventory
-    jsr $c7c5           ; show the "hurled a torch" message
-    hex 29
-    lda $e0
-    cmp #$10            ; are we fighting a metal slime?
-    bne ++              ; no, go to higher damage
--   jsr $c55b           ; run the rng cycle routine
-    lda $95             ; load a random number
-    and #$01            ; limit to 0-1
-    bne +               ; did we hit it?
-    jmp $e658           ; A miss!
-+   jmp $e694           ; yes, go to damage routine
-++  jsr $c55b           ; run the rng cycle routine
-    lda $95             ; load a random number
-    and #$03            ; limit to 0-3
-    clc
-    adc #$06            ; add 6
-    jmp $e694           ; jump to damage routine
-+++ cmp #$05            ; c9 04      ; Fairy Water
-    bne +
-    lda #$02
-    jsr $e04b           ; remove the item from inventory
-    jsr $c7c5           ; show the "sprinked fairy water" message
-    hex 2a
-    lda $e0
-    cmp #$10            ; metal slime
-    beq - 
-    jmp $e744
-+   jmp $e6fd           ; 4c fd e6
+; exp_torch_in_battle:
+;     cmp #$04            ; is this a torch?
+;     bne +++             ; no, go to next check
+;     lda #$01
+;     jsr $e04b           ; remove the item from inventory
+;     jsr $c7c5           ; show the "hurled a torch" message
+;     hex 29
+;     lda $e0
+;     cmp #$10            ; are we fighting a metal slime?
+;     bne ++              ; no, go to higher damage
+; -   jsr $c55b           ; run the rng cycle routine
+;     lda $95             ; load a random number
+;     and #$01            ; limit to 0-1
+;     bne +               ; did we hit it?
+;     jmp $e658           ; A miss!
+; +   jmp $e694           ; yes, go to damage routine
+; ++  jsr $c55b           ; run the rng cycle routine
+;     lda $95             ; load a random number
+;     and #$03            ; limit to 0-3
+;     clc
+;     adc #$06            ; add 6
+;     jmp $e694           ; jump to damage routine
+; +++ cmp #$05            ; c9 04      ; Fairy Water
+;     bne +
+;     lda #$02
+;     jsr $e04b           ; remove the item from inventory
+;     jsr $c7c5           ; show the "sprinked fairy water" message
+;     hex 2a
+;     lda $e0
+;     cmp #$10            ; metal slime
+;     beq - 
+;     jmp $e744
+; +   jmp $e6fd           ; 4c fd e6
 
 .org $c000

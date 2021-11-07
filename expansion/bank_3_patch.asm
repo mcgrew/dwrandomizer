@@ -59,12 +59,6 @@ inc_death_ctr:
     ldy #2
     bne exec_expansion_sub
 
-; inc_counter:
-;     lda #3
-;     jsr load_prg_bank  ; load prg_bank
-;     pla
-;     jmp exp_inc_counter
-
 blocked_in_front:
     jsr do_dialog_lo  ; but was blocked in front
     hex f6
@@ -87,8 +81,10 @@ exec_expansion_sub:
     sta $7f01
     lda $c289,y
     sta $7f02
+    lda $6004
+    sta $7004
     lda #3
-    jsr load_prg_bank
+    jsr store_and_load_prg_bank
     pla
     jmp ($7f01)
 
@@ -122,9 +118,6 @@ sort_inventory:
     rts
 +   ldy #16
     bne exec_expansion_sub
-; +   lda #3
-;     jsr load_prg_bank  ; load prg_bank
-;     jmp exp_sort_inventory
 
 torch_in_battle:
 ;     ldy #18
@@ -244,7 +237,5 @@ snapshot_timer:
     dex
     bpl -
     jmp do_dialog_hi
-    
-
 
 .org $c4f5

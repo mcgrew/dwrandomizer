@@ -69,8 +69,8 @@ exp_inc_counter:
 +   tya
     sta $6630,x
 exp_load_last_bank:
-    lda $6004
-    jmp b3_ff96
+    lda $7004
+    jmp store_and_load_prg_bank
 
 exp_sort_inventory:
     ldx #$03

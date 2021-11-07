@@ -95,7 +95,7 @@ do_dialog_lo            EQU $C7CB
 ; jmp_spell               EQU $B6BB
 ; ken_masuta              EQU $FC76
 ; load_chr_bank           EQU $FE09
-; store_and_load_prg_bank EQU $FF91
+store_and_load_prg_bank EQU $FF91
 load_prg_bank           EQU $FF96
 ; monster_stats           EQU $9E4B
 ; monster_stats_ptr       EQU $9E49

@@ -9,7 +9,6 @@ function require(jsFile) {
     return el;
 }
 
-
 require('interface.js');
 require('dwrandomizer.js');
 require('base32.js');
@@ -207,7 +206,7 @@ function setup_ui() {
     spriteBox.value = localStorage.getItem('sprite') || 'Random';
     spriteBox.id = "sprite-box";
     spriteBox.getValue = function() {
-        if (this.classList.contains('invalid'))
+        if (!sprite_choices.includes(this.value))
             return 'Random';
         return this.value;
     }
@@ -221,6 +220,11 @@ function setup_ui() {
             this.classList.add('invalid');
         }
         ui.updateSummary();
+    });
+    spriteBox.addEventListener('focus', function(event) {
+        if (this.value) {
+            this.value = '';
+        }
     });
     let spritePreview = ui.create('img', null, {
         'background-color': '#ccc',

@@ -102,8 +102,7 @@ const char * const dwr_sprite_names[] = {
  * Finds the number of sprites defined above. The result is cached so the
  * full function only runs once.
  *
- * @param 
- * @return 
+ * @return The number of sprites available.
  */
 size_t sprite_count()
 {
@@ -117,7 +116,7 @@ size_t sprite_count()
 }
 
 /**
- * Gets the name of the sprite at the given index. Mostly for use with 
+ * Gets the name of the sprite at the given index. Mostly for use with
  * emscripten. Returns NULL if the index is too high.
  *
  * @param index The index of the sprite
@@ -178,7 +177,9 @@ static void set_npc_palette(dw_rom *rom, NPC npc, uint8_t palette)
  *
  * @param rom The rom struct
  * @param palette The palette number. Should be 0-3.
- * @ 
+ *  @param skin The skin color for the sprite.
+ *  @param light_color The light color for the sprite.
+ *  @param dark_color The dark color for the sprite.
  */
 static void set_palette_colors(dw_rom *rom, uint8_t palette,
         uint8_t skin, uint8_t light_color, uint8_t dark_color)

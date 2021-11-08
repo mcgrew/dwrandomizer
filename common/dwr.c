@@ -971,10 +971,13 @@ static void dwr_fighters_ring(dw_rom *rom)
 static void dwr_death_necklace(dw_rom *rom)
 {
 
+
     if (!DEATH_NECKLACE(rom))
         return;
 
     printf("Adding functionality to the death necklace...\n");
+
+    vpatch(rom, 0xe260, 1, 0);  /* set death necklace chance to 100% */
 
     vpatch(rom, 0xff54, 31,
             /* ff54: */
@@ -1272,20 +1275,19 @@ static void other_patches(dw_rom *rom)
     /* Have the jerk take the token along with staff & stones */
     vpatch(rom, 0x0d383,    2,  0xd5,  0xbf); /* jump to new code below */
     vpatch(rom, 0x03fd5,    8,
-            0x20,  0x4b,  0xe0, /* JSR $E04B ; replace the rewritten code */
-            0xa9,  0x07,        /* LDA #$07  ; remove token from inventory */
-            0x4c,  0x4b,  0xe0  /* JMP $E04B ; jump to remove code and return */
+            0x20,  0x4b,  0xe0, /* JSR $E04B ; replace the rewritten code    */
+            0xa9,  0x07,        /* LDA #$07  ; remove token from inventory   */
+            0x4c,  0x4b,  0xe0  /* JMP $E04B ; jump to remove code           */
     );
 
-    vpatch(rom, 0xde23, 10,  /* Changes the enemies summoned by the harp. */
-        /* de23: */
-        0x29, 0x7,  /* AND #$07    ; limit the random number to 0-7 */
-        0xaa,  /* TAX         ; move the value to the X register */
-        0xbd, 0x54, 0xf5,  /* LDA #F554,X ; load a monster from zone 1-2 */
-        0xea,  /* NOP         ; fill in the rest with NOP */
-        0xea,  /* NOP         ; */
-        0xea,  /* NOP         ; */
-        0xea   /* NOP         ; */
+    vpatch(rom, 0xde23, 10, /* Changes the enemies summoned by the harp.     */
+        0x29, 0x7,          /* AND #$07    ; limit the random number to 0-7  */
+        0xaa,               /* TAX         ; move value to the X register    */
+        0xbd, 0x54, 0xf5,   /* LDA #F554,X ; load a monster from zone 1-2    */
+        0xea,               /* NOP         ; fill in the rest with NOP       */
+        0xea,               /* NOP                                           */
+        0xea,               /* NOP                                           */
+        0xea                /* NOP                                           */
     );
     vpatch(rom, 0x42a, 1, 0x47);  /* add new stairs to the throne room */
     vpatch(rom, 0x2a9, 1, 0x45);  /* add new stairs to the 1st floor */
@@ -1296,7 +1298,6 @@ static void other_patches(dw_rom *rom)
     set_dungeon_tile(rom, CHARLOCK_CAVE_6, 9, 0, DUNGEON_TILE_BRICK);
     /* Sets the encounter rate of Zone 0 to be the same as other zones. */
     vpatch(rom, 0xcebf, 3, 0x4c, 0x04, 0xcf);  /* skip over the zone 0 code */
-    vpatch(rom, 0xe260, 1, 0);  /* set death necklace chance to 100% */
     vpatch(rom, 0xe74d, 1, 9);  /* buff the hurt spell */
     vpatch(rom, 0xdbc1, 1, 18);  /* buff the heal spell */
     /* fixing some annoying roaming npcs */

@@ -255,6 +255,13 @@ static void no_chest_shuffle(dw_rom *rom)
     }
 }
 
+/**
+ * Determines whether the given map is using a dungeon tileset.
+ *
+ * @param map The requested map index
+ *
+ * @return True if this map uses a dungeon tileset.
+ */
 static BOOL is_dungeon_tileset(dw_map_index map)
 {
     switch(map) {
@@ -535,14 +542,19 @@ static void shuffle_chests(dw_rom *rom)
             DRAGON_SCALE, RING
     }, *cont = contents;
     uint8_t  key_items[] = {
-            SWORD, ARMOR, NECKLACE, HARP, STONES, FLUTE, TOKEN
+            SWORD, ARMOR, HARP, STONES, FLUTE, TOKEN, NECKLACE
     }, *key_item = key_items;
     uint8_t search_items[] = { 0, 0, 0 };
 
     if (!SHUFFLE_CHESTS(rom))
         return no_chest_shuffle(rom);
 
-    mt_shuffle(key_items, sizeof(key_items), sizeof(uint8_t));
+     /* if the necklace doesn't have special effects, it's not a key item */
+    if (DEATH_NECKLACE(rom)) {
+        mt_shuffle(key_items, sizeof(key_items), sizeof(uint8_t));
+    } else {
+        mt_shuffle(key_items, sizeof(key_items)-1, sizeof(uint8_t));
+    }
 
     for (i=0; i < 3; i++) {
         /* If "No Numbers" is turned on, don't put anything on the overworld */
@@ -593,6 +605,11 @@ static void shuffle_chests(dw_rom *rom)
 
 }
 
+/**
+ * Applies all chest-related flags
+ *
+ * @param rom The rom struct
+ */
 void do_chest_flags(dw_rom *rom) {
     move_chests(rom);
     shuffle_chests(rom);

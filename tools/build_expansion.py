@@ -31,7 +31,7 @@ def generate_header():
             if not k[0].isalpha():
                 continue
             v = int(v, 16)
-            if (0xc288 <= v < 0xc4f5):
+            if (0xc288 <= v < 0xf35b):
                 h.write(f'#define JMP_{k.upper()}(addr) vpatch(rom, addr, 3, '
                         f'0x4C, 0x{v & 0xff:X}, 0x{v >> 8:X})\n')
                 h.write(f'#define JSR_{k.upper()}(addr) vpatch(rom, addr, 3, '
@@ -97,7 +97,7 @@ def main():
         f.seek(0xc000 + 16)
         expansion= f.read(0x10000)
         f.seek(0x1c288 + 16)
-        b3_patch = f.read(0xc4f5 - 0xc288)
+        b3_patch = f.read(0xf35b - 0xc288)
     generate_header()
     generate_c_file(b3_patch, expansion)
     remove('credits.nes')

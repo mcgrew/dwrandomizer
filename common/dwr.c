@@ -1956,6 +1956,17 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 
     /* Clear the unused code so we can make sure it's unused */
     memset(&rom.content[0xc288], 0xff, 0xc4f5 - 0xc288);
+#ifdef CLEAR_UNUSED_DATA
+    memset(&rom.content[0x1314], 0xff, 0x1332 - 0x1314);
+    memset(&rom.content[0x3bbe], 0xff, 0x3bdf - 0x3bbe);
+    memset(&rom.content[0x6181], 0xff, 0x6194 - 0x6181);
+    memset(&rom.content[0x6bc0], 0xff, 0x6bc4 - 0x6bc0);
+    memset(&rom.content[0xc4f5], 0xff, 0xc529 - 0xc4f5);
+    memset(&rom.content[0xc6c9], 0xff, 0xc6f0 - 0xc6c9);
+    memset(&rom.content[0xc7ec], 0xff, 0xc9b5 - 0xc7ec);
+    memset(&rom.content[0xf150], 0xff, 0xf35b - 0xf150);
+#endif
+
     show_spells_learned(&rom);
     other_patches(&rom);
     short_charlock(&rom);

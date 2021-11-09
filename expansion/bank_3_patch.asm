@@ -237,5 +237,24 @@ snapshot_timer:
     dex
     bpl -
     jmp do_dialog_hi
+    
+
 
 .org $c4f5
+
+.org $c4f5
+    ; potentially unused data
+.org $c529
+
+.org $c6c9
+    ; potentially unused data
+.org $c6f0
+
+.org $c7ec
+    ; potentially unused data
+.org $c9b5
+
+.org $f150
+    ; potentially unused data
+.org $f35b
+

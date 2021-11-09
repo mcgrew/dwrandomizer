@@ -15,10 +15,6 @@ set_first_bank:
     nop
     rts
 
-game_start:
-    jmp start_dwr_credits
-.include bank_3_patch.asm
-
 first_vblank:
     jsr load_pal
 
@@ -106,8 +102,10 @@ the_end:
 
 .include base.asm
 
-.org $e01b
-b3_e01b:    rts  ; dummy subroutine
+game_start:
+    jmp start_dwr_credits
+.include bank_3_patch.asm
+
 
 .org $fe09
 b3_fe09:
@@ -123,7 +121,14 @@ b3_fe09:
     sta $9fff
     rts
 
-.org $ff96
+.org $ff91
+
+store_and_load_prg_bank:
+b3_ff91:
+    sta $6004
+    nop
+    nop
+load_prg_bank:
 b3_ff96:
     sta $ffff
     lsr a

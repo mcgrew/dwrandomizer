@@ -28,6 +28,8 @@ OAMDMA     EQU $4014
 
 ; DW labels
 
+b3_e01b EQU $e01b
+
 X_POS EQU $3A
 X_POS_2 EQU $8E
 Y_POS EQU $3B
@@ -95,8 +97,8 @@ do_dialog_lo            EQU $C7CB
 ; jmp_spell               EQU $B6BB
 ; ken_masuta              EQU $FC76
 ; load_chr_bank           EQU $FE09
-store_and_load_prg_bank EQU $FF91
-load_prg_bank           EQU $FF96
+; store_and_load_prg_bank EQU $FF91
+; load_prg_bank           EQU $FF96
 ; monster_stats           EQU $9E4B
 ; monster_stats_ptr       EQU $9E49
 ; msg_speed_win           EQU $B194

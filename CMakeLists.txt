@@ -54,6 +54,9 @@ if (ALPHA)
 elseif(RELEASE)
     add_definitions(-DDWR_RELEASE)
 endif()
+if (CLEAR_UNUSED)
+    add_definitions(-DCLEAR_UNUSED_DATA)
+endif()
 
 # emscripten build command
 #  cmake -DCMAKE_TOOLCHAIN_FILE=/usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake ..

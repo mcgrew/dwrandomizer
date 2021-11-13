@@ -254,7 +254,7 @@ snapshot_timer:
     ; potentially unused data
 .org $c9b5
 
-.org $f150
+.org $f232
     ; potentially unused data
 .org $f35b
 

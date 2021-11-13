@@ -4,85 +4,42 @@
 
 #include "dwr_types.h"
 
+enum hooktype {
+    DIALOGUE,
+    JSR = 0x20,
+    JMP = 0x4c,
+};
+
+enum subroutine {
+  BLOCKED_IN_FRONT = 0xC2D5,
+  COUNT_ENCOUNTER = 0xC30A,
+  COUNT_FRAME = 0xC3DD,
+  COUNT_SPELL_USE = 0xC31D,
+  COUNT_WIN = 0xC315,
+  CURSED_PRINCESS_CHECK = 0xC390,
+  DISPLAY_DEATHS = 0xC3BC,
+  EXEC_EXPANSION_SUB = 0xC2E7,
+  INC_ATTACK_CTR = 0xC29E,
+  INC_BONK_CTR = 0xC2C3,
+  INC_CRIT_CTR = 0xC2A8,
+  INC_DEATH_CTR = 0xC2CC,
+  INC_DODGE_CTR = 0xC2BA,
+  INC_ENEMY_DEATH_CTR = 0xC303,
+  INC_MISS_CTR = 0xC2B1,
+  INIT_SAVE_RAM = 0xC3B2,
+  PLAYER_AMBUSHED = 0xC2DF,
+  SCARED_SLIMES = 0xC3A5,
+  SNAPSHOT_TIMER = 0xC404,
+  SORT_INVENTORY = 0xC325,
+  START_DWR_CREDITS = 0xC29A,
+  STORE_PRINCESS_ITEM = 0xC38B,
+  THREES_COMPANY_CHECK = 0xC379,
+  TORCH_IN_BATTLE = 0xC331,
+};
+
+void add_hook(dw_rom *rom, enum hooktype type, uint16_t address,
+        enum subroutine to_addr);
 void bank_3_patch(dw_rom *rom);
 void fill_expansion(dw_rom *rom);
-
-/* Defines for jump labels in bank 3 patch code
- * JMP -> hook with jmp instruction
- * JSR -> hook with jsr instruction
- * DHOOK -> hook dialogue (replace dialogue index with nop)
- */
-#define JMP_BLOCKED_IN_FRONT(addr) vpatch(rom, addr, 3, 0x4C, 0xD5, 0xC2)
-#define JSR_BLOCKED_IN_FRONT(addr) vpatch(rom, addr, 3, 0x20, 0xD5, 0xC2)
-#define DHOOK_BLOCKED_IN_FRONT(addr) vpatch(rom, addr, 4, 0x20, 0xD5, 0xC2, 0xea)
-#define JMP_COUNT_ENCOUNTER(addr) vpatch(rom, addr, 3, 0x4C, 0xA, 0xC3)
-#define JSR_COUNT_ENCOUNTER(addr) vpatch(rom, addr, 3, 0x20, 0xA, 0xC3)
-#define DHOOK_COUNT_ENCOUNTER(addr) vpatch(rom, addr, 4, 0x20, 0xA, 0xC3, 0xea)
-#define JMP_COUNT_FRAME(addr) vpatch(rom, addr, 3, 0x4C, 0xDD, 0xC3)
-#define JSR_COUNT_FRAME(addr) vpatch(rom, addr, 3, 0x20, 0xDD, 0xC3)
-#define DHOOK_COUNT_FRAME(addr) vpatch(rom, addr, 4, 0x20, 0xDD, 0xC3, 0xea)
-#define JMP_COUNT_SPELL_USE(addr) vpatch(rom, addr, 3, 0x4C, 0x1D, 0xC3)
-#define JSR_COUNT_SPELL_USE(addr) vpatch(rom, addr, 3, 0x20, 0x1D, 0xC3)
-#define DHOOK_COUNT_SPELL_USE(addr) vpatch(rom, addr, 4, 0x20, 0x1D, 0xC3, 0xea)
-#define JMP_COUNT_WIN(addr) vpatch(rom, addr, 3, 0x4C, 0x15, 0xC3)
-#define JSR_COUNT_WIN(addr) vpatch(rom, addr, 3, 0x20, 0x15, 0xC3)
-#define DHOOK_COUNT_WIN(addr) vpatch(rom, addr, 4, 0x20, 0x15, 0xC3, 0xea)
-#define JMP_CURSED_PRINCESS_CHECK(addr) vpatch(rom, addr, 3, 0x4C, 0x90, 0xC3)
-#define JSR_CURSED_PRINCESS_CHECK(addr) vpatch(rom, addr, 3, 0x20, 0x90, 0xC3)
-#define DHOOK_CURSED_PRINCESS_CHECK(addr) vpatch(rom, addr, 4, 0x20, 0x90, 0xC3, 0xea)
-#define JMP_DISPLAY_DEATHS(addr) vpatch(rom, addr, 3, 0x4C, 0xBC, 0xC3)
-#define JSR_DISPLAY_DEATHS(addr) vpatch(rom, addr, 3, 0x20, 0xBC, 0xC3)
-#define DHOOK_DISPLAY_DEATHS(addr) vpatch(rom, addr, 4, 0x20, 0xBC, 0xC3, 0xea)
-#define JMP_EXEC_EXPANSION_SUB(addr) vpatch(rom, addr, 3, 0x4C, 0xE7, 0xC2)
-#define JSR_EXEC_EXPANSION_SUB(addr) vpatch(rom, addr, 3, 0x20, 0xE7, 0xC2)
-#define DHOOK_EXEC_EXPANSION_SUB(addr) vpatch(rom, addr, 4, 0x20, 0xE7, 0xC2, 0xea)
-#define JMP_INC_ATTACK_CTR(addr) vpatch(rom, addr, 3, 0x4C, 0x9E, 0xC2)
-#define JSR_INC_ATTACK_CTR(addr) vpatch(rom, addr, 3, 0x20, 0x9E, 0xC2)
-#define DHOOK_INC_ATTACK_CTR(addr) vpatch(rom, addr, 4, 0x20, 0x9E, 0xC2, 0xea)
-#define JMP_INC_BONK_CTR(addr) vpatch(rom, addr, 3, 0x4C, 0xC3, 0xC2)
-#define JSR_INC_BONK_CTR(addr) vpatch(rom, addr, 3, 0x20, 0xC3, 0xC2)
-#define DHOOK_INC_BONK_CTR(addr) vpatch(rom, addr, 4, 0x20, 0xC3, 0xC2, 0xea)
-#define JMP_INC_CRIT_CTR(addr) vpatch(rom, addr, 3, 0x4C, 0xA8, 0xC2)
-#define JSR_INC_CRIT_CTR(addr) vpatch(rom, addr, 3, 0x20, 0xA8, 0xC2)
-#define DHOOK_INC_CRIT_CTR(addr) vpatch(rom, addr, 4, 0x20, 0xA8, 0xC2, 0xea)
-#define JMP_INC_DEATH_CTR(addr) vpatch(rom, addr, 3, 0x4C, 0xCC, 0xC2)
-#define JSR_INC_DEATH_CTR(addr) vpatch(rom, addr, 3, 0x20, 0xCC, 0xC2)
-#define DHOOK_INC_DEATH_CTR(addr) vpatch(rom, addr, 4, 0x20, 0xCC, 0xC2, 0xea)
-#define JMP_INC_DODGE_CTR(addr) vpatch(rom, addr, 3, 0x4C, 0xBA, 0xC2)
-#define JSR_INC_DODGE_CTR(addr) vpatch(rom, addr, 3, 0x20, 0xBA, 0xC2)
-#define DHOOK_INC_DODGE_CTR(addr) vpatch(rom, addr, 4, 0x20, 0xBA, 0xC2, 0xea)
-#define JMP_INC_ENEMY_DEATH_CTR(addr) vpatch(rom, addr, 3, 0x4C, 0x3, 0xC3)
-#define JSR_INC_ENEMY_DEATH_CTR(addr) vpatch(rom, addr, 3, 0x20, 0x3, 0xC3)
-#define DHOOK_INC_ENEMY_DEATH_CTR(addr) vpatch(rom, addr, 4, 0x20, 0x3, 0xC3, 0xea)
-#define JMP_INC_MISS_CTR(addr) vpatch(rom, addr, 3, 0x4C, 0xB1, 0xC2)
-#define JSR_INC_MISS_CTR(addr) vpatch(rom, addr, 3, 0x20, 0xB1, 0xC2)
-#define DHOOK_INC_MISS_CTR(addr) vpatch(rom, addr, 4, 0x20, 0xB1, 0xC2, 0xea)
-#define JMP_INIT_SAVE_RAM(addr) vpatch(rom, addr, 3, 0x4C, 0xB2, 0xC3)
-#define JSR_INIT_SAVE_RAM(addr) vpatch(rom, addr, 3, 0x20, 0xB2, 0xC3)
-#define DHOOK_INIT_SAVE_RAM(addr) vpatch(rom, addr, 4, 0x20, 0xB2, 0xC3, 0xea)
-#define JMP_PLAYER_AMBUSHED(addr) vpatch(rom, addr, 3, 0x4C, 0xDF, 0xC2)
-#define JSR_PLAYER_AMBUSHED(addr) vpatch(rom, addr, 3, 0x20, 0xDF, 0xC2)
-#define DHOOK_PLAYER_AMBUSHED(addr) vpatch(rom, addr, 4, 0x20, 0xDF, 0xC2, 0xea)
-#define JMP_SCARED_SLIMES(addr) vpatch(rom, addr, 3, 0x4C, 0xA5, 0xC3)
-#define JSR_SCARED_SLIMES(addr) vpatch(rom, addr, 3, 0x20, 0xA5, 0xC3)
-#define DHOOK_SCARED_SLIMES(addr) vpatch(rom, addr, 4, 0x20, 0xA5, 0xC3, 0xea)
-#define JMP_SNAPSHOT_TIMER(addr) vpatch(rom, addr, 3, 0x4C, 0x4, 0xC4)
-#define JSR_SNAPSHOT_TIMER(addr) vpatch(rom, addr, 3, 0x20, 0x4, 0xC4)
-#define DHOOK_SNAPSHOT_TIMER(addr) vpatch(rom, addr, 4, 0x20, 0x4, 0xC4, 0xea)
-#define JMP_SORT_INVENTORY(addr) vpatch(rom, addr, 3, 0x4C, 0x25, 0xC3)
-#define JSR_SORT_INVENTORY(addr) vpatch(rom, addr, 3, 0x20, 0x25, 0xC3)
-#define DHOOK_SORT_INVENTORY(addr) vpatch(rom, addr, 4, 0x20, 0x25, 0xC3, 0xea)
-#define JMP_START_DWR_CREDITS(addr) vpatch(rom, addr, 3, 0x4C, 0x9A, 0xC2)
-#define JSR_START_DWR_CREDITS(addr) vpatch(rom, addr, 3, 0x20, 0x9A, 0xC2)
-#define DHOOK_START_DWR_CREDITS(addr) vpatch(rom, addr, 4, 0x20, 0x9A, 0xC2, 0xea)
-#define JMP_STORE_PRINCESS_ITEM(addr) vpatch(rom, addr, 3, 0x4C, 0x8B, 0xC3)
-#define JSR_STORE_PRINCESS_ITEM(addr) vpatch(rom, addr, 3, 0x20, 0x8B, 0xC3)
-#define DHOOK_STORE_PRINCESS_ITEM(addr) vpatch(rom, addr, 4, 0x20, 0x8B, 0xC3, 0xea)
-#define JMP_THREES_COMPANY_CHECK(addr) vpatch(rom, addr, 3, 0x4C, 0x79, 0xC3)
-#define JSR_THREES_COMPANY_CHECK(addr) vpatch(rom, addr, 3, 0x20, 0x79, 0xC3)
-#define DHOOK_THREES_COMPANY_CHECK(addr) vpatch(rom, addr, 4, 0x20, 0x79, 0xC3, 0xea)
-#define JMP_TORCH_IN_BATTLE(addr) vpatch(rom, addr, 3, 0x4C, 0x31, 0xC3)
-#define JSR_TORCH_IN_BATTLE(addr) vpatch(rom, addr, 3, 0x20, 0x31, 0xC3)
-#define DHOOK_TORCH_IN_BATTLE(addr) vpatch(rom, addr, 4, 0x20, 0x31, 0xC3, 0xea)
 
 #endif

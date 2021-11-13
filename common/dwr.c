@@ -311,7 +311,7 @@ static void torch_in_battle(dw_rom *rom) {
 
     printf("Making torches and fairy water more deadly...\n");
     /* patch the jump address */
-    JMP_TORCH_IN_BATTLE(0xe87c);
+    add_hook(rom, JMP, 0xe87c, TORCH_IN_BATTLE);
     set_text(rom, 0xbc6c, "\xf8 hurled a torch at the \xf4!\xfc"
             "\xf8 sprinkled fairy water on the \xf4.\xfc"
             "\xff\xff\xff\xff\xff\xff\xff");
@@ -1085,7 +1085,7 @@ static void scared_metal_slimes(dw_rom *rom)
 
     printf("Terrorizing the Metal Slimes...\n");
     /* having the carry set upon returning gives the enemy a chance to run */
-    JSR_SCARED_SLIMES(0xefba);
+    add_hook(rom, JSR, 0xefba, SCARED_SLIMES);
 }
 
 /**
@@ -1104,8 +1104,8 @@ static void cursed_princess(dw_rom *rom)
     /* new dialogue */
     set_text(rom, 0x9f40, "Oh my, what a lovely corset.           ");
     /* Change a few jump addresses */
-    JSR_STORE_PRINCESS_ITEM(0xd3dc);
-    JMP_CURSED_PRINCESS_CHECK(0xd40d);
+    add_hook(rom, JSR, 0xd3dc, STORE_PRINCESS_ITEM);
+    add_hook(rom, JMP, 0xd40d, CURSED_PRINCESS_CHECK);
 }
 
 /**
@@ -1130,7 +1130,7 @@ static void threes_company(dw_rom *rom)
             0x20,  0xbc,  0xc4, /* JSR $C4C0 ; Jump to three's company code   */
             0xea                /* NOP                                        */
     );
-    JSR_THREES_COMPANY_CHECK(0xd50d);
+    add_hook(rom, JSR, 0xd50d, THREES_COMPANY_CHECK);
 }
 
 /**
@@ -1185,7 +1185,7 @@ static void death_counter(dw_rom *rom)
         return;
 
     /* hook the stats display code */
-    JSR_DISPLAY_DEATHS(0x6378);
+    add_hook(rom, JSR, 0x6378, DISPLAY_DEATHS);
 
     /* patch the status window pointer */
     vpatch(rom, 0x06f6e,    1,  0xcb);
@@ -1609,14 +1609,14 @@ static void treasure_guards(dw_rom *rom)
 static void sorted_inventory(dw_rom *rom)
 {
     /* patch some jump addresses */
-    JSR_SORT_INVENTORY(0xd387);
-    JSR_SORT_INVENTORY(0xd3be);
-    JSR_SORT_INVENTORY(0xd3e8);
-    JSR_SORT_INVENTORY(0xd72b);
-    JSR_SORT_INVENTORY(0xd874);
-    JSR_SORT_INVENTORY(0xe0f4);
-//     JSR_SORT_INVENTORY(0xe13b);
-    JSR_SORT_INVENTORY(0xe279);
+    add_hook(rom, JSR, 0xd387, SORT_INVENTORY);
+    add_hook(rom, JSR, 0xd3be, SORT_INVENTORY);
+    add_hook(rom, JSR, 0xd3e8, SORT_INVENTORY);
+    add_hook(rom, JSR, 0xd72b, SORT_INVENTORY);
+    add_hook(rom, JSR, 0xd874, SORT_INVENTORY);
+    add_hook(rom, JSR, 0xe0f4, SORT_INVENTORY);
+//     add_hook(rom, JSR, 0xe13b, SORT_INVENTORY);
+    add_hook(rom, JSR, 0xe279, SORT_INVENTORY);
 
 }
 
@@ -1860,7 +1860,7 @@ static void skip_vanilla_credits(dw_rom *rom)
 {
     if (SKIP_VANILLA_CREDITS(rom)) {
         printf("Skipping Original Credits...");
-        JMP_START_DWR_CREDITS(0x542b);
+        add_hook(rom, JMP, 0x542b, START_DWR_CREDITS);
     }
 }
 
@@ -1869,22 +1869,22 @@ void setup_expansion(dw_rom *rom)
     rom->header[4] = 8; /* set to 8 PRG banks */
 
     /* patching various routines to keep track of statistics */
-    JSR_INC_BONK_CTR(0x31eb);
-    JMP_START_DWR_CREDITS(0xccf0);
-    JSR_COUNT_SPELL_USE(0xdbb2);
-    JSR_SNAPSHOT_TIMER(0xccb8);
-    JSR_COUNT_ENCOUNTER(0xe4ed);
-    DHOOK_PLAYER_AMBUSHED(0xe5c7);
-    JSR_INC_ATTACK_CTR(0xe605);
-    JSR_INC_CRIT_CTR(0xe62a);
-    JSR_INC_MISS_CTR(0xe65a);
-    JSR_INC_DODGE_CTR(0xe68a);
-    DHOOK_BLOCKED_IN_FRONT(0xe89d);
-    JSR_COUNT_WIN(0xe98c);
-    JSR_INC_ENEMY_DEATH_CTR(0xed9e);
-    JSR_INC_DEATH_CTR(0xeda9);
-    JSR_INIT_SAVE_RAM(0xf720);
-    JSR_COUNT_FRAME(0xfee0);
+    add_hook(rom, JSR, 0x31eb, INC_BONK_CTR);
+    add_hook(rom, JMP, 0xccf0, START_DWR_CREDITS);
+    add_hook(rom, JSR, 0xdbb2, COUNT_SPELL_USE);
+    add_hook(rom, JSR, 0xccb8, SNAPSHOT_TIMER);
+    add_hook(rom, JSR, 0xe4ed, COUNT_ENCOUNTER);
+    add_hook(rom, DIALOGUE, 0xe5c7, PLAYER_AMBUSHED);
+    add_hook(rom, JSR, 0xe605, INC_ATTACK_CTR);
+    add_hook(rom, JSR, 0xe62a, INC_CRIT_CTR);
+    add_hook(rom, JSR, 0xe65a, INC_MISS_CTR);
+    add_hook(rom, JSR, 0xe68a, INC_DODGE_CTR);
+    add_hook(rom, DIALOGUE, 0xe89d, BLOCKED_IN_FRONT);
+    add_hook(rom, JSR, 0xe98c, COUNT_WIN);
+    add_hook(rom, JSR, 0xed9e, INC_ENEMY_DEATH_CTR);
+    add_hook(rom, JSR, 0xeda9, INC_DEATH_CTR);
+    add_hook(rom, JSR, 0xf720, INIT_SAVE_RAM);
+    add_hook(rom, JSR, 0xfee0, COUNT_FRAME);
 
     bank_3_patch(rom);
     fill_expansion(rom);
@@ -1964,7 +1964,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     memset(&rom.content[0xc4f5], 0xff, 0xc529 - 0xc4f5);
     memset(&rom.content[0xc6c9], 0xff, 0xc6f0 - 0xc6c9);
     memset(&rom.content[0xc7ec], 0xff, 0xc9b5 - 0xc7ec);
-    memset(&rom.content[0xf150], 0xff, 0xf35b - 0xf150);
+    memset(&rom.content[0xf232], 0xff, 0xf35b - 0xf232);
 #endif
 
     show_spells_learned(&rom);
@@ -1990,7 +1990,6 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     dwr_menu_wrap(&rom);
     dwr_speed_hacks(&rom);
     open_charlock(&rom);
-    dwr_token_dialogue(&rom);
     chaos_mode(&rom);
     no_keys(&rom);
     cursed_princess(&rom);
@@ -2004,6 +2003,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     treasure_guards(&rom);
     sorted_inventory(&rom);
     summer_sale(&rom);
+    dwr_token_dialogue(&rom);
 
     modern_spell_names(&rom);
     randomize_music(&rom);

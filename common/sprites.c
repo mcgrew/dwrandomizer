@@ -67,7 +67,7 @@ const char * const dwr_sprite_names[] = {
         "FF White Mage",
         "FF White Wizard",
 
-        "FF4 Cecil",
+        "FF4 DK Cecil",
         "FF4 Edge",
 
         "Link",

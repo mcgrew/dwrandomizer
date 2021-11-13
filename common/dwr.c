@@ -1263,6 +1263,9 @@ static void other_patches(dw_rom *rom)
 {
     printf("Applying various patches...\n");
 
+    /* Replace "Thou cannot enter here.". If a player finds this, it's a bug */
+    set_text(rom, 0x8256, "Thou hast found a bug/ ");
+
     /* convert PRG1 to PRG0 */
     vpatch(rom, 0x03f9e, 2,  0x37,  0x32);
     vpatch(rom, 0x0af6c, 1,  0xef);
@@ -1793,7 +1796,7 @@ static void dwr_token_dialogue(dw_rom *rom)
     if (!rom->search_table->item[0]) {
         set_text(rom, 0xa228, "Thou must go and fight!'");
         set_text(rom, 0xa242, "Go forth, descendant of Erdrick, "
-                "I have complete faith in thy victory!' ");
+                "I have complete faith in thy victory!'");
     } else {
         dx = rom->search_table->x[0] - rom->map.warps_from[WARP_TANTEGEL].x;
         dy = rom->search_table->y[0] - rom->map.warps_from[WARP_TANTEGEL].y;

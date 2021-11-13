@@ -514,6 +514,9 @@ credits_data:
     .db INSTR_SET_PPU
     .word $2288
     .db "EdgeTalvaron "
+    .db INSTR_SET_PPU
+    .word $22c8
+    .db "shMike       "
 
 stats_data:
     .db INSTR_WAIT, 240

@@ -11,16 +11,24 @@
   "build": {
     "appId": "com.dwrandomizer",
     "linux": {
-        "category": "Gaming",
-        "target": ["snap", "AppImage", "deb"]
+      "category": "Gaming",
+      "target": [
+        "snap",
+        "AppImage",
+        "deb"
+      ]
     },
     "mac": {
-        "category": "Gaming",
-        "target": ["dmg"]
+      "category": "Gaming",
+      "target": [
+        "dmg"
+      ]
     },
-      "win": {
-          "target": ["portable"]
-      }
+    "win": {
+      "target": [
+        "portable"
+      ]
+    }
   },
   "repository": "https://github.com/mcgrew/dwrandomizer",
   "keywords": [
@@ -29,12 +37,15 @@
     "Randomizer"
   ],
   "author": {
-      "name": "mcgrew",
-      "email": "tjmcgrew@gmail.com"
+    "name": "mcgrew",
+    "email": "tjmcgrew@gmail.com"
   },
   "license": "MIT",
   "devDependencies": {
-    "electron": "^13.1.7",
+    "electron": "^15.3.0",
     "electron-builder": "^22.11.7"
+  },
+  "dependencies": {
+    "@electron/remote": "^2.0.1"
   }
 }

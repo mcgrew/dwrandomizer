@@ -120,9 +120,16 @@ class Interface {
         this.flagBytes = new Uint8Array(flagSize);
         this.inputs = [];
         this.appContainer = $('#application');
-        this.title = this.create('h1', 'DWRandomizer');
+        this.title = this.create('img', null, {
+            'display': 'block',
+            'margin': 'auto',
+        });
+        this.title.src = 'logo.png';
+        this.title.alt = 'Dragon Warrior Randomizer';
         this.appContainer.append(this.title);
-        this.subHeader = this.create('h3');
+        this.subHeader = this.create('h3', null, {
+            'margin-top': '0.2em'
+        });
         this.appContainer.append(this.subHeader);
 
         this.inputFileDiv = this.create('div', 'Rom File: ', {
@@ -419,6 +426,7 @@ class Interface {
 
     setVersion(version) {
         this.subHeader.innerText = 'Version ' + version;
+        document.title = 'DWRandomizer ' + version;
     }
 
     setInputFile(name) {

@@ -371,7 +371,6 @@ static void do_shuffle(dw_rom *rom)
         map_dungeon(get_map(CHARLOCK_THRONE_ROOM), 10, 29, TRUE);
         if (!all_chests_accessible()) {
             /* inaccessible chests, try again. */
-            printf("Inaccessible_chests\n");
             continue;
         }
         clear_all_flags();

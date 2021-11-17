@@ -724,7 +724,9 @@ static void short_charlock(dw_rom *rom)
                 rom->map.warps_to[WARP_CHARLOCK_THRONE];
         rom->map.warps_to[WARP_CHARLOCK_THRONE] = tmp;
         /* make some map edits */
+        /* add stairs to the top floor */
         set_dungeon_tile(rom, CHARLOCK, 10, 19, TOWN_TILE_STAIRS_DOWN);
+        /* remove stairs from the throne room */
         set_dungeon_tile(rom, CHARLOCK_THRONE_ROOM, 10, 29, TOWN_TILE_BRICK);
         rom->map.meta[CHARLOCK_THRONE_ROOM].border = BORDER_SWAMP;
         rom->map.meta[CHARLOCK].border = BORDER_WATER;
@@ -740,6 +742,11 @@ static void short_charlock(dw_rom *rom)
         rom->map.warps_to[WARP_CHARLOCK_SURFACE_2] =
                 rom->map.warps_to[WARP_CHARLOCK_CHEST];
         rom->map.warps_to[WARP_CHARLOCK_CHEST] = tmp;
+        if (RANDOM_CHEST_LOCATIONS(rom)) {
+            /* connect the first floor of the dungeon so it's accessible */
+            set_dungeon_tile(rom, CHARLOCK_CAVE_1,  8,  5, DUNGEON_TILE_BRICK);
+            set_dungeon_tile(rom, CHARLOCK_CAVE_1, 11, 14, DUNGEON_TILE_BRICK);
+        }
     }
 }
 

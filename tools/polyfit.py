@@ -36,7 +36,7 @@ if __name__ == "__main__":
     print('{')
     print('    MIN,')
     print('    MAX,')
-    for i in range(11):
+    for i in range(14):
         if len(coef) > i:
             print(f'    {coef[i]},')
         else:

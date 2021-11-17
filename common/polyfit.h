@@ -16,6 +16,9 @@ typedef struct {
     double x8;
     double x9;
     double x10;
+    double x11;
+    double x12;
+    double x13;
 } polyfactors;
 
 extern const polyfactors mon_hp_fac; /* monster HP */

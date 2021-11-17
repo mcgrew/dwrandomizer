@@ -20,6 +20,9 @@ const polyfactors mon_hp_fac = { /* monster HP */
     0.0,
     0.0,
     0.0,
+    0.0,
+    0.0,
+    0.0,
 };
 
 const polyfactors mon_str_fac = { /* monster strength */
@@ -31,6 +34,9 @@ const polyfactors mon_str_fac = { /* monster strength */
     0.225529906099072,
     -0.00709399951981401,
     7.884633642164365e-05,
+    0.0,
+    0.0,
+    0.0,
     0.0,
     0.0,
     0.0,
@@ -52,37 +58,46 @@ const polyfactors mon_agi_fac = { /* monster agility */
     0.0,
     0.0,
     0.0,
+    0.0,
+    0.0,
+    0.0,
 };
 
 
 const polyfactors mon_xp_fac = { /* xp drop */
     1,
-    255,
-    -19.744946833293117,
-    25.884526582525744,
-    -9.685788490935158,
-    1.7211112469700018,
-    -0.16014213041574735,
-    0.008399315345376778,
-    -0.0002488712251730522,
-    3.877547371414262e-06,
-    -2.463576632817791e-08,
+    65535,
+    -20.841100680021054,
+    26.84734630013967,
+    -9.825840742202868,
+    1.6959832502784307,
+    -0.15254999072108652,
+    0.0076971508758765135,
+    -0.00021823995314218197,
+    3.2334332823059712e-06,
+    -1.9381476733584117e-08,
+    0.0,
+    0.0,
+    0.0,
     0.0,
     0.0,
 };
 
 const polyfactors mon_gold_fac = { /* gold drop */
     1,
-    255,
-    -15.589068825915412,
-    13.281633876685321,
-    -2.3758004823140944,
-    0.19063401086793125,
-    -0.005861916111341896,
-    6.185171349216302e-05,
-    0.0,
-    0.0,
-    0.0,
+    65535,
+    -153.00793271673868,
+    284.2718724719048,
+    -181.74947413497537,
+    57.014098325897635,
+    -10.150090517124674,
+    1.113262515544717,
+    -0.07862090539258011,
+    0.0036396408970707566,
+    -0.00010971845872177492,
+    2.0729070162690267e-06,
+    -2.2275110183191443e-08,
+    1.0383640532609873e-10,
     0.0,
     0.0,
 };
@@ -102,6 +117,9 @@ const polyfactors mon_sr_fac = { /* sleep resist */
     -1.6601627035508357e-07,
     1.7617581896745132e-09,
     -7.862108379050638e-12,
+    0.0,
+    0.0,
+    0.0,
 };
 
 const polyfactors mon_ssr_fac = { /* stopspell resist */
@@ -115,6 +133,9 @@ const polyfactors mon_ssr_fac = { /* stopspell resist */
     0.00015503321304148872,
     -2.9829159588564997e-06,
     2.24678806115065e-08,
+    0.0,
+    0.0,
+    0.0,
     0.0,
     0.0,
     0.0,
@@ -134,6 +155,9 @@ const polyfactors mon_hr_fac = { /* hurt resist */
     3.73676230182728e-09,
     0.0,
     0.0,
+    0.0,
+    0.0,
+    0.0,
 };
 
 const polyfactors mon_dodge_fac = { /* dodge rate */
@@ -150,6 +174,9 @@ const polyfactors mon_dodge_fac = { /* dodge rate */
     2.022816058385553e-07,
     -2.3870467816279395e-09,
     1.2078878215282233e-11,
+    0.0,
+    0.0,
+    0.0,
 };
 
 const polyfactors hero_hp_fac = { /* hero hp */
@@ -162,6 +189,9 @@ const polyfactors hero_hp_fac = { /* hero hp */
     -0.014950948297038679,
     0.0003205574441787177,
     -2.327262068436651e-06,
+    0.0,
+    0.0,
+    0.0,
     0.0,
     0.0,
     0.0,
@@ -182,6 +212,9 @@ const polyfactors hero_mp_fac = { /* hero mp */
     0.0,
     0.0,
     0.0,
+    0.0,
+    0.0,
+    0.0,
 };
 
 const polyfactors hero_str_fac = { /* hero str */
@@ -198,7 +231,9 @@ const polyfactors hero_str_fac = { /* hero str */
     0.0,
     0.0,
     0.0,
-
+    0.0,
+    0.0,
+    0.0,
 };
 
 const polyfactors hero_agi_fac = { /* hero agility */
@@ -215,6 +250,9 @@ const polyfactors hero_agi_fac = { /* hero agility */
     0.0,
     0.0,
     0.0,
+    0.0,
+    0.0,
+    0.0,
 };
 
 
@@ -226,6 +264,9 @@ const polyfactors hero_xp_fac = { /* random level xp */
     -123.22889565409092,
     13.309885476933784,
     -0.23922916799801897,
+    0.0,
+    0.0,
+    0.0,
     0.0,
     0.0,
     0.0,
@@ -248,15 +289,26 @@ const polyfactors wpn_price_fac = { /* weapon prices */
     0.0,
     0.0,
     0.0,
+    0.0,
+    0.0,
+    0.0,
 };
 
+/**
+ * Solves a polynomial function for the given x value.
+ *
+ * @param x The x value
+ * @param fac The factors for the polynomial
+ *
+ * @return The solution to the equation
+ */
 double polyfit(double x, const polyfactors *fac)
 {
     size_t i;
     double result = 0.0;
     const double *factors = &fac->x0;
 
-    for (i = 0; i <= 10; i++) {
+    for (i = 0; i <= 13; i++) {
         if (factors[i]) {
             result += factors[i] * pow(x, (double)i);
         }

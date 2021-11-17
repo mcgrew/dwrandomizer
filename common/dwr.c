@@ -717,17 +717,30 @@ static void short_charlock(dw_rom *rom)
 
     printf("Shortening Charlock Castle...\n");
 
-    /* swap these 2 warps */
-    tmp = rom->map.warps_to[WARP_CHARLOCK_SURFACE_1];
-    rom->map.warps_to[WARP_CHARLOCK_SURFACE_1] =
-            rom->map.warps_to[WARP_CHARLOCK_THRONE];
-    rom->map.warps_to[WARP_CHARLOCK_THRONE] = tmp;
+    if (STAIR_SHUFFLE(rom)) {
+        /* swap these 2 warps */
+        tmp = rom->map.warps_to[WARP_CHARLOCK];
+        rom->map.warps_to[WARP_CHARLOCK] =
+                rom->map.warps_to[WARP_CHARLOCK_THRONE];
+        rom->map.warps_to[WARP_CHARLOCK_THRONE] = tmp;
+        /* make some map edits */
+        set_dungeon_tile(rom, CHARLOCK, 10, 19, TOWN_TILE_STAIRS_DOWN);
+        set_dungeon_tile(rom, CHARLOCK_THRONE_ROOM, 10, 29, TOWN_TILE_BRICK);
+        rom->map.meta[CHARLOCK_THRONE_ROOM].border = BORDER_SWAMP;
+        rom->map.meta[CHARLOCK].border = BORDER_WATER;
+    } else {
+        /* swap these 2 warps */
+        tmp = rom->map.warps_to[WARP_CHARLOCK_SURFACE_1];
+        rom->map.warps_to[WARP_CHARLOCK_SURFACE_1] =
+                rom->map.warps_to[WARP_CHARLOCK_THRONE];
+        rom->map.warps_to[WARP_CHARLOCK_THRONE] = tmp;
 
-    /* swap these 2 warps */
-    tmp = rom->map.warps_to[WARP_CHARLOCK_SURFACE_2];
-    rom->map.warps_to[WARP_CHARLOCK_SURFACE_2] =
-            rom->map.warps_to[WARP_CHARLOCK_CHEST];
-    rom->map.warps_to[WARP_CHARLOCK_CHEST] = tmp;
+        /* swap these 2 warps */
+        tmp = rom->map.warps_to[WARP_CHARLOCK_SURFACE_2];
+        rom->map.warps_to[WARP_CHARLOCK_SURFACE_2] =
+                rom->map.warps_to[WARP_CHARLOCK_CHEST];
+        rom->map.warps_to[WARP_CHARLOCK_CHEST] = tmp;
+    }
 }
 
 /**

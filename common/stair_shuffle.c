@@ -362,21 +362,21 @@ static void do_shuffle(dw_rom *rom)
         map_dungeon(get_map(GARINS_GRAVE_1), 6, 11, TRUE);
         map_dungeon(get_map(MOUNTAIN_CAVE), 6, 5, TRUE);
         map_dungeon(get_map(ERDRICKS_CAVE), 0, 0, TRUE);
-        if ((charlock_throne->tiles[10][29] | charlock->tiles[10][19]) & 8) {
+        if (!SHORT_CHARLOCK(rom) &&
+            ((charlock_throne->tiles[10][29] | charlock->tiles[10][19]) & 8)) {
             /* DL/Charlock accessible from outside. Try again */
             continue;
         }
 
-        map_dungeon(get_map(CHARLOCK), 10, 19, TRUE);
-//         if (SHORT_CHARLOCK(rom))
-//             map_dungeon(get_map(CHARLOCK_THRONE_ROOM), 10, 29, TRUE);
+        map_dungeon(get_map(CHARLOCK_THRONE_ROOM), 10, 29, TRUE);
         if (!all_chests_accessible()) {
             /* inaccessible chests, try again. */
+            printf("Inaccessible_chests\n");
             continue;
         }
         clear_all_flags();
-        map_dungeon(charlock, 10, 19, TRUE);
-        if (charlock_throne->tiles[10][29] & 8)
+        if (!SHORT_CHARLOCK(rom) || charlock_throne->tiles[10][29] & 8)
+            map_dungeon(charlock, 10, 19, TRUE);
             /* DL is accessible from Charlock, we're good. */
             break;
     }
@@ -432,12 +432,12 @@ static void chest_paths(dw_rom *rom)
     mark_chests(rom, 0x40);
 
     clear_all_flags();
-    map_dungeon(get_map(CHARLOCK), 10, 19, FALSE);
+    map_dungeon(get_map(CHARLOCK_THRONE_ROOM), 10, 19, FALSE);
 //     if (SHORT_CHARLOCK(rom))
 //         map_dungeon(get_map(CHARLOCK_THRONE_ROOM), 10, 29, FALSE);
     mark_chests(rom, 0x8);
     clear_all_flags();
-    map_dungeon(get_map(CHARLOCK), 10, 19, TRUE);
+    map_dungeon(get_map(CHARLOCK_THRONE_ROOM), 10, 19, TRUE);
 //     if (SHORT_CHARLOCK(rom))
 //         map_dungeon(get_map(CHARLOCK_THRONE_ROOM), 10, 29, TRUE);
     mark_chests(rom, 0x80);

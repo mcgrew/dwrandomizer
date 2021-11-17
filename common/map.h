@@ -29,13 +29,15 @@ typedef enum {
 
 /** Town border tile indexes */
 typedef enum {
-    BORDER_GRASS  = 0x0,
-    BORDER_DESERT = 0x1,
-    BORDER_HILL   = 0x2,
-    BORDER_BRICK  = 0x4,
-    BORDER_SWAMP  = 0x6,
-    BORDER_TREES  = 0xb,
-    BORDER_WATER  = 0xf,
+    BORDER_GRASS     = 0x0,
+    BORDER_DESERT    = 0x1,
+    BORDER_HILL      = 0x2,
+    BORDER_BRICK     = 0x4,
+    BORDER_SWAMP     = 0x6,
+    BORDER_TREES     = 0xb,
+    BORDER_WATER     = 0xf,
+    BORDER_BLOCK     = 0x10,
+    BORDER_MOUNTAIN  = 0x12,
 } dw_border_tile;
 
 /** Warp indices */

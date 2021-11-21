@@ -925,7 +925,7 @@ static uint8_t *pad_title_screen(uint8_t *pos, uint8_t *end, int reserved)
  */
 static void update_title_screen(dw_rom *rom)
 {
-    unsigned char text[33];
+    unsigned char text[33] = { 0 };
     uint8_t *pos, *end;
 
     pos = &rom->content[0x3f26];
@@ -1810,8 +1810,8 @@ static void modern_spell_names(dw_rom *rom)
  */
 static void dwr_token_dialogue(dw_rom *rom)
 {
-    char text[75];
-    int dx, dy;
+    char text[73] = { 0 };
+    int dx, dy, copied;
 
     if (!rom->search_table->item[0]) {
         set_text(rom, 0xa228, "Thou must go and fight!'");
@@ -1961,13 +1961,13 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
         const char *sprite_name, const char* output_dir)
 {
     uint64_t crc = 0;
-    char output_file[1024] = { 0 };
+    char output_file[1025] = { 0 };
     dw_rom rom;
 
     check_structs();
 
-    snprintf(output_file, 1024, "%s/DWRando.%"PRIu64".%s.nes", output_dir, seed,
-            flags);
+    snprintf(output_file, 1024, "%s/DWRando.%"PRIu64".%s.nes", output_dir,
+            seed, flags);
     printf("Using seed# %"PRIu64"\n", seed);
     printf("Using flags %s\n", flags);
 

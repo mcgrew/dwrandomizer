@@ -1,4 +1,5 @@
 
+require('modal.js');
 
 NodeList.prototype.addEventListener = function(evt_type, func) {
     this.forEach(function(node) {
@@ -116,6 +117,9 @@ window.addEventListener('hashchange', event => {
 
 class Interface {
     constructor(flagSize) {
+        if (Interface._instance)
+            throw 'Only one instance of this class can exist at once';
+        Interface._instance = this;
         this.flagSize = flagSize;
         this.flagBytes = new Uint8Array(flagSize);
         this.inputs = [];
@@ -154,11 +158,15 @@ class Interface {
         });
         let flagsDiv = this.create('div', 'Flags: ');
         this.flagsEl = this.create('input', null, {
-            'width':  '210px'
+            'width':  '240px'
         });
+        this.flagsEl.id = 'flags';
         this.flagsEl.value = localStorage.flags
         this.updateFlagBytes();
         flagsDiv.append(this.flagsEl);
+        let presetsButton = this.create('button', 'Presets');
+        flagsDiv.append(presetsButton);
+        presetsButton.click(evt => { new FlagsModal() });
         flagsSeed.append(flagsDiv);
 
         let seedDiv = this.create('div', 'Seed: ')
@@ -204,7 +212,7 @@ class Interface {
         if (text)
             el.innerText = text
         if (style) {
-            for (key in style)
+            for (let key in style)
                 el.style.setProperty(key, style[key]);
         }
         return el;
@@ -228,9 +236,28 @@ class Interface {
         });
 
         this.flagsEl.change(event => {
+            // remove invalid characters and pad out the value
+            let charsNeeded = Math.ceil(this.flagSize / 5 * 8);
+            let val = this.flagsEl.value.toUpperCase();
+            val = val.replace(/[^ABCDEFGHIJKLMNOPQRSTUVWXYZ234567]/g, '')
+            val = val.substring(0,charsNeeded);
+            while (val.length < charsNeeded) {
+                val += 'A';
+            }
+            this.flagsEl.value = val;
             this.updateFlagBytes();
             this.updateInputs();
             this.setHash();
+        });
+        this.flagsEl.addEventListener('keydown', function(evt) {
+            // Prevent the user from typing invalid characters
+            if (evt.key.length > 1)
+                return true;
+            if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'.indexOf(evt.key) < 0) {
+                evt.preventDefault();
+                return false;
+            }
+            return true;
         });
 
         this.seedEl.change(event => {
@@ -292,7 +319,16 @@ class Interface {
         localStorage.setItem('flags', flags); 
         this.updateFlagBytes();
         this.updateInputs();
+        this.updateSummary()
         this.setHash();
+    }
+
+    static setFlags(flags) {
+        return Interface._instance.setFlags(flags);
+    }
+
+    static getFlags() {
+        return Interface._instance.flagsEl.value;
     }
 
     updateFlags() {
@@ -446,7 +482,7 @@ class Interface {
     addTextBox(tab, position, title) {
         let input = this.create('input')
         input.name = tab + position;
-        let label = this.create('label', title)
+        let label = this.create('label', title + ': ')
         label.for = tab + position;
         let container = this.tabs[tab].content.children[position];
         container.innerHTML = '';
@@ -455,14 +491,16 @@ class Interface {
         return input;
     }
 
-    addDropDown(tab, position, bytepos, shift, title, values) {
+    addDropDown(tab, position, bytepos, shift, title, values, skipFlags) {
         let select = this.create('select');
         select.dataset.bytepos = bytepos;
         select.dataset.shift = shift;
-        for (let v in values) {
-            let option = this.create('option', v);
-            option.value = values[v];
-            select.append(option);
+        if (values) {
+            for (let v in values) {
+                let option = this.create('option', v);
+                option.value = values[v];
+                select.append(option);
+            }
         }
         select.change(this.updateFlags.bind(this));
         let container = this.tabs[tab].content.children[position];
@@ -470,7 +508,8 @@ class Interface {
         container.style.textAlign = 'right';
         container.innerText = (select.dataset.label = title) + ': ';
         container.append(select);
-        this.inputs.push(select);
+        if (!skipFlags)
+            this.inputs.push(select);
         this.updateInputs();
         return select;
     }
@@ -483,8 +522,6 @@ class Interface {
         input.dataset.bytepos = bytepos;
         input.dataset.shift = shift;
         input.dataset.label = title;
-        if (!skipFlags)
-            input.change(this.updateFlags.bind(this));
         let label = this.create('label', title)
         label.for = tab + position;
         let container = this.tabs[tab].content.children[position];
@@ -501,8 +538,11 @@ class Interface {
         }
         if (retain)
             input.dataset.retain = 'true';
-        this.inputs.push(input);
-        this.updateInputs();
+        if (!skipFlags) {
+            input.change(this.updateFlags.bind(this));
+            this.inputs.push(input);
+            this.updateInputs();
+        }
         return input;
     }
 

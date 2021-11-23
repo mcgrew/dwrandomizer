@@ -9,6 +9,10 @@ function require(jsFile) {
     return el;
 }
 
+function isElectron() {
+    return /electron/i.test(navigator.userAgent);
+}
+
 require('interface.js');
 require('dwrandomizer.js');
 require('base32.js');
@@ -201,33 +205,41 @@ function setup_ui() {
         'Skip the original credits and go straight to stat scroll.', true);
 
     // player sprite
-    let spriteBox = ui.addTextBox('Cosmetic', 1, 'Player Sprite: ');
-    spriteBox.setAttribute('list', 'sprites');
-    spriteBox.value = localStorage.getItem('sprite') || 'Random';
-    spriteBox.id = "sprite-box";
+    let spriteBox;
+    if (!isElectron()) {
+        spriteBox = ui.addTextBox('Cosmetic', 1, 'Player Sprite');
+        spriteBox.setAttribute('list', 'sprites');
+        spriteBox.value = localStorage.getItem('sprite') || 'Random';
+        spriteBox.addEventListener('focus', function(event) {
+            this.value = '';
+        });
+    } else {
+        spriteBox = ui.addDropDown('Cosmetic', 1, null, null, 
+            'Player Sprite', null, true);
+        spriteBox.style.marginRight = '0.2em';
+        spriteBox.style.width = '190px';
+        spriteBox.parentElement.style.marginRight = "0";
+    }
     spriteBox.getValue = function() {
         if (!sprite_choices.includes(this.value))
             return 'Random';
         return this.value;
     }
-    spriteBox.addEventListener('focus', function(event) {
-        if (this.value) {
-            this.value = '';
-        }
-    });
-    spriteBox.addEventListener('focusout', function(event) {
-        if (this.value == '') {
-            this.value = localStorage.getItem('sprite') || 'Random';
-        }
-        if (sprite_choices.includes(this.value)) {
-            this.classList.remove('invalid');
-            localStorage.setItem('sprite', this.value);
-            spritePreview.setAttribute('src', 'sprites/' + this.getValue() 
-                + '.png');
-        } else {
-            this.classList.add('invalid');
-        }
-        ui.updateSummary();
+    spriteBox.id = "sprite-box";
+    spriteBox.addEventListener(isElectron() ? 'change' : 'focusout',
+        function(event) {
+            if (this.value == '') {
+                this.value = localStorage.getItem('sprite') || 'Random';
+            }
+            if (sprite_choices.includes(this.value)) {
+                this.classList.remove('invalid');
+                localStorage.setItem('sprite', this.value);
+                spritePreview.setAttribute('src', 'sprites/' + this.getValue() 
+                    + '.png');
+            } else {
+                this.classList.add('invalid');
+            }
+            ui.updateSummary();
     });
     let spritePreview = ui.create('img', null, {
         'background-color': '#ccc',
@@ -237,8 +249,8 @@ function setup_ui() {
         'width': '32px'
     })
     spritePreview.id = 'sprite-preview';
-    spritePreview.setAttribute('src', 'sprites/' + spriteBox.value
-        + '.png');
+    spritePreview.setAttribute('src', 'sprites/' 
+        + (localStorage.getItem('sprite') || 'Random') + '.png');
     spriteBox.parentElement.append(spritePreview);
     ui.updateSummary();
 }
@@ -252,6 +264,7 @@ window.addEventListener('load', event => {
         ui.setVersion(Module.ccall('version', 'string'));
         let sprite_name = Module.cwrap('sprite_name', 'string', ['number']);
         let sprites_datalist = $('datalist#sprites');
+        let spriteBox = $('#sprite-box');
         let i=0;
         while(true) {
             let name = sprite_name(i++);
@@ -259,8 +272,14 @@ window.addEventListener('load', event => {
             let option = document.createElement('option');
             option.value = option.innerText = name;
             sprite_choices.push(name);
-            sprites_datalist.append(option);
+            if (isElectron()) {
+                spriteBox.append(option);
+            } else {
+                sprites_datalist.append(option);
+            }
         }
+        if (isElectron())
+            spriteBox.value = localStorage.getItem('sprite') || 'Random';
     };
 
     let rom_data = localStorage.getItem('rom_data');

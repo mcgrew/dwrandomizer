@@ -504,7 +504,7 @@ class Interface {
         }
         select.change(this.updateFlags.bind(this));
         let container = this.tabs[tab].content.children[position];
-        container.style.marginRight = '40%';
+        container.style.marginRight = '30%';
         container.style.textAlign = 'right';
         container.innerText = (select.dataset.label = title) + ': ';
         container.append(select);

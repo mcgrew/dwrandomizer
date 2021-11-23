@@ -115,8 +115,6 @@ function setup_ui() {
         'All dungeons will be rotated at random angles and/or mirrored.');
     ui.addTriOption('Gameplay', 10,  2, 2, 'Stair Shuffle',
         'Where stairs take you inside dungeons will be randomized.');
-    ui.addTriOption('Gameplay', 11, 13, 0, 'Treasure Guards',
-        'Important items will have a mid-level monster guarding them.');
 
     ui.addTriOption('Features',  0,  3, 6, 'Enable Menu Wrapping',
         'This enables cursor wrapping in menus.');
@@ -171,7 +169,7 @@ function setup_ui() {
         'Fast' : 1,
         'Very Fast': 2
     });
-    ui.addDropDown ('Shortcuts', 9, 14, 2, 'Map Size', {
+    ui.addDropDown ('Shortcuts', 9, 14, 2, 'Random Map Size', {
         'Normal' : 0,
         'Small' : 1,
         'Very Small': 2,
@@ -186,6 +184,8 @@ function setup_ui() {
         'Your sprite will be invisible.');
     ui.addTriOption('Challenge', 6,  9, 0, 'Invisible NPCs',
         'All NPCs will be invisible.');
+    ui.addTriOption('Challenge', 8, 13, 0, 'Treasure Guards',
+        'Important items will have a mid-level monster guarding them.');
 
     ui.addTriOption('Cosmetic',  4, 10, 6, 'Modern Spell Names',
         'Use spell names from more recent DQ releases.');

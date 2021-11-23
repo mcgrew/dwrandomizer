@@ -253,7 +253,10 @@ class Interface {
             // Prevent the user from typing invalid characters
             if (evt.key.length > 1)
                 return true;
-            if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'.indexOf(evt.key) < 0) {
+            if (evt.ctrlKey || evt.altKey || evt.metaKey)
+                return true;
+            if ('ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'.indexOf(
+                    evt.key.toUpperCase()) < 0) {
                 evt.preventDefault();
                 return false;
             }

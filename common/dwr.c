@@ -1815,7 +1815,7 @@ static void dwr_token_dialogue(dw_rom *rom)
     int dx, dy, copied;
 
     if (!rom->search_table->item[0]) {
-        set_text(rom, 0xa228, "Thou must go and fight!'");
+        set_text(rom, 0xa228, "Thou must go fight!'   ");
         set_text(rom, 0xa242, "Go forth, descendant of Erdrick, "
                 "I have complete faith in thy victory!'");
     } else {

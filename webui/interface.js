@@ -1,26 +1,46 @@
 
 require('modal.js');
 
+/**
+ * Adds an eventlisterner to the built-in NodeList type
+ */
 NodeList.prototype.addEventListener = function(evt_type, func) {
     this.forEach(function(node) {
         node.addEventListener(evt_type, func.bind(node));
     });
 };
 
+/**
+ * Adds a hide() method to the built-in NodeList type which hides all
+ * elements in the list (sets display to none).
+ */
 NodeList.prototype.hide = function() {
     this.forEach(function(node) {
         node.hide()
     });
 }
 
+/**
+ * Adds a hide() method to the HTMLElement type (sets display to 'none')
+ */
 HTMLElement.prototype.hide = function() {
     this.style.display = 'none';
 }
 
+/**
+ * Adds a show() method to the HTMLElement type (clears display setting)
+ */
 HTMLElement.prototype.show = function() {
     this.style.display = '';
 }
 
+/**
+ * Adds a click() method to the HTMLElement type. When called without
+ * arguments, this emulates a click on the element. When called with a
+ * function, this adds a click event listener
+ *
+ * @param func The function to execute when the element is clicked.
+ */
 HTMLElement.prototype.click = function(func) {
     if (func)
         this.addEventListener('click', func);
@@ -28,14 +48,31 @@ HTMLElement.prototype.click = function(func) {
         this.dispatchEvent(new MouseEvent('click'));
 }
 
+/**
+ * Adds a change() method to the HTMLElement type.
+ * This adds a change event listener to the element.
+ *
+ * @param func The function to execute when the element is changed. Intended
+ * for input fields.
+ */
 HTMLElement.prototype.change = function(func) {
     this.addEventListener('change', func);
 }
 
+/**
+ * Adds a getValue() method to the HTMLSelectElement type. Converts the
+ * value to a number and returns it.
+ */
 HTMLSelectElement.prototype.getValue = function () {
     return Number(this.value);
 }
 
+/**
+ * Adds a setValue() method to the HTMLSelectElement type. Sets the selected
+ * option to the provided value.
+ *
+ * @param value The index of the option to select.
+ */
 HTMLSelectElement.prototype.setValue = function (value) {
     let maxvalue = 0;
     for (let i=0; i < this.children.length; i++) {
@@ -53,6 +90,10 @@ HTMLSelectElement.prototype.setValue = function (value) {
     }
 }
 
+/**
+ * Adds a getValue() method to the HTMLInputElement type. Converts the
+ * value to a number and returns it.
+ */
 HTMLInputElement.prototype.getValue = function() {
     if (this.type == 'checkbox'){
         if (this.indeterminate)
@@ -66,6 +107,13 @@ HTMLInputElement.prototype.getValue = function() {
     }
 }
 
+/**
+ * Adds a setValue() method to the HTMLInputElement type. Only works on
+ * checkboxes. Sets the value to off (0), on (1), or indeterminate (2).
+ * to the provided value.
+ *
+ * @param value The value to set the checkbox to.
+ */
 HTMLInputElement.prototype.setValue = function (value) {
     if (this.type == 'checkbox') {
         if (this.dataset.tristate) {
@@ -83,7 +131,9 @@ HTMLInputElement.prototype.setValue = function (value) {
     }
 }
 
-
+/**
+ * Converts a normal checkbox to a tri-state checkbox
+ */
 HTMLInputElement.prototype.triState = function() {
     if (this.type == 'checkbox') {
         this.dataset.tristate = true
@@ -99,6 +149,10 @@ HTMLInputElement.prototype.triState = function() {
     }
 }
 
+/**
+ * Adds a basename() function to the String type. This will remove the path
+ * from a file path leaving only the file name
+ */
 String.prototype.basename = function() {
     let index = this.lastIndexOf('/');
     if (index < 0)
@@ -106,6 +160,10 @@ String.prototype.basename = function() {
     return this.substring(index + 1);
 }
 
+/**
+ * Adds an isNumeric() function to the String type. Returns true if the String
+ * can be interpreted as a number
+ */
 String.prototype.isNumeric = function() {
     return !!/^[0-9]*(.[0-9]*)?$/.exec(this)
 }
@@ -115,6 +173,9 @@ window.addEventListener('hashchange', event => {
         Interface.instance.readHash();
 });
 
+/**
+ * The main user interface class
+ */
 class Interface {
     constructor(flagSize) {
         if (Interface._instance)
@@ -207,6 +268,15 @@ class Interface {
         Interface.instance = this;
     }
 
+    /**
+     * Creates a new HTML element
+     *
+     * @param element The element type (e.g. div, span, etc)
+     * @param text Text to be inserted into the element. Pass null/undefined
+     *      to leave the element empty
+     * @param style An object containing any additional style attributes to be
+     *      added to the object
+     */
     create(element, text, style) {
         let el = document.createElement(element);
         if (text)
@@ -218,6 +288,9 @@ class Interface {
         return el;
     }
 
+    /**
+     * Sets up user interface events
+     */
     initEvents() {
         this.inputFile.change(function(iface, event) {
             let file = this.files[0];
@@ -283,6 +356,9 @@ class Interface {
         });
     }
 
+    /**
+     * Reads and parses the URL hash for flags & seed number
+     */
     readHash() {
         let flags = '';
         let seed = '';
@@ -300,6 +376,9 @@ class Interface {
         }
     }
 
+    /**
+     * Updates the URL hash with the flags & seed number
+     */
     setHash() {
         window.ignoreHashChange = true;
         let decoded = base32.decode(this.flagsEl.value)
@@ -312,28 +391,50 @@ class Interface {
         window.ignoreHashChange = false;
     }
 
+    /**
+     * Sets the seed to the given number
+     *
+     * @param seed The new seed number
+     */
     setSeed(seed) {
         this.seedEl.value = seed;
         this.setHash();
     }
 
+    /**
+     * Sets the flags to the provided value (base32 encoded)
+     *
+     * @param the new flags value
+     */
     setFlags(flags) {
         this.flagsEl.value = flags;
-        localStorage.setItem('flags', flags); 
+        localStorage.setItem('flags', flags);
         this.updateFlagBytes();
         this.updateInputs();
         this.updateSummary()
         this.setHash();
     }
 
+    /**
+     * Static version of setFlags()
+     */
     static setFlags(flags) {
         return Interface._instance.setFlags(flags);
     }
 
+    /**
+     * Gets the current flag string
+     */
     static getFlags() {
         return Interface._instance.flagsEl.value;
     }
 
+    /**
+     * Updates the URL hash and summary tabs. Returns the
+     * base32 encoded flags.
+     *
+     * @return The base32 encoded flags
+     */
     updateFlags() {
         this.flagBytes.fill(0);
         let retain = new Uint8Array(this.flagSize)
@@ -346,14 +447,17 @@ class Interface {
                 retain[bytepos] |= input.getValue() << shift;
         }
         let encoded = base32.encode(this.flagBytes);
-        localStorage.setItem('flags', encoded); 
-        localStorage.setItem('retainFlags', base32.encode(retain)); 
+        localStorage.setItem('flags', encoded);
+        localStorage.setItem('retainFlags', base32.encode(retain));
         this.flagsEl.value = encoded;
         this.updateSummary()
         this.setHash();
         return encoded;
     }
 
+    /**
+     * Updates the flag bytes based upon the value in the flags input field
+     */
     updateFlagBytes() {
         this.flagBytes = base32.decode(this.flagsEl.value);
         if (localStorage.retainFlags) {
@@ -367,6 +471,9 @@ class Interface {
         return this.flagBytes;
     }
 
+    /**
+     * Updates all input fields based on the current flags
+     */
     updateInputs() {
         for (let i=0; i < this.inputs.length; i++) {
             let input = this.inputs[i];
@@ -377,6 +484,9 @@ class Interface {
         }
     }
 
+    /**
+     * Updates the summary tab based on the current settings
+     */
     updateSummary() {
         if (!this.summary)
             return;
@@ -406,6 +516,9 @@ class Interface {
             this.summary.innerHTML += 'Player Sprite: ' + spriteBox.getValue();
     }
 
+    /**
+     * Adds a summary tab to the UI
+     */
     addSummaryTab(name) {
         let tab = this.create('tab');
         tab.innerText = name;
@@ -434,6 +547,11 @@ class Interface {
         }
     }
 
+    /**
+     * Adds a new tab to the user interface
+     *
+     * @param name The name of the tab
+     */
     addTab(name) {
         let tab = this.create('tab');
         tab.innerText = name;
@@ -454,6 +572,9 @@ class Interface {
         }
     }
 
+    /**
+     * Sets the checksum value feild and displays it
+     */
     showChecksum(show, value) {
         if (show === false) {
             this.checksumContainer.hide()
@@ -463,15 +584,30 @@ class Interface {
         }
     }
 
+    /**
+     * Sets the version displayed in the title bar and header
+     *
+     * @param version The version number
+     */
     setVersion(version) {
         this.subHeader.innerText = 'Version ' + version;
         document.title = 'DWRandomizer ' + version;
     }
 
+    /**
+     * Sets the name of the input file to be displayed
+     *
+     * @param The file name
+     */
     setInputFile(name) {
         this.filenameSpan.innerText = name;
     }
 
+    /**
+     * Sets which tab is active
+     *
+     * @name The name of the tab to activate.
+     */
     setActiveTab(name) {
         $$('tab').forEach(function(tab) { tab.classList.remove('active') });
         $$('tabcontent').hide();
@@ -482,6 +618,16 @@ class Interface {
 
     }
 
+    /**
+     * Adds a text box to the UI inside a tab
+     *
+     * @param tab The tab to place the text box in
+     * @param position A number indicating where to place the box within the
+     *      tab
+     * @param title The title of the text box.
+     *
+     * @return The newly created HTML input element.
+     */
     addTextBox(tab, position, title) {
         let input = this.create('input')
         input.name = tab + position;
@@ -494,6 +640,22 @@ class Interface {
         return input;
     }
 
+    /**
+     * Adds a dropdown menu to the UI inside a tab
+     *
+     * @param tab The tab to place the dropdown in
+     * @param position A number indicating where to place the dropdown within
+     *      the tab
+     * @param bytepos which flag byte should be modified by this dropdown
+     * @param shift The number of bits the value should be shifted by within
+     *      the given byte.
+     * @param title The title of the Dropdown.
+     * @param values The list of values for the dropdown
+     * @param skipFlags Whether flags should be updated by this dropdown.
+     *      True causes changes to this dropdown to be ignored.
+     *
+     *  @return The newly created HTML SELECT element.
+     */
     addDropDown(tab, position, bytepos, shift, title, values, skipFlags) {
         let select = this.create('select');
         select.dataset.bytepos = bytepos;
@@ -517,6 +679,23 @@ class Interface {
         return select;
     }
 
+    /**
+     * Adds a checkbox to the UI inside a tab
+     *
+     * @param tab The tab to place the checkbox in
+     * @param position A number indicating where to place the checkbox within
+     *      the tab
+     * @param bytepos which flag byte should be modified by this checkbox
+     * @param shift The number of bits the value should be shifted by within
+     *      the given byte.
+     * @param title The title of the Dropdown.
+     * @param description An optional description to add below the checkbox.
+     * @param values The list of values for the checkbox
+     * @param skipFlags Whether flags should be updated by this checkbox.
+     *      True causes changes to this checkbox to be ignored.
+     *
+     *  @return The newly created HTML INPUT element.
+     */
     addOption(tab, position, bytepos, shift, title, description, retain,
             skipFlags) {
         let input = this.create('input')
@@ -549,6 +728,21 @@ class Interface {
         return input;
     }
 
+    /**
+     * Adds a checkbox to the UI inside a tab
+     *
+     * @param tab The tab to place the checkbox in
+     * @param position A number indicating where to place the checkbox within
+     *      the tab
+     * @param bytepos which flag byte should be modified by this checkbox
+     * @param shift The number of bits the value should be shifted by within
+     *      the given byte.
+     * @param title The title of the Dropdown.
+     * @param description An optional description to add below the checkbox.
+     * @param values The list of values for the checkbox
+     *
+     *  @return The newly created HTML INPUT element.
+     */
     addTriOption(tab, position, bytepos, shift , title, description) {
         let input = this.addOption(tab, position, bytepos, shift, title,
             description);

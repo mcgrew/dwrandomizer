@@ -2,6 +2,11 @@
 $ = document.querySelector.bind(document)
 $$ = document.querySelectorAll.bind(document)
 
+/**
+ * Imports a javascript file
+ *
+ * @param jsFile The name of the javascript file to import
+ */
 function require(jsFile) {
     let el = document.createElement('script');
     el.setAttribute('src', jsFile);
@@ -9,6 +14,9 @@ function require(jsFile) {
     return el;
 }
 
+/**
+ * Determines if we are running in electron
+ */
 function isElectron() {
     return /electron/i.test(navigator.userAgent);
 }
@@ -20,6 +28,10 @@ require('base32.js');
 let rom; let sprite_choices = [];
 let log = ''
 let error = ''
+
+/**
+ * Handler for wasm stdout
+ */
 function stdout(asciiCode) {
     new_char = String.fromCharCode(asciiCode);
     log += new_char
@@ -29,6 +41,9 @@ function stdout(asciiCode) {
     }
 }
 
+/**
+ * Handler for wasm stderr.
+ */
 function stderr(asciiCode) {
     new_char = String.fromCharCode(asciiCode);
     error += new_char
@@ -38,11 +53,20 @@ function stderr(asciiCode) {
     }
 }
 
+/**
+ * A class for holding ROM data
+ */
 class Rom extends Uint8Array {
     header() {
         return this.slice(0, 16);
     }
 
+    /**
+     * Overwrites data in the ROM
+     *
+     * @param addr The address to overwrite (not including the header)
+     * @param data The new data
+     */
     set(addr, data) {
         for (let i = 0; i < data.length; i++) {
             // add 16 to skip the header
@@ -50,6 +74,13 @@ class Rom extends Uint8Array {
         }
     }
 
+    /**
+     * Calls the wasm randomize() function with the provided arguments
+     *
+     * @param seed The seed number (64-bit).
+     * @param flags The flags string (base32-encoded).
+     * @param sprite The player's chosen sprite.
+     */
     randomize(seed, flags, sprite) {
         console.log("Randomizing...");
         FS.writeFile('/'+this.name, this);
@@ -65,6 +96,9 @@ class Rom extends Uint8Array {
         return checksum;
     }
 
+    /**
+     * Prompts the user to save the generated ROM file
+     */
     save() {
         this.output = FS.readFile('/'+this.outname, null);
         FS.unlink('/'+this.outname);
@@ -78,6 +112,9 @@ class Rom extends Uint8Array {
     }
 }
 
+/**
+ * Initializes the user interface
+ */
 function setup_ui() {
     if (!localStorage.flags)
         localStorage.flags = 'IVIAAVCQKACAAAAAAAAAAAAB'

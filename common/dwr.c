@@ -80,14 +80,14 @@ static void update_flags(dw_rom *rom)
     size_t i;
     uint8_t tmp;
 
-    /* Only the first 12 bytes can contain maybe flags. */
-    for (i=0; i < 12; i++) {
-        rom->flags[i] |= (rom->flags[i] >> 1) & 0x55 & mt_rand(0, 255);
+    /* The last 2 bytes do not contain maybe flags. */
+    for (i=0; i < 13; i++) {
+        rom->flags[i] |= (rom->flags[i] >> 1) & 0x55 & mt_rand(0, 0xff);
         rom->flags[i] &= 0x55;
     }
-    if (RANDOM_MAP_SIZE(rom) == 0xc) {
-        rom->flags[14] &= 0xf3;
-        rom->flags[14] |= mt_rand(0, 2) << 2;
+    if (RANDOM_MAP_SIZE(rom) == 0xc0) {
+        rom->flags[13] &= 0x3f;
+        rom->flags[13] |= mt_rand(0, 2) << 6;
     }
 }
 

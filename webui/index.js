@@ -111,8 +111,6 @@ function setup_ui() {
         'Experience requirements for each level will be randomized.');
     ui.addTriOption('Gameplay',  7,  2, 6, 'Heal/Hurt Before "More"',
         'HEAL must come before HEALMORE; HURT before HURTMORE.');
-    ui.addTriOption('Gameplay',  9,  2, 4, 'Randomly Rotate/Mirror Dungeons',
-        'All dungeons will be rotated at random angles and/or mirrored.');
     ui.addTriOption('Gameplay', 10,  2, 2, 'Stair Shuffle',
         'Where stairs take you inside dungeons will be randomized.');
 
@@ -122,15 +120,13 @@ function setup_ui() {
         'Equipping the death necklace will cause +10AP and -25% HP.');
     ui.addTriOption('Features',  4,  3, 2, 'Enable Torches In Battle',
         'Torches and Fairy water can be thrown at monsters.');
-    ui.addTriOption('Features',  6,  3, 0, 'Big Swamp',
-        'Approximately 60% of the overworld will be poisonous swamp.');
     ui.addTriOption('Features',  1,  4, 6, 'Repel in Dungeons',
         'Enables REPEL to work in dungeons');
     ui.addTriOption('Features',  3,  4, 4, 'Permanent Repel',
         'REPEL will always be active.');
     ui.addTriOption('Features',  5,  4, 2, 'Permanent Torch',
         'At least a 3x3 area will always be lit in dungeons.');
-    ui.addTriOption('Features',  8,  4, 0, 'Alternate Running Algorithm',
+    ui.addTriOption('Features',  6,  4, 0, 'Alternate Running Algorithm',
         'The run blocking multiplier will depend on where you are.');
     ui.addTriOption('Monsters',  0,  5, 6, 'Random Monster Abilities',
         'Monster spells and abilities will be randomized.');
@@ -164,32 +160,36 @@ function setup_ui() {
     ui.addTriOption('Shortcuts',  3,  8, 0, "Three's Company",
         'Bring Gwaelin to the Dragonlord and accept his offer to win.');
     // leveling speed
-    ui.addDropDown ('Shortcuts',  7, 14, 0, 'Leveling Speed', {
+    ui.addDropDown ('Shortcuts',  7, 13, 4, 'Leveling Speed', {
         'Normal' : 0,
         'Fast' : 1,
         'Very Fast': 2
     });
-    ui.addDropDown ('Shortcuts', 9, 14, 2, 'Random Map Size', {
+    ui.addDropDown ('Shortcuts',  9, 13, 6, 'Random Map Size', {
         'Normal' : 0,
         'Small' : 1,
         'Very Small': 2,
         'Random': 3
     });
 
-    ui.addTriOption('Challenge', 0,  9, 6, 'No Hurtmore',
+    ui.addTriOption('Challenge',  0,  9, 6, 'No Hurtmore',
         'You will never learn HURTMORE. Monsters will still have it.');
-    ui.addTriOption('Challenge', 2,  9, 4, 'No Numbers',
+    ui.addTriOption('Challenge',  2,  9, 4, 'No Numbers',
         'No numbers will be visible until the Dragonlord fight.');
-    ui.addTriOption('Challenge', 4,  9, 2, 'Invisible Hero',
+    ui.addTriOption('Challenge',  4,  9, 2, 'Invisible Hero',
         'Your sprite will be invisible.');
-    ui.addTriOption('Challenge', 6,  9, 0, 'Invisible NPCs',
+    ui.addTriOption('Challenge',  6,  9, 0, 'Invisible NPCs',
         'All NPCs will be invisible.');
-    ui.addTriOption('Challenge', 8, 13, 0, 'Treasure Guards',
+    ui.addTriOption('Challenge',  1, 13, 0, 'Treasure Guards',
         'Important items will have a mid-level monster guarding them.');
+    ui.addTriOption('Challenge',  3, 10, 0, 'Big Swamp',
+        'Approximately 60% of the overworld will be poisonous swamp.');
+    ui.addTriOption('Challenge',  5, 10, 2, 'Randomly Rotate/Mirror Dungeons',
+        'All dungeons will be rotated at random angles and/or mirrored.');
 
-    ui.addTriOption('Cosmetic',  4, 10, 6, 'Modern Spell Names',
+    ui.addTriOption('Cosmetic',  4, 11, 6, 'Modern Spell Names',
         'Use spell names from more recent DQ releases.');
-    ui.addTriOption('Cosmetic',  6, 10, 4, 'Noir Mode',
+    ui.addTriOption('Cosmetic',  6, 11, 4, 'Noir Mode',
         "It's all black and white baby!");
     ui.addOption   ('Cosmetic',  0, 14, 7, 'Shuffle Music',
         'Music in each area will be randomized.');
@@ -199,9 +199,9 @@ function setup_ui() {
         'Prevents the screen from flashing when you cast spells.', true);
     ui.addOption   ('Cosmetic',  10, 14, 4, 'Show Death Counter',
         'The stats window will also have a death counter.', true);
-    ui.addOption   ('Cosmetic',  3, 13, 7, 'Allow Custom Spell Names',
+    ui.addOption   ('Cosmetic',   3, 14, 3, 'Allow Custom Spell Names',
         'Allow spell names to be changed based on the chosen sprite.', true);
-    ui.addOption   ('Cosmetic',  5, 13, 6, 'Skip Original Credits',
+    ui.addOption   ('Cosmetic',   5, 14, 2, 'Skip Original Credits',
         'Skip the original credits and go straight to stat scroll.', true);
 
     // player sprite

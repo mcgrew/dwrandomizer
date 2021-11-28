@@ -980,6 +980,7 @@ retry_map:
         };
 
         if (BIG_SWAMP(rom)) {
+            printf("Adding more swamp...\n");
             tiles[0] = tiles[1] = tiles[4] = tiles[8] = tiles[9] = TILE_SWAMP;
         }
 

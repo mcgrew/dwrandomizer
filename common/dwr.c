@@ -1787,6 +1787,8 @@ static void modern_spell_names(dw_rom *rom)
     if (!MODERN_SPELLS(rom))
         return;
 
+    printf("Updating to modern spell names...\n");
+
     set_text(rom, 0x7e56, "HEAL\xff"
                           "SIZZ\xff"
                           "SNOOZE\xff"
@@ -1883,7 +1885,7 @@ static void no_screen_flash(dw_rom *rom)
 static void skip_vanilla_credits(dw_rom *rom)
 {
     if (SKIP_VANILLA_CREDITS(rom)) {
-        printf("Skipping Original Credits...");
+        printf("Skipping original credits...\n");
         add_hook(rom, JMP, 0x542b, START_DWR_CREDITS);
     }
 }

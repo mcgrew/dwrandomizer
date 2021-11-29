@@ -8,9 +8,11 @@
 #include "dungeon_maps.h"
 
 /**
- * Returns a random index of a chest that is not in charlock. For simplicity,
- * this function will also not return the starting throne room key chest or
- * the staff of rain chest.
+ * Returns a random index of a chest that is not in charlock.
+ *
+ * @param rom The rom struct.
+ *
+ * @return The index of a chest accessible outside Charlock.
  */
 static inline int non_charlock_chest(dw_rom *rom)
 {
@@ -89,6 +91,7 @@ void check_quest_items(dw_rom *rom)
  * items to be found on "searchable" spots
  *
  * @param rom The rom struct
+ * @param items A pointer to the 3 search items
  */
 static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
 {

@@ -13,6 +13,7 @@
 
 #define VAN_SPOT_COUNT 13
 
+/** Original locations for each warp */
 static const uint8_t vanilla_spots[VAN_SPOT_COUNT][2] = {
     /* vanilla place locations */
     { 43, 43 }, /* Tantegel */
@@ -40,7 +41,14 @@ static const uint8_t vanilla_spots[VAN_SPOT_COUNT][2] = {
     {114, 37 }, */
 };
 
-static inline int map_ob(int x) {
+/**
+ * Indicates whether a coordinate is past the edge of the map
+ *
+ * @param The x or y coordinate
+ * 
+ * @return A bool with TRUE indicating that this coordinate is out of bounds.
+ */
+static inline BOOL map_ob(int x) {
     return (x < 0 || x > 119);
 }
 
@@ -65,6 +73,7 @@ static void shift_bytes(uint8_t *start, uint8_t *end)
  * Optimizes the map encoding to remove unneeded bytes.
  *
  * @param map The map struct
+ * @param pointers A pointer to the in-game overworld map pointers.
  * @return The number of bytes saved
  */
 static int optimize_map(uint8_t *encoded_map, uint16_t *pointers)
@@ -363,6 +372,8 @@ max_candidates:
  *      or may be zero to indicate no mass.
  * @param x A pointer to a uint8_t which will be filled with the x coordinate
  * @param y A pointer to a uint8_t which will be filled with the y coordinate
+ * @param ignore_vanilla A boolean indicating this function should assume the
+ *  RANDOM_MAP flag is on.
  */
 static void map_find_land(dw_map *map, int one, int two, uint8_t *x, uint8_t *y,
         BOOL ignore_vanilla)
@@ -495,10 +506,10 @@ static void place_charlock(dw_map *map, int largest, int next)
 /**
  * Places tantegel castle on the map and updates the appropriate code to match
  * (return, wings, Gwaelin's Love, etc)
- * @param map
- * @param largest
- * @param next
- * @return
+ * @param map The map struct
+ * @param largest The largest land mass
+ * @param next The next largest land mass
+ * @return A uint8_t indicating which land mass the castle was placed on.
  */
 static uint8_t place_tantegel(dw_map *map, int largest, int next)
 {
@@ -864,6 +875,11 @@ static BOOL place_landmarks(dw_map *map)
     return TRUE;
 }
 
+/**
+ * Randomly adds a river to the overworld map
+ *
+ * @param map The map struct.
+ */
 static void map_add_river(dw_map *map) {
     int x, y, maindir, dir;
 
@@ -924,7 +940,7 @@ static void check_keys(dw_rom *rom)
     for ( chest = rom->chests; chest < chest_end; chest++) {
         if (chest->item == KEY) {
             switch(chest->map) {
-                case 12:
+                case TANTEGEL_BASEMENT:
                     rom->map.key_access |= KEY_IN_BASEMENT;
                     break;
             }

@@ -49,6 +49,16 @@ static int compare_enemies(const void *a, const void *b)
     return 0;
 }
 
+/**
+ * Determines a rank to be used for the next value
+ *
+ * @param consistent True if consistent stats is on
+ * @param rank A pointer to a double indicating the previous rank
+ * @param min The minimum rank to be used
+ * @param max The maximum rank to be used
+ *
+ * @return The new rank. This value is also stored in *rank
+ */
 static double next_rank(BOOL consistent, double *rank, double min, double max)
 {
     double newmin, newmax;
@@ -133,6 +143,11 @@ static void chaos_enemy_stats(dw_rom *rom)
     }
 }
 
+/**
+ * Randomizes enemy Gold & XP drops
+ *
+ * @param rom The rom struct
+ */
 static void chaos_enemy_drops(dw_rom *rom)
 {
     int i;

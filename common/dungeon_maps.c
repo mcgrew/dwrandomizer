@@ -13,6 +13,8 @@
  * contain roof data in the MSB of the tile data.
  *
  * @param map The map number
+ *
+ * @return A boolean indicating whether this map can contain roof data.
  */
 static BOOL contains_roof_data(dw_map_index map)
 {
@@ -107,6 +109,18 @@ void set_dungeon_tile(dw_rom *rom, dw_map_index town, uint8_t x,
     }
 }
 
+/**
+ * Gets the value of a single tile in a town or dungeon You should
+ * be sure to check is_dungeon_tileset() to ensure you are using the correct
+ * tileset, as they differ between dungeons and towns.
+ *
+ * @param rom The rom struct.
+ * @param town The town or dungeon index.
+ * @param x The X coordinate of the tile to change.
+ * @param y The Y coordinate of the tile to change.
+ *
+ * @return The value of the given tile
+ */
 dw_dungeon_tile get_dungeon_tile(dw_rom *rom, dw_map_index town, uint8_t x,
         uint8_t y)
 {
@@ -134,6 +148,14 @@ dw_dungeon_tile get_dungeon_tile(dw_rom *rom, dw_map_index town, uint8_t x,
 #define MIRROR_V(x)   (x & 0x4)
 #define MIRROR_H(x)   (x & 0x8)
 
+/**
+ * Rotates any warps that may appear in a dungeon. Really only applies to 
+ * swamp cave
+ *
+ * @param rom The rom struct
+ * @param map_index The index of the map being rotated
+ * @param rotatemirror Bits to indicate the rotation to be applied
+ */
 static void rotate_warps(dw_rom *rom, dw_map_index map_index,
         uint8_t rotatemirror)
 {
@@ -172,6 +194,13 @@ static void rotate_warps(dw_rom *rom, dw_map_index map_index,
     }
 }
 
+/**
+ * Rotates any chests that may appear in a dungeon.
+ *
+ * @param rom The rom struct
+ * @param map_index The index of the map being rotated
+ * @param rotatemirror Bits to indicate the rotation to be applied
+ */
 static void rotate_chest_positions(dw_rom *rom, dw_map_index map_index,
         uint8_t rotatemirror)
 {
@@ -209,6 +238,12 @@ static void rotate_chest_positions(dw_rom *rom, dw_map_index map_index,
     }
 }
 
+/**
+ * Rotates the forced encounter in swamp cave
+ *
+ * @param rom The rom struct
+ * @param rotatemirror Bits to indicate the rotation to be applied
+ */
 static void rotate_forced_encounter(dw_rom *rom, uint8_t rotatemirror)
 {
     uint8_t x, y, tmp;
@@ -240,6 +275,13 @@ static void rotate_forced_encounter(dw_rom *rom, uint8_t rotatemirror)
     rom->spike_table->y[1] = y;
 }
 
+/**
+ * Rotates a dungeon.
+ *
+ * @param rom The rom struct
+ * @param map_index The index of the map being rotated
+ * @param rotatemirror Bits to indicate the rotation to be applied
+ */
 static void rotate_mirror_map(dw_rom *rom, dw_map_index map_index)
 {
     dw_map_meta *meta = &rom->map.meta[map_index];
@@ -333,6 +375,11 @@ static void rotate_mirror_map(dw_rom *rom, dw_map_index map_index)
     free(rotatedbuf);
 }
 
+/**
+ * Rotates all dungeons randomly
+ *
+ * @param rom The rom struct
+ */
 void rotate_dungeons(dw_rom *rom)
 {
     size_t i;

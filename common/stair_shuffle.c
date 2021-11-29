@@ -31,6 +31,15 @@ static const dw_map_index indexes[] = { CHARLOCK, CHARLOCK_THRONE_ROOM,
     ERDRICKS_CAVE, ERDRICKS_CAVE_2, NO_MAP
 };
 
+/**
+ * Patches the stair handling routine and the OUTSIDE spell routine for stair
+ * shuffling. In the original game, up stairs can only lead to down stairs and
+ * vice versa. This fixes that assumption. For OUTSIDE, this changes the code
+ * to remember where you last entered a dungeon so it can return you there
+ * instead of using a look up based on the current map.
+ *
+ * @param rom The rom struct
+ */
 static void code_patches(dw_rom *rom)
 {
     vpatch(rom, 0x0d95e,    3,
@@ -80,6 +89,15 @@ static void code_patches(dw_rom *rom)
     );
 }
 
+/**
+ * Checks to see if the given x/y is outside the bounds of the map.
+ *
+ * @param map A pointer to the dungeon map struct
+ * @param x The X coordinate
+ * @param y The Y coordinate
+ *
+ * @return A boolean indicating if the coordinate is out of bounds
+ */
 static BOOL map_ob(dungeon_map *map, int x, int y)
 {
     if (x < 0 || x >= map->width || y < 0 || y >= map->height)
@@ -87,6 +105,13 @@ static BOOL map_ob(dungeon_map *map, int x, int y)
     return FALSE;
 }
 
+/**
+ * Gets a pointer to the requested dungeon_map struct
+ *
+ * @param index The index of the map
+ *
+ * @return A pointer to the requested map
+ */
 static dungeon_map *get_map(dw_map_index index)
 {
     size_t i;
@@ -98,6 +123,14 @@ static dungeon_map *get_map(dw_map_index index)
     return NULL;
 }
 
+/**
+ * Indicates whether the given tile can be walked on.
+ *
+ * @param tile The dungeon tile type
+ * @param have_keys Causes door tiles to be considered walkable
+ *
+ * @return A boolean indicating if the tile can be walked on
+ */
 static BOOL tile_is_walkable(dw_dungeon_tile tile, BOOL have_keys)
 {
     switch(tile)
@@ -114,6 +147,14 @@ static BOOL tile_is_walkable(dw_dungeon_tile tile, BOOL have_keys)
 
 static void map_dungeon(dungeon_map *, uint8_t, uint8_t, BOOL);
 
+/**
+ * Follows a warp inside a dungeon and spiders the map at the other end
+ *
+ * @param map A pointer to the dungeon_map
+ * @param x The x coordinate of the warp
+ * @param y The y coordinate of the warp
+ * @param have_keys Whether door tiles can be walked on or not
+ */
 static void follow_warp(dungeon_map *map, uint8_t x, uint8_t y, BOOL have_keys)
 {
     size_t i;
@@ -132,6 +173,14 @@ static void follow_warp(dungeon_map *map, uint8_t x, uint8_t y, BOOL have_keys)
     }
 }
 
+/**
+ * Maps the given dungeon starting at the given map, X, and Y
+ *
+ * @param map A pointer to the dungeon_map
+ * @param x The starting x coordinate
+ * @param y The starting y coordinate
+ * @param have_keys Whether door tiles can be walked on or not
+ */
 static void map_dungeon(dungeon_map *map, uint8_t x, uint8_t y, BOOL have_keys)
 {
     dw_warp warp;
@@ -196,14 +245,23 @@ static void map_dungeon(dungeon_map *map, uint8_t x, uint8_t y, BOOL have_keys)
 //     }
 // }
 
-static BOOL is_dungeon(dw_map_index index)
-{
-    if (index >= CHARLOCK_CAVE_1) {
-        return TRUE;
-    }
-    return FALSE;
-}
+/**
+ * Determines if the map uses a dungeon or town tile set
+ */
+// static BOOL is_dungeon(dw_map_index index)
+// {
+//     if (index >= CHARLOCK_CAVE_1) {
+//         return TRUE;
+//     }
+//     return FALSE;
+// }
 
+/**
+ * Unpacks a map into a 2 dimensional array
+ *
+ * @param rom The rom struct
+ * @param map A pointer to the dungeon_map
+ */
 static void unpack_map(dw_rom *rom, dungeon_map *map)
 {
     size_t x, y;
@@ -220,6 +278,11 @@ static void unpack_map(dw_rom *rom, dungeon_map *map)
     }
 }
 
+/**
+ * Translates town tiles to dungeon tiles for mapping purposes.
+ *
+ * @param tile The town tile type
+ */
 static dw_dungeon_tile translate_town_tile(dw_town_tile tile)
 {
     switch(tile) {
@@ -249,6 +312,12 @@ static dw_dungeon_tile translate_town_tile(dw_town_tile tile)
 
 }
 
+/**
+ * Unpacks a town map
+ *
+ * @param rom The rom struct
+ * @param map A pointer to the dungeon map
+ */
 static void unpack_town_map(dw_rom *rom, dungeon_map *map)
 {
     size_t x, y;
@@ -266,6 +335,11 @@ static void unpack_town_map(dw_rom *rom, dungeon_map *map)
     }
 }
 
+/**
+ * Clears all walkability flags in a given dungeon
+ *
+ * @param map The dungeon_map
+ */
 static void clear_flags(dungeon_map *map)
 {
     size_t x, y;
@@ -277,6 +351,9 @@ static void clear_flags(dungeon_map *map)
     }
 }
 
+/**
+ * Clears all walkability flags.
+ */
 static void clear_all_flags()
 {
     dungeon_map *map;
@@ -285,6 +362,14 @@ static void clear_all_flags()
     }
 }
 
+/**
+ * Determines if the indexes array contains the given index
+ *
+ * @param indexes A pointer to the array of indexes
+ * @param index The index to be searched for.
+ *
+ * @return a booean indicating if the index exists in the array
+ */
 static BOOL indexes_contains(const dw_map_index *indexes, dw_map_index index)
 {
     size_t i;
@@ -297,6 +382,9 @@ static BOOL indexes_contains(const dw_map_index *indexes, dw_map_index index)
     }
 }
 
+/**
+ * Builds maps an initializes other data needed for stair shuffling
+ */
 static void stair_shuffle_init(dw_rom *rom)
 {
     size_t i, j;
@@ -333,6 +421,11 @@ static void stair_shuffle_init(dw_rom *rom)
     rom->map.key_access = 0;
 }
 
+/**
+ * Determines if all chests can be accessed
+ *
+ * @return A boolean indicating if all chests can be accessed
+ */
 static BOOL all_chests_accessible()
 {
     size_t i, x, y, width, height;
@@ -350,7 +443,13 @@ static BOOL all_chests_accessible()
     return TRUE;
 }
 
-static void print_all_maps();
+// static void print_all_maps();
+
+/**
+ * Shuffles all dungeon stairwells
+ *
+ * @param rom The rom struct
+ */
 static void do_shuffle(dw_rom *rom)
 {
     dungeon_map *charlock = get_map(CHARLOCK);
@@ -381,6 +480,12 @@ static void do_shuffle(dw_rom *rom)
     }
 }
 
+/**
+ * Marks all chests that are marked accessible with the given flag
+ *
+ * @param rom The rom struct
+ * @param The bitwise flag to use
+ */
 static void mark_chests(dw_rom *rom, uint8_t flag)
 {
     size_t i, x, y;
@@ -402,6 +507,11 @@ static void mark_chests(dw_rom *rom, uint8_t flag)
     }
 }
 
+/**
+ * Finds all chests that are accessible from each entrance.
+ *
+ * @param rom The rom struct
+ */
 static void chest_paths(dw_rom *rom)
 {
     dungeon_map *map;
@@ -442,6 +552,11 @@ static void chest_paths(dw_rom *rom)
     mark_chests(rom, 0x80);
 }
 
+/**
+ * Writes back the shuffled warps to the in-game warp table
+ *
+ * @param rom The rom struct
+ */
 static void write_back_warps(dw_rom *rom)
 {
     size_t i, j;
@@ -458,6 +573,9 @@ static void write_back_warps(dw_rom *rom)
     }
 }
 
+/**
+ * Shuffles all dungeon stairs and checks that all conditions are met.
+ */
 void stair_shuffle(dw_rom *rom)
 {
 

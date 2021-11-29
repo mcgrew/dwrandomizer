@@ -24,6 +24,7 @@
 #include "expansion.h"
 #include "credit_music.h"
 
+/** Pretty sure these aren't used any more.  */
 const char *prg0sums[8] = {
       "6a50ce57097332393e0e8751924fd56456ef083c", /* Dragon Warrior (U) (PRG0) [!].nes      */
       "66330df6fe3e3c85adb8183721e5f88c149e52eb", /* Dragon Warrior (U) (PRG0) [b1].nes     */
@@ -34,6 +35,7 @@ const char *prg0sums[8] = {
       "3077d5bd5c5c3744398b122d5ee1bba7055c8d45", /* Dragon Warrior (U) (PRG0) [o3].nes     */
       NULL
 };
+/** Pretty sure these aren't used any more.  */
 const char *prg1sums[2] = {
       "1ecc63aaac50a9612eaa8b69143858c3e48dd0ae", /* Dragon Warrior (U) (PRG1) [!].nes      */
       NULL
@@ -315,25 +317,6 @@ static void torch_in_battle(dw_rom *rom) {
     set_text(rom, 0xbc6c, "\xf8 hurled a torch at the \xf4!\xfc"
             "\xf8 sprinkled fairy water on the \xf4.\xfc"
             "\xff\xff\xff\xff\xff\xff\xff");
-//     vpatch(rom, 0x0bc6c, 68,
-//      /* NAME           h     u     r     l     e     d           a        */
-//         0xf8, 0x5f, 0x11, 0x1e, 0x1b, 0x15, 0x0e, 0x0d, 0x5f, 0x0a, 0x5f,
-//     /*     t     o     r     c     h           a     t           t     h  */
-//         0x1d, 0x18, 0x1b, 0x0c, 0x11, 0x5f, 0x0a, 0x1d, 0x5f, 0x1d, 0x11,
-//     /*     e        ENMY     !   END                                      */
-//         0x0e, 0x5f, 0xf4, 0x4c, 0xfc,
-//     /*  NAME           s     p     r     i     n     k     l     e     d  */
-//         0xf8, 0x5f, 0x1c, 0x19, 0x1b, 0x12, 0x17, 0x14, 0x15, 0x0e, 0x0d,
-//     /*           f     a     i     r     y           w     a     t     e  */
-//         0x5f, 0x0f, 0x0a, 0x12, 0x1b, 0x22, 0x5f, 0x20, 0x0a, 0x1d, 0x0e,
-//     /*     r           o     n           t     h     e        ENMY     .  */
-//         0x1b, 0x5f, 0x18, 0x17, 0x5f, 0x1d, 0x11, 0x0e, 0x5f, 0xf4, 0x47,
-//     /*  END                                                               */
-//         0xfc,
-// 
-//         /* pad the end */
-//         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
-
 }
 
 /**
@@ -653,7 +636,8 @@ static void randomize_growth(dw_rom *rom)
 
 /**
  * Randomizes the order in which spells are learned.
- * * @param rom The rom struct
+ *
+ * @param rom The rom struct
  */
 static void randomize_spells(dw_rom *rom)
 {
@@ -806,6 +790,7 @@ static void update_drops(dw_rom *rom)
 
 /**
  * Changes the MP required for each spell to match the SFC & GBC remakes.
+ *
  * @param rom The rom struct
  */
 static void update_mp_reqs(dw_rom *rom)
@@ -896,7 +881,8 @@ static uint8_t *center_title_text(uint8_t *pos, const char *text)
  * @param pos The current position of the title screen pointer.
  * @param end The end of the title screen space.
  * @param reserved Space to reserve for other text.
- * @return
+ *
+ * @return A pointer to the end of the new data
  */
 static uint8_t *pad_title_screen(uint8_t *pos, uint8_t *end, int reserved)
 {
@@ -1198,6 +1184,11 @@ static void summer_sale(dw_rom *rom)
     }
 }
 
+/**
+ * Modifies the status window to show a death counter
+ *
+ * @param rom The rom struct
+ */
 static void death_counter(dw_rom *rom)
 {
 
@@ -1217,16 +1208,17 @@ static void death_counter(dw_rom *rom)
             0x85,  0xb1,  0x85);
 }
 
+/**
+ * Modifies the level up routine to display the spells learned rather than 
+ * just indicating that you have learned a spell
+ *
+ * @param rom The rom struct
+ */
 static void show_spells_learned(dw_rom *rom)
 {
     /* patch the level up text */
     vpatch(rom, 0x0ae97,    1,  0xfb); /* replace CR with wait arrow */
     set_text(rom, 0xaeab, "the spell \xf6"); /* F6 = spell name */
-//     vpatch(rom, 0x0aeab,   11,
-//             /* t      h     e            s      p     e      l      l        */
-//             0x1d,  0x11, 0x0e,  0x5f, 0x1c,  0x19, 0x0e,  0x15,  0x15,  0x5f,
-//             /* spell name */
-//             0xf6);
 
     vpatch(rom, 0x03fe0,   14,
                                 /* save_spells:                              */
@@ -1437,6 +1429,13 @@ static void dwr_menu_wrap(dw_rom *rom)
     );
 }
 
+/**
+ * Rewrites the forced encounter routines to read from a table rather than 
+ * being hard-coded. This clears enough space to allow for 8 "spikes" rather
+ * than the normal 3.
+ *
+ * @param rom The rom struct.
+ */
 static void spike_rewrite(dw_rom *rom)
 {
     size_t i=0;
@@ -1572,6 +1571,11 @@ static void spike_rewrite(dw_rom *rom)
         );
 }
 
+/**
+ * Determines if an item should be guarded when "treasure guards" is on
+ *
+ * @param item The item in question
+ */
 static BOOL should_be_guarded(dw_chest_content item)
 {
     switch(item)
@@ -1587,6 +1591,11 @@ static BOOL should_be_guarded(dw_chest_content item)
     }
 }
 
+/**
+ * Adds "spike" tiles to chests and search locations that should be guarded
+ *
+ * @param rom The rom struct
+ */
 static void treasure_guards(dw_rom *rom)
 {
     size_t i, spike_entry = 3;
@@ -1629,6 +1638,11 @@ static void treasure_guards(dw_rom *rom)
     }
 }
 
+/**
+ * Adds hooks for sorting the player inventory when a new item is added.
+ *
+ * @param rom The rom struct.
+ */
 static void sorted_inventory(dw_rom *rom)
 {
     /* patch some jump addresses */
@@ -1839,7 +1853,7 @@ static void dwr_token_dialogue(dw_rom *rom)
 }
 
 /**
- * What? No color?
+ * What? No color? This causes the PPU to stay in black and white mode.
  *
  * @param rom The rom struct.
  */
@@ -1867,7 +1881,8 @@ static void noir_mode(dw_rom *rom)
 }
 
 /**
- * Disables the screen flash when spells are cast
+ * Disables the screen flash when spells are cast by modifying ppu calls such
+ * that it is never set to black & white.
  *
  * @param rom The rom struct.
  */
@@ -1882,6 +1897,12 @@ static void no_screen_flash(dw_rom *rom)
     vpatch(rom, 0x0db40,    1,  0x18);
 }
 
+/**
+ * Adds a hook so that the original credits are skipped and you go directly to
+ * the end game stat scroll.
+ *
+ * @param rom The rom struct
+ */
 static void skip_vanilla_credits(dw_rom *rom)
 {
     if (SKIP_VANILLA_CREDITS(rom)) {
@@ -1890,6 +1911,11 @@ static void skip_vanilla_credits(dw_rom *rom)
     }
 }
 
+/**
+ * Sets up the extra expansion banks
+ *
+ * @param rom The rom struct
+ */
 void setup_expansion(dw_rom *rom)
 {
     rom->header[4] = 8; /* set to 8 PRG banks */
@@ -1945,6 +1971,12 @@ static BOOL dwr_write(dw_rom *rom, const char *output_file)
     return TRUE;
 }
 
+/**
+ * Checks any structs to ensure they are being compiled to the correct size.
+ * This causes the program to error if the compiler has tried to optimize them
+ * for byte-alignment. Otherwise this can cause strange errors that are hard to
+ * debug.
+ */
 static void check_structs()
 {
     assert(sizeof(dw_enemy) == 16);

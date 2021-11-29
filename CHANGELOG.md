@@ -1,10 +1,11 @@
-# 3.0 - So many changes!
+# 3.0 - So many changes! #
+###### Released Nov 30, 2021 ######
 * Entirely new web-based user interface
 * Added tri-state flags for most options. This allows an option to randomly be on or off.
   - Two flags are exceptions, which are "partial" flags
     - "Summer Sale" will only discount about half of the items when set to "partial"
     - "Treasure Guards" will set only about half of important items to be guarded.
-* Added Tracking of certain stats which will be displayed after the game ending. The following are tracked:
+* Added tracking of certain stats which will be displayed after the game ending. The following are tracked:
   - Encounters, defeats, and deaths for each monster.
   - The number of times you used each spell.
   - Deaths - The number of times you died.
@@ -37,14 +38,30 @@
 * Adjusted the player strength growth curve.
 * Adjusted the curves for random XP and Gold drops for monsters based on the new values.
 * "Short Charlock" now includes the top floor of Charlock unless "Stair Shuffle" is also on.
+* Added new sprites:
+  - FF4 Edge
+  - Plumplim
+  - DoaE Guan Yu
+  - DoaE Zhang Fei
+  - DoaE Zhao Yun
+  - DoaE Huang Zhong
+  - DoaE Ma Chao
+  - DoaE Zhuge Liang
+  - DoaE Jiang Wei
+  - DoaE Lu Bu
+  - Bo Jackson
+  - Jerry Rice
+  - Barry Sanders
 
 # 2.2.1 - Some balance adjustments
+##### Released July 06, 2021 #####
 * Maximum STOPSPELL resist is now 9/16
 * Maximum SLEEP/DL2 breath chance is now 50%
 * New Flag: Scaled Metal Slime XP (32 times level)
   - With this flag Metal Slimes will give XP equal to 32 times your level or 255, whichever is less.
 
 # 2.2 - Armor in Charlock? Yes. And much more!
+##### Released Mar 01, 2021 #####
 * Added the ability for Erdrick's Armor to be in a chest
 * The 3 search spots can now have any unique item: Sword, Armor, Token, Harp, Stones, Death Necklace, Fairy Flute.
    - Death Necklace on a search spot also creates a mini gold grind there.
@@ -81,6 +98,7 @@
   - Fixed an error in the Kirby princess carrying sprite
 
 # 2.1.2 - Bug fixes #
+##### Released July 28, 2019 #####
 * Fixed the slime and red slime sprites
 
 # 2.1.1 - Bug fixes #

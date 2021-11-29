@@ -50,11 +50,14 @@ BOOL is_quest_item(uint8_t item)
  * Determines if a chest should be left alone when randomizing
  *
  * @param chest The chest to be checked
+ *
+ * @return a boolean indicating whether the chest should be left alone.
  */
 static inline BOOL is_static_chest(dw_chest *chest)
 {
-    return (chest->map == TANTEGEL_THRONE_ROOM && chest->item == KEY) ||
-                    chest->item == STAFF;
+    return
+        (chest->map == TANTEGEL_THRONE_ROOM && chest->x == 6 && chest->y == 1)
+        || chest->item == STAFF;
 }
 
 

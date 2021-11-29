@@ -1,5 +1,42 @@
-# 3.0
-* Added a flag for enabling random chest placement
+# 3.0 - So many changes!
+* Entirely new web-based user interface
+* Added tri-state flags for most options. This allows an option to randomly be on or off.
+  - Two flags are exceptions, which are "partial" flags
+    - "Summer Sale" will only discount about half of the items when set to "partial"
+    - "Treasure Guards" will set only about half of important items to be guarded.
+* Added Tracking of certain stats which will be displayed after the game ending. The following are tracked:
+  - Encounters, defeats, and deaths for each monster.
+  - The number of times you used each spell.
+  - Deaths - The number of times you died.
+  - Attacks - The number of times you used the "Attack" command.
+  - Crits - The number of times you had an "Excellent Move".
+  - Dodges - The number of times an enemy dodged
+  - Blocks - The number of times you were prevented from running.
+  - Ambushes - The number of times a monster attacked you first.
+  - Bonks - The number of times you ran into an obstacle.
+  - Play time - In game play time from when you selected message speed until the "Until the dragons return again" text displays.
+    - This includes time on the title screen if you have started the game and then reset.
+* Added a flag for enabling random chest placement.
+* Added stair shuffle to randomize where dungeon stairs go.
+* Added alternate algorithm for determining run chances.
+  - With this flag on, chances of running will be determines by which map you are on rather than the monster difficulty.
+  - This is the same algorithm used when "Random Monster Stats" is on.
+* Added "Summer Sale" flag which will discount all weapons and armor by 35-65%
+* Added "Random Map Size" option to allow generation of smaller maps.
+* Added "Treasure Guards" where a mid-level spike encounter will guard important items.
+  - Guarded items are Erdrick's Armor & Sword, Silver Harp, Erdrick's Token, and Stones of Sunlight.
+* Added "Randomly Rotate/Mirror Dungeons" which will change the orientation of dungeon maps
+  - Maps can be rotated 90, 180, or 270 degrees in addition to being vertically or horizontally mirrored.
+* Added a summary tab which will display a summary of what options are set to.
+* Added sorting of player inventory based on item index
+* Added display of what spells you learned at level up (instead of "thou hast learned a spell").
+* Added support for 2-byte XP and Gold drops from monsters
+  - Red Dragons now give 350 XP.
+  - Golems now give 350 XP.
+  - Goldmen now give 650 GOLD.
+* Adjusted the player strength growth curve.
+* Adjusted the curves for random XP and Gold drops for monsters based on the new values.
+* "Short Charlock" now includes the top floor of Charlock unless "Stair Shuffle" is also on.
 
 # 2.2.1 - Some balance adjustments
 * Maximum STOPSPELL resist is now 9/16

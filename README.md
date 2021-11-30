@@ -34,7 +34,7 @@ anything goes.
 
 #### Random enemy stats, XP, and gold ####
 
-Enemy statisics (strength, agility, HP) can be randomized, as can the amount of
+Enemy statistics (strength, agility, HP) can be randomized, as can the amount of
 gold and experience you receive from them.
 
 #### Boosting XP/gold drops ####
@@ -105,7 +105,7 @@ Over 60 alternate sprites to choose from for the main character.
 The Death Necklace is always available in a chest. Putting it on gives you 
 +10 attack power at the cost of 25% of your max HP and being cursed. The
 Fighter's Ring works (+2 ATK). Other options include faster text, open Charlock
-(no Rainbow Drop required) shortened Charlock dungeon, disabling magic keys, 
+(no Rainbow Drop required), shortened Charlock dungeon, disabling magic keys, 
 or more swamp on the overworld.
 
 ## Running the randomizer ##

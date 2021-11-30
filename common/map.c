@@ -6,22 +6,14 @@
 #include "mt64.h"
 #include "map.h"
 
-#define FILL_ITERATIONS 12
-#define MAX_FILL_BLOB   7000
-#define MIN_LM_SIZE     400   /* minimum size for a land_mass to use */
+#define MIN_LM_SIZE     300   /* minimum size for a land_mass to use */
 #define RIVER_COUNT     25
 #define MIN_WALKABLE    5000
 #define MAP_ENCODED_SIZE 2294
 
-enum {
-    KEY_IN_MOUNTAIN = 1,
-    KEY_IN_GRAVE    = 2,
-    KEY_IN_BASEMENT = 4,
-    KEY_IN_TABLET   = 8
-};
-
 #define VAN_SPOT_COUNT 13
 
+/** Original locations for each warp */
 static const uint8_t vanilla_spots[VAN_SPOT_COUNT][2] = {
     /* vanilla place locations */
     { 43, 43 }, /* Tantegel */
@@ -49,7 +41,14 @@ static const uint8_t vanilla_spots[VAN_SPOT_COUNT][2] = {
     {114, 37 }, */
 };
 
-static inline int map_ob(int x) {
+/**
+ * Indicates whether a coordinate is past the edge of the map
+ *
+ * @param The x or y coordinate
+ * 
+ * @return A bool with TRUE indicating that this coordinate is out of bounds.
+ */
+static inline BOOL map_ob(int x) {
     return (x < 0 || x > 119);
 }
 
@@ -74,6 +73,7 @@ static void shift_bytes(uint8_t *start, uint8_t *end)
  * Optimizes the map encoding to remove unneeded bytes.
  *
  * @param map The map struct
+ * @param pointers A pointer to the in-game overworld map pointers.
  * @return The number of bytes saved
  */
 static int optimize_map(uint8_t *encoded_map, uint16_t *pointers)
@@ -230,6 +230,45 @@ static BOOL tile_is_walkable(dw_tile tile)
 
 /**
  * Finds the size of a land_mass given a point on it. Also fills in the 
+ * walkable area array. This is a less recursive version so we don't overflow
+ * the wasm stack.
+ *
+ * @param rom The rom pointer.
+ * @param x The x coordinate of the tile to start mapping.
+ * @param y The y coordinate of the tile to start mapping.
+ * @param lm_index The index for this land_mass.
+ */
+static int map_land_mass_2(dw_map *map, uint8_t x, uint8_t y,
+        uint8_t lm_index)
+{
+    int size = 0;
+    int left = 0;
+    int right = 119;
+
+    /* Move all the way to the left */
+    while(!map_ob(x-1) && tile_is_walkable(map->tiles[x-1][y]))
+        x--;
+    left = x;
+
+    while(!map_ob(x) && tile_is_walkable(map->tiles[x][y])) {
+        map->walkable[x][y] = lm_index;
+        right = x++;
+        size++;
+    }
+    /* go back to the left side and look up & down */
+    for (x = left; x <= right; x++) {
+        if (!map_ob(y-1) && tile_is_walkable(map->tiles[x][y-1]) &&
+                !map->walkable[x][y-1])
+            size += map_land_mass_2(map, x, y-1, lm_index);
+        if (!map_ob(y+1) && tile_is_walkable(map->tiles[x][y+1]) &&
+                !map->walkable[x][y+1])
+            size += map_land_mass_2(map, x, y+1, lm_index);
+    }
+    return size;
+}
+
+/**
+ * Finds the size of a land_mass given a point on it. Also fills in the 
  * walkable area array.
  *
  * @param rom The rom pointer.
@@ -242,7 +281,7 @@ static int map_land_mass(dw_map *map, uint8_t x, uint8_t y,
 {
     int size = 1;
 
-    if (x >= 120 || y >= 120)
+    if (map_ob(x) || map_ob(y))
         return 0;
 
     if (map->walkable[x][y])
@@ -333,6 +372,8 @@ max_candidates:
  *      or may be zero to indicate no mass.
  * @param x A pointer to a uint8_t which will be filled with the x coordinate
  * @param y A pointer to a uint8_t which will be filled with the y coordinate
+ * @param ignore_vanilla A boolean indicating this function should assume the
+ *  RANDOM_MAP flag is on.
  */
 static void map_find_land(dw_map *map, int one, int two, uint8_t *x, uint8_t *y,
         BOOL ignore_vanilla)
@@ -415,9 +456,9 @@ static dw_border_tile place(dw_map *map, dw_warp_index warp_idx, dw_tile tile,
 static void place_charlock(dw_map *map, int largest, int next)
 {
 
-        uint8_t x = 0, y = 0;
-        int  i, j;
-        dw_warp *warp;
+    uint8_t x = 0, y = 0;
+    int  i, j;
+    dw_warp *warp;
 
     if (!RANDOM_MAP(map)) {
         map->rainbow_drop->x = x = 65;
@@ -465,10 +506,10 @@ static void place_charlock(dw_map *map, int largest, int next)
 /**
  * Places tantegel castle on the map and updates the appropriate code to match
  * (return, wings, Gwaelin's Love, etc)
- * @param map
- * @param largest
- * @param next
- * @return
+ * @param map The map struct
+ * @param largest The largest land mass
+ * @param next The next largest land mass
+ * @return A uint8_t indicating which land mass the castle was placed on.
  */
 static uint8_t place_tantegel(dw_map *map, int largest, int next)
 {
@@ -515,7 +556,6 @@ static uint8_t place_tantegel(dw_map *map, int largest, int next)
 static int map_fill_point(dw_map *map, uint8_t **points,
         uint8_t x, uint8_t y, dw_tile tile)
 {
-
     if (x >= 120 || y >= 120)
         return 0;
 
@@ -543,12 +583,18 @@ static void map_fill(dw_map *map, dw_tile tile)
     uint8_t x, y, *points, *p, *points_orig;
     uint64_t directions;
     int size;
+    int min, max;
+    
+    min = (120 - map->size) / 2;
+    max = 120 - min;
+    int max_fill_blob = map->size * 128;
 
-    points_orig = p = points = malloc(MAX_FILL_BLOB * 4 + 1);
-    memset(p, 0xff, MAX_FILL_BLOB * 4 + 1);
-    p[0] = mt_rand(0, 119);
-    p[1] = mt_rand(0, 119);
-    size = mt_rand(MAX_FILL_BLOB/4, MAX_FILL_BLOB);
+
+    points_orig = p = points = malloc(max_fill_blob * 4 + 1);
+    memset(p, 0xff, max_fill_blob * 4 + 1);
+    p[0] = mt_rand(min, max-1);
+    p[1] = mt_rand(min, max-1);
+    size = mt_rand(max_fill_blob/4, max_fill_blob);
 
     while (size > 0) {
         x = p[0]; y=p[1];
@@ -600,8 +646,6 @@ static inline void find_largest_lm(int *lm_sizes, int lm_count,
     if (lm_sizes[(*next)-1] < MIN_LM_SIZE) {
         *next = *largest;
     }
-//    printf("Largest: %d(%d), Next: %d(%d)\n", *largest, lm_sizes[(*largest)-1],
-//           *next, lm_sizes[(*next)-1]);
 }
 
 /**
@@ -624,7 +668,7 @@ static int find_walkable_area(dw_map *map, int *lm_sizes, int *largest,
         for (x=0; x < 120; x++) {
             if (!map->walkable[x][y] && tile_is_walkable(map->tiles[x][y])) {
                 lm_sizes[land_mass] = 
-                        map_land_mass(map, x, y, land_mass+1);
+                        map_land_mass_2(map, x, y, land_mass+1);
                 land_mass++;
             }
         }
@@ -680,7 +724,7 @@ static BOOL need_rimuldar(dw_map *map)
     warp = map->warps_from[WARP_TANTEGEL_BASEMENT];
     if (warp.map == 1) {
         lm = map->walkable[warp.x][warp.y];
-        if (lm == tantegel_lm && map->have_keys & KEY_IN_BASEMENT) {
+        if (lm == tantegel_lm && map->key_access & KEY_IN_BASEMENT) {
             return FALSE;
         }
     }
@@ -688,7 +732,7 @@ static BOOL need_rimuldar(dw_map *map)
     warp = map->warps_from[WARP_ERDRICKS_CAVE];
     if (warp.map == 1) {
         lm = map->walkable[warp.x][warp.y];
-        if (lm == tantegel_lm && map->have_keys & KEY_IN_TABLET) {
+        if (lm == tantegel_lm && map->key_access & KEY_IN_TABLET) {
             return FALSE;
         }
     }
@@ -696,7 +740,7 @@ static BOOL need_rimuldar(dw_map *map)
     warp = map->warps_from[WARP_MOUNTAIN_CAVE];
     if (warp.map == 1) {
         lm = map->walkable[warp.x][warp.y];
-        if (lm == tantegel_lm && map->have_keys & KEY_IN_MOUNTAIN) {
+        if (lm == tantegel_lm && map->key_access & KEY_IN_MOUNTAIN) {
             return FALSE;
         }
     }
@@ -704,7 +748,7 @@ static BOOL need_rimuldar(dw_map *map)
     warp = map->warps_from[WARP_GARINS_GRAVE];
     if (warp.map == 1) {
         lm = map->walkable[warp.x][warp.y];
-        if (lm == tantegel_lm && map->have_keys & KEY_IN_GRAVE) {
+        if (lm == tantegel_lm && map->key_access & KEY_IN_GRAVE) {
             return FALSE;
         }
     }
@@ -831,6 +875,11 @@ static BOOL place_landmarks(dw_map *map)
     return TRUE;
 }
 
+/**
+ * Randomly adds a river to the overworld map
+ *
+ * @param map The map struct.
+ */
 static void map_add_river(dw_map *map) {
     int x, y, maindir, dir;
 
@@ -887,24 +936,12 @@ static void check_keys(dw_rom *rom)
 
     printf("Checking for key availability...\n");
     chest_end = rom->chests + CHEST_COUNT;
-    rom->map.have_keys = 0;
 
     for ( chest = rom->chests; chest < chest_end; chest++) {
         if (chest->item == KEY) {
             switch(chest->map) {
-                case 12:
-                    rom->map.have_keys |= KEY_IN_BASEMENT;
-                    break;
-                case 29:
-                    rom->map.have_keys |= KEY_IN_TABLET;
-                    break;
-                case 22:
-                case 23:
-                    rom->map.have_keys |= KEY_IN_MOUNTAIN;
-                    break;
-                case 24:
-                    rom->map.have_keys |= KEY_IN_GRAVE;
-                default:
+                case TANTEGEL_BASEMENT:
+                    rom->map.key_access |= KEY_IN_BASEMENT;
                     break;
             }
         }
@@ -917,12 +954,25 @@ static void check_keys(dw_rom *rom)
  * @param rom The rom struct
  * @return A boolean indicating whether terrain generation was successful or not
  */
-BOOL map_generate_terrain(dw_rom *rom)
+void map_generate_terrain(dw_rom *rom)
 {
     int i, j, x, y, lm_sizes[256];
     int largest, next, total_area;
 
     check_keys(rom);
+
+    if (SMALL_MAP(rom)) {
+        printf("Generating a small map\n");
+        rom->map.size = 90;
+    } else if (VERY_SMALL_MAP(rom)) {
+        printf("Generating a very small map\n");
+        rom->map.size = 60;
+    } else {
+        printf("Generating a normal size map\n");
+        rom->map.size = 120;
+    }
+
+retry_map:
     if (!RANDOM_MAP(rom)) {
 
         map_decode(&rom->map);
@@ -946,6 +996,7 @@ BOOL map_generate_terrain(dw_rom *rom)
         };
 
         if (BIG_SWAMP(rom)) {
+            printf("Adding more swamp...\n");
             tiles[0] = tiles[1] = tiles[4] = tiles[8] = tiles[9] = TILE_SWAMP;
         }
 
@@ -953,7 +1004,7 @@ BOOL map_generate_terrain(dw_rom *rom)
         memset(rom->map.tiles, TILE_WATER, 120 * 120);
 
         /* now fill it in with some other tiles */
-        for (i = 0; i < FILL_ITERATIONS; i++) {
+        for (i = 0; i < rom->map.size / 10; i++) {
             mt_shuffle(tiles, sizeof(tiles) / sizeof(dw_tile), sizeof(dw_tile));
             for (j = 0; j < 16; j++) {
                 map_fill(&rom->map, tiles[j]);
@@ -973,9 +1024,10 @@ BOOL map_generate_terrain(dw_rom *rom)
         total_area = lm_sizes[largest - 1];
         if (largest != next)
             total_area += lm_sizes[next - 1];
-        if (total_area < MIN_WALKABLE) {
-            printf("Total map area is too small, retrying...\n");
-            return FALSE;
+        if (total_area < rom->map.size * 42) {
+            printf("Total map area (%d) is too small, retrying...\n",
+                    total_area);
+            goto retry_map;
         }
 
         while (add_bridges(&rom->map)) {
@@ -985,14 +1037,15 @@ BOOL map_generate_terrain(dw_rom *rom)
 
     find_walkable_area(&rom->map, lm_sizes, &largest, &next);
     if (!place_landmarks(&rom->map)) {
-        return FALSE;
+        goto retry_map;
     }
 
     /* place the token */
     find_walkable_area(&rom->map, lm_sizes, &largest, &next);
-    map_find_land(&rom->map, largest, next, &rom->token->x, &rom->token->y,
-            TRUE);
+    map_find_land(&rom->map, largest, next, &rom->search_table->x[0],
+            &rom->search_table->y[0], TRUE);
 
-    return map_encode(&rom->map);
+    if (!map_encode(&rom->map))
+        goto retry_map;
 }
 

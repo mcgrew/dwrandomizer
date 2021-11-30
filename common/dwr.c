@@ -1,19 +1,30 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
+#include <assert.h>
+#include <time.h>
 
 #include "dwr.h"
 #include "patch.h"
 #include "chaos.h"
 #include "map.h"
+#include "dungeon_maps.h"
+#include "stair_shuffle.h"
+#include "chests.h"
 #include "challenge.h"
 #include "crc64.h"
 #include "mt64.h"
 #include "polyfit.h"
+#include "base32.h"
+#include "sprites.h"
+#include "expansion.h"
+#include "credit_music.h"
 
+/** Pretty sure these aren't used any more.  */
 const char *prg0sums[8] = {
       "6a50ce57097332393e0e8751924fd56456ef083c", /* Dragon Warrior (U) (PRG0) [!].nes      */
       "66330df6fe3e3c85adb8183721e5f88c149e52eb", /* Dragon Warrior (U) (PRG0) [b1].nes     */
@@ -24,21 +35,29 @@ const char *prg0sums[8] = {
       "3077d5bd5c5c3744398b122d5ee1bba7055c8d45", /* Dragon Warrior (U) (PRG0) [o3].nes     */
       NULL
 };
+/** Pretty sure these aren't used any more.  */
 const char *prg1sums[2] = {
       "1ecc63aaac50a9612eaa8b69143858c3e48dd0ae", /* Dragon Warrior (U) (PRG1) [!].nes      */
       NULL
 };
 
 
-/* The [ and ] are actually opening/closing quotes. The / is .' */
+/* The [ and ] are actually opening/closing quotes. The / is .'. = is .. */
 const char alphabet[] = "0123456789abcdefghijklmnopqrstuvwxyz"
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ[]'*>_:__.,-_?!;)(``/'___________  ";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ[]'*>_:=_.,-_?!;)(``/'___________ \n";
 
 const char title_alphabet[] = "0123456789__________________________"
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ__________________________________!.c-     ";
 
-const char flag_order[] =
-        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+/**
+ * Returns the version number. Mosltly for use with emscripten.
+ *
+ * @return The version number
+ */
+const char *version()
+{
+    return VERSION;
+}
 
 /**
  * A function to be passed to qsort for sorting uint8_t arrays
@@ -55,28 +74,23 @@ static int compare(const void *a, const void *b)
 }
 
 /**
- * Parses the flags string into a 64-bit integer, one bit indicating the status
- * of each flag.
+ * Updates the "maybe" flags to be either on or off
  *
- * @param rom A dw_rom struct containing the rom data.
- * @param flags The flags from the user
- * @return A 64-bit integer containing the flags
  */
-static uint64_t parse_flags(dw_rom *rom, char *flags)
+static void update_flags(dw_rom *rom)
 {
-    int i, len;
-    char *order;
+    size_t i;
+    uint8_t tmp;
 
-    len = strlen(flags);
-    qsort(flags, len, sizeof(char), &compare);
-    rom->flags = 0;
-    for (i=0; i < len; i++) {
-        order = strchr(flag_order, flags[i]);
-        if (order) {
-            rom->flags |= UINT64_C(1) << (order - flag_order);
-        }
+    /* The last 2 bytes do not contain maybe flags. */
+    for (i=0; i < 13; i++) {
+        rom->flags[i] |= (rom->flags[i] >> 1) & 0x55 & mt_rand(0, 0xff);
+        rom->flags[i] &= 0x55;
     }
-    return rom->flags;
+    if (RANDOM_MAP_SIZE(rom) == 0xc0) {
+        rom->flags[13] &= 0x3f;
+        rom->flags[13] |= mt_rand(0, 2) << 6;
+    }
 }
 
 /**
@@ -87,13 +101,16 @@ static uint64_t parse_flags(dw_rom *rom, char *flags)
  * @param flags The flags received from the user.
  * @return A boolean indicating whether initialization was sucessful
  */
-BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
+static BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
 {
     FILE *input;
     int read;
 
     rom->header = malloc(ROM_SIZE);
-    memset(rom->header, 0, ROM_SIZE);
+    memset(rom->header, 0xff, ROM_SIZE);
+    rom->expansion = (uint8_t*)malloc(0x10000);
+    memset(rom->expansion, 0xff, 0x10000);
+
     input = fopen(input_file, "rb");
     if (!input) {
         fprintf(stderr, "Unable to open ROM file '%s'", input_file);
@@ -109,7 +126,14 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     fclose(input);
 
     rom->content = &rom->header[0x10];
-    rom->map.flags = parse_flags(rom, flags);
+    strncpy((char *)rom->flags_encoded, flags, 24);
+    rom->flags_encoded[24] = '\0'; /* Make sure it's null terminated */
+    rom->map.flags = rom->flags;
+    memset(rom->flags, 0, 15);
+    base32_decode(rom->flags_encoded, rom->flags);
+    update_flags(rom);
+
+    rom->map.chest_access = rom->chest_access;
     /* subtract 0x9d5d from these pointers */
     rom->map.pointers = (uint16_t*)&rom->content[0x2653];
     rom->map.encoded = &rom->content[0x1d5d];
@@ -121,26 +145,14 @@ BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->map.rainbow_drop = (dw_rainbow_drop*)&rom->content[0xde8b];
     rom->map.rainbow_bridge = (dw_rainbow_drop*)&rom->content[0x2c3b];
     rom->stats = (dw_stats*)&rom->content[0x60cd];
-    rom->new_spells = (dw_new_spell*)&rom->content[0xeae8];
     rom->mp_reqs = &rom->content[0x1d53];
     rom->xp_reqs = (uint16_t*)&rom->content[0xf35b];
     rom->enemies = (dw_enemy*)&rom->content[0x5e4b];
     rom->zones = &rom->content[0xf54f];
     rom->zone_layout = &rom->content[0xf522];
     rom->chests = (dw_chest*)&rom->content[0x5dcd];
-    rom->axe_knight = (dw_forced_encounter*)&rom->content[0xcd51];
-    rom->green_dragon = (dw_forced_encounter*)&rom->content[0xcd68];
-    rom->golem = (dw_forced_encounter*)&rom->content[0xcd85];
-    rom->axe_knight_run = (dw_forced_encounter*)&rom->content[0xe8d4];
-    rom->green_dragon_run = (dw_forced_encounter*)&rom->content[0xe8fb];
-    rom->golem_run = (dw_forced_encounter*)&rom->content[0xe928];
-    rom->encounter_types[0] = &rom->content[0xcd64];
-    rom->encounter_types[1] = &rom->content[0xcd81];
-    rom->encounter_types[2] = &rom->content[0xcd9e];
-    // FIXME: these should be removed or modified for the new treasure code.
-    rom->token = (dw_searchable*)&rom->content[0xe10b];
-    rom->flute = (dw_searchable*)&rom->content[0xe12a];
-    rom->armor = (dw_searchable*)&rom->content[0xe140];
+    rom->spike_table = (dwr_spike_table*)&rom->content[0xcd7a];
+    rom->search_table = (dwr_search_table*)&rom->content[0xe136];
     rom->repel_table = &rom->content[0xf4fa];
     rom->weapon_shops = &rom->content[0x1991];
     rom->weapon_prices = (uint16_t*)&rom->content[0x1947];
@@ -170,8 +182,6 @@ size_t ascii2dw(uint8_t *string)
             if (string[i] == alphabet[j]) {
                 string[i] = j;
                 break;
-            } else if (j == alphalen-1) {
-                string[i] = 0x5f;
             }
         }
     }
@@ -242,6 +252,20 @@ size_t dw2ascii(uint8_t *string, size_t bufsize)
     return bufsize;
 }
 
+uint16_t set_text(dw_rom *rom, const size_t address, char *text)
+{
+    size_t size = strlen(text);
+    uint8_t *translated = malloc(size+1);
+    uint16_t patch_end;
+
+    strcpy((char *)translated, text);
+    ascii2dw(translated);
+    patch_end = patch(rom, address, strlen(text), translated);
+    free(translated);
+    return patch_end;
+}
+
+
 /**
  * Searches for a string inside the rom and replaces it with the new string
  *
@@ -251,429 +275,48 @@ size_t dw2ascii(uint8_t *string, size_t bufsize)
  * @return returns a pointer to the beginning of the string that was replaced,
  *      or NULL if the string is not found.
  */
-static uint8_t *dwr_str_replace(dw_rom *rom, const char *text,
-                                const char *replacement)
-{
-    int len;
-    uint8_t *start, *end;
-    char dw_text[256], dw_repl[256];
-
-    len = strlen(text);
-    if (!len)
-        return NULL;
-    end = &rom->content[ROM_SIZE - len - 0x10];
-
-    strncpy(dw_text, text, 256);
-    strncpy(dw_repl, replacement, 256);
-    ascii2dw((unsigned char *)dw_text);
-    ascii2dw((unsigned char *)dw_repl);
-
-    for (start = rom->content; start < end; start++) {
-        if (!memcmp(start, dw_text, len)) {
-            memcpy(start, dw_repl, len);
-            return start;
-        }
-    }
-    return NULL;
-}
-
-/**
- * Returns a random index of a chest that is not in charlock. For simplicity,
- * this function will also not return the starting throne room key chest.
- */
-static inline int non_charlock_chest()
-{
-    int chest;
-
-    chest = (int)mt_rand(0, 22);
-    /* avoid 11-16 and chest 24 (they are in charlock) */
-    if (chest >= 6) chest += 1; /* chest 6 is the throne room key */
-    if (chest >= 11) chest += 6;
-    if (chest >= 24) chest += 1;
-    return chest;
-}
-
-/**
- * Determines whether or not the chest item is a quest item.
- *
- * @param item The item member of a chest
- * @return A boolean indicated whether or not the item is crucial for the quest
- *      to obtain the rainbow drop.
- */
-static inline BOOL is_quest_item(uint8_t item)
-{
-    switch(item) {
-        case TOKEN:
-        case STONES:
-        case HARP:
-        case STAFF:
-            return TRUE;
-        default:
-            return FALSE;
-    }
-}
-
-/**
- * Looks for quest items which may be in Charlock due to shuffling and moves
- * them to a chest outside Charlock.
- *
- * @param rom The rom struct.
- */
-static inline void check_quest_items(dw_rom *rom)
-{
-    int i, tmp_index;
-    uint8_t tmp_item;
-
-    printf("Checking quest item placement...\n");
-
-    for (i=1; i <= 30; i++) {
-        if (rom->chests[i].map == CHARLOCK_THRONE_ROOM ||
-                rom->chests[i].map == CHARLOCK_CAVE_2) {
-
-            if (is_quest_item(rom->chests[i].item)) {
-                do {
-                    tmp_index = non_charlock_chest();
-                } while (is_quest_item(rom->chests[tmp_index].item));
-                tmp_item = rom->chests[tmp_index].item;
-                rom->chests[tmp_index].item = rom->chests[i].item;
-                rom->chests[i].item = tmp_item;
-            }
-        }
-    }
-}
-
+// static uint8_t *dwr_str_replace(dw_rom *rom, const char *text,
+//                                 const char *replacement)
+// {
+//     int len;
+//     uint8_t *start, *end;
+//     char dw_text[256], dw_repl[256];
+// 
+//     len = strlen(text);
+//     if (!len)
+//         return NULL;
+//     end = &rom->content[ROM_SIZE - len - 0x10];
+// 
+//     strncpy(dw_text, text, 256);
+//     strncpy(dw_repl, replacement, 256);
+//     ascii2dw((unsigned char *)dw_text);
+//     ascii2dw((unsigned char *)dw_repl);
+// 
+//     for (start = rom->content; start < end; start++) {
+//         if (!memcmp(start, dw_text, len)) {
+//             memcpy(start, dw_repl, len);
+//             return start;
+//         }
+//     }
+//     return NULL;
+// }
+// 
 /**
  * Patches the game to allow the use of torches and fairy water in battle
  *
  * @param rom The rom struct
  */
 static void torch_in_battle(dw_rom *rom) {
-    /* change the jump address in the item use code */
 
     if (!TORCH_IN_BATTLE(rom))
         return;
 
     printf("Making torches and fairy water more deadly...\n");
     /* patch the jump address */
-    vpatch(rom, 0x0e87d,   2, 0x75, 0xc4);
-
-    vpatch(rom, 0x0c475, 71,
-        0xc9, 0x04,
-        0xd0, 0x2a,
-        0xa9, 0x01,
-        0x20, 0x4b, 0xe0,
-        0x20, 0xc5, 0xc7,
-        0x29,
-        0xa5, 0xe0,
-        0xc9, 0x10,
-        0xd0, 0x0f,
-        0x20, 0x5b, 0xc5,
-        0xa5,
-        0x95, 0x29, 0x01,
-        0xd0, 0x03,
-        0x4c, 0x58, 0xe6,
-        0x4c, 0x94, 0xe6,
-        0x20, 0x5b, 0xc5,
-        0xa5, 0x95,
-        0x29, 0x03,
-        0x69, 0x06,
-        0x4c, 0x94, 0xe6,
-        0xc9, 0x05,
-        0xd0, 0x12,
-        0xa9, 0x02,
-        0x20, 0x4b, 0xe0,
-        0x20, 0xc5, 0xc7,
-        0x2a,
-        0xa5, 0xe0,
-        0xc9, 0x10,
-        0xf0, 0xd2,
-        0x4c, 0x44, 0xe7,
-        0x4c, 0xfd, 0xe6
-    );
-
-    vpatch(rom, 0x0bc6c, 68,
-     /* NAME           h     u     r     l     e     d           a        */
-        0xf8, 0x5f, 0x11, 0x1e, 0x1b, 0x15, 0x0e, 0x0d, 0x5f, 0x0a, 0x5f,
-    /*     t     o     r     c     h           a     t           t     h  */
-        0x1d, 0x18, 0x1b, 0x0c, 0x11, 0x5f, 0x0a, 0x1d, 0x5f, 0x1d, 0x11,
-    /*     e        ENMY     !   END                                      */
-        0x0e, 0x5f, 0xf4, 0x4c, 0xfc,
-    /*  NAME           s     p     r     i     n     k     l     e     d  */
-        0xf8, 0x5f, 0x1c, 0x19, 0x1b, 0x12, 0x17, 0x14, 0x15, 0x0e, 0x0d,
-    /*           f     a     i     r     y           w     a     t     e  */
-        0x5f, 0x0f, 0x0a, 0x12, 0x1b, 0x22, 0x5f, 0x20, 0x0a, 0x1d, 0x0e,
-    /*     r           o     n           t     h     e        ENMY     .  */
-        0x1b, 0x5f, 0x18, 0x17, 0x5f, 0x1d, 0x11, 0x0e, 0x5f, 0xf4, 0x47,
-    /*  END                                                               */
-        0xfc,
-
-        /* pad the end */
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
-
-}
-
-/**
- * Patches the game code to allow Erdrick's Armor to be in a chest and other
- * items to be found on "searchable" spots
- *
- * @param rom The rom struct
- */
-static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
-{
-    /* patch a few branch addresses */
-    vpatch(rom, 0x0e110,    1,  0x19);
-    vpatch(rom, 0x0e116,    1,  0x13);
-    vpatch(rom, 0x0e11c,    1,  0x0d);
-    vpatch(rom, 0x0e231,    1,  0x55);
-    vpatch(rom, 0x0e23b,    1,  0x55);
-    vpatch(rom, 0x0e26a,    1,  0x55);
-    vpatch(rom, 0x0e2ad,    1,  0x55);
-    vpatch(rom, 0x0e378,    1,  0x55);
-
-    /* new "SEARCH" code */
-    vpatch(rom, 0x0e11d,  109,
-        0xa9, items[0],   /*   lda item0                                      */
-        0xf0, 0x09,       /*   beq +                                          */
-        0x48,             /* - pha                                            */
-        0xa9, 0xff,       /*   lda #$ff                                       */
-        0x85, 0x0e,       /*   sta $0e                                        */
-        0x68,             /*   pla                                            */
-        0x4c, 0x24, 0xe2, /*   jmp $e224                                      */
-        0xa5, 0x45,       /* + lda $45     ; Load the current map             */
-        0xc9, 0x07,       /*   cmp #$07    ; Is this Kol?                     */
-        0xd0, 0x10,       /*   bne +                                          */
-        0xa5, 0x3a,       /*   lda $3a     ; Load the X coordinate            */
-        0xc9, 0x09,       /*   cmp #$09    ; Is it 9?                         */
-        0xd0, 0x0a,       /*   bne +                                          */
-        0xa5, 0x3b,       /*   lda $3b     ; Load the Y coordinate            */
-        0xc9, 0x06,       /*   cmp #$06    ; Is it 6?                         */
-        0xd0, 0x04,       /*   bne +                                          */
-        0xa9, items[1],   /*   lda item1                                      */
-        0xd0, 0xe1,       /*   bne -                                          */
-        0xa5, 0x45,       /* + lda $45     ; Load the current map             */
-        0xc9, 0x03,       /*   cmp #$03    ; Is this Hauksness?               */
-        0xd0, 0x44,       /*   bne $e18c                                      */
-        0xa5, 0x3a,       /*   lda $3a     ; Load the X coordinate            */
-        0xc9, 0x12,       /*   cmp #$12    ; is it 18?                        */
-        0xd0, 0x3e,       /*   bne $e18c                                      */
-        0xa5, 0x3b,       /*   lda $3b    ; Load the Y coordinate             */
-        0xc9, 0x0c,       /*   cmp #$0c   ; Is it 13?                         */
-        0xd0, 0x38,       /*   bne $e13a                                      */
-        0xa9, items[2],   /*   lda item2                                      */
-        0xd0, 0xcb,       /*   bne -                                          */
-        0xf0, 0x32,       /*   beq $e18c  ; Go on to next search location     */
-
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
-    );
-
-    /* new "TAKE" code */
-    vpatch(rom, 0x0e2ea, 123,
-        0xc9, 0x01,       /*   cmp #$01        ; Is it the armor?             */
-        0xd0, 0x1b,       /*   bne +                                          */
-        0xa5, 0xbe,       /*   lda $be         ; Load the equipment byte      */
-        0x29, 0x1c,       /*   and #$1c        ; See if we have the armor     */
-        0xc9, 0x1c,       /*   cmp #$1c                                       */
-        0xf0, 0x4f,       /*   beq chest_empty ; The chest is empty           */
-        0xa5, 0xbe,       /*   lda $be         ; Load the equipment byte      */
-        0x09, 0x1c,       /*   ora #$1c        ; Add the armor                */
-        0x85, 0xbe,       /*   sta $be         ; Save it                      */
-        0x20, 0x55, 0xe3, /*   jsr take_content                               */
-        0xa9, 0x28,       /*   lda #$28                                       */
-        0x20, 0xf0, 0xdb, /*   jsr $dbf0       ; "You got the armor"          */
-        0xa9, 0xd5,       /*   lda #$d5                                       */
-        0x4c, 0x42, 0xd2, /*   jmp finish_text                                */
-        0xc9, 0x08,       /* + cmp #$08    ; If it's not the flute.           */
-        0xd0, 0x0b,       /*   bne +       ; Jump to the next check           */
-        0xa9, 0x05,       /*   lda #$05    ; Load the flute inventory value   */
-        0x20, 0x55, 0xe0, /*   jsr $e055   ; Jump to inventory check          */
-        0xc9, 0xff,       /*   cmp #$ff    ; If return value is $ff (found)   */
-        0xd0, 0x2f,       /*   bne chest_empty ; The chest is empty           */
-        0xa9, 0x08,       /*   lda #$08    ; Reset the flute chest value      */
-        0xc9, 0x0a,       /* + cmp #$0a    ; If it's not the token            */
-        0xd0, 0x14,       /*   bne +       ; Jump to the next check           */
-        0xa9, 0x07,       /*   lda #$07    ; Load the token inventory value   */
-        0x20, 0x55, 0xe0, /*   jsr #$e055  ; Jump to inventory check          */
-        0xc9, 0xff,       /*   cmp #$ff    ; If return value is $ff (found)   */
-        0xd0, 0x20,       /*   bne chest_empty ; The chest is empty           */
-        0xa9, 0x0e,       /*   lda #$0a    ; Reset the token chest value      */
-        0x20, 0x55,  0xe0,
-        0xc9, 0xff,
-        0xd0, 0x17,
-        0xa9, 0x0a,
-        0xc9, 0x11,       /* + cmp #$11    ; If value is >= $11               */
-        0xb0, 0x03,       /*   bcs +       ; Jump to the next check           */
-        0x4c, 0x69, 0xe2, /*   jmp B3_e269 ; Add the item to the inventory    */
-        0xa9, 0xff,       /* + lda #$ff    ;                                  */
-        0x85, 0x3e,       /*   sta $3e     ;                                  */
-        0xa9, 0xf4,       /*   lda #$f4    ;                                  */
-        0x85, 0x00,       /*   sta $00     ;                                  */
-        0xa9, 0x01,       /*   lda #$01    ;                                  */
-        0x85, 0x01,       /*   sta $01     ;                                  */
-        0xd0, 0x20,
-        0xa5, 0x0e,
-        0xc9, 0xff,
-        0xa9, 0x00,
-        0x85, 0x0e,
-        0xb0, 0x03,
-        0x4c, 0xa3, 0xe2,
-        0x4c, 0xc8, 0xe1,
-        0xa5, 0x0e,
-        0xc9, 0xff,
-        0xa9, 0x00,
-        0x85, 0x0e,
-        0xb0, 0x66,
-        0xf0, 0x39,
-
-        0xff, 0xff, 0xff, 0xff);
-}
-
-/**
- * Determines if a chest should be left alone when randomizing
- *
- * @param chest The chest to be checked
- */
-static inline BOOL is_static_chest(dw_chest *chest)
-{
-    return (chest->map == TANTEGEL_THRONE_ROOM && chest->item == KEY) ||
-                    chest->item == STAFF;
-}
-
-/**
- * Called when the player chooses not to shuffle items in chests. This sets
- * them to items found in the original game with a few exceptions:
- *   All gold chests aside from 500-755 gold no longer exist, so are replaced
- *     with big gold chests
- *   The tablet no longer exists, so is replaced with a Dragon's Scale
- *
- * @param rom The rom struct
- */
-static void no_chest_shuffle(dw_rom *rom)
-{
-    size_t i;
-    dw_chest *chest;
-    uint8_t contents[] = {
-            /* Tantegel */
-            GOLD, GOLD, GOLD, GOLD, GOLD, TORCH,
-            /* Rimuldar */
-            WINGS,
-            /* Garinham */
-            GOLD, HERB, TORCH,
-            /* Charlock Throne */
-            HERB, GOLD, WINGS, KEY, CURSED_BELT, HERB,
-            /* Tantegel basement */
-            STONES,
-            /* Garin's Grave */
-            HERB, GOLD, GOLD, CURSED_BELT, HARP,
-            /* Charlock dungeon */
-            SWORD,
-            /* Mountain Cave */
-            NECKLACE, TORCH, RING, GOLD, HERB,
-            /* Tablet cave (there is no longer a tablet in the game) */
-            DRAGON_SCALE
-    }, *cont = contents;
-    uint8_t  search_items[] = {
-           TOKEN, FLUTE, ARMOR
-    };
-    if (NO_NUMBERS(rom) || THREES_COMPANY(rom)) {
-        contents[28] = TOKEN;
-        search_items[0] = 0;
-    }
-
-    rewrite_search_take_code(rom, search_items);
-    chest = rom->chests;
-    for (i=0; i < CHEST_COUNT; i++) {
-        /* don't move the staff or starting key */
-        if (is_static_chest(chest)) {
-            chest++;
-            continue;
-        }
-        (chest++)->item = *(cont++);
-    }
-}
-
-/**
- * Shuffles the contents of all chests in the game with the exception of the
- * starting throne room key and the staff of rain.
- *
- * @param rom The rom struct
- */
-static void shuffle_chests(dw_rom *rom)
-{
-    size_t i;
-    dw_chest *chest;
-    uint8_t contents[] = {
-            GOLD, GOLD, GOLD, GOLD,
-            CURSED_BELT, CURSED_BELT, CURSED_BELT,
-            GOLD, GOLD, GOLD, GOLD, GOLD, GOLD,
-            WINGS, WINGS,
-            KEY, KEY, KEY,
-            HERB, HERB, HERB, HERB,
-            TORCH, TORCH, TORCH,
-            FAIRY_WATER, FAIRY_WATER,
-            DRAGON_SCALE, RING
-    }, *cont = contents;
-    uint8_t  key_items[] = {
-            SWORD, ARMOR, NECKLACE, HARP, STONES, FLUTE, TOKEN
-    }, *key_item = key_items;
-    uint8_t search_items[] = { 0, 0, 0 };
-
-    if (!SHUFFLE_CHESTS(rom))
-        return no_chest_shuffle(rom);
-
-    mt_shuffle(key_items, sizeof(key_items), sizeof(uint8_t));
-
-    for (i=0; i < 3; i++) {
-        /* If "No Numbers" is turned on, don't put anything on the overworld */
-        if (NO_NUMBERS(rom) && !i) {
-            /* If curse princess is on, add an extra cursed belt to make sure 
-             * there are three */
-            if (CURSED_PRINCESS(rom)) {
-                contents[7] = CURSED_BELT;
-            }
-            continue;
-        }
-
-        /* fill in the search spots with a 80% chance unless cursed princess */
-        /* is on, then always place to maximize cursed belts. */
-        if (mt_rand(0, 4) || CURSED_PRINCESS(rom)) {
-            /* If we're putting something on the overworld and cursed princess
-             * is on, make sure it's not vital */
-            while (!i && THREES_COMPANY(rom) && is_quest_item(key_items[0])) {
-                mt_shuffle(key_items, sizeof(key_items), sizeof(uint8_t));
-            }
-            search_items[i] = *(key_item++);
-        }
-    }
-    rewrite_search_take_code(rom, search_items);
-
-    while (key_item < (key_items + sizeof(key_items))) {
-        /* overwite cursed belts with the remaining key items */
-        *cont = *key_item++; 
-        cont++;
-    }
-
-    printf("Shuffling chest contents...\n");
-    cont = contents;
-    chest = rom->chests;
-
-    /* shuffle the contents and place them in chests */
-    mt_shuffle(contents, sizeof(contents), sizeof(uint8_t));
-    chest = rom->chests;
-    cont = contents;
-    for (i=0; i < CHEST_COUNT; i++) {
-        /* don't move the staff or starting key */
-        if (is_static_chest(chest)) {
-            chest++;
-            continue;
-        }
-        (chest++)->item = *(cont++);
-    }
-
-    check_quest_items(rom);
+    add_hook(rom, JMP, 0xe87c, TORCH_IN_BATTLE);
+    set_text(rom, 0xbc6c, "\xf8 hurled a torch at the \xf4!\xfc"
+            "\xf8 sprinkled fairy water on the \xf4.\xfc"
+            "\xff\xff\xff\xff\xff\xff\xff");
 }
 
 /**
@@ -877,10 +520,6 @@ static void randomize_zones(dw_rom *rom)
     for (i=0; i < 5; i++) {
         rom->zones[zone * 5 + i] = mt_rand(SLIME, RED_DRAGON);
     }
-
-    for (i=0; i < 3; i++) { /* randomize the forced encounters */
-        *rom->encounter_types[i] = charlock_enemies[mt_rand(4, 9)];
-    }
 }
 
 /**
@@ -913,35 +552,30 @@ static void randomize_shops(dw_rom *rom)
 {
     uint8_t *shop_start, *shop_item;
     int i, j, six_item_shop;
-    dw_shop_item items[15] = {
+    dw_shop_item items[] = {
             BAMBOO_POLE, CLUB, COPPER_SWORD, HAND_AXE, BROAD_SWORD, FLAME_SWORD,
             CLOTHES, LEATHER_ARMOR, CHAIN_MAIL, HALF_PLATE, FULL_PLATE,
-            MAGIC_ARMOR, SMALL_SHIELD, LARGE_SHIELD, SILVER_SHIELD
+            MAGIC_ARMOR, SMALL_SHIELD, LARGE_SHIELD, SILVER_SHIELD,
     };
+    size_t item_counts[] = { 5, 5, 5, 5, 5, 5, 5 };
 
     if (!RANDOMIZE_SHOPS(rom))
         return;
 
     printf("Randomizing weapon shop inventory...\n");
 
-    six_item_shop = mt_rand(0, 6);
+    /* make one weapon shop have 6 items */
+    item_counts[mt_rand(0, 6)] = 6;
     shop_item = rom->weapon_shops;
 
     for (i=0; i < 7; i++) {
         shop_start = shop_item;
-        for (j=0; j < 5; j++) {
+        for (j=0; j < item_counts[i]; j++) {
             while(shop_contains(shop_start, shop_item,
                     *shop_item = items[mt_rand(0, 14)])) {}
             shop_item++;
         }
-        if (i == six_item_shop) {
-            while(shop_contains(shop_start, shop_item,
-                    *shop_item = items[mt_rand(0, 14)])) {}
-            shop_item++;
-            qsort(shop_start, 6, sizeof(uint8_t), &compare);
-        } else {
-            qsort(shop_start, 5, sizeof(uint8_t), &compare);
-        }
+        qsort(shop_start, item_counts[i], sizeof(uint8_t), &compare);
         *(shop_item++) = SHOP_END;
     }
 }
@@ -965,10 +599,10 @@ static void randomize_growth(dw_rom *rom)
         printf("Randomizing stat growth...\n");
 
         for (i=0; i < 30; i++) {
-            hp[i] =  (uint8_t)polyfit(mt_rand_double_ranged(1,30), &hero_hp_fac);
+            hp[i] =  (uint8_t)polyfit(mt_rand_double_ranged(0,30), &hero_hp_fac);
             mp[i] =  (uint8_t)polyfit(mt_rand_double_ranged(0,30), &hero_mp_fac);
-            str[i] = (uint8_t)polyfit(mt_rand_double_ranged(1,30), &hero_str_fac);
-            agi[i] = (uint8_t)polyfit(mt_rand_double_ranged(1,30), &hero_agi_fac);
+            str[i] = (uint8_t)polyfit(mt_rand_double_ranged(0,30), &hero_str_fac);
+            agi[i] = (uint8_t)polyfit(mt_rand_double_ranged(0,30), &hero_agi_fac);
         }
 
         qsort(hp,  30, sizeof(uint8_t), &compare);
@@ -1002,12 +636,14 @@ static void randomize_growth(dw_rom *rom)
 
 /**
  * Randomizes the order in which spells are learned.
- * * @param rom The rom struct
+ *
+ * @param rom The rom struct
  */
 static void randomize_spells(dw_rom *rom)
 {
     int i, j, tmp;
     dw_stats *stats;
+    uint8_t spell_levels[HURTMORE+1];
 
     if (!RANDOMIZE_SPELLS(rom))
         return;
@@ -1016,19 +652,24 @@ static void randomize_spells(dw_rom *rom)
 
     /* choose levels for each spell */
     for (i=HEAL; i <= HURTMORE; i++) {
-        rom->new_spells[i].level = mt_rand(1, 16);
+        spell_levels[i] = mt_rand(1, 16);
     }
 
+    if (PERMANENT_REPEL(rom))
+        spell_levels[REPEL] = 255;
+    if (NO_HURTMORE(rom))
+        spell_levels[HURTMORE] = 255;
+
     if (HEAL_HURT_B4_MORE(rom)) {
-        if (rom->new_spells[HEAL].level > rom->new_spells[HEALMORE].level) {
-            tmp = rom->new_spells[HEAL].level;
-            rom->new_spells[HEAL].level = rom->new_spells[HEALMORE].level;
-            rom->new_spells[HEALMORE].level = tmp;
+        if (spell_levels[HEAL] > spell_levels[HEALMORE]) {
+            tmp = spell_levels[HEAL];
+            spell_levels[HEAL] = spell_levels[HEALMORE];
+            spell_levels[HEALMORE] = tmp;
         }
-        if (rom->new_spells[HURT].level > rom->new_spells[HURTMORE].level) {
-            tmp = rom->new_spells[HURT].level;
-            rom->new_spells[HURT].level = rom->new_spells[HURTMORE].level;
-            rom->new_spells[HURTMORE].level = tmp;
+        if (spell_levels[HURT] > spell_levels[HURTMORE]) {
+            tmp = spell_levels[HURT];
+            spell_levels[HURT] = spell_levels[HURTMORE];
+            spell_levels[HURTMORE] = tmp;
         }
     }
 
@@ -1036,13 +677,8 @@ static void randomize_spells(dw_rom *rom)
         stats = &rom->stats[i];
         stats->spells = 0;
         for (j=HEAL; j <= HURTMORE; j++) {
-            if ((j == REPEL && PERMANENT_REPEL(rom)) ||
-                (j == HURTMORE && NO_HURTMORE(rom))) {
-                rom->new_spells[j].level = 31; // this spell is never learned.
-                continue;
-            }
             /* spell masks are in big endian format */
-            if (rom->new_spells[j].level <= i+1) {
+            if (spell_levels[j] <= i+1) {
                 stats->spells |= 1 << (j + 8) % 16;
             }
         }
@@ -1059,18 +695,43 @@ static void randomize_spells(dw_rom *rom)
  */
 static void short_charlock(dw_rom *rom)
 {
+    dw_warp tmp;
     if (!SHORT_CHARLOCK(rom))
         return;
 
     printf("Shortening Charlock Castle...\n");
 
-    rom->map.warps_to[WARP_CHARLOCK].map = CHARLOCK_THRONE_ROOM;
-    rom->map.warps_to[WARP_CHARLOCK].x = 10;
-    rom->map.warps_to[WARP_CHARLOCK].y = 29;
-    rom->map.warps_from[WARP_CHARLOCK_CHEST].map = CHARLOCK_THRONE_ROOM;
-    rom->map.warps_from[WARP_CHARLOCK_CHEST].x = 18;
-    rom->map.warps_from[WARP_CHARLOCK_CHEST].y = 9;
-    vpatch(rom, 0x4c4, 1, 0x76); /* Add some downward stairs near the chests */
+    if (STAIR_SHUFFLE(rom)) {
+        /* swap these 2 warps */
+        tmp = rom->map.warps_to[WARP_CHARLOCK];
+        rom->map.warps_to[WARP_CHARLOCK] =
+                rom->map.warps_to[WARP_CHARLOCK_THRONE];
+        rom->map.warps_to[WARP_CHARLOCK_THRONE] = tmp;
+        /* make some map edits */
+        /* add stairs to the top floor */
+        set_dungeon_tile(rom, CHARLOCK, 10, 19, TOWN_TILE_STAIRS_DOWN);
+        /* remove stairs from the throne room */
+        set_dungeon_tile(rom, CHARLOCK_THRONE_ROOM, 10, 29, TOWN_TILE_BRICK);
+        rom->map.meta[CHARLOCK_THRONE_ROOM].border = BORDER_SWAMP;
+        rom->map.meta[CHARLOCK].border = BORDER_WATER;
+    } else {
+        /* swap these 2 warps */
+        tmp = rom->map.warps_to[WARP_CHARLOCK_SURFACE_1];
+        rom->map.warps_to[WARP_CHARLOCK_SURFACE_1] =
+                rom->map.warps_to[WARP_CHARLOCK_THRONE];
+        rom->map.warps_to[WARP_CHARLOCK_THRONE] = tmp;
+
+        /* swap these 2 warps */
+        tmp = rom->map.warps_to[WARP_CHARLOCK_SURFACE_2];
+        rom->map.warps_to[WARP_CHARLOCK_SURFACE_2] =
+                rom->map.warps_to[WARP_CHARLOCK_CHEST];
+        rom->map.warps_to[WARP_CHARLOCK_CHEST] = tmp;
+        if (RANDOM_CHEST_LOCATIONS(rom)) {
+            /* connect the first floor of the dungeon so it's accessible */
+            set_dungeon_tile(rom, CHARLOCK_CAVE_1,  8,  5, DUNGEON_TILE_BRICK);
+            set_dungeon_tile(rom, CHARLOCK_CAVE_1, 11, 14, DUNGEON_TILE_BRICK);
+        }
+    }
 }
 
 /**
@@ -1081,7 +742,6 @@ static void short_charlock(dw_rom *rom)
  */
 static void open_charlock(dw_rom *rom)
 {
-    // FIXME: this doesn't work with the new treasure code
     int i;
 
     if (!OPEN_CHARLOCK(rom))
@@ -1094,12 +754,10 @@ static void open_charlock(dw_rom *rom)
             rom->chests[i].item = GOLD;
         }
     }
-    if (is_quest_item(rom->token->item))
-            rom->token->item = 0;
-    if (is_quest_item(rom->armor->item))
-            rom->armor->item = 0;
-    if (is_quest_item(rom->flute->item))
-            rom->flute->item = 0;
+    for (i=0; i <= 3; ++i) {
+        if (is_quest_item(rom->search_table->item[i]))
+                rom->search_table->item[i] = 0;
+    }
 }
 
 /**
@@ -1113,14 +771,14 @@ static void update_drops(dw_rom *rom)
     int i;
 
     printf("Modifying enemy drops...\n");
-    const uint8_t remake_xp[DRAGONLORD_2+1] = {
+    const uint16_t remake_xp[] = {
               1,   2,   3,   4,   8,  12,  16,  14,  15,  18,  20,  25,  28,
-             31,  40,  42, 255,  47,  52,  58,  58,  64,  70,  72, 255,   6,
-             78,  83,  90,  95, 135, 105, 120, 130, 180, 155, 172, 255, 0, 0
+             31,  40,  42, 255,  47,  52,  58,  58,  64,  70,  72, 350,   6,
+             78,  83,  90,  95, 135, 105, 120, 130, 180, 155, 172, 350, 0, 0
     };
-    const uint8_t remake_gold[DRAGONLORD_2+1] = {
+    const uint16_t remake_gold[] = {
               2,   4,   6,   8,  16,  20,  25,  21,  19,  30,  25,  42,  50,
-             48,  60,  62,   6,  75,  80,  95, 110, 105, 110, 120,  10, 255,
+             48,  60,  62,   6,  75,  80,  95, 110, 105, 110, 120,  10, 650,
             150, 135, 148, 155, 160, 169, 185, 165, 150, 148, 152, 143, 0, 0
     };
 
@@ -1132,6 +790,7 @@ static void update_drops(dw_rom *rom)
 
 /**
  * Changes the MP required for each spell to match the SFC & GBC remakes.
+ *
  * @param rom The rom struct
  */
 static void update_mp_reqs(dw_rom *rom)
@@ -1177,9 +836,9 @@ static void lower_xp_reqs(dw_rom *rom)
 static void update_enemy_hp(dw_rom *rom)
 {
     int i;
-    const uint8_t remake_hp[DRAGONLORD_2+1] = {
+    const uint8_t remake_hp[] = {
               2,   3,   5,   7,  12,  13,  13,  22,  23,  20,  16,  24,  28,
-             18,  33,  39,   3,  33,  37,  35,  44,  37,  40,  40, 153,  35,
+             18,  33,  39,   3,  33,  37,  35,  44,  37,  40,  40, 153,  50,
              47,  48,  38,  70,  72,  74,  65,  67,  98, 135,  99, 106, 100, 165
     };
     for (i=SLIME; i <= DRAGONLORD_2; i++) {
@@ -1222,7 +881,8 @@ static uint8_t *center_title_text(uint8_t *pos, const char *text)
  * @param pos The current position of the title screen pointer.
  * @param end The end of the title screen space.
  * @param reserved Space to reserve for other text.
- * @return
+ *
+ * @return A pointer to the end of the new data
  */
 static uint8_t *pad_title_screen(uint8_t *pos, uint8_t *end, int reserved)
 {
@@ -1251,18 +911,12 @@ static uint8_t *pad_title_screen(uint8_t *pos, uint8_t *end, int reserved)
  */
 static void update_title_screen(dw_rom *rom)
 {
-    char *f, *fo, text[33];
-    uint64_t flags;
+    unsigned char text[33] = { 0 };
     uint8_t *pos, *end;
 
-//    pos = rom->title_text;
-//    end = &rom->title_text + 143;
     pos = &rom->content[0x3f26];
     end = &rom->content[0x3fb5];
     text[32] = '\0';
-    flags = rom->flags;
-    f = text;
-    fo = (char*)flag_order;
 
     printf("Updating title screen...\n");
     pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
@@ -1275,20 +929,12 @@ static void update_title_screen(dw_rom *rom)
     pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
     pos = pvpatch(pos, 4, 0xf7, 32, 0x5f, 0xfc); /* blank line */
 
-    /* parse the flags back to a string */
-    while (flags) {
-        if (flags & 1) *(f++) = *fo;
-        flags >>= 1;
-        fo++;
-        if (f - text >= 32) break;
-    }
-    *f = '\0';
-
-    pos = center_title_text(pos, text);          /* flags */
+    pos = center_title_text(pos, (const char *)rom->flags_encoded); /* flags */
     snprintf((char *)text, 33, "%"PRIu64, rom->seed);
 
-    pos = pad_title_screen(pos, end, 15 + strlen(text)); /* blank line */
-    pos = center_title_text(pos, text);         /* seed number */
+     /* blank line */
+    pos = pad_title_screen(pos, end, 15 + strlen((const char *)text));
+    pos = center_title_text(pos, (const char*)text);  /* seed number */
     pos = pad_title_screen(pos, end, 4); /* blank line */
     pos = pad_title_screen(pos, end, 0); /* blank line */
 
@@ -1334,10 +980,13 @@ static void dwr_fighters_ring(dw_rom *rom)
 static void dwr_death_necklace(dw_rom *rom)
 {
 
+
     if (!DEATH_NECKLACE(rom))
         return;
 
     printf("Adding functionality to the death necklace...\n");
+
+    vpatch(rom, 0xe260, 1, 0);  /* set death necklace chance to 100% */
 
     vpatch(rom, 0xff54, 31,
             /* ff54: */
@@ -1364,34 +1013,67 @@ static void dwr_death_necklace(dw_rom *rom)
 }
 
 /**
- * Inserts code to scale XP rewards from metal slimes based on level
+ * Inserts code to handle 2 byte xp and gold values
  *
  * @param rom The rom struct
  */
-static void scaled_metal_slime_xp(dw_rom *rom) {
+static void support_2_byte_xp_gold(dw_rom *rom)
+{
+    int ss_lvl = 1; /* level to not scale metal slime xp */
 
-    if (!SCALED_SLIMES(rom)) {
-        return;
+    if (SCALED_SLIMES(rom)) {
+        printf("Reducing early metal rewards...\n");
+        if (rom->enemies[METAL_SLIME].xp > 255)
+            rom->enemies[METAL_SLIME].xp = 255; /* make sure xp <= 255 */
+        ss_lvl = 8;
     }
-    printf("Reducing early metal rewards...\n");
-    vpatch(rom, 0xea0a, 3,
-           0x20, 0x58, 0xe1  /*   JSR $E158   ; jump to the new code         */
-    );
-    vpatch(rom, 0xe158, 22,
-           0xa5, 0xe0,       /*   LDA $E0     ; Load Monster ID              */
-           0xc9, 0x10,       /*   CMP #$10    ; Is it a metal slime?         */
-           0xd0, 0x0c,       /*   BNE +       ; No, skip to loading XP       */
-           0xa5, 0xc7,       /*   LDA $C7     ; Load player level            */
-           0xc9, 0x08,       /*   CMP #$8     ; Is it 8 or higher?           */
-           0xb0, 0x06,       /*   BCS +       ; Yes, skip to loading XP      */
-           0x0a,             /*   ASL         ;                              */
-           0x0a,             /*   ASL         ; Multiply level by 32 and use */
-           0x0a,             /*   ASL         ; this value for XP gained     */
-           0x0a,             /*   ASL         ;                              */
-           0x0a,             /*   ASL         ;                              */
-           0x60,             /*   RTS                                        */
-           0xad, 0x06, 0x01, /* + LDA $0106   ; Load XP from monster info    */
-           0x60              /*   RTS                                        */
+
+    /* Note that this code won't work properly if scaled slimes is on and
+     * metal slimes are set to give more than 255XP. If that is changed then
+     * this code will need to be reworked.
+     */
+    vpatch(rom, 0x0ea0f,   77,
+        0xad,  0x07,  0x01,  /*     lda $0107                                */
+        0x85,  0x01,         /*     sta $01                                  */
+        0xa5,  0xe0,         /*     lda $e0  ;                               */
+        0xc9,  0x10,         /*     cmp #16  ;                               */
+        0xd0,  0x0d,         /*     bne +                                    */
+        0xa5,  0xc7,         /*     lda $c7                                  */
+        0xc9,  ss_lvl,       /*     cmp ss_lvl                               */
+        0xb0,  0x07,         /*     bcs +                                    */
+        0x0a,                /*     asl                                      */
+        0x0a,                /*     asl                                      */
+        0x0a,                /*     asl                                      */
+        0x0a,                /*     asl                                      */
+        0x0a,                /*     asl                                      */
+        0x85,  0x00,         /*     sta $00                                  */
+        0x20,  0xcb,  0xc7,  /* +   jsr b3_c7cb                              */
+        0xef,                /*     hex ef                                   */
+        0xa5,  0x00,         /*     lda $00                                  */
+        0x18,                /*     clc                                      */
+        0x65,  0xba,         /*     adc $ba                                  */
+        0x85,  0xba,         /*     sta $ba                                  */
+        0xa5,  0x01,         /*     lda $01                                  */
+        0x65,  0xbb,         /*     adc $bb                                  */
+        0x85,  0xbb,         /*     sta $bb                                  */
+        0x90,  0x06,         /*     bcc +                                    */
+        0xa9,  0xff,         /*     lda #$ff                                 */
+        0x85,  0xba,         /*     sta $ba                                  */
+        0x85,  0xbb,         /*     sta $bb                                  */
+        0xad,  0x08,  0x01,  /* +   lda $0108                                */
+        0x85,  0x00,         /*     sta $00                                  */
+        0xad,  0x09,  0x01,  /*     lda $0109                                */
+        0x85,  0x01,         /*     sta $01                                  */
+        0x20,  0xcb,  0xc7,  /*     jsr b3_c7cb                              */
+        0xf0,                /*     hex f0                                   */
+        0xa5,  0x00,         /*     lda $00                                  */
+        0x18,                /*     clc                                      */
+        0x65,  0xbc,         /*     adc $bc                                  */
+        0x85,  0xbc,         /*     sta $bc                                  */
+        0xa5,  0x01,         /*     lda $01                                  */
+        0x65,  0xbd,         /*     adc $bd                                  */
+        0x85,  0xbd,         /*     sta $bd                                  */
+        0x90                 /*     bcc b3_ea63                              */
     );
 }
 
@@ -1409,19 +1091,7 @@ static void scared_metal_slimes(dw_rom *rom)
 
     printf("Terrorizing the Metal Slimes...\n");
     /* having the carry set upon returning gives the enemy a chance to run */
-    vpatch(rom, 0x0c4e8,   13,
-            0xcd,  0x00,  0x01, /* CMP $0100 ; Replace the code from $EFBA */
-            0xb0,  0x07,        /* BCS c4fa  ; Return, everything is fine. */
-            0xa5,  0xe0,        /* LDA $E0   ; Load the enemy type         */
-            0xc9,  0x10,        /* CMP #$10  ; Is it a metal slime?        */
-            0xf0,  0x01,        /* BEQ c4fa                                */
-            0x18,               /* CLC       ; It's not, enemy doesn't run */
-            /* c4fa: */
-            0x60                /* RTS                                     */
-    );
-    vpatch(rom, 0x0efba,    3,
-            0x20,  0xe8,  0xc4 /* JSR $C4E8  ; Jump to the new code        */
-    );
+    add_hook(rom, JSR, 0xefba, SCARED_SLIMES);
 }
 
 /**
@@ -1432,40 +1102,16 @@ static void scared_metal_slimes(dw_rom *rom)
 static void cursed_princess(dw_rom *rom)
 {
 
-    if (!CURSED_PRINCESS(rom)) 
+    if (!CURSED_PRINCESS(rom))
         return;
 
     printf("The princess shall be cursed...\n");
 
     /* new dialogue */
-    vpatch(rom, 0x09f40,   39,
-            /* O      h             m      y      ,             w      h      a */
-            0x32,  0x11,  0x5f,  0x16,  0x22,  0x48,  0x5f,  0x20,  0x11,  0x0a,
-            /* t             a             l      o      v      e      l      y */
-            0x1d,  0x5f,  0x0a,  0x5f,  0x15,  0x18,  0x1f,  0x0e,  0x15,  0x22,
-            /*        c      o      r      s      e      t      .             */
-            0x5f,  0x0c,  0x18,  0x1b,  0x1c,  0x0e,  0x1d,  0x45,  0x52,  0x5f,
-            0x5f,  0x5f,  0x5f,  0x5f,  0x5f,  0x5f,  0x5f,  0x5f,  0x5f);
-
-    vpatch(rom, 0x0c4ce,  26,
-            0x85,  0x0e,        /* STA $OE    Store the item Gwaelin took     */
-            0x4c,  0x4b,  0xe0, /* JMP $E04B  Continue on                     */
-            /* C4D0: */
-            0x48,               /* PHA        ; Store register                */
-            0xa5,  0x0e,        /* LDA $OE    ; Load the item Gwaelin took    */
-            0xc9,  0x09,        /* CMP $09    ; It is a cursed belt?          */
-            0xd0,  0x0a,        /* BNE C4E1   ; No, keep playing              */
-            0x20,  0xcb,  0xc7, /* JSR $C7CB  ; Yes, Display dialogue         */
-            0xa0,               /* .DB $A0    ; Oh my...                      */
-            0x20,  0xfa,  0xdf, /* JSR $DFFA  ; Play the curse music          */
-            0x4c,  0xb8,  0xcc, /* JMP $CCB8  ; Jump to the ending            */
-            /* C4E1: */
-            0x68,               /* PLA        ; Restore register and continue */
-            0x4c,  0x33,  0xd4  /* JMP $D433                                  */
-    );
-    /* Change a few JSR addresses */
-    vpatch(rom, 0x0d3dd,    2,  0xce,  0xc4);
-    vpatch(rom, 0x0d40e,    2,  0xd3,  0xc4);
+    set_text(rom, 0x9f40, "Oh my, what a lovely corset.           ");
+    /* Change a few jump addresses */
+    add_hook(rom, JSR, 0xd3dc, STORE_PRINCESS_ITEM);
+    add_hook(rom, JMP, 0xd40d, CURSED_PRINCESS_CHECK);
 }
 
 /**
@@ -1480,23 +1126,9 @@ static void threes_company(dw_rom *rom)
 
     printf("Shall we join the Dragonlord?\n");
 
-    /* new dialogue */
-    vpatch(rom, 0x09f69,  141,
-            0x50,  0x2c,  0x5f,  0x11,  0x0a,  0x1f,  0x0e,  0x5f,  0x1c,  0x18,
-            0x16,  0x0e,  0x5f,  0x10,  0x1b,  0x0e,  0x0a,  0x1d,  0x5f,  0x12,
-            0x0d,  0x0e,  0x0a,  0x1c,  0x5f,  0x1d,  0x18,  0x5f,  0x1c,  0x19,
-            0x1b,  0x1e,  0x0c,  0x0e,  0x5f,  0x1e,  0x19,  0x5f,  0x1d,  0x11,
-            0x12,  0x1c,  0x5f,  0x19,  0x15,  0x0a,  0x0c,  0x0e,  0x47,  0x5f,
-            0x2c,  0x5f,  0x20,  0x0a,  0x1c,  0x5f,  0x1d,  0x11,  0x12,  0x17,
-            0x14,  0x12,  0x17,  0x10,  0x5f,  0x18,  0x0f,  0x5f,  0x19,  0x1e,
-            0x1d,  0x1d,  0x12,  0x17,  0x10,  0x5f,  0x12,  0x17,  0x5f,  0x1c,
-            0x18,  0x16,  0x0e,  0x5f,  0x17,  0x0e,  0x20,  0x5f,  0x0c,  0x1e,
-            0x1b,  0x1d,  0x0a,  0x12,  0x17,  0x1c,  0x48,  0x5f,  0x16,  0x0a,
-            0x22,  0x0b,  0x0e,  0x5f,  0x0a,  0x5f,  0x11,  0x18,  0x1d,  0x5f,
-            0x1d,  0x1e,  0x0b,  0x48,  0x5f,  0x0a,  0x5f,  0x0d,  0x12,  0x1c,
-            0x0c,  0x18,  0x5f,  0x0b,  0x0a,  0x15,  0x15,  0x5f,  0x18,  0x1f,
-            0x0e,  0x1b,  0x5f,  0x11,  0x0e,  0x1b,  0x0e,  0x45,  0x52,  0x5f,
-            0x5f);
+    set_text(rom, 0x9f69, "`I have some great ideas to spruce up this place."
+            "\xfd\xfbI was thinking of putting in some new curtains, maybe a "
+            "hot tub, a disco ball over here=/ ");
     vpatch(rom, 0x0d509,    8,
             0xea,               /* NOP       ; Don't reset the quest byte     */
             0xea,               /* NOP       ; So we know if Gwaelin is here  */
@@ -1504,18 +1136,7 @@ static void threes_company(dw_rom *rom)
             0x20,  0xbc,  0xc4, /* JSR $C4C0 ; Jump to three's company code   */
             0xea                /* NOP                                        */
     );
-    vpatch(rom, 0x0c4bc,  18,
-            0xa5,  0xdf,        /* LDA $DF   ; Load the status bits           */
-            0x29,  0x01,        /* AND #$01  ; Are we carrying Gwaelin?       */
-            0xf0,  0x07,        /* BEQ $C4CD ; No, back to original code      */
-            0x20,  0xcb,  0xc7, /* JSR $CBC7 ; Show dialogue                  */
-            0xa1,               /* .DB $A1   ; I have some great ideas....    */
-            0x4c,  0xb8,  0xcc, /* JMP $CCB8 ; Jump to the ending credits     */
-            /* c4cd: */
-            0x20,  0xcb,  0xc7, /* JSR $CBC7 ; Show dialoge                   */
-            0xc3,               /* .DB $A1   ; Now take a long rest...        */
-            0x60                /* RTS                                        */
-    );
+    add_hook(rom, JSR, 0xd50d, THREES_COMPANY_CHECK);
 }
 
 /**
@@ -1541,6 +1162,110 @@ static void permanent_torch(dw_rom *rom)
 }
 
 /**
+ * Discounts all weapon and armor prices..
+ *
+ * @param rom The rom struct
+ */
+static void summer_sale(dw_rom *rom)
+{
+    size_t i;
+    double discount;
+
+    if (!SUMMER_SALE(rom))
+        return;
+
+    for (i=0; i < 17; i++) {
+        /* if it's a maybe flag, only apply about half the time */
+        if (SUMMER_SALE(rom) & 0xAA && mt_rand_bool())
+            continue;
+        discount = mt_rand_double_ranged(0.35, 0.65);
+        rom->weapon_price_display[i] = rom->weapon_prices[i] =
+            (uint16_t)(rom->weapon_prices[i] * discount);
+    }
+}
+
+/**
+ * Modifies the status window to show a death counter
+ *
+ * @param rom The rom struct
+ */
+static void death_counter(dw_rom *rom)
+{
+
+    if (!DEATH_COUNTER(rom))
+        return;
+
+    /* hook the stats display code */
+    add_hook(rom, JSR, 0x6378, DISPLAY_DEATHS);
+
+    /* patch the status window pointer */
+    vpatch(rom, 0x06f6e,    1,  0xcb);
+
+    /* patch the pop-up stats window and status window */
+    vpatch(rom, 0x06fb1,    1,  0x07);
+    vpatch(rom, 0x06fc7,   12,
+            0x27,  0x99,  0xff,  0xff,  0x21,  0x0b,  0x14,  0x35,  0x88,
+            0x85,  0xb1,  0x85);
+}
+
+/**
+ * Modifies the level up routine to display the spells learned rather than 
+ * just indicating that you have learned a spell
+ *
+ * @param rom The rom struct
+ */
+static void show_spells_learned(dw_rom *rom)
+{
+    /* patch the level up text */
+    vpatch(rom, 0x0ae97,    1,  0xfb); /* replace CR with wait arrow */
+    set_text(rom, 0xaeab, "the spell \xf6"); /* F6 = spell name */
+
+    vpatch(rom, 0x03fe0,   14,
+                                /* save_spells:                              */
+            0xa5,  0xce,        /*   lda $ce     ; load current spells (lo)  */
+            0x85,  0xdc,        /*   sta $dc     ; store at $dc              */
+            0xa5,  0xcf,        /*   lda $cf     ; load current spells (hi)  */
+            0x85,  0xdd,        /*   sta $dd     ; store at $dd              */
+            0x4c,  0x50,  0xf0, /*   jmp b3_f050 ; update to new level stats */
+            0xff,  0xff,  0xff);
+    vpatch(rom, 0x0ea76,    3,
+            0x20, 0xe0,  0xbf   /*   jsr save_spells                         */
+            );
+    vpatch(rom, 0x0eae6,   46,
+            0xa0,  0x10,        /*   ldy #$10    ; Start at 16               */
+            0xa5,  0xdc,        /*   lda $dc     ; load old spells known     */
+            0x45,  0xce,        /*   eor $ce     ; xor with new spells known */
+            0x48,               /* - pha         ; push on the stack         */
+            0x29,  0x01,        /*   and #1      ; is the current spell new? */
+            0xf0, 0x0b,         /*   beq +       ; no, go to next spell      */
+            0x98,               /*   tya         ; transfer the index to A   */
+            0x48,               /*   pha         ; push to the stack         */
+            0x20,  0xf0,  0xdb, /*   jsr b3_dbf0 ; prepare spell name        */
+            0x20,  0xcb,  0xc7, /*   jsr b3_c7cb ; print new spell text      */
+            0xf2,               /*   hex f2                                  */
+            0x68,               /*   pla         ; pull the Y value          */
+            0xa8,               /*   tay         ; transfer to Y             */
+            0x68,               /* + pla         ; pull stored new spells    */
+            0x4a,               /*   lsr         ; shift right               */
+            0xc8,               /*   iny         ; increment spell index     */
+            0xc0,  0x1a,        /*   cpy #$1a    ; if Y is 26, we're done    */
+            0xf0,  0x11,        /*   beq +                                   */
+            0xc0,  0x18,        /*   cpy #$18    ; if Y is 18,               */
+            0xd0,  0xe5,        /*   bne -       ;                           */
+            0xa5,  0xdd,        /*   lda $dd     ; load second spell byte    */
+            0x45,  0xcf,        /*   eor $cf     ; xor with new spells       */
+            0x29,  0x03,        /*   and #$3     ; we only need 2 bits here  */
+            0xd0,  0xdd,        /*   bne -       ; if it's not empty,        */
+            0xea,               /*   nop         ;    continue               */
+            0xea,               /*   nop                                     */
+            0xea,               /*   nop                                     */
+            0xea,               /*   nop                                     */
+            0xea                /*   nop                                     */
+                                /*   +                                       */
+        );
+}
+
+/**
  * Other various patches for gameplay, such as silver harp enemies, town and
  * dungeon map changes and moving some NPCs.
  *
@@ -1548,7 +1273,10 @@ static void permanent_torch(dw_rom *rom)
  */
 static void other_patches(dw_rom *rom)
 {
-    printf("Applying various other patches...\n");
+    printf("Applying various patches...\n");
+
+    /* Replace "Thou cannot enter here.". If a player finds this, it's a bug */
+    set_text(rom, 0x8256, "Thou hast found a bug/ ");
 
     /* convert PRG1 to PRG0 */
     vpatch(rom, 0x03f9e, 2,  0x37,  0x32);
@@ -1563,44 +1291,33 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0xe1dc, 2, 0xfd, 0xe1);
 
     /* Have the jerk take the token along with staff & stones */
-    vpatch(rom, 0x0d383,    2,  0xca,  0xbf); /* jump to new code below */
-    vpatch(rom, 0x03fca,    8,
-            0x20,  0x4b,  0xe0, /* JSR $E04B ; replace the rewritten code */
-            0xa9,  0x07,        /* LDA #$07  ; remove token from inventory */
-            0x4c,  0x4b,  0xe0  /* JMP $E04B ; jump to remove code and return */
+    vpatch(rom, 0x0d383,    2,  0xd5,  0xbf); /* jump to new code below */
+    vpatch(rom, 0x03fd5,    8,
+            0x20,  0x4b,  0xe0, /* JSR $E04B ; replace the rewritten code    */
+            0xa9,  0x07,        /* LDA #$07  ; remove token from inventory   */
+            0x4c,  0x4b,  0xe0  /* JMP $E04B ; jump to remove code           */
     );
 
-    /* move the golem encounter to charlock */
-    rom->golem_run->map = rom->golem->map = CHARLOCK_THRONE_ROOM;
-    rom->golem_run->x = rom->golem->x = 25;
-    rom->golem_run->y = rom->golem->y = 22;
-    /* make sure all forced encounters are never marked defeated */
-    vpatch(rom, 0xe98d, 2, 0xea, 0xea);
-    vpatch(rom, 0xe97b, 2, 0xea, 0xea);
-
-    vpatch(rom, 0xde23, 10,  /* Changes the enemies summoned by the harp. */
-        /* de23: */
-        0x29, 0x7,  /* AND #$07    ; limit the random number to 0-7 */
-        0xaa,  /* TAX         ; move the value to the X register */
-        0xbd, 0x54, 0xf5,  /* LDA #F554,X ; load a monster from zone 1-2 */
-        0xea,  /* NOP         ; fill in the rest with NOP */
-        0xea,  /* NOP         ; */
-        0xea,  /* NOP         ; */
-        0xea   /* NOP         ; */
+    vpatch(rom, 0xde23, 10, /* Changes the enemies summoned by the harp.     */
+        0x29, 0x7,          /* AND #$07    ; limit the random number to 0-7  */
+        0xaa,               /* TAX         ; move value to the X register    */
+        0xbd, 0x54, 0xf5,   /* LDA #F554,X ; load a monster from zone 1-2    */
+        0xea,               /* NOP         ; fill in the rest with NOP       */
+        0xea,               /* NOP                                           */
+        0xea,               /* NOP                                           */
+        0xea                /* NOP                                           */
     );
     vpatch(rom, 0x42a, 1, 0x47);  /* add new stairs to the throne room */
     vpatch(rom, 0x2a9, 1, 0x45);  /* add new stairs to the 1st floor */
     vpatch(rom, 0x2c7, 1, 0x66);  /* add a new exit to the first floor */
-    /* replace the usless grave warps with some for tantegel */
-    vpatch(rom, 0xf44f, 3, 5, 1, 8);
-    vpatch(rom, 0xf4e8, 3, 4, 1, 7);
-    vpatch(rom, 0x1288, 1, 0x22);  /* remove the top set of stairs for the old warp in the grave */
+    /* replace the charlock loop stairs with some for tantegel */
+    vpatch(rom, 0xf437, 3, 5, 1, 8);
+    vpatch(rom, 0xf4d0, 3, 4, 1, 7);
+    set_dungeon_tile(rom, CHARLOCK_CAVE_6, 9, 0, DUNGEON_TILE_BRICK);
     /* Sets the encounter rate of Zone 0 to be the same as other zones. */
     vpatch(rom, 0xcebf, 3, 0x4c, 0x04, 0xcf);  /* skip over the zone 0 code */
-    vpatch(rom, 0xe260, 1, 0);  /* set death necklace chance to 100% */
     vpatch(rom, 0xe74d, 1, 9);  /* buff the hurt spell */
     vpatch(rom, 0xdbc1, 1, 18);  /* buff the heal spell */
-    vpatch(rom, 0xea41, 5, 0xad, 0x07, 0x01, 0xea, 0xea); /* I forget what this does */
     /* fixing some annoying roaming npcs */
     vpatch(rom, 0x18ee, 1, 0xa7); /* move the stupid old man from the item shop */
     vpatch(rom, 0x90f,  1, 0x6f); /* quit ignoring the customers */
@@ -1609,122 +1326,8 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0xf131, 2, 0x69, 0x03); /* Lock the stat build modifier at 3 */
 
     /* I always hated this wording */
-    dwr_str_replace(rom, "The spell will not work", "The spell had no effect");
-}
-
-/**
- * Patches the credits to add contributors to the randomizer
- *
- * @param rom The rom struct
- */
-static void credits(dw_rom *rom)
-{
-    printf("Patching credits...\n");
-
-    vpatch(rom, 0x057e9,    1,  0x8b);
-    vpatch(rom, 0x057f1,  272,  0x32,
-            /* A few edits to save space */
-            /* PRODUCE BY -> PRODUCER */
-            0x35,
-
-            0xfc, 0xe8, 0x21, /* Write PPU Address 2043 */
-            /* K     O     I     C     H     I       */
-            0x2e, 0x32, 0x2c, 0x26, 0x2b, 0x2c, 0x5f,
-            /* N     A     K     A     M     U     R     A */
-            0x31, 0x24, 0x2e, 0x24, 0x30, 0x38, 0x35, 0x24,
-
-            0xfc, 0xc0, 0x23,  /* Write PPU Address 23C0 (start of attrs) */
-            /* PPU Attributes */
-            0xf7, 0x20, 0x0a,
-
-            /* Next page */
-            0xfd, 0x8b, 0x21, /* Write PPU Address 2043 */
-            /* D     I     R     E     C     T     O     R */
-            0x33, 0x35, 0x32, 0x27, 0x38, 0x26, 0x28, 0x35,
-
-            0xfc, 0xe8, 0x21, /* Write PPU Address 2043 */
-            /* Y     U     K     I     N     O     B     U       */
-            0x3c, 0x38, 0x2e, 0x2c, 0x31, 0x32, 0x25, 0x38, 0x5f,
-            /* C     H     I     D     A */
-            0x26, 0x2b, 0x2c, 0x27, 0x24,
-
-            0xfc, 0xc0, 0x23, /* Write PPU Address 2043 */
-            /* PPU Attributes */
-            0xf7, 0x20, 0x0f,
-
-            /* Next page */
-            0xfd, 0x43, 0x20, /* Write PPU Address 2043 */
-            /* D     R     A     G     O     N        */
-            0x27, 0x35, 0x24, 0x2a, 0x32, 0x31, 0x5f,
-            /* W     A     R     R     I     O     R        */
-            0x3a, 0x24, 0x35, 0x35, 0x2c, 0x32, 0x35, 0x5f,
-            /* R     A     N     D     O     M     I     Z     E     R */
-            0x35, 0x24, 0x31, 0x27, 0x32, 0x30, 0x2c, 0x3d, 0x28, 0x35,
-
-            0xfc, 0xa3, 0x20,  /* Write PPU Address 20A3 */
-            /* D     E     V     E     L     O     P     E     R */
-            0x27, 0x28, 0x39, 0x28, 0x2f, 0x32, 0x33, 0x28, 0x35,
-
-            0xfc, 0xb7, 0x20,  /* Write PPU Address 20b7 */
-            /* M     C     G     R     E     W */
-            0x30, 0x26, 0x2a, 0x35, 0x28, 0x3a,
-
-            0xfc, 0x03, 0x21,  /* Write PPU Address 2103 */
-            /* C     O     N     T     R     I     B     U     T     O     R */
-            0x26, 0x32, 0x31, 0x37, 0x35, 0x2c, 0x25, 0x38, 0x37, 0x32, 0x35,
-            /* S */
-            0x36,
-
-            0xfc, 0x14, 0x21,  /* Write PPU Address 2114 */
-            /* G     A     M     E     B     O     Y     F     9 */
-            0x2a, 0x24, 0x30, 0x28, 0x25, 0x32, 0x3c, 0x29, 0x09,
-
-            0xfc, 0x54, 0x21,  /* Write PPU Address 2154 */
-            /* C     A     I     T     S     I     T     H     2 */
-            0x26, 0x24, 0x2c, 0x37, 0x36, 0x2c, 0x37, 0x2b, 0x02,
-
-            0xfc, 0x9a, 0x21,  /* Write PPU Address 219A */
-            /* D     V     J */
-            0x27, 0x39, 0x2d,
-
-            0xfc, 0xd3, 0x21,  /* Write PPU Address 21D3 */
-            /* B     U     N     D     E     R     2     0     1     5 */
-            0x25, 0x38, 0x31, 0x27, 0x28, 0x35, 0x02, 0x00, 0x01, 0x05,
-
-            0xfc, 0x17, 0x22,  /* Write PPU Address 2217 */
-            /* D     W     E     D     I     T */
-            0x27, 0x3a, 0x28, 0x27, 0x2c, 0x37,
-
-            0xfc, 0x63, 0x22,  /* Write PPU Address 2263 */
-            /* S     P     R     I     T     E     S */
-            0x36, 0x33, 0x35, 0x2c, 0x37, 0x28, 0x36,
-
-            0xfc, 0x75, 0x22,  /* Write PPU Address 2275 */
-            /* X     A     R     N     A     X     4     2 */
-            0x3b, 0x24, 0x35, 0x31, 0x24, 0x3b, 0x04, 0x02,
-
-            0xfc, 0xb3, 0x22,  /* Write PPU Address 22B3 */
-            /* R     Y     U     S     E     I     S     H     I     N */
-            0x35, 0x3c, 0x38, 0x36, 0x28, 0x2c, 0x36, 0x2b, 0x2c, 0x31,
-
-            0xfc, 0xf7, 0x22,  /* Write PPU Address 22F7 */
-            /* M     C     G     R     E     W */
-            0x30, 0x26, 0x2a, 0x35, 0x28, 0x3a,
-
-            0xfc, 0x32, 0x23,  /* Write PPU Address 2332 */
-            /* M     I     S     T     E     R     H     O     M     E     S */
-            0x30, 0x2c, 0x36, 0x37, 0x28, 0x35, 0x2b, 0x32, 0x30, 0x28, 0x36,
-
-            0xfc, 0x72, 0x23,  /* Write PPU Address 2372 */
-            /* I     N     V     E     N     E     R     A     B     L     E */
-            0x2c, 0x31, 0x39, 0x28, 0x31, 0x28, 0x35, 0x24, 0x25, 0x2f, 0x28,
-            0x5f, 0x5f,
-
-            0xfc, 0xc0, 0x23,  /* Write PPU Address 23C0 (start of attrs) */
-            /* PPU Attributes */
-            /* 0xf7 means the next number is a count followed by a value */
-            0xf7, 0x08, 0xff, 0xf7, 0x04, 0x55, 0xf7, 0x04, 0xaa, 0xf7,
-            0x04, 0x55, 0xf7, 0x0c, 0xaa, 0xf7, 0x04, 0x55, 0xf7, 0x1c);
+//     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");
+    set_text(rom, 0xad85,  "The spell had no effect");
 }
 
 /**
@@ -1827,6 +1430,234 @@ static void dwr_menu_wrap(dw_rom *rom)
 }
 
 /**
+ * Rewrites the forced encounter routines to read from a table rather than 
+ * being hard-coded. This clears enough space to allow for 8 "spikes" rather
+ * than the normal 3.
+ *
+ * @param rom The rom struct.
+ */
+static void spike_rewrite(dw_rom *rom)
+{
+    size_t i=0;
+    const dw_enemies spike_enemies[] = {
+        GREEN_DRAGON, AXE_KNIGHT, BLUE_DRAGON, STONEMAN, ARMORED_KNIGHT,
+        RED_DRAGON, GOLEM };
+    const size_t spike_enemy_count = sizeof(spike_enemies)/sizeof(dw_enemies);
+    uint8_t spikes[] = {
+        AXE_KNIGHT, GREEN_DRAGON, GOLEM, SLIME, SLIME, SLIME, SLIME, SLIME };
+
+    if (RANDOMIZE_ZONES(rom)) {
+        for (i=0; i < 3; i++) {
+            spikes[i] = spike_enemies[mt_rand(0, spike_enemy_count-1)];
+        }
+    }
+
+    /* patch some jump addresses */
+    vpatch(rom, 0x03263,    2,  0xca,  0xbf);
+    vpatch(rom, 0x0335d,    2,  0xca,  0xbf);
+    vpatch(rom, 0x033e9,    2,  0xca,  0xbf);
+    vpatch(rom, 0x03515,    2,  0xca,  0xbf);
+
+    /* save the previous tile you were on */
+    vpatch(rom, 0x03fca,   11,
+            0xa5,  0x3a,       /*   lda X_POS                                */
+            0x85,  0xdc,       /*   sta _UNUSED_DC                           */
+            0xa5,  0x3b,       /*   lda Y_POS                                */
+            0x85,  0xdd,       /*   sta _UNUSED_DD                           */
+            0x4c,  0xcc,  0xb1 /*   jmp $b1cc                                */
+    );
+
+    /* spike encounter table */
+    vpatch(rom, 0x0cd7a, 40,
+        /* MAP */
+        HAUKSNESS, SWAMP_CAVE, CHARLOCK_THRONE_ROOM, NO_MAP, NO_MAP, NO_MAP, NO_MAP, NO_MAP,
+        /* X */
+               18,          4,                   25,      0,      0,      0,      0,      0,
+        /* Y */
+               12,         14,                   22,      0,      0,      0,      0,      0,
+        /* FLAGS */
+             0x00,       0x00,                 0x00,   0x80,   0x40,   0x20,   0x10,   0x08,
+        /* MONSTER */
+        spikes[0], spikes[1], spikes[2], spikes[3], spikes[4], spikes[5], spikes[6], spikes[7]
+    );
+
+    /* start of a spike encounter */
+    vpatch(rom, 0x0cd51, 41,
+            0xa2, 0x07,       /*   ldx #7                                  */
+            0xa5, 0x45,       /* - lda MAP_INDEX                           */
+            0xdd, 0x7a, 0xcd, /*   cmp spike_map,x                         */
+            0xd0, 0x1b,       /*   bne +                                   */
+            0xa5, 0x3a,       /*   lda X_POS                               */
+            0xdd, 0x82, 0xcd, /*   cmp spike_x,x                           */
+            0xd0, 0x14,       /*   bne +                                   */
+            0xa5, 0x3b,       /*   lda Y_POS                               */
+            0xdd, 0x8a, 0xcd, /*   cmp spike_y,x                           */
+            0xd0, 0x0d,       /*   bne +                                   */
+            0xbd, 0x92, 0xcd, /*   lda spike_flags,x                       */
+            0x25, 0xe4,       /*   and QUEST_PROGRESS                      */
+            0xd0, 0x33,       /*   bne +done                               */
+            0xbd, 0x9a, 0xcd, /*   lda spike_monster,x                     */
+            0x4c, 0xdf, 0xe4, /*   jmp start_combat                        */
+            0xca,             /* + dex                                     */
+            0x10, 0xdb,       /*   bpl -                                   */
+            0x30, 0x28        /*   bmi +done                               */
+      );
+
+    /* ran away from a spike encounter */
+    vpatch(rom, 0x0e8d4, 108,
+            0xa2, 0x07,       /*    ldx #7                                   */
+            0xa5, 0x45,       /* -- lda MAP_INDEX                            */
+            0xdd, 0x7a, 0xcd, /*    cmp spike_map,x                          */
+            0xd0, 0x43,       /*    bne +                                    */
+            0xa5, 0x3a,       /*    lda X_POS                                */
+            0xdd, 0x82, 0xcd, /*    cmp spike_x,x                            */
+            0xd0, 0x3c,       /*    bne +                                    */
+            0xa5, 0x3b,       /*    lda Y_POS                                */
+            0xdd, 0x8a, 0xcd, /*    cmp spike_y,x                            */
+            0xd0, 0x35,       /*    bne +                                    */
+            0xbd, 0x92, 0xcd, /*    lda spike_flags,x                        */
+            0x25, 0xe4,       /*    and QUEST_PROGRESS                       */
+            0xd0, 0x4e,       /*    bne +done                                */
+            0x20, 0xbb, 0xc6, /*    jsr b3_c6bb                              */
+            0xa5, 0xdc,       /*    lda _UNUSED_DC                           */
+            0x85, 0x3a,       /*    sta X_POS                                */
+            0x85, 0x8e,       /*    sta X_POS_2                              */
+            0x85, 0x90,       /*    sta $90                                  */
+            0xa5, 0xdd,       /*    lda _UNUSED_DD                           */
+            0x85, 0x3b,       /*    sta Y_POS                                */
+            0x85, 0x8f,       /*    sta Y_POS_2                              */
+            0x85, 0x92,       /*    sta $92                                  */
+            0xa9, 0x00,       /*    lda #$00      ; No idea what this does   */
+            0x85, 0x91,       /*    sta $91       ; but things can break     */
+            0x85, 0x93,       /*    sta $93       ; without it. I got it     */
+            0xa2, 0x04,       /*    ldx #$04      ; from the return spell    */
+            0x06, 0x90,       /* -  asl $90       ; routine.                 */
+            0x26, 0x91,       /*    rol $91       ;                          */
+            0x06, 0x92,       /*    asl $92       ;                          */
+            0x26, 0x93,       /*    rol $93       ;                          */
+            0xca,             /*    dex           ;                          */
+            0xd0, 0xf5,       /*    bne -         ;                          */
+            0xa9, 0x02,       /*    lda #$02      ;                          */
+            0x8d, 0x2f, 0x60, /*    sta $602f     ;                          */
+            0x4c, 0x97, 0xb0, /*    jmp $b097                                */
+            0xca,             /* +  dex                                      */
+            0x10, 0xb3,       /*    bpl --                                   */
+            0x30, 0x1b,       /*    bmi +done                                */
+
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0xff, 0xff);
+
+    /* defeated a spike encounter */
+    vpatch(rom, 0x0e96b, 36,
+            0xa2, 0x07,       /*   ldx #7                                    */
+            0xa5, 0x45,       /* - lda MAP_INDEX                             */
+            0xdd, 0x7a, 0xcd, /*   cmp spike_map,x                           */
+            0xd0, 0x15,       /*   bne +                                     */
+            0xa5, 0x3a,       /*   lda X_POS                                 */
+            0xdd, 0x82, 0xcd, /*   cmp spike_x,x                             */
+            0xd0, 0x0e,       /*   bne +                                     */
+            0xa5, 0x3b,       /*   lda Y_POS                                 */
+            0xdd, 0x8a, 0xcd, /*   cmp spike_y,x                             */
+            0xd0, 0x07,       /*   bne +                                     */
+            0xbd, 0x92, 0xcd, /*   lda spike_flags,x                         */
+            0x05, 0xe4,       /*   ora QUEST_PROGRESS                        */
+            0x85, 0xe4,       /*   sta QUEST_PROGRESS                        */
+            0xca,             /* + dex                                       */
+            0x10, 0xe1,       /*   bpl -                                     */
+            0xea,             /*   nop                                       */
+            0xea,             /*   nop                                       */
+            0xea              /*   nop                                       */
+        );
+}
+
+/**
+ * Determines if an item should be guarded when "treasure guards" is on
+ *
+ * @param item The item in question
+ */
+static BOOL should_be_guarded(dw_chest_content item)
+{
+    switch(item)
+    {
+        case STONES:
+        case HARP:
+        case TOKEN:
+        case SWORD:
+        case ARMOR:
+            return TRUE;
+        default:
+            return FALSE;
+    }
+}
+
+/**
+ * Adds "spike" tiles to chests and search locations that should be guarded
+ *
+ * @param rom The rom struct
+ */
+static void treasure_guards(dw_rom *rom)
+{
+    size_t i, spike_entry = 3;
+    dwr_spike_table *spike = rom->spike_table;
+    dw_chest *chest = rom->chests;
+    dwr_search_table *search = rom->search_table;
+
+    if (!TREASURE_GUARDS(rom))
+        return;
+
+    printf("Adding important treasure guards...\n");
+
+    for (i=0; i < 2; i++){
+        if (should_be_guarded(search->item[i])) {
+            /* if it's a maybe flag, only apply about half the time */
+            if (TREASURE_GUARDS(rom) & 0xAA && mt_rand_bool())
+                continue;
+            spike->map[spike_entry] = search->map[i];
+            spike->x[spike_entry] = search->x[i];
+            spike->y[spike_entry] = search->y[i];
+            spike->monster[spike_entry++] = mt_rand(WYVERN, WIZARD);
+        }
+    }
+    for (i=0; i < CHEST_COUNT; i++){
+        if (spike_entry >= 8)
+            break;
+        if (should_be_guarded(chest[i].item)) {
+            /* if it's a maybe flag, only apply about half the time */
+            if (chest[i].map == TANTEGEL_THRONE_ROOM
+                || TREASURE_GUARDS(rom) == 2 && mt_rand_bool())
+                continue;
+            spike->map[spike_entry] = chest[i].map;
+            spike->x[spike_entry] = chest[i].x;
+            spike->y[spike_entry] = chest[i].y;
+            do {
+                spike->monster[spike_entry] = mt_rand(WYVERN, WIZARD);
+            } while(spike->monster[spike_entry] == GOLEM);
+            spike_entry++;
+        }
+    }
+}
+
+/**
+ * Adds hooks for sorting the player inventory when a new item is added.
+ *
+ * @param rom The rom struct.
+ */
+static void sorted_inventory(dw_rom *rom)
+{
+    /* patch some jump addresses */
+    add_hook(rom, JSR, 0xd387, SORT_INVENTORY);
+    add_hook(rom, JSR, 0xd3be, SORT_INVENTORY);
+    add_hook(rom, JSR, 0xd3e8, SORT_INVENTORY);
+    add_hook(rom, JSR, 0xd72b, SORT_INVENTORY);
+    add_hook(rom, JSR, 0xd874, SORT_INVENTORY);
+    add_hook(rom, JSR, 0xe0f4, SORT_INVENTORY);
+//     add_hook(rom, JSR, 0xe13b, SORT_INVENTORY);
+    add_hook(rom, JSR, 0xe279, SORT_INVENTORY);
+
+}
+
+/**
  * Enables various hacks to speed up gameplay, such as text and music changes.
  *
  * @param rom The rom struct.
@@ -1905,8 +1736,9 @@ static void dwr_speed_hacks(dw_rom *rom)
     vpatch(rom, 0x4705, 1, 1);
     /* speed up spell casting */
     vpatch(rom, 0x435b, 1, 0x9e);
-    vpatch(rom, 0xdb39, 6, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea);
-    vpatch(rom, 0xdb44, 9, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea);
+    vpatch(rom, 0xdb37, 1, 0x60);
+//     vpatch(rom, 0xdb39, 6, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea);
+//     vpatch(rom, 0xdb44, 9, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea, 0xea);
 }
 
 /**
@@ -1950,10 +1782,13 @@ static void no_keys(dw_rom *rom)
 static void repel_mods(dw_rom *rom)
 {
     if (REPEL_IN_DUNGEONS(rom))
+        printf("Making repel work in dungeons...\n");
         vpatch(rom, 0xcf20, 2, 0xa9, 0x01);
 
-    if (PERMANENT_REPEL(rom))
+    if (PERMANENT_REPEL(rom)) {
+        printf("Making repel permanent...\n");
         vpatch(rom, 0xcf26, 2, 0xa9, 0xff);
+    }
 }
 
 /**
@@ -1966,38 +1801,21 @@ static void modern_spell_names(dw_rom *rom)
     if (!MODERN_SPELLS(rom))
         return;
 
-    vpatch(rom, 0x07e5b,   67,
-            /* S     I     Z     Z  */
-            0x36, 0x2c, 0x3d, 0x3d, 0xff,
-            /* S     N     O     O     Z     E  */
-            0x36, 0x31, 0x32, 0x32, 0x3d, 0x28, 0xff,
-            /* G     L     O     W  */
-            0x2a, 0x2f, 0x32, 0x3a, 0xff,
-            /* F     I     Z     Z     L     E   */
-            0x29, 0x2c, 0x3d, 0x3d, 0x2f, 0x28, 0xff,
-            /* E     V     A     C  */
-            0x28, 0x39, 0x24, 0x26, 0xff,
-            /* Z     O     O     M   */
-            0x3d, 0x32, 0x32, 0x30, 0xff,
-            /* P     R     O     T     E     C     T    */
-            0x33, 0x35, 0x32, 0x37, 0x28, 0x26, 0x37, 0xff,
-            /* M     I     D     H     E     A     L   */
-            0x30, 0x2C, 0x27, 0x2b, 0x28, 0x24, 0x2f, 0xff,
-            /* K     A     S     I     Z     Z     L     E   */
-            0x2e, 0x24, 0x36, 0x2c, 0x3d, 0x3d, 0x2f, 0x28, 0xff,
+    printf("Updating to modern spell names...\n");
 
-            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
-    );
-
+    set_text(rom, 0x7e56, "HEAL\xff"
+                          "SIZZ\xff"
+                          "SNOOZE\xff"
+                          "GLOW\xff"
+                          "FIZZLE\xff"
+                          "EVAC\xff"
+                          "ZOOM\xff"
+                          "PROTECT\xff"
+                          "MIDHEAL\xff"
+                          "KASIZZLE\xff"
+                          "\xff\xff\xff\xff\xff\xff\xff\xff");
     /* fix the repel end text */
-    vpatch(rom, 0x08774,   26,
-            /* P      R      O      T      E      C      T     */
-            0x33,  0x35,  0x32,  0x37,  0x28,  0x26,  0x37,  0x5f,
-            /* l      o      s      t             i      t      s        */
-            0x15,  0x18,  0x1c,  0x1d,  0x5f,  0x12,  0x1d,  0x1c,  0x5f,
-            /* e      f      f      e      c      t      .               */
-            0x0e,  0x0f,  0x0f,  0x0e,  0x0c,  0x1d,  0x47,  0x5f,  0x5f
-    );
+    set_text(rom, 0x8774,  "PROTECT lost its effect.  ");
 }
 
 /**
@@ -2009,38 +1827,33 @@ static void modern_spell_names(dw_rom *rom)
  */
 static void dwr_token_dialogue(dw_rom *rom)
 {
-    uint8_t text1[24], text2[75];
-    int dx, dy;
+    char text[73] = { 0 };
+    int dx, dy, copied;
 
-    if (!rom->token->item) {
-        strcpy((char*)text1, "Thou must go and fight!");
-        strcpy((char*)text2, "Go forth, descendant of Erdrick, "
-                "I have complete faith in thy victory! ");
-        ascii2dw(text1);
-        patch(rom, 0xa228, 23, text1);
-        vpatch(rom, 0xa288, 1, 0x53); /* replace .' with ' */
+    if (!rom->search_table->item[0]) {
+        set_text(rom, 0xa228, "Thou must go fight!'   ");
+        set_text(rom, 0xa242, "Go forth, descendant of Erdrick, "
+                "I have complete faith in thy victory!'");
     } else {
-        dx = rom->token->x - rom->map.warps_from[WARP_TANTEGEL].x;
-        dy = rom->token->y - rom->map.warps_from[WARP_TANTEGEL].y;
-//        strcpy((char*)text1, "Thou may go and search.");
-        if (dx > 100 || dy > 100) {
-            snprintf((char*)text2, 74, "From Tantegel Castle travel %3d "
-                    "leagues to the %s and %3d %s/    ",
+        dx = rom->search_table->x[0] - rom->map.warps_from[WARP_TANTEGEL].x;
+        dy = rom->search_table->y[0] - rom->map.warps_from[WARP_TANTEGEL].y;
+        if (ABS(dx) > 100 || ABS(dy) > 100) {
+            snprintf((char*)text, 72, "From Tantegel Castle travel %d leagues "
+                    "to the %s and %d %s/         ",
                     ABS(dy), (dy < 0) ? "north" : "south",
                     ABS(dx), (dx < 0) ? "west" : "east");
         } else {
-            snprintf((char*)text2, 74, "From Tantegel Castle travel %2d "
-                    "leagues to the %s and %2d to the %s/",
+            snprintf((char*)text, 72, "From Tantegel Castle travel %d "
+                    "leagues to the %s and %d to the %s/  ",
                     ABS(dy), (dy < 0) ? "north" : "south",
                     ABS(dx), (dx < 0) ? "west" : "east");
         }
+        set_text(rom, 0xa242, text);
     }
-    ascii2dw(text2);
-    patch(rom, 0xa242, 70, text2);
 }
 
 /**
- * What? No color?
+ * What? No color? This causes the PPU to stay in black and white mode.
  *
  * @param rom The rom struct.
  */
@@ -2068,7 +1881,8 @@ static void noir_mode(dw_rom *rom)
 }
 
 /**
- * Disables the screen flash when spells are cast
+ * Disables the screen flash when spells are cast by modifying ppu calls such
+ * that it is never set to black & white.
  *
  * @param rom The rom struct.
  */
@@ -2081,6 +1895,54 @@ static void no_screen_flash(dw_rom *rom)
     /* Change the PPUMASK writes to disable flashing during spells */
     vpatch(rom, 0x0d38e,    1,  0x18);
     vpatch(rom, 0x0db40,    1,  0x18);
+}
+
+/**
+ * Adds a hook so that the original credits are skipped and you go directly to
+ * the end game stat scroll.
+ *
+ * @param rom The rom struct
+ */
+static void skip_vanilla_credits(dw_rom *rom)
+{
+    if (SKIP_VANILLA_CREDITS(rom)) {
+        printf("Skipping original credits...\n");
+        add_hook(rom, JMP, 0x542b, START_DWR_CREDITS);
+    }
+}
+
+/**
+ * Sets up the extra expansion banks
+ *
+ * @param rom The rom struct
+ */
+void setup_expansion(dw_rom *rom)
+{
+    rom->header[4] = 8; /* set to 8 PRG banks */
+
+    /* patching various routines to keep track of statistics */
+    add_hook(rom, JSR, 0x31eb, INC_BONK_CTR);
+    add_hook(rom, JMP, 0xccf0, START_DWR_CREDITS);
+    add_hook(rom, JSR, 0xdbb2, COUNT_SPELL_USE);
+    add_hook(rom, JSR, 0xccb8, SNAPSHOT_TIMER);
+    add_hook(rom, JSR, 0xe4ed, COUNT_ENCOUNTER);
+    add_hook(rom, DIALOGUE, 0xe5c7, PLAYER_AMBUSHED);
+    add_hook(rom, JSR, 0xe605, INC_ATTACK_CTR);
+    add_hook(rom, JSR, 0xe62a, INC_CRIT_CTR);
+    add_hook(rom, JSR, 0xe65a, INC_MISS_CTR);
+    add_hook(rom, JSR, 0xe68a, INC_DODGE_CTR);
+    add_hook(rom, DIALOGUE, 0xe89d, BLOCKED_IN_FRONT);
+    add_hook(rom, JSR, 0xe98c, COUNT_WIN);
+    add_hook(rom, JSR, 0xed9e, INC_ENEMY_DEATH_CTR);
+    add_hook(rom, JSR, 0xeda9, INC_DEATH_CTR);
+    add_hook(rom, JSR, 0xf720, INIT_SAVE_RAM);
+    add_hook(rom, JSR, 0xfee0, COUNT_FRAME);
+
+    bank_3_patch(rom);
+    fill_expansion(rom);
+
+    int track = mt_rand(0, track_count - 1);
+    add_music(rom, track);
 }
 
 
@@ -2101,9 +1963,23 @@ static BOOL dwr_write(dw_rom *rom, const char *output_file)
         fprintf(stderr, "Unable to open file '%s' for writing", output_file);
         return FALSE;
     }
-    fwrite(rom->header, 1, ROM_SIZE, output);
+    fwrite(rom->header, 1, 0x10, output);
+    fwrite(rom->content, 1, 0xc000, output);
+    fwrite(rom->expansion, 1, 0x10000, output);
+    fwrite(&rom->content[0xc000], 1, 0x8000, output);
     fclose(output);
     return TRUE;
+}
+
+/**
+ * Checks any structs to ensure they are being compiled to the correct size.
+ * This causes the program to error if the compiler has tried to optimize them
+ * for byte-alignment. Otherwise this can cause strange errors that are hard to
+ * debug.
+ */
+static void check_structs()
+{
+    assert(sizeof(dw_enemy) == 16);
 }
 
 /**
@@ -2119,26 +1995,43 @@ static BOOL dwr_write(dw_rom *rom, const char *output_file)
 uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
         const char *sprite_name, const char* output_dir)
 {
-    uint64_t crc;
-    char output_file[1024];
+    uint64_t crc = 0;
+    char output_file[1025] = { 0 };
+    dw_rom rom;
 
-    snprintf(output_file, 1024, "%s/DWRando.%"PRIu64".%s.nes", output_dir, seed,
-            flags);
+    check_structs();
+
+    snprintf(output_file, 1024, "%s/DWRando.%"PRIu64".%s.nes", output_dir,
+            seed, flags);
     printf("Using seed# %"PRIu64"\n", seed);
     printf("Using flags %s\n", flags);
 
     mt_init(seed);
-    dw_rom rom;
     if (!dwr_init(&rom, input_file, flags)) {
         return 0;
     }
     rom.seed = seed;
 
     /* Clear the unused code so we can make sure it's unused */
-    memset(&rom.content[0xc288], 0xff, 0xc4f5 - 0xc288);
+#ifdef CLEAR_ALL_UNUSED_DATA
+    memset(&rom.content[0x1314], 0xff, 0x1332 - 0x1314);
+    memset(&rom.content[0x3bbe], 0xff, 0x3bdf - 0x3bbe);
+    memset(&rom.content[0x6181], 0xff, 0x6194 - 0x6181);
+    memset(&rom.content[0x6bc0], 0xff, 0x6bc4 - 0x6bc0);
+#endif
+    memset(&rom.content[0xc288], 0xff, 0xc529 - 0xc288);
+    memset(&rom.content[0xc6c9], 0xff, 0xc6f0 - 0xc6c9);
+    memset(&rom.content[0xc7ec], 0xff, 0xc9b5 - 0xc7ec);
+    memset(&rom.content[0xf232], 0xff, 0xf35b - 0xf232);
 
-    shuffle_chests(&rom);
-    while(!map_generate_terrain(&rom)) {}
+    show_spells_learned(&rom);
+    other_patches(&rom);
+    short_charlock(&rom);
+    do_chest_flags(&rom);
+    stair_shuffle(&rom);
+    check_quest_items(&rom);
+    map_generate_terrain(&rom);
+    spike_rewrite(&rom);
     randomize_attack_patterns(&rom);
     randomize_zone_layout(&rom);
     randomize_zones(&rom);
@@ -2153,20 +2046,21 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     dwr_death_necklace(&rom);
     dwr_menu_wrap(&rom);
     dwr_speed_hacks(&rom);
-    dwr_token_dialogue(&rom);
-    chaos_mode(&rom);
     open_charlock(&rom);
-    short_charlock(&rom);
+    chaos_mode(&rom);
     no_keys(&rom);
     cursed_princess(&rom);
     threes_company(&rom);
     scared_metal_slimes(&rom);
-    scaled_metal_slime_xp(&rom);
+    support_2_byte_xp_gold(&rom);
     torch_in_battle(&rom);
     repel_mods(&rom);
     permanent_torch(&rom);
-    other_patches(&rom);
-    credits(&rom);
+    rotate_dungeons(&rom);
+    treasure_guards(&rom);
+    sorted_inventory(&rom);
+    summer_sale(&rom);
+    dwr_token_dialogue(&rom);
 
     modern_spell_names(&rom);
     randomize_music(&rom);
@@ -2178,15 +2072,23 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 
     crc = crc64(0, rom.content, 0x10000);
 
+    death_counter(&rom);
     update_title_screen(&rom);
-    sprite(&rom, sprite_name);
     no_screen_flash(&rom);
     noir_mode(&rom);
+
+    /* reseed the RNG so the rest isn't deterministic */
+    mt_init(time(NULL));
+
+    skip_vanilla_credits(&rom);
+    setup_expansion(&rom);
+    sprite(&rom, sprite_name);
 
     printf("Checksum: %016"PRIx64"\n", crc);
     if (!dwr_write(&rom, output_file)) {
         return 0;
     }
     free(rom.header);
+    free(rom.expansion);
     return crc;
 }

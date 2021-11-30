@@ -50,6 +50,36 @@ typedef enum {
 } dw_map_index;
 
 typedef enum {
+    TOWN_TILE_GRASS, /* 0 */
+    TOWN_TILE_DESERT,
+    TOWN_TILE_WATER,
+    TOWN_TILE_CHEST,
+    TOWN_TILE_BLOCK,
+    TOWN_TILE_STAIRS_UP, /* 5 */
+    TOWN_TILE_BRICK,
+    TOWN_TILE_STAIRS_DOWN,
+    TOWN_TILE_TREES,
+    TOWN_TILE_SWAMP,
+    TOWN_TILE_BARRIER, /* 10 */
+    TOWN_TILE_DOOR,
+    TOWN_TILE_WPN_SIGN,
+    TOWN_TILE_INN_SIGN,
+    TOWN_TILE_BRIDGE,
+    TOWN_TILE_COUNTER, /* 15 */
+} dw_town_tile;
+
+typedef enum {
+    DUNGEON_TILE_BLOCK, /* 0 */
+    DUNGEON_TILE_STAIRS_UP,
+    DUNGEON_TILE_BRICK,
+    DUNGEON_TILE_STAIRS_DOWN,
+    DUNGEON_TILE_CHEST,
+    DUNGEON_TILE_DOOR, /* 5 */
+    DUNGEON_TILE_GWAELIN,
+    DUNGEON_TILE_BLACK,
+} dw_dungeon_tile;
+
+typedef enum {
     HEAL,
     HURT,
     SLEEP,
@@ -190,17 +220,13 @@ typedef struct {
     uint8_t y;
 } dw_forced_encounter;
 
-/** Code for the 3 "search" items in the game (not including the trap door) */
+/** Table for the 3 "search" items in the game (not including the trap door) */
 typedef struct {
-    uint8_t code1[3];
-    uint8_t map;
-    uint8_t code2[5];
-    uint8_t x;
-    uint8_t code3[5];
-    uint8_t y;
-    uint8_t code4[3];
-    uint8_t item;
-} dw_searchable;
+    uint8_t map[3];
+    uint8_t x[3];
+    uint8_t y[3];
+    uint8_t item[3];
+} dwr_search_table;
 
 /** A single in-game chest */
 typedef struct {
@@ -211,19 +237,18 @@ typedef struct {
 } dw_chest;
 
 /** Statistics for an in-game enemy */
-typedef struct {
+typedef struct __attribute__((packed)) {
     uint8_t str;
     uint8_t agi;
     uint8_t hp;
     uint8_t pattern;
     uint8_t s_ss_resist; /* sleep/stopspell resist */
     uint8_t hr_dodge; /* hurt resist/dodge */
-    uint8_t xp;
-    uint8_t gold;
-    /* The rest of this is 8 bytes of unused space in the original game. */
-    /* I am repurposing it. */
+    uint16_t xp;      /* These are 1 byte in the original game, but there is */
+    uint16_t gold;    /* Unused space so we're supporting 2 bytes            */
+    /* The rest of this is 6 bytes of unused space in the original game.     */
     float   rank;
-    uint32_t index;
+    uint16_t index;
 } dw_enemy;
 
 /** Statistics for a single player level */
@@ -277,11 +302,21 @@ typedef struct {
     uint8_t y;
 } dw_rainbow_drop;
 
+typedef struct {
+    uint8_t map[8];
+    uint8_t x[8];
+    uint8_t y[8];
+    uint8_t flags[8];
+    uint8_t monster[8];
+} dwr_spike_table;
+
+
 /** A struct for the in-game map */
 typedef struct {
     uint16_t *pointers;
     uint8_t *encoded;
-    uint64_t flags;
+    uint8_t *flags;
+    int size;
     dw_map_meta *meta;
     dw_warp *warps_from;
     dw_warp *warps_to;
@@ -291,14 +326,18 @@ typedef struct {
     dw_rainbow_drop *rainbow_bridge;
     uint8_t tiles[120][120];
     uint8_t walkable[120][120];
-    uint8_t have_keys;
+    uint8_t *chest_access;
+    uint8_t key_access;
 } dw_map;
 
 /** A struct for the rom data */
 typedef struct {
     uint8_t *header;
     uint8_t *content;
-    uint64_t flags;
+    uint8_t *expansion;
+    unsigned char flags_encoded[25];
+    uint8_t flags[15];
+    uint8_t chest_access[31];
     uint64_t seed;
     dw_map map;
     dw_stats *stats;
@@ -309,16 +348,8 @@ typedef struct {
     uint8_t *zones;
     uint8_t *zone_layout;
     dw_chest *chests;
-    dw_forced_encounter *axe_knight;
-    dw_forced_encounter *green_dragon;
-    dw_forced_encounter *golem;
-    dw_forced_encounter *axe_knight_run;
-    dw_forced_encounter *green_dragon_run;
-    dw_forced_encounter *golem_run;
-    uint8_t *encounter_types[3];
-    dw_searchable *token;
-    dw_searchable *flute;
-    dw_searchable *armor;
+    dwr_spike_table *spike_table;
+    dwr_search_table *search_table;
     uint8_t *repel_table;
     uint8_t *weapon_shops;
     uint16_t *weapon_prices;

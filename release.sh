@@ -6,17 +6,17 @@ if [ $# -lt 1 ]; then
 fi;
 
 cd $(dirname $0)/build
-qmake DEFINES+="DWR_RELEASE" ../dwrandomizer-cli.pro
+qmake CONFIG+="RELEASE CLI" ../dwrandomizer-cli.pro
 make
-cp dwrandomizer-cli ../builds/
+cp dwrandomizer ../builds/dwrandomizer-cli
 rm -r *
 
-qmake DEFINES+="DWR_RELEASE" CONFIG+= "c++11" ../dwrandomizer.pro
+qmake CONFIG+=RELEASE ../dwrandomizer.pro
 make
 cp dwrandomizer ../builds/
 rm -r *
 
-qmake-win DEFINES+="DWR_RELEASE" CONFIG+="c++11" ../dwrandomizer.pro
+qmake-win CONFIG+=RELEASE ../dwrandomizer.pro
 make
 cp release/dwrandomizer.exe ../builds
 rm -r *

@@ -5,6 +5,9 @@
 
 #include <stdint.h>
 
+#include "dwr_types.h"
+#include "dwr.h"
+
 /** Map tile indexes */
 typedef enum {
     TILE_NOTSWAMP = -2,
@@ -26,13 +29,15 @@ typedef enum {
 
 /** Town border tile indexes */
 typedef enum {
-    BORDER_GRASS  = 0x0,
-    BORDER_DESERT = 0x1,
-    BORDER_HILL   = 0x2,
-    BORDER_BRICK  = 0x4,
-    BORDER_SWAMP  = 0x6,
-    BORDER_TREES  = 0xb,
-    BORDER_WATER  = 0xf,
+    BORDER_GRASS     = 0x0,
+    BORDER_DESERT    = 0x1,
+    BORDER_HILL      = 0x2,
+    BORDER_BRICK     = 0x4,
+    BORDER_SWAMP     = 0x6,
+    BORDER_TREES     = 0xb,
+    BORDER_WATER     = 0xf,
+    BORDER_BLOCK     = 0x10,
+    BORDER_MOUNTAIN  = 0x12,
 } dw_border_tile;
 
 /** Warp indices */
@@ -42,29 +47,34 @@ typedef enum {
     WARP_KOL,
     WARP_BRECCONARY,
     WARP_TANTEGEL,
-    WARP_SWAMP_NORTH,
+    WARP_SWAMP_NORTH, /* 5 */
     WARP_CHARLOCK,
     WARP_SWAMP_SOUTH,
     WARP_MOUNTAIN_CAVE,
     WARP_RIMULDAR,
-    WARP_HAUKSNESS,
+    WARP_HAUKSNESS,  /* 10 */
     WARP_CANTLIN, 
     WARP_JERK_CAVE,
     WARP_ERDRICKS_CAVE,
     WARP_CHARLOCK_SURFACE_1,
-    WARP_CHARLOCK_SURFACE_2,
+    WARP_CHARLOCK_SURFACE_2, /* 15 */
     WARP_CHARLOCK_SURFACE_3,
     WARP_TANTEGEL_BASEMENT,
     WARP_GARINS_GRAVE = 19,
     WARP_CHARLOCK_CHEST = 21,
     WARP_CHARLOCK_POINTLESS_1 = 24,
-    WARP_CHARLOCK_POINTLESS_2,
+    WARP_CHARLOCK_POINTLESS_2 = 25,
+    WARP_CHARLOCK_THRONE = 38,
     WARP_MOUNTAIN_CAVE_POINTLESS = 39,
     WARP_GARINS_GRAVE_POINTLESS = 45
 } dw_warp_index;
 
-#include "dwr_types.h"
-#include "dwr.h"
+enum {
+    KEY_IN_TABLET   = 0x01,
+    KEY_IN_MOUNTAIN = 0x02,
+    KEY_IN_GRAVE    = 0x04,
+    KEY_IN_BASEMENT = 0x10,
+};
 
 #ifdef __cplusplus
 extern "C" {
@@ -83,7 +93,7 @@ void map_decode(dw_map *map);
  * @param rom The rom struct
  * @return A boolean indicating whether terrain generation was successful or not
  */
-BOOL map_generate_terrain(dw_rom *rom);
+void map_generate_terrain(dw_rom *rom);
 
 #ifdef __cplusplus
 }

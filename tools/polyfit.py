@@ -36,7 +36,7 @@ if __name__ == "__main__":
     print('{')
     print('    MIN,')
     print('    MAX,')
-    for i in range(11):
+    for i in range(14):
         if len(coef) > i:
             print(f'    {coef[i]},')
         else:
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     label = None
     for arg in args[3:]:
         if arg.startswith('#'):
-            label = arg[1:]
+            label = arg[1:].replace('_', ' ')
             continue
         if arg.startswith('^'):
             factors = [float(x) for x in arg[1:].split(',')]

@@ -1,11 +1,3 @@
 node_modules
 dist
-base32.js
-dwrandomizer.js
-dwrandomizer.wasm
-index.css
-index.js
-interface.js
-*.html
-*.png
 yarn.lock

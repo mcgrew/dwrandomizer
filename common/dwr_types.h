@@ -210,16 +210,6 @@ typedef struct {
     uint8_t x;
 } dw_love_calc;
 
-/** Code for the 3 forced encounters in the game */
-typedef struct {
-    uint8_t code1[3];
-    uint8_t map;
-    uint8_t code2[5];
-    uint8_t x;
-    uint8_t code3[5];
-    uint8_t y;
-} dw_forced_encounter;
-
 /** Table for the 3 "search" items in the game (not including the trap door) */
 typedef struct {
     uint8_t map[3];
@@ -259,13 +249,6 @@ typedef struct {
     uint8_t mp;
     uint16_t spells;
 } dw_stats;
-
-/** The code for "thou has learned a new spell" message at each level */
-typedef struct {
-    uint8_t code1;
-    uint8_t level;
-    uint8_t code2[2];
-} dw_new_spell;
 
 /** In-game map metadata */
 typedef struct {
@@ -341,7 +324,6 @@ typedef struct {
     uint64_t seed;
     dw_map map;
     dw_stats *stats;
-    dw_new_spell *new_spells;
     uint8_t *mp_reqs;
     uint16_t *xp_reqs;
     dw_enemy *enemies;

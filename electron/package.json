@@ -44,8 +44,5 @@
   "devDependencies": {
     "electron": "^15.3.0",
     "electron-builder": "^22.11.7"
-  },
-  "dependencies": {
-    "@electron/remote": "^2.0.1"
   }
 }

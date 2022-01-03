@@ -366,7 +366,7 @@ static void move_chests(dw_rom *rom)
     size_t i, j;
     int bin, map;
     uint8_t *chest_spot, *new_door;
-    uint8_t chest_bins[4] = { 0, 0, 0, 0};
+    uint8_t chest_bins[4] = { 3, 0, 0, 0};
     uint8_t chest_spots[][3] = {
 //         {TANTEGEL_THRONE_ROOM,  4,  4}, /* vanilla */
 //         {TANTEGEL_THRONE_ROOM,  5,  4}, /* vanilla */
@@ -508,6 +508,8 @@ chest_placement_retry:
         if (j >= sizeof(chest_spots) / 3) {
             /* this should never happen, but just in case */
             printf("Something went wrong, retrying chest placement...\n");
+            chest_bins[0] = 3;
+            chest_bins[1] = chest_bins[2] = chest_bins[3] = 0;
             goto chest_placement_retry;
         }
         if (bin >= 0) {

@@ -1,4 +1,4 @@
-Project Version="3.1.1" TempoMode="FamiStudio" Name="bubble" Author="mcgrew"
+Project Version="3.2.2" TempoMode="FamiStudio" Name="Mega Man 2" Author="Ogeretsu,Manami,Ietel,YuukiChan" Copyright="1988,1989 Capcom Co. Ltd."
 	Instrument Name="Bub Backing Duty 0"
 		Envelope Type="Volume" Length="6" Values="8,8,7,7,7,6"
 	Instrument Name="Bub Backing Duty 2"

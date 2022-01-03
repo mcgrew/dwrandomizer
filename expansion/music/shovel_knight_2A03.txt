@@ -1,4 +1,4 @@
-Project Version="3.1.1" TempoMode="FamiStudio" Name="Shovel Knight OST" Author="Jake Kaufman"
+Project Version="3.2.2" TempoMode="FamiStudio" Name="Shovel Knight OST" Author="Jake Kaufman"
 	Instrument Name="Bass"
 	Instrument Name="BassDrum"
 		Envelope Type="Arpeggio" Length="1" Values="12"

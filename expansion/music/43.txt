@@ -1,4 +1,4 @@
-Project Version="3.1.1" TempoMode="FamiStudio" Name="forty_three" Author="mcgrew"
+Project Version="3.2.2" TempoMode="FamiStudio" Name="1943: The Battle Of Midway" Author="Sakaguchi Yoshihiro,Yamaga Kumi" Copyright="1988 Capcom Co. Ltd."
 	Instrument Name="43 Duty 2A"
 		Envelope Type="Volume" Length="32" Values="10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,5"
 		Envelope Type="DutyCycle" Length="1" Values="2"

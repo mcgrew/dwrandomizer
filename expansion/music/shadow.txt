@@ -1,4 +1,4 @@
-Project Version="3.1.1" TempoMode="FamiStudio" Name="shadow" Author="mcgrew"
+Project Version="3.2.2" TempoMode="FamiStudio" Name="Shadow Of The Ninja" Author="Mizutani Iku, Yamanishi Kouichi" Copyright="1990 Natsume"
 	Instrument Name="SN Drop"
 		Envelope Type="Volume" Length="37" Values="10,10,10,10,10,10,10,10,10,10,10,10,8,8,8,8,8,8,8,8,8,8,8,8,8,8,5,5,5,5,5,5,5,5,5,5,3"
 		Envelope Type="Arpeggio" Length="13" Loop="0" Values="0,0,0,0,-1,-2,-3,-4,-6,-7,-9,-11,-12"

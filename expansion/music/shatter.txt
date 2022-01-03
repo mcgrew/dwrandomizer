@@ -1,4 +1,4 @@
-Project Version="3.1.1" TempoMode="FamiStudio" Name="shatter"
+Project Version="3.2.2" TempoMode="FamiStudio" Name="Shatterhand" Author="Iku Mizutani, Kouichi Yamanishi" Copyright="1991 Natsume, Jaleco"
 	Instrument Name="SH Bass"
 	Instrument Name="SH BassDrum"
 		Envelope Type="Volume" Length="5" Values="15,10,3,2,0"

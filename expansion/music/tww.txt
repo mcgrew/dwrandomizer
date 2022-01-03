@@ -1,4 +1,4 @@
-Project Version="3.1.1" TempoMode="FamiStudio" Name="tww"
+Project Version="3.2.2" TempoMode="FamiStudio" Name="Tecmo W. W. C: Yamagishi Keiji" Author="Tanaka Mitsuhito,Okamura Mayuko" Copyright="1990 Tecmo C: Miyazaki Hiroshi"
 	Instrument Name="TWW Duty 0A"
 		Envelope Type="Volume" Length="1" Values="14"
 	Instrument Name="TWW Duty 0B"

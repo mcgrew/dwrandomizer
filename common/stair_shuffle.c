@@ -542,13 +542,9 @@ static void chest_paths(dw_rom *rom)
 
     clear_all_flags();
     map_dungeon(get_map(CHARLOCK_THRONE_ROOM), 10, 19, FALSE);
-//     if (SHORT_CHARLOCK(rom))
-//         map_dungeon(get_map(CHARLOCK_THRONE_ROOM), 10, 29, FALSE);
     mark_chests(rom, 0x8);
     clear_all_flags();
     map_dungeon(get_map(CHARLOCK_THRONE_ROOM), 10, 19, TRUE);
-//     if (SHORT_CHARLOCK(rom))
-//         map_dungeon(get_map(CHARLOCK_THRONE_ROOM), 10, 29, TRUE);
     mark_chests(rom, 0x80);
 }
 
@@ -562,8 +558,6 @@ static void write_back_warps(dw_rom *rom)
     size_t i, j;
     j = 0;
     for (i=0; i < 51; i++) {
-//         if (SHORT_CHARLOCK(rom) && i == WARP_CHARLOCK_SURFACE_1)
-//             continue;
         if (indexes_contains(indexes, rom->map.warps_from[i].map) &&
             indexes_contains(indexes, rom->map.warps_to[i].map)) {
             rom->map.warps_from[i] = warps_from[j];

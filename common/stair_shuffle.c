@@ -472,11 +472,16 @@ static void do_shuffle(dw_rom *rom)
             /* inaccessible chests, try again. */
             continue;
         }
+        if (SHORT_CHARLOCK(rom)) {
+            /* no need to check charlock throne accessibility */
+            break;
+        }
         clear_all_flags();
-        if (!SHORT_CHARLOCK(rom) || charlock_throne->tiles[10][29] & 8)
-            map_dungeon(charlock, 10, 19, TRUE);
+        map_dungeon(charlock, 10, 19, TRUE);
+        if (charlock_throne->tiles[10][29] & 8) {
             /* DL is accessible from Charlock, we're good. */
             break;
+        }
     }
 }
 

@@ -108,7 +108,8 @@ class Rom extends Uint8Array {
         let downloader = document.createElement('a');
         downloader.href = url;
         downloader.download = this.outname;
-        downloader.click()
+        downloader.click();
+        URL.revokeObjectURL(url);
     }
 }
 

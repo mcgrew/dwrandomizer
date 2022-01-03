@@ -188,6 +188,7 @@ class Interface {
         this.title = this.create('img', null, {
             'display': 'block',
             'margin': 'auto',
+            'filter': 'drop-shadow(2px 2px 1px #aaa)',
         });
         this.title.src = 'logo.png';
         this.title.alt = 'Dragon Warrior Randomizer';

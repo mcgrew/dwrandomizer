@@ -154,22 +154,24 @@ static void chaos_enemy_drops(dw_rom *rom)
     dw_enemy *enemies;
     double x;
 
-    if (!RANDOM_ENEMY_DROPS(rom))
+    if (!RANDOM_ENEMY_DROPS(rom)) {
         return;
+    }
 
     enemies = rom->enemies;
     for (i=SLIME; i <= RED_DRAGON; i++) {
-        if (RANDOM_ENEMY_STATS(rom))
+        if (RANDOM_ENEMY_STATS(rom)) {
             x = enemies[i].rank;
-        else
-            x = i;
+        } else {
+            x = i+1;
+        }
         if (enemies[i].rank != 1.0) {
             /* noodle enemy, this has been set elsewhere */
             next_rank(CONSISTENT_STATS(rom), &x, 1, 40);
-            enemies[i].xp = (uint8_t)polyfit(x, &mon_xp_fac);
+            enemies[i].xp = (uint16_t)polyfit(x, &mon_xp_fac);
         }
         next_rank(CONSISTENT_STATS(rom), &x, 1, 40);
-        enemies[i].gold = (uint8_t)polyfit(x, &mon_gold_fac);
+        enemies[i].gold = (uint16_t)polyfit(x, &mon_gold_fac);
     }
 }
 

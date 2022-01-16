@@ -10,7 +10,8 @@ MUSIC_ADDR = 0x8000
 
 class Music:
     def __init__(self, name):
-        self.name = name
+        self.filename = name
+        self.name = name[:name.rfind('.')]
         print(f'Adding music {self.name}...')
         self.asm6 = find_executable('asm6f') or find_executable('asm6')
         self.famistudio = find_executable('famistudio')
@@ -20,7 +21,7 @@ class Music:
 
     def generate_asm(self):
         print('Generating assembly...')
-        run([self.famistudio, f'{self.name}.txt',  'famistudio-asm-export',
+        run([self.famistudio, f'{self.filename}',  'famistudio-asm-export',
             f'_{self.name}.asm', '-famistudio-asm-format:asm6'])
 
     def cleanup(self):
@@ -158,7 +159,7 @@ def create_c_file(music:list[Music], music_data):
 
 def main():
     chdir(join(dirname(realpath(__file__)), '..', 'expansion', 'music'))
-    music_names = [x[:-4] for x in glob('*.txt')]
+    music_names = [x for x in glob('*.txt') + glob('*.fms')]
     music = [Music(m) for m in music_names]
     music_data = b''.join([bytes(m) for m in music])
 

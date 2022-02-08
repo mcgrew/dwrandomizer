@@ -2420,6 +2420,7 @@ static void barry_sanders(dw_rom *rom)
 
 static void mina_the_hollower(dw_rom *rom)
 {
+    vpatch(rom, 0x087da,    2,  0x0e,  0x1b); // his -> her
     no_equipment_sprites(rom);
     set_palette_colors(rom, 0, 0x36, 0x15, 0x0f);
     set_palette_colors(rom, 3, 0x35, 0x30, 0x0f);
@@ -2626,37 +2627,3 @@ void sprite(dw_rom *rom, const char *sprite_name)
     }
 }
 
-void noir_mode(dw_rom *rom)
-{
-    if (!NOIR_MODE(rom))
-        return;
-
-    /* Change the PPUMASK writes to disable color */
-    vpatch(rom, 0x030b9,    1,  0x19);
-    vpatch(rom, 0x03b5e,    1,  0x19);
-    vpatch(rom, 0x0535d,    1,  0x19);
-    vpatch(rom, 0x0c9e9,    1,  0x19);
-    vpatch(rom, 0x0d39b,    1,  0x19);
-    vpatch(rom, 0x0db4e,    1,  0x19);
-    vpatch(rom, 0x0f84c,    1,  0x19);
-    if (NO_SCREEN_FLASH(rom)) {
-        vpatch(rom, 0x0d38e,    1,  0x19);
-        vpatch(rom, 0x0db40,    1,  0x19);
-    } else {
-        vpatch(rom, 0x0d38e,    1,  0x00);
-        vpatch(rom, 0x0db40,    1,  0x00);
-    }
-}
-
-/**
- * Disables the screen flash when spells are cast
- */
-void no_screen_flash(dw_rom *rom)
-{
-    if (!NO_SCREEN_FLASH(rom))
-        return;
-
-    /* Change the PPUMASK writes to disable flashing during spells */
-    vpatch(rom, 0x0d38e,    1,  0x18);
-    vpatch(rom, 0x0db40,    1,  0x18);
-}

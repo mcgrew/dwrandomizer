@@ -1610,7 +1610,10 @@ static void treasure_guards(dw_rom *rom)
             spike->map[spike_entry] = search->map[i];
             spike->x[spike_entry] = search->x[i];
             spike->y[spike_entry] = search->y[i];
-            spike->monster[spike_entry++] = mt_rand(WYVERN, WIZARD);
+            do {
+                spike->monster[spike_entry] = mt_rand(WYVERN, WIZARD);
+            } while(spike->monster[spike_entry] == GOLEM);
+            spike_entry++;
         }
     }
     for (i=0; i < CHEST_COUNT; i++){

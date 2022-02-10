@@ -12,6 +12,9 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     document.body.style.backgroundColor = '#fff';
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        document.body.style.backgroundColor = '#333';
+    }
 })
 
 function createElement(element, text, style) {

@@ -16,6 +16,10 @@ body {
     user-select: none;
 }
 
+#application > img {
+   filter: drop-shadow(2px 2px 1px #aaa);
+}
+
 h1, h3 {
     text-align: center;
 }
@@ -54,6 +58,59 @@ tabcontent {
     padding: 3em;
 }
 
+/* Hide the "spinner" in number fields */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
 .invalid {
     border-color: red;
+}
+
+div.description {
+    color: #666;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #111;
+        color: #ccc;
+    }
+
+    #application {
+        background-color: #333;
+    }
+
+    tab {
+        background-color: #222;
+    }
+
+    tab:hover, tab.active {
+        background-color: #333;
+    }
+
+    button, select {
+        background-color: #333;
+        color: #ccc;
+        border-color: #3a3a3a;
+    }
+    input {
+        background-color: #111;
+        color: #ccc;
+        border-color: #333;
+    }
+    #application > img {
+       filter: drop-shadow(2px 2px 1px #000);
+    }
+    div.description {
+        color: #888;
+    }
+
 }

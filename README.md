@@ -6,7 +6,7 @@ will work on either version of the ROM.
 If you enjoy Dragon Warrior Randomizer, come join our
 [discord community](https://discord.gg/SmHeCkD)!
 
-## The randomizer has the following features: ##
+## The randomizer has the following features, and more: ##
 
 #### Random overworld map generation ####
 
@@ -110,165 +110,134 @@ or more swamp on the overworld.
 
 ## Running the randomizer ##
 
-##### Windows #####
+### Web Version ###
+
+The easiest way to use the randomizer is via your web browser. Simply go to
+[https://dwrandomizer.com/release](https://dwrandomizer.com/release). This should
+work on all major browsers.
+
+### Desktop Installation ###
+
+#### Windows #####
 
 Simply click on the executable in your file manager. On Windows, you may want to
 place this somewhere easy to find, such as on the Desktop.
 
-##### Mac OSX #####
+#### Linux and Mac OSX #####
 
-On Mac OSX, DWRandomizer will require the installation of Qt5. I recommend
-installing this via [homebrew](https://brew.sh):
-```
-brew install qt5
-```
-
-The *.app* folder contained in the zip file may be placed inside the
-Applications folder for easy access from Launchpad.
-
-##### Linux #####
-
-Qt5 is also required on Linux. This should be available in your package manager.
-If you'd prefer not to install this, there is a command line version also
-available in the download which does not require Qt.
+On Linux the application is available as a debian package, snap image, or AppImage.
+For ArchLinux the package is available via the AUR. For Mac OS, there is currently
+no package provided as I don't have a way to build one, so you may have to do so
+yourself or use the [web-based version](https://dwrandomizer.com/release)
 
 ### Usage ###
 
-Once the application is running, simply select your Dragon Warrior ROM file from
-The `ROM File` box, and choose an output directory. The `Seed` box will be pre-
-filled with a random seed number. You can generate a new one with the `Random`
+Once the application is running, simply select your Dragon Warrior ROM file by
+clicking the `ROM File` box, and choose an output directory. The `Seed` box will be pre-
+filled with a random seed number. You can generate a new one with the `Random Seed`
 button, or choose your own by entering it in the box. The `Flags` box is where
 you enter flags for the options you would like to use, or simply choose them with
-the check boxes below. If you're not sure, click `Defaults` for the options most
-players use. Next, choose your player sprite. `Loto` is the default original 
-sprite. There are other sprites to choose from, including sprites from other
-famous games. Now click `Randomize`, and you should get a message saying your
-ROM has been created. It will be in the directory you specified. Simply run this
-using your favorite emulator or flash cart.
-
-##### Options #####
-
-* Shuffle Chests & Search Items: Self-explanatory. Changes what are in chests and search locations.
-* Random Weapon Shops: Randomizes what items are available in all weapon shops.
-* Random Growth: Randomize the stat changes you receive on each level up.
-* Random Spell Learning: Randomizes the level at which you learn each spell.
-* Random Enemy Attacks: Enemy spells and abilities are randomized.
-  * Dragonlord form 2 may also have HEAL or SLEEP.
-* Random Enemy Zones: Enemy locations are random.
-* Random Enemy XP & Gold: Randomize the amount of XP and Gold received from enemies
-* Random Weapon Prices: Weapon & armor prices are randomized.
-* Random XP Requirements: Experience requirements for each level are randomized.
-* Enable Menu Wrapping: Enable wrapping of the cursor from top to bottom in menus.
-* Enable Death Necklace: Adds additional functionality to the Death Necklace. +10 ATK and -25% HP.
-* Shuffle Music: Shuffles which tunes you hear in each location. Battle music is unchanged.
-* Disable Music: Disables most game music. Battle music is not disabled, and music plays after an inn stay. These are known issues.
-* Big Swamp: Makes approximately 75% of the overworld contain swamp tiles. Ouch!
-* Fast Text: Speeds up all text in dialogs.
-* Speed Hacks: Speeds up other aspects of the game (spells, fairy flute, death music, etc.)
-* Open Charlock: No need to go around collecting items to make a bridge. Just walk right into Charlock!
-* Short Charlock: Dragonlord skimped on the dungeon so you go straight to his throne room on entering Charlock.
-* Don't Require Magic Keys: Doors will open without a key. The key shop owners have gone on strike.
-* Cursed Princess: Make the princess take a cursed belt to win.
-* Three's Company: Bring the princess to the Dragonlord and join him to win.
+the check boxes below. If you're not sure, click `Presets` to get a list of standard
+presets. Now click `Randomize`, and you should be prompted by your browser to 
+select a directory do save the file. If you do not get such a dialog, check your
+`Downloads` folder for the file. Simply run this using your favorite emulator
+or flash cart.
 
 ## Compiling from source ##
+
 If you'd prefer to compile your own version from source code, here are some
 instructions.
 
-##### Windows #####
+### Web-based or Electron version ###
 
-The easiest way I've found *so far* to build dwrandomizer on Windows is using
-Ubuntu in Windows Subsystem for Linux on Windows 10 along with the MXE
-cross-compiler. Setting up this environment is rather involved, but I'll try
-to cover it briefly.
+To build this application, you will first need Emscripten.
 
-First, set up [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+* Instructions for installing Emscripten can be found [here](https://emscripten.org/docs/getting_started/downloads.html)
 
-Next, download [mxe](https://github.com/mxe/mxe) into your Linux filesystem.
-Install the needed dependencies and build it with qt5 support. This may take a
-while to compile. 
-
-```
-apt update
-apt -y install automake autopoint bison flex gperf intltool libgdk-pixbuf2.0-dev libtool-bin lzip make p7zip-full ruby unzip
-make qt5
-```
-
-After this completes, navigate to the `dwrandomizer` source directory in your
-terminal and run the following (replacing `/path/to/mxe` with the path to the
-mxe directory you just created):
-
-```
-mkdir build
-cd build
-/path/to/mxe/usr/x86_64-w64-mingw32.static/qt5/bin/qmake ../dwrandomizer.pro
-make
-```
-
-This will compile dwrandomizer and the new executable should be in the release
-directory.
-
-##### Mac OSX #####
-
-First, install Qt5 using homebrew.
-```
-brew install qt5
-```
-Now, download the randomizer source code and change to that directory.
-```
-mkdir build
-cd build
-/usr/local/Cellar/qt5/5.9.1/bin/qmake ../dwrandomizer.pro
-make
-```
-The Qt version number may be different. This will create an app folder that you
-can run from finder, or from the command line simply run
-```
-dwrandomizer.app/Contents/MacOS/dwrandomizer
-```
-
-##### Linux #####
-
-First, install Qt5 using your package manager. Download the randomizer source
-code, then change to the directory containing the source code.
-
-```
-mkdir build
-cd build
-qmake ../dwrandomizer.pro
-make
-```
-
-Some compiling will happen, and that's it! you should have a working binary in 
-the current directory.
-
-##### Emscripten #####
+#### Emscripten #####
 
 Install emscripten from https://emscripten.org/docs/getting_started/downloads.html
 
-Instructions for MacOS and linux:
+Instructions for MacOS and linux. These *may* also work on Windows.
+
 ```bash
 mkdir build
 cd build
-cmake -DCMAKE_TOOLCHAIN_FILE=<path to emscripten>/libexec/cmake/Modules/Platform/Emscripten.cmake ..
+cmake -DCMAKE_TOOLCHAIN_FILE=<path to emscripten>/cmake/Modules/Platform/Emscripten.cmake ..
 make dwrandomizer-cli
 ```
 
-You'll then have `dwrandomizer-cli.wasm` and `dwrandomizer-cli.js` files, which can be served along with the files in the
- `emscripten` directory. For example, continuing from the same `build` directory as above:
-```bash
-cp ../emscripten/* .
+You'll then have the necessary files in the `release` directory, which
+can be served via a local web server. For example:
+
+```sh
+cd release/
 python -m http.server
 ```
+
 Then open a web browser to http://localhost:8000
 
+##### Electron #####
+
+First, complete the emscripten build instructions and copy the files from `build/release`
+into the `electron` directory (or copy all of these files into a new directory).
+Change to that directory.
+
+Some Linux distributions contain a standalone electron in the package manager.
+There may also be other ways to install this on other platforms.
+In this case, you can simply run electron and pass in the electron directory.
+
+```sh
+electron .
+```
+
+Otherwise, To build the electron version, you will need node.js, yarn, and electron-builder.
+
+* Instructions for installing node.js can be found [here](https://nodejs.org/en/download/)
+
+After that is complete, install yarn and electron-builder:
+
+```sh
+npm install yarn
+yarn add electron-builder
+```
+
+Next run electron-builder to build the application for the appropriate operating
+system:
+
+```sh
+node_modules/.bin/electron-builder --windows --linux --macos
+```
+
+On Windows, this should result in a executable in the `dist` directory. Copy it to
+somewhere appropriate.
+
+On Linux and Macos, the `dist` directory should contain a package you can install.
+The linux build currently builds a debian package, a snap image and an AppImage.
+Choose the one you want to install.
+
+#### Command Line #####
+
+To build the command line application, you should only need `cmake` installed.
+
+```sh
+mkdir build
+cd build
+cmake .. && make
+```
+
+This should result in a command line executable present in the build directory.
+The command line application is very barebones, but running without arguments will
+give some help. There is currently no way to get the appropriate flagset argument
+via this version, so you will have to obtain that elsewhere, such as the
+[web-based version](https://dwrandomizer.com/release).
 
 ## FAQ ##
 
 #### What is the "checksum" when generating a ROM? ####
 
-The program outputs a checksum when generating a new ROM. The checksum
-can be used to verify that 2 instances of the game are the same, e.g. the
-input ROM is the same and the same seed and flags were used. This is 
-mostly useful for verifying ROMs in races, where normally all players play the 
-same randomized game.
+The program outputs a checksum at the bottom of the screen when generating a
+new ROM. The checksum can be used to verify that 2 instances of the game are
+the same, i.e. the input ROM is the same and the same seed and flags were used.
+This is mostly useful for verifying ROMs in races, where normally all players
+play the same randomized game.

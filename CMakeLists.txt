@@ -58,7 +58,7 @@ if (CLEAR_UNUSED)
     add_definitions(-DCLEAR_ALL_UNUSED_DATA)
 endif()
 
-# emscripten build command
+# emscripten build command (Archlinux)
 #  cmake -DCMAKE_TOOLCHAIN_FILE=/usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake ..
 if (EMSCRIPTEN)
     add_executable(dwrandomizer ${SOURCE_FILES})

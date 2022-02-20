@@ -100,7 +100,7 @@ class Rom extends Uint8Array {
      * Prompts the user to save the generated ROM file
      */
     save() {
-        this.output = FS.readFile('/'+this.outname, null);
+        this.output = FS.readFile('/'+this.outname);
         FS.unlink('/'+this.outname);
         let url = URL.createObjectURL(new Blob([this.output]), {
             type: 'application/octet-stream'

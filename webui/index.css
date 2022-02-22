@@ -70,6 +70,10 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
+.modal {
+    background-color: #fff;
+}
+
 .invalid {
     border-color: red;
 }
@@ -111,6 +115,10 @@ div.description {
     }
     div.description {
         color: #888;
+    }
+
+    .modal {
+        background-color: #333;
     }
 
 }

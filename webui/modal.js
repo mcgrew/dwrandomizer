@@ -33,7 +33,6 @@ class Modal {
             'outline': '1px solid black',
             'font-weight': 'bold',
             'text-align': 'center',
-            'background-color': 'white',
             'margin': 'auto',
             'position': 'relative',
             'margin-top': dialogOffset + 'px',
@@ -41,6 +40,7 @@ class Modal {
             'height': height + 'px',
             'z-index': '3'
         });
+        this.dialog.classList.add('modal');
         this.main.prepend(this.dialog);
         if (title) {
             let heading = this.create('h3', title);

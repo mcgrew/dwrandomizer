@@ -1849,6 +1849,24 @@ static void dwr_token_dialogue(dw_rom *rom)
     }
 }
 
+static inline void noir_replace(uint8_t *pal_start, uint8_t *pal_end) {
+    static const uint8_t noir_lookup[] = {
+        0x00, 0x2d, 0x2d, 0x2d, 0x2d, 0x2d, 0x2d, 0x2d,
+        0x2d, 0x2d, 0x2d, 0x2d, 0x2d, 0x0f, 0x0f, 0x0f,
+        0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x1d, 0x0f, 0x0f,
+        0x20, 0x3d, 0x3d, 0x3d, 0x3d, 0x3d, 0x3d, 0x3d,
+        0x3d, 0x3d, 0x3d, 0x3d, 0x3d, 0x2d, 0x0f, 0x0f,
+        0x30, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10,
+        0x10, 0x10, 0x10, 0x10, 0x10, 0x3d, 0x0f, 0x0f,
+    };
+    for(; pal_start < pal_end; pal_start++) {
+        if ((*pal_start <= 0x3f)) {
+            *pal_start = noir_lookup[*pal_start];
+        }
+    }
+}
+
 /**
  * What? No color? This causes the PPU to stay in black and white mode.
  *
@@ -1859,23 +1877,42 @@ static void noir_mode(dw_rom *rom)
     if (!NOIR_MODE(rom))
         return;
 
-    printf("Enabling noir mode...\n");
-    /* Change the PPUMASK writes to disable color */
-    vpatch(rom, 0x030b9,    1,  0x19);
-    vpatch(rom, 0x03b5e,    1,  0x19);
-    vpatch(rom, 0x0535d,    1,  0x19);
-    vpatch(rom, 0x0c9e9,    1,  0x19);
-    vpatch(rom, 0x0d39b,    1,  0x19);
-    vpatch(rom, 0x0db4e,    1,  0x19);
-    vpatch(rom, 0x0f84c,    1,  0x19);
-    if (NO_SCREEN_FLASH(rom)) {
-        vpatch(rom, 0x0d38e,    1,  0x19);
-        vpatch(rom, 0x0db40,    1,  0x19);
-    } else {
-        vpatch(rom, 0x0d38e,    1,  0x00);
-        vpatch(rom, 0x0db40,    1,  0x00);
-    }
+    uint8_t *pal_start, *pal_end;
+
+    pal_start = &rom->content[0x1a2e];
+    pal_end   = &rom->content[0x1c8e];
+
+//     noir_replace(&rom->content[0x1a2e], &rom->content[0x1c8e]);
+    noir_replace(&rom->content[0x1a2e], &rom->content[0x1c83]); // omit DL
+    noir_replace(&rom->content[0xbdf4], &rom->content[0xbdf7]);
+    noir_replace(&rom->content[0xbe02], &rom->content[0xbe0b]);
+//     noir_replace(&rom->content[0xefab], &rom->content[0xefb6]); // DL
+//     noir_replace(&rom->content[0x3d41], &rom->content[0x3d4c]); // DL
 }
+
+// static void noir_mode(dw_rom *rom)
+// {
+// 
+//     if (!NOIR_MODE(rom))
+//         return;
+// 
+//     printf("Enabling noir mode...\n");
+//     /* Change the PPUMASK writes to disable color */
+//     vpatch(rom, 0x030b9,    1,  0x19);
+//     vpatch(rom, 0x03b5e,    1,  0x19);
+//     vpatch(rom, 0x0535d,    1,  0x19);
+//     vpatch(rom, 0x0c9e9,    1,  0x19);
+//     vpatch(rom, 0x0d39b,    1,  0x19);
+//     vpatch(rom, 0x0db4e,    1,  0x19);
+//     vpatch(rom, 0x0f84c,    1,  0x19);
+//     if (NO_SCREEN_FLASH(rom)) {
+//         vpatch(rom, 0x0d38e,    1,  0x19);
+//         vpatch(rom, 0x0db40,    1,  0x19);
+//     } else {
+//         vpatch(rom, 0x0d38e,    1,  0x00);
+//         vpatch(rom, 0x0db40,    1,  0x00);
+//     }
+// }
 
 /**
  * Disables the screen flash when spells are cast by modifying ppu calls such
@@ -2072,7 +2109,6 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     death_counter(&rom);
     update_title_screen(&rom);
     no_screen_flash(&rom);
-    noir_mode(&rom);
 
     /* reseed the RNG so the rest isn't deterministic */
     mt_init(time(NULL));
@@ -2080,6 +2116,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     skip_vanilla_credits(&rom);
     setup_expansion(&rom);
     sprite(&rom, sprite_name);
+    noir_mode(&rom);
 
     printf("Checksum: %016"PRIx64"\n", crc);
     if (!dwr_write(&rom, output_file)) {

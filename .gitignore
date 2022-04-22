@@ -19,3 +19,4 @@ builds/
 __pycache__
 CMakeFiles
 /.vs
+/x64/Debug

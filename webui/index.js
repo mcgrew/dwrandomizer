@@ -193,9 +193,9 @@ function setup_ui() {
         'All of the doors are unlocked. Just open them.');
     ui.addTriOption('Shortcuts', 10, 13, 2, "Summer Sale",
         'All weapons and armor 35-65% off!');
-    ui.addTriOption('Shortcuts', 12, 15, 0, 'Medium Text',
+    ui.addOption('Shortcuts', 12, 14, 0, 'Medium Text',
         'Various aspects of the game will be much faster.');
-    ui.addTriOption('Shortcuts', 14, 15, 4, 'Double Walking',
+    ui.addOption('Shortcuts', 14, 14, 1, 'Double Walking',
         'Various aspects of the game will be much faster.');
     ui.addTriOption('Shortcuts',  1,  8, 2, 'Cursed Princess',
         'Get Gwaelin to take a Cursed Belt when you return her to win.');

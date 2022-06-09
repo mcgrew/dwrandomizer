@@ -1945,6 +1945,89 @@ static void skip_vanilla_credits(dw_rom *rom)
     }
 }
 
+
+
+
+
+static void stat_choice(dw_rom *rom)
+{
+
+    /* Defaults new game stat build to 0,
+       aka sets the cursor position for stat window at the top. 
+       It's not needed, but it is slightly prettier. 
+       ...OR if you skip this portion then the cursor will default
+       itself to the Str-HP build. Decisions, decisions...*/
+    vpatch(rom, 0xf8d5, 1, 0x00);        
+
+    /* Hard code fast message speed for text scroller */
+    vpatch(rom, 0x7a31, 2, 0xa2, 0x00);  
+
+
+    /* Change message speed window contents to stat build selection. */
+    vpatch(rom, 0x719b, 68, 
+    0x81, 0x33, 0x12, 0x0C, 0x14, 0x81, 0x22, 0x18, 0x1E, 0x1B, 0x81, 0x81, 0x81, 0x81, 0x80, 0x80, /*   Pick your     */
+    0x81, 0x1C, 0x1D, 0x0A, 0x1D, 0x81, 0x0B, 0x18, 0x17, 0x1E, 0x1C, 0x0E, 0x1C, 0x80, 0x80, 0x80, /*   stat bonuses  */
+    0x86, 0x2B, 0x33, 0x49, 0x30, 0x33, 0x81, 0x80, 0x80,                                           /*        HP-MP    */
+    0x86, 0x36, 0x1D, 0x1B, 0x49, 0x2B, 0x33, 0x80, 0x80,                                           /*        Str-HP   */
+    0x86, 0x24, 0x10, 0x12, 0x49, 0x30, 0x33, 0x81, 0x80, 0x80,                                     /*        Agi-MP   */
+    0x86, 0x36, 0x1D, 0x1B, 0x49, 0x24, 0x10, 0x12);                                                /*        Str-Agi  */
+
+
+
+    /* Moves the cursor top row (0 position) two lines (aka, one selection) higher in the window. */
+    vpatch(rom, 0x7199, 1, 0x66); 
+    /* Sets a new cursor bottom row. Let's the cursor cycle 4 positions instead of the original 3. */ 
+    vpatch(rom, 0x6a19, 1, 0x03);
+
+
+    /* LDA $00E5 ; str or mp? Reads our stored value for the stat build. */
+    vpatch(rom, 0xf09e, 2, 0xa5, 0xe5);
+    /* LDA $00E5 ; agi or hp? Reads our stored value for the stat build. */
+    vpatch(rom, 0xf0b6, 2, 0xa5, 0xe5);  
+
+
+    /* jmp to experience check for saved game stats change*/
+    vpatch(rom, 0xf909, 3,
+    0x4c, 0xf6, 0xc4);     /*   jmp c4f6  */
+
+
+
+    /* Checks if the selected save slot exp is 0 and saves the new stat build if it is. */
+    vpatch(rom, 0xc4f6, 25,
+    0x08,                  /*   php          */
+    0x48,                  /*   pha          */
+    0xa5, 0xbb,            /*   lda $bb      */ 
+    0xd0, 0x0f,            /*   bne 0f       */
+
+    0xa5, 0xba,            /*   lda $ba      */ 
+    0xd0, 0x0b,            /*   bne 0b       */
+
+    0x68,                  /*   pla          */
+    0x28,                  /*   plp          */
+    0x85, 0xe5,            /*   sta $e5      */
+    0x20, 0xdf, 0xf9,      /*   jsr $f9df    */
+    0x4c, 0x6a, 0xf9,      /*   jmp $f96a    */
+
+    0x68,                  /*   pla          */
+    0x28,                  /*   plp          */
+    0x4c, 0x6a, 0xf9);     /*   jmp $f96a    */
+
+
+
+    /*  Alters main menu to "CHG STATS IF EXP 0"  */
+    vpatch(rom, 0x7224, 21,
+    0x81, 0x26, 0x2b, 0x2a, 0x81, 0x36, 0x37, 0x24, 0x37, 0x36, 0x81, 0x2c, 0x29, 0x81, 0x28, 0x3b, 0x33, 0x81, 0x00, 0x81, 0x81);
+    vpatch(rom, 0x7262, 21,
+    0x81, 0x26, 0x2b, 0x2a, 0x81, 0x36, 0x37, 0x24, 0x37, 0x36, 0x81, 0x2c, 0x29, 0x81, 0x28, 0x3b, 0x33, 0x81, 0x00, 0x81, 0x81);
+
+
+}
+
+
+
+
+
+
 /**
  * Sets up the extra expansion banks
  *
@@ -2106,6 +2189,9 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 
     crc = crc64(0, rom.content, 0x10000);
 
+
+    stat_choice(&rom);
+
     death_counter(&rom);
     update_title_screen(&rom);
     no_screen_flash(&rom);
@@ -2117,6 +2203,8 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     setup_expansion(&rom);
     sprite(&rom, sprite_name);
     noir_mode(&rom);
+
+
 
     printf("Checksum: %016"PRIx64"\n", crc);
     if (!dwr_write(&rom, output_file)) {

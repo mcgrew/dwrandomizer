@@ -1962,6 +1962,9 @@ static void stat_choice(dw_rom *rom)
     /* Hard code fast message speed for text scroller */
     vpatch(rom, 0x7a31, 2, 0xa2, 0x00);  
 
+    /* Tells the text scroller to only ever print the first letter of the character name. */
+    vpatch(rom, 0x7895, 1, 0x01);
+
 
     /* Change message speed window contents to stat build selection. */
     vpatch(rom, 0x719b, 68, 

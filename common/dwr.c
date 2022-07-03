@@ -2104,9 +2104,10 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     invisible_hero(&rom);
     invisible_npcs(&rom);
 
+    death_counter(&rom);
+
     crc = crc64(0, rom.content, 0x10000);
 
-    death_counter(&rom);
     update_title_screen(&rom);
     no_screen_flash(&rom);
 

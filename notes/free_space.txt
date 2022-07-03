@@ -11,6 +11,9 @@ Start | End  | Size | Bank | Comments
 7E9E  | 7FD8 | 314  | 1    | Unused space (FF)
 BED1  | BFD8 | 263  | 2    | Unused space (FF)
 C288  | C4F5 | 621  | 3    | This section of code goes unused
+C6C9  | C6F0 |  39  | 3    | This section of code goes unused
+C7EC  | C9B5 | 457  | 3    | This section of code goes unused
+F232  | F35B | 129  | 3    | This section of data goes unused
 FF54  | FF74 |  32  | 3    | Unused space (FF)
 FF7D  | FF8E |  11  | 3    | Unused space (FF)
 

@@ -227,16 +227,16 @@ function setup_ui() {
 
     ui.addTriOption('Cosmetic',  4, 11, 6, 'Modern Spell Names',
         'Use spell names from more recent DQ releases.');
-    ui.addTriOption('Cosmetic',  6, 11, 4, 'Noir Mode',
+    ui.addTriOption('Cosmetic',  7, 11, 4, 'Noir Mode',
         "It's all black and white baby!");
     ui.addOption   ('Cosmetic',  0, 14, 7, 'Shuffle Music',
         'Music in each area will be randomized.');
     ui.addOption   ('Cosmetic',  2, 14, 6, 'Disable Music',
         'This disables the game music in most situations.');
-    ui.addOption   ('Cosmetic',  8, 14, 5, 'Disable Spell Flashing',
+    ui.addOption   ('Cosmetic',  9, 14, 5, 'Disable Spell Flashing',
         'Prevents the screen from flashing when you cast spells.', true);
-    ui.addOption   ('Cosmetic',  10, 14, 4, 'Show Death Counter',
-        'The stats window will also have a death counter.', true);
+    ui.addOption   ('Cosmetic',   6, 14, 4, 'Show Death Counter',
+        'The stats window will also have a death counter.');
     ui.addOption   ('Cosmetic',   3, 14, 3, 'Allow Custom Spell Names',
         'Allow spell names to be changed based on the chosen sprite.', true);
     ui.addOption   ('Cosmetic',   5, 14, 2, 'Skip Original Credits',

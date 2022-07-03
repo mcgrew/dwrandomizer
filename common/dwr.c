@@ -2099,6 +2099,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     modern_spell_names(&rom);
     randomize_music(&rom);
     disable_music(&rom);
+    death_counter(&rom);
 
     no_numbers(&rom);
     invisible_hero(&rom);
@@ -2106,7 +2107,6 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 
     crc = crc64(0, rom.content, 0x10000);
 
-    death_counter(&rom);
     update_title_screen(&rom);
     no_screen_flash(&rom);
 

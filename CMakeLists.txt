@@ -60,6 +60,8 @@ endif()
 
 # emscripten build command (Archlinux)
 #  cmake -DCMAKE_TOOLCHAIN_FILE=/usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake ..
+# emscripten build command (Ubuntu/Pop)
+#  cmake -DCMAKE_TOOLCHAIN_FILE=/usr/share/emscripten/cmake/Modules/Platform/Emscripten.cmake ..
 if (EMSCRIPTEN)
     add_executable(dwrandomizer ${SOURCE_FILES})
     target_link_libraries(dwrandomizer m)

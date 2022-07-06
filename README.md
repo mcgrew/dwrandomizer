@@ -199,7 +199,7 @@ After that is complete, install yarn and electron-builder:
 
 ```sh
 npm install yarn
-yarn add electron-builder
+yarn install
 ```
 
 Next run electron-builder to build the application for the appropriate operating

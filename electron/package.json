@@ -1,11 +1,13 @@
 {
   "name": "dwrandomizer",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Dragon Warrior Randomizer",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder -wl",
+    "dist-linux": "electron-builder -l",
+    "dist-win": "electron-builder -w",
     "dist-mac": "electron-builder -m"
   },
   "build": {
@@ -42,7 +44,7 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "electron": "^15.3.0",
-    "electron-builder": "^22.11.7"
+    "electron": "^19.0.7",
+    "electron-builder": "^23.1.0"
   }
 }

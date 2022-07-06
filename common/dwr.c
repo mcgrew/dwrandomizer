@@ -1362,6 +1362,8 @@ static void other_patches(dw_rom *rom)
     set_text(rom, 0x7481, " Adventure Log C");
 
     set_text(rom, 0x749b, " Adventure Log A");
+    set_text(rom, 0x74ae, " Adventure Log B");
+    set_text(rom, 0x74c1, " Adventure Log C");
 
 
 

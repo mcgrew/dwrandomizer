@@ -1955,7 +1955,7 @@ static void text_scroller_extras(dw_rom *rom)
 
     /* Defaults stat menu selection to the 0 option.*/
     vpatch(rom, 0xf8d5, 1, 0x00);  
-
+ 
 }
 
 
@@ -2008,7 +2008,7 @@ static void build_extras(dw_rom *rom)
     vpatch(rom, 0xf09e, 3,
     0x4c, 0x64, 0xc8); //jmp $c864
 
-    //New logic for determing stats with all build options.
+    //New logic for determing stats with vanilla and all build options.
     vpatch(rom, 0xc864, 129, //-> 0xc8e5
     //19
     0xa6, 0xe5,        //ldx 0xe5
@@ -2181,21 +2181,17 @@ static void all_builds(dw_rom *rom)
 
 
 
-
-
-
 static void stat_build_choices(dw_rom *rom)
 {
-    //This is beyond me, but there'd be a selection on the rando options and this section would pick one
-    //of the functions to use based on that.
+    if (NO_BUILDS(rom)) {
+        no_builds(rom);
 
-    //no_builds(rom);
-    vanilla_builds(rom);
-    //all_builds(rom);
+    } else if (ALL_BUILDS(rom)) {
+        all_builds(rom);
 
-
-
-
+    } else {
+        vanilla_builds(rom);
+    }
 }
 
 
@@ -2361,10 +2357,9 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     invisible_hero(&rom);
     invisible_npcs(&rom);
     death_counter(&rom);
+    stat_build_choices(&rom);
 
     crc = crc64(0, rom.content, 0x10000);
-
-    stat_build_choices(&rom);
 
     update_title_screen(&rom);
     no_screen_flash(&rom);

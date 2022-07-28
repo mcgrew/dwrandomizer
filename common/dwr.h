@@ -81,6 +81,10 @@
 #define CUSTOM_SPELLS(x)          (x->flags[14] & 0x08)
 #define SKIP_VANILLA_CREDITS(x)   (x->flags[14] & 0x04)
 
+#define NO_BUILDS(x)              (x->flags[12] & 0x10)
+//I'll have to come back to this later or something. I have no clue how to get ALL_BUILDS to catch.
+#define ALL_BUILDS(x)             (x->flags[12] & 0x20)
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -49,7 +49,7 @@ Address         | Function                | Notes
 
 0xe4            | Quest progress          | 0x80=unused, 0x40=Killed Green Dragon, 0x20=unused, 0x10=unused, 0x8=unused,
                 |                         | 0x4=Killed Dragonlord, 0x2=Killed Golem, 0x1=unused
-0xe5            | Message Speed           | 0 = fast, 1 = normal, 2 = slow
+0xe5            | Character Build         | 0 = hp-mp, 1 = str-hp, 2 = agi-mp, 3 = str-agi, 4 = str-mp, 5 = agi-hp
 0x320           | Treasure chest array    |
 0x6000-0x8000   | SRAM                    |
 

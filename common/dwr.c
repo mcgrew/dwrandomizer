@@ -1949,6 +1949,21 @@ static void text_scroller_extras(dw_rom *rom)
 {
     /* Hard code fast message speed for text scroller */
     vpatch(rom, 0x7a31, 2, 0xa2, 0x00);
+
+    /* Xarnax42, "I can't wait til we get Crump's feature that separates name from build and I can be ."
+       Well, we can't have that now can we? I'm affectionately calling this the Xarnax42 patch. 
+       It makes sure a 0 length name still prints 1 character in the dialog box. */
+    vpatch(rom, 0x7881, 19,
+    0xa5, 0xb5,        // lda 0xb5
+    0xc9, 0x60,        // cmp 0x60
+    0xd0, 0x02,        // bne ##
+    0xa9, 0x49,        // lda 0x49
+    0x99, 0x54, 0x65,  // sta 6554
+    0xc8,              // iny
+    0xc0, 0x08,        // cmp 08
+    0xd0, 0xf8,        // bne -8
+    0xe8, 0xe8, 0xe8   // inx inx inx (this is the only way I know to eat up space in a benign way)
+    );
   
     /* Tells the text scroller to only ever print the first letter of the character name. */
     vpatch(rom, 0x7895, 1, 0x01);

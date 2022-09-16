@@ -46,7 +46,7 @@ Address         | Function                | Notes
                 |                         | 0x1=Carrying Gwaelin
 0xe0            | Current Tile            | Enemy index when in battle
 0xe2            | Enemy HP                | Does not clear after battle.
-
+                |                         |
 0xe4            | Quest progress          | 0x80=unused, 0x40=Killed Green Dragon, 0x20=unused, 0x10=unused, 0x8=unused,
                 |                         | 0x4=Killed Dragonlord, 0x2=Killed Golem, 0x1=unused
 0xe5            | Message Speed           | 0 = fast, 1 = normal, 2 = slow

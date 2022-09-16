@@ -6,7 +6,7 @@
 #include "mt64.h"
 #include "map.h"
 
-#define MIN_LM_SIZE     300   /* minimum size for a land_mass to use */
+#define MIN_LM_SIZE     250   /* minimum size for a land_mass to use */
 #define RIVER_COUNT     25
 #define MIN_WALKABLE    5000
 #define MAP_ENCODED_SIZE 2294
@@ -578,37 +578,44 @@ static int map_fill_point(dw_map *map, uint8_t **points,
  * @param map The map struct
  * @param tile The tile to fill the area with
  */
-static void map_fill(dw_map *map, dw_tile tile)
+static void map_fill(dw_map *map, dw_tile tile, int max_fill)
 {
     uint8_t x, y, *points, *p, *points_orig;
-    uint64_t directions;
+    uint64_t directions, limit;
     int size;
     int min, max;
-    
+    const uint64_t WEST=8, EAST=4, NORTH=2, SOUTH=1;
+
     min = (120 - map->size) / 2;
     max = 120 - min;
-    int max_fill_blob = map->size * 128;
+    /* push mountain ranges to be more diagonal */
+    if (tile == TILE_MOUNTAIN) {
+        limit = 1 << mt_rand(0, 1);
+        limit |= 4 << mt_rand(0, 1);
+    }
 
-
-    points_orig = p = points = malloc(max_fill_blob * 4 + 1);
-    memset(p, 0xff, max_fill_blob * 4 + 1);
+    points_orig = p = points = malloc(max_fill * 4 + 1);
+    memset(p, 0xff, max_fill * 4 + 1);
     p[0] = mt_rand(min, max-1);
     p[1] = mt_rand(min, max-1);
-    size = mt_rand(max_fill_blob/4, max_fill_blob);
+    size = mt_rand(max_fill/4, max_fill);
 
     while (size > 0) {
         x = p[0]; y=p[1];
         directions = mt_rand(0, 15);
-        if (directions & 8) {
+        if (tile == TILE_MOUNTAIN) {
+            directions &= limit;
+        }
+        if (directions & WEST) {
             size -= map_fill_point(map, &points, x-1, y, tile);
         }
-        if (directions & 4) {
+        if (directions & EAST) {
             size -= map_fill_point(map, &points, x+1, y, tile);
         }
-        if (directions & 2) {
+        if (directions & NORTH) {
             size -= map_fill_point(map, &points, x, y-1, tile);
         }
-        if (directions & 1) {
+        if (directions & SOUTH) {
             size -= map_fill_point(map, &points, x, y+1, tile);
         }
         if (p[2] < 120) {
@@ -956,7 +963,7 @@ static void check_keys(dw_rom *rom)
  */
 void map_generate_terrain(dw_rom *rom)
 {
-    int i, j, x, y, lm_sizes[256];
+    int i, j, x, y, lm_sizes[256], max_fill;
     int largest, next, total_area;
 
     check_keys(rom);
@@ -991,7 +998,7 @@ retry_map:
         dw_tile tiles[16] = {
                 TILE_GRASS, TILE_GRASS, TILE_GRASS, TILE_SWAMP,
                 TILE_DESERT, TILE_DESERT, TILE_HILL, TILE_MOUNTAIN,
-                TILE_TREES, TILE_TREES, TILE_TREES, TILE_WATER,
+                TILE_TREES, TILE_TREES, TILE_TREES, TILE_MOUNTAIN,
                 TILE_WATER, TILE_WATER, TILE_WATER, TILE_SWAMP
         };
 
@@ -1006,8 +1013,10 @@ retry_map:
         /* now fill it in with some other tiles */
         for (i = 0; i < rom->map.size / 10; i++) {
             mt_shuffle(tiles, sizeof(tiles) / sizeof(dw_tile), sizeof(dw_tile));
+            /* size of the fill blob should decrease each iteration */
+            max_fill = rom->map.size * (1 << (10 - i/2));
             for (j = 0; j < 16; j++) {
-                map_fill(&rom->map, tiles[j]);
+                map_fill(&rom->map, tiles[j], max_fill);
             }
         }
 

@@ -1945,6 +1945,51 @@ static void skip_vanilla_credits(dw_rom *rom)
     }
 }
 
+
+static void forfeit_trigger(dw_rom *rom)
+{
+
+/* After the status screen is opened it waits for any input at all before closing. */
+/* We're jumping off at that point to do almost the same thing, but with a twist.  */
+    vpatch(rom, 0xcfa4, 3,
+           0x20, 0x00, 0xc9);          /* JSR 0xC900               */
+
+
+/* After you open the status screen before anything else can happen you have to let */
+/* go of every button on the controller. This is vanilla behavior. Used to be that  */
+/* pressing any button would then close the window. Now, any button that isn't      */
+/* select or start will close the window. If you push select and start together at  */
+/* the same time it takes you straight to the credits.                              */
+    vpatch(rom, 0xc900, 40,
+           0x20, 0x74, 0xff,            /* These first two sections */
+           0x20, 0x08, 0xc6,            /* are just rehashing the   */
+           0xa5, 0x47,                  /* "let go of all buttons...*/
+           0xd0, 0xf6,
+
+           0x20, 0x74, 0xff,            /* ...then press any button"*/
+           0x20, 0x08, 0xc6,            /* code that's used in the  */
+           0xa5, 0x47,                  /* status screen as well as */
+           0xf0, 0xf6,                  /* a couple other places.   */
+
+           0x29, 0xf3,                  /* AND 11110011 (bitwise code for every button that isn't start or select)  */
+           0xf0, 0x01,                  /* BEQ 1                           */
+           0x60,                        /* RTS (close the window)          */
+
+           0xa5, 0x47,                  /* LDA $47 (load button presses)   */
+           0x29, 0x04,                  /* AND select_button               */
+           0xf0, 0xeb,                  /* BEQ -21 (start the loop over    */
+                                        /*          if only one is pressed)*/
+           0xa5, 0x47,                  /* LDA $47 (load button presses)   */
+           0x29, 0x08,                  /* AND start_button                */
+           0xf0, 0xe5,                  /* BEQ -27 (same as above)         */
+
+           0x4c, 0xed, 0xcc             /* JMP 0xCCED (start credits)      */
+
+    );
+
+
+}
+
 /**
  * Sets up the extra expansion banks
  *
@@ -2106,6 +2151,8 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     death_counter(&rom);
 
     crc = crc64(0, rom.content, 0x10000);
+
+forfeit_trigger(&rom);
 
     update_title_screen(&rom);
     no_screen_flash(&rom);

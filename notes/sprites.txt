@@ -1,53 +1,53 @@
 Address | Character | Facing | Quadrant | Equipment | Animation | Anim 2 Mirrored
 ======= | ========= | ====== | ======== | ========= | ========= | ===============
-0x00    |           |        |          |           |           |
-0x01    |           |        |          |           |           |
-0x02    |           |        |          |           |           |
-0x03    |           |        |          |           |           |
-0x04    |           |        |          |           |           |
-0x05    |           |        |          |           |           |
-0x06    |           |        |          |           |           |
-0x07    |           |        |          |           |           |
-0x08    |           |        |          |           |           |
-0x09    |           |        |          |           |           |
-0x0a    |           |        |          |           |           |
-0x0b    |           |        |          |           |           |
-0x0c    |           |        |          |           |           |
-0x0d    |           |        |          |           |           |
-0x0e    |           |        |          |           |           |
-0x0f    |           |        |          |           |           |
-0x10    |           |        |          |           |           |
-0x11    |           |        |          |           |           |
-0x12    |           |        |          |           |           |
-0x13    |           |        |          |           |           |
-0x14    |           |        |          |           |           |
-0x15    |           |        |          |           |           |
-0x16    |           |        |          |           |           |
-0x17    |           |        |          |           |           |
-0x18    |           |        |          |           |           |
-0x19    |           |        |          |           |           |
-0x1a    |           |        |          |           |           |
-0x1b    |           |        |          |           |           |
-0x1c    |           |        |          |           |           |
-0x1d    |           |        |          |           |           |
-0x1e    |           |        |          |           |           |
-0x1f    |           |        |          |           |           |
+0x00    | VillagerM | N      | UL+UR    |           | 1         | Yes
+0x01    | VillagerM | S      | UL+UR    |           | 1         | Yes
+0x02    | VillagerM | N      | LL       |           | 1         | Yes
+0x03    | VillagerM | N      | LR       |           | 1         | Yes
+0x04    | VillagerM | E      | UL       |           | 1+2       | 
+0x05    | VillagerM | E      | UR       |           | 1+2       |
+0x06    | VillagerM | E      | LL       |           | 1         |
+0x07    | VillagerM | E      | LR       |           | 1         |
+0x08    | VillagerM | E      | LL       |           | 2         |
+0x09    | VillagerM | E      | LR       |           | 2         |
+0x0a    | VillagerM | S      | LL       |           | 1         | Yes
+0x0b    | VillagerM | S      | LR       |           | 1         | Yes
+0x0c    | VillagerF | N      | UL+UR    |           | 1         | Yes
+0x0d    | VillagerF | S      | UL+UR    |           | 1         | Yes
+0x0e    | VillagerF | N      | LR       |           | 1         | Yes
+0x0f    | VillagerF | N      | LL       |           | 1         | Yes
+0x10    | VillagerF | E      | UL       |           | 1+2       |
+0x11    | VillagerF | E      | UR       |           | 1+2       |
+0x12    | VillagerF | E      | LL       |           | 2         |
+0x13    | VillagerF | E      | LR       |           | 2         |
+0x14    | VillagerF | E      | LL       |           | 1         |
+0x15    | VillagerF | E      | LR       |           | 1         |
+0x16    | VillagerF | S      | LL       |           | 1         | Yes
+0x17    | VillagerF | S      | LR       |           | 1         | Yes
+0x18    | Gwaelin   | N      | UL       |           | 1+2       | Yes
+0x19    | Gwaelin   | E      | UR       |           | 1+2       |
+0x1a    | Gwaelin   | N      | LL       |           | 1         | Yes
+0x1b    | Gwaelin   | N      | LR       |           | 1         | Yes
+0x1c    | Merchant  | E      | LR       |           | 2         |
+0x1d    | Merchant  | S      | UL+UR    |           | 1         | Yes
+0x1e    | Merchant  | S      | LL       |           | 1         | Yes
+0x1f    | Merchant  | S      | LR       |           | 1         | Yes
 0x20    | Loto      | N      | UL       | None      | 1         | Yes
 0x21    | Loto      | N      | UR       | None      | 1         | Yes
-0x22    |           |        |          |           |           |
-0x23    |           |        |          |           |           |
+0x22    | Merchant  | N      | UL+UR    |           | 1         | Yes
+0x23    | Merchant  | E      | LL       |           | 2         |
 0x24    | Loto      | N      | LL       | None      | 1         | Yes
 0x25    | Loto      | N      | LR       | None      | 1         | Yes
 0x26    | Loto      | E      | UL       | None      | 1         | No
 0x27    | Loto      | E      | UR       | None      | 1         | No
 0x28    | Loto      | E      | LL       | None      | 1         | No
 0x29    | Loto      | E      | LR       | None      | 1         | No
-0x2a    |           |        |          |           |           |
-0x2b    |           |        |          |           |           |
-0x2c    |           |        |          |           |           |
-0x2d    |           |        |          |           |           |
-0x2e    |           |        |          |           |           |
-0x2f    |           |        |          |           |           |
+0x2a    | Merchant  | N      | LL       |           | 1         | Yes
+0x2b    | Merchant  | N      | LR       |           | 1         | Yes
+0x2c    | Merchant  | E      | UL       |           | 1         | Yes
+0x2d    | Merchant  | E      | UR       |           | 1         | Yes
+0x2e    | Merchant  | E      | LL       |           | 1         |
+0x2f    | Merchant  | E      | LR       |           | 1         |
 0x30    | Loto      | E      | UL       | None      | 2         | No
 0x31    | Loto      | E      | UR       | None      | 2         | No
 0x32    | Loto      | E      | LL       | None      | 2         | No
@@ -56,14 +56,14 @@ Address | Character | Facing | Quadrant | Equipment | Animation | Anim 2 Mirrore
 0x35    | Loto      | S      | UR       | None      | 1         | Yes
 0x36    | Loto      | S      | LL       | None      | 1         | Yes
 0x37    | Loto      | S      | LR       | None      | 1         | Yes
-0x38    |           |        |          |           |           |
-0x39    |           |        |          |           |           |
-0x3a    |           |        |          |           |           |
-0x3b    |           |        |          |           |           |
-0x3c    |           |        |          |           |           |
-0x3d    |           |        |          |           |           |
-0x3e    |           |        |          |           |           |
-0x3f    |           |        |          |           |           |
+0x38    | Gwaelin   | E      | UL       |           | 1+2       |
+0x39    | Gwaelin   | W      | UR       |           | 1+2       |
+0x3a    | Gwaelin   | E      | LL       |           | 2         |
+0x3b    | Gwaelin   | E      | LR       |           | 2         |
+0x3c    | Gwaelin   | E      | LL       |           | 1         |
+0x3d    | Gwaelin   | E      | LR       |           | 1         |
+0x3e    | Gwaelin   | S      | UL       |           | 1+2       |
+0x3f    | Gwaelin   | S      | UR       |           | 1+2       |
 0x40    | Loto      | N      | UL       | SW        | 1         | No
 0x41    | Loto      | N      | UR       | SW        | 1         | No
 0x42    | Loto      | N      | LL       | SW        | 1         | No
@@ -72,14 +72,14 @@ Address | Character | Facing | Quadrant | Equipment | Animation | Anim 2 Mirrore
 0x45    | Loto      | N      | UR       | SW        | 2         | No
 0x46    | Loto      | N      | LL       | SW        | 2         | No
 0x47    | Loto      | N      | LR       | SW        | 2         | No
-0x48    | Loto      | E      | UL       | SW        | 1         | No
-0x49    | Loto      | E      | UR       | SW        | 1         | No
-0x4a    | Loto      | E      | LL       | SW        | 1         | No
-0x4b    | Loto      | E      | LR       | SW        | 1         | No
-0x4c    | Loto      | E      | UL       | SW        | 2         | No
-0x4d    | Loto      | E      | UR       | SW        | 2         | No
-0x4e    | Loto      | E      | LL       | SW        | 2         | No
-0x4f    | Loto      | E      | LR       | SW        | 2         | No
+0x48    | Loto      | E      | UL       | SW &      | 1         | No
+0x49    | Loto      | E      | UR       | SW &      | 1         | No
+0x4a    | Loto      | E      | LL       | SW &      | 1         | No
+0x4b    | Loto      | E      | LR       | SW &      | 1         | No
+0x4c    | Loto      | E      | UL       | SW &      | 2         | No
+0x4d    | Loto      | E      | UR       | SW &      | 2         | No
+0x4e    | Loto      | E      | LL       | SW &      | 2         | No
+0x4f    | Loto      | E      | LR       | SW &      | 2         | No
 0x50    | Loto      | S      | UL       | SW        | 1         | No
 0x51    | Loto      | S      | UR       | SW        | 1         | No
 0x52    | Loto      | S      | LL       | SW        | 1         | No
@@ -88,80 +88,80 @@ Address | Character | Facing | Quadrant | Equipment | Animation | Anim 2 Mirrore
 0x55    | Loto      | S      | UR       | SW        | 2         | No
 0x56    | Loto      | S      | LL       | SW        | 2         | No
 0x57    | Loto      | S      | LR       | SW        | 2         | No
-0x58    |           |        |          |           |           |
-0x59    |           |        |          |           |           |
-0x5a    |           |        |          |           |           |
-0x5b    |           |        |          |           |           |
-0x5c    |           |        |          |           |           |
-0x5d    |           |        |          |           |           |
-0x5e    |           |        |          |           |           |
-0x5f    |           |        |          |           |           |
-0x60    |           |        |          |           |           |
-0x61    |           |        |          |           |           |
-0x62    |           |        |          |           |           |
-0x63    |           |        |          |           |           |
-0x64    |           |        |          |           |           |
-0x65    |           |        |          |           |           |
-0x66    |           |        |          |           |           |
-0x67    |           |        |          |           |           |
-0x68    |           |        |          |           |           |
-0x69    |           |        |          |           |           |
-0x6a    |           |        |          |           |           |
-0x6b    |           |        |          |           |           |
-0x6c    |           |        |          |           |           |
-0x6d    |           |        |          |           |           |
-0x6e    |           |        |          |           |           |
-0x6f    |           |        |          |           |           |
-0x70    |           |        |          |           |           |
-0x71    |           |        |          |           |           |
-0x72    |           |        |          |           |           |
-0x73    |           |        |          |           |           |
-0x74    |           |        |          |           |           |
-0x75    |           |        |          |           |           |
-0x76    |           |        |          |           |           |
-0x77    |           |        |          |           |           |
-0x78    |           |        |          |           |           |
-0x79    |           |        |          |           |           |
-0x7a    |           |        |          |           |           |
-0x7b    |           |        |          |           |           |
-0x7c    |           |        |          |           |           |
-0x7d    |           |        |          |           |           |
-0x7e    |           |        |          |           |           |
-0x7f    |           |        |          |           |           |
-0x80    | Loto      | N      | UR       | SW & SH   | 1         | No
-0x81    |           |        |          |           |           |
-0x82    | Loto      | N      | LR       | SW & SH   | 1         | No
-0x83    |           |        |          |           |           |
-0x84    | Loto      | N      | UR       | SW & SH   | 2         | No
-0x85    |           |        |          |           |           |
-0x86    | Loto      | N      | LR       | SW & SH   | 2         | No
-0x87    |           |        |          |           |           |
-0x88    |           |        |          |           |           |
-0x89    |           |        |          |           |           |
-0x8a    |           |        |          |           |           |
-0x8b    |           |        |          |           |           |
-0x8c    |           |        |          |           |           |
-0x8d    |           |        |          |           |           |
-0x8e    |           |        |          |           |           |
-0x8f    |           |        |          |           |           |
-0x90    |           |        |          |           |           |
+0x58    | Guard     | N      | UL       |           | 1&2       |
+0x59    | Guard     | N      | UR       |           | 1         |
+0x5a    | Guard     | N      | LL       |           | 1         |
+0x5b    | Guard     | N      | LR       |           | 1         |
+0x5c    | Guard     | E      | UR       |           | 2         |
+0x5d    | Guard     | N      | UR       |           | 2         |
+0x5e    | Guard     | N      | LL       |           | 2         |
+0x5f    | Guard     | N      | UR       |           | 2         |
+0x60    | Loto      | N      | UL       |      SH   | 1         | No
+0x61    | Wizard    | W      | LL       |           | 2         |
+0x62    | Loto      | N      | LL       |      SH   | 1         | No
+0x63    | Wizard    | W      | LR       |           | 2         |
+0x64    | Loto      | N      | UL       |      SH   | 2         | No
+0x65    | Wizard    | W      | LL       |           | 1         |
+0x66    | Loto      | N      | LL       |      SH   | 2         | No
+0x67    | Wizard    | W      | LR       |           | 1         |
+0x68    | Guard     | E      | UL       |           | 1&2       |
+0x69    | Guard     | E      | UR       |           | 1         |
+0x6a    | Guard     | E      | LL       |           | 1         |
+0x6b    | Guard     | E      | LR       |           | 1         |
+0x6c    | Guard     | E      | LL       |           | 2         |
+0x6d    | Guard     | E      | LR       |           | 2         |
+0x6e    | Guard     | W      | LL       |           | 1         |
+0x6f    | Guard     | W      | LR       |           | 1         |
+0x70    | Lorik     | S      | UL       |           | 1         |
+0x71    | Loto      | S      | UR       |      SH   | 1         | No
+0x72    | Lorik     | S      | UR       |           | 1         |
+0x73    | Loto      | S      | LR       |      SH   | 1         | No
+0x74    | Lorik     | S      | LL       |           | 1         |
+0x75    | Loto      | S      | UR       |      SH   | 2         | No
+0x76    | Lorik     | S      | LR       |           | 1         |
+0x77    | Loto      | S      | LR       |      SH   | 2         | No
+0x78    | Guard     | S      | UL       |           | 1         |
+0x79    | Guard     | S      | UR       |           | 1&2       |
+0x7a    | Guard     | S      | LL       |           | 1         |
+0x7b    | Guard     | S      | LR       |           | 1         |
+0x7c    | Guard     | S      | UL       |           | 2         |
+0x7d    | Guard     | w      | UL       |           | 1&2       |
+0x7e    | Guard     | S      | LL       |           | 2         |
+0x7f    | Guard     | S      | LR       |           | 2         |
+0x80    | Loto      | N      | UL       | SW & SH   | 1         | No
+0x81    | Guard     | W      | LL       |           | 2         |
+0x82    | Loto      | N      | LL       | SW & SH   | 1         | No
+0x83    | Guard     | W      | LR       |           | 2         |
+0x84    | Loto      | N      | UL       | SW & SH   | 2         | No
+0x85    | Wizard    | S      | LR       |           | 2         |
+0x86    | Loto      | N      | LL       | SW & SH   | 2         | No
+0x87    | Wizard    | W      | UL       |           | 1+2       |
+0x88    | Lorik     | S      | UL       |           | 2         |
+0x89    | Lorik     | S      | UR       |           | 2         |
+0x8a    | Lorik     | S      | LL       |           | 2         |
+0x8b    | Lorik     | S      | LR       |           | 2         |
+0x8c    | Trumpeter | W      | UL       |           | 1         |
+0x8d    | Trumpeter | W      | UR       |           | 1+2       |
+0x8e    | Trumpeter | W      | LL       |           | 1         |
+0x8f    | Trumpeter | W      | LR       |           | 1         |
+0x90    | Trumpeter | W      | UL       |           | 2         |
 0x91    | Loto      | S      | UR       | SW & SH   | 1         | No
-0x92    |           |        |          |           |           |
+0x92    | DL        | S      | LR       |           | 2         |
 0x93    | Loto      | S      | LR       | SW & SH   | 1         | No
-0x94    |           |        |          |           |           |
-0x95    | Loto      | S      | UL       | SW & SH   | 2         | No
-0x96    |           |        |          |           |           |
-0x97    | Loto      | S      | LL       | SW & SH   | 2         | No
-0x98    | Loto      | W      | UL       | SW & SH   | 1         | No
-0x99    | Loto      | W      | UR       | SW & SH   | 1         | No
-0x9a    | Loto      | W      | LL       | SW & SH   | 1         | No
-0x9b    | Loto      | W      | LR       | SW & SH   | 1         | No
-0x9c    | Loto      | W      | UL       | SW & SH   | 2         | No
-0x9d    | Loto      | W      | UR       | SW & SH   | 2         | No
-0x9e    | Loto      | W      | LL       | SW & SH   | 2         | No
-0x9f    | Loto      | W      | LR       | SW & SH   | 2         | No
-0xa0    |           |        |          |           |           |
-0xa1    |           |        |          |           |           |
+0x94    | Trumpeter | W      | LL       |           | 2         |
+0x95    | Loto      | S      | UR       | SW & SH   | 2         | No
+0x96    | Trumpeter | W      | LR       |           | 2         |
+0x97    | Loto      | S      | LR       | SW & SH   | 2         | No
+0x98    | Loto      | W      | UL       |    & SH   | 1         | No
+0x99    | Loto      | W      | UR       |    & SH   | 1         | No
+0x9a    | Loto      | W      | LL       |    & SH   | 1         | No
+0x9b    | Loto      | W      | LR       |    & SH   | 1         | No
+0x9c    | Loto      | W      | UL       |    & SH   | 2         | No
+0x9d    | Loto      | W      | UR       |    & SH   | 2         | No
+0x9e    | Loto      | W      | LL       |    & SH   | 2         | No
+0x9f    | Loto      | W      | LR       |    & SH   | 2         | No
+0xa0    | Wizard    | S      | UL       |           | 2         |
+0xa1    | Wizard    | S      | LL       |           | 2         |
 0xa2    | Loto      | N      | LL       | Gwaelin   | 1         | No
 0xa3    | Loto      | N      | LR       | Gwaelin   | 1         | No
 0xa4    | Loto      | N      | UL       | Gwaelin   | 1 & 2     | No
@@ -176,8 +176,8 @@ Address | Character | Facing | Quadrant | Equipment | Animation | Anim 2 Mirrore
 0xad    | Loto      | W      | LR       | Gwaelin   | 2         | No
 0xae    | Loto      | W      | UL       | Gwaelin   | 2         | No
 0xaf    | Loto      | W      | UR       | Gwaelin   | 2         | No
-0xb0    |           |        |          |           |           |
-0xb1    |           |        |          |           |           |
+0xb0    | Fighter   | S      | UR       |           | 1+2       |
+0xb1    | Fighter   | S      | LL       |           | 1         |
 0xb2    | Loto      | S      | LL       | Gwaelin   | 1         | No
 0xb3    | Loto      | S      | LR       | Gwaelin   | 1         | No
 0xb4    | Loto      | S      | UL       | Gwaelin   | 1 & 2     | No
@@ -192,3 +192,68 @@ Address | Character | Facing | Quadrant | Equipment | Animation | Anim 2 Mirrore
 0xbd    | Loto      | E      | LR       | Gwaelin   | 2         | No
 0xbe    | Loto      | E      | UL       | Gwaelin   | 2         | No
 0xbf    | Loto      | E      | UR       | Gwaelin   | 2         | No
+0xc0    | Gwaelin   | S      | LL       |           | 1         | Yes
+0xc1    | Gwaelin   | S      | LR       |           | 1         | Yes
+0xc2    | Wizard    | S      | LL       |           | 1         |
+0xc3    | Wizard    | S      | LR       |           | 1         |
+0xc4    | DL        | N      | UL       |           | 1+2       |
+0xc5    | DL        | N      | UR       |           | 1         |
+0xc6    | DL        | N      | LL       |           | 1         |
+0xc7    | DL        | N      | LR       |           | 1         |
+0xc8    | DL        | N      | UR       |           | 2         |
+0xc9    | DL        | N      | LL       |           | 2         |
+0xca    | DL        | N      | LR       |           | 2         |
+0xcb    | DL        | E      | UR       |           | 1         |
+0xcc    | DL        | E      | LL       |           | 1         |
+0xcd    | DL        | E      | LR       |           | 1         |
+0xce    | DL        | E      | UL       |           | 1+2       |
+0xcf    | DL        | E      | UR       |           | 2         |
+0xd0    | DL        | E      | LL       |           | 2         | //These 8 sprites
+0xd1    | DL        | E      | LR       |           | 2         | //were originally
+0xd2    | DL        | S      | UL       |           | 1         | //to be used for
+0xd3    | DL        | S      | UR       |           | 1+2       | //DL facing left
+0xd4    | DL        | S      | LL       |           | 1         | //and the ROM
+0xd5    | DL        | S      | LR       |           | 1         | //still points to
+0xd6    | DL        | S      | UL       |           | 2         | //these addresses
+0xd7    | DL        | S      | LL       |           | 2         | //for it.
+0xd8    | Fighter   | N      | UL       |           | 1+2       |
+0xd9    | Fighter   | N      | UR       |           | 1         |
+0xda    | Fighter   | N      | LL       |           | 1         |
+0xdb    | Fighter   | N      | LR       |           | 1         |
+0xdc    | Fighter   | N      | UR       |           | 2         |
+0xdd    | Fighter   | N      | LL       |           | 2         |
+0xde    | Fighter   | N      | LR       |           | 2         |
+0xdf    | Fighter   | E      | UL       |           | 1+2       | Yes(W)
+0xe0    | Fighter   | E      | UR       |           | 1         |
+0xe1    | Fighter   | E      | LL       |           | 1         |
+0xe2    | Fighter   | E      | LR       |           | 1         |
+0xe3    | Fighter   | E      | UR       |           | 2         |
+0xe4    | Fighter   | E      | LL       |           | 2         |
+0xe5    | Fighter   | E      | LR       |           | 2         |
+0xe6    | Fighter   | S      | UL       |           | 1         |
+0xe7    | Fighter   | S      | LR       |           | 1         |
+0xe8    | Fighter   | S      | UL       |           | 2         |
+0xe9    | Fighter   | S      | LL       |           | 2         |
+0xea    | Fighter   | S      | LR       |           | 2         |
+0xeb    | Fighter   | W      | UL       |           | 1+2       |
+0xec    | Fighter   | W      | LL       |           | 1         |
+0xed    | Fighter   | W      | LR       |           | 1         |
+0xee    | Fighter   | W      | LL       |           | 2         |
+0xef    | Fighter   | W      | LR       |           | 2         |
+0xf0    | Wizard    | N      | UL       |           | 1+2       |
+0xf1    | Wizard    | N      | UR       |           | 1         |
+0xf2    | Wizard    | N      | LL       |           | 1         |
+0xf3    | Wizard    | N      | LR       |           | 1         |
+0xf4    | Wizard    | N      | UR       |           | 2         |
+0xf5    | Wizard    | N      | LL       |           | 2         |
+0xf6    | Wizard    | N      | LR       |           | 2         |
+0xf7    | Wizard    | E      | UL       |           | 1+2       | Yes(W)
+0xf8    | Wizard    | E      | UR       |           | 1         |
+0xf9    | Wizard    | E      | LL       |           | 1         |
+0xfa    | Wizard    | E      | LR       |           | 1         |
+0xfb    | Wizard    | E      | UR       |           | 2         |
+0xfc    | Wizard    | E      | LL       |           | 2         |
+0xfd    | Wizard    | E      | LR       |           | 2         |
+0xfe    | Wizard    | S      | UL       |           | 1         |
+0xff    | Wizard    | S      | UR       |           | 1+2       |
+

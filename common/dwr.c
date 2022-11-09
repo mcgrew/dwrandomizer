@@ -83,7 +83,7 @@ static void update_flags(dw_rom *rom)
     uint8_t tmp;
 
     /* The last 2 bytes do not contain maybe flags. */
-    for (i=0; i < 13; i++) {
+    for (i=0; i < 12; i++) {
         rom->flags[i] |= (rom->flags[i] >> 1) & 0x55 & mt_rand(0, 0xff);
         rom->flags[i] &= 0x55;
     }

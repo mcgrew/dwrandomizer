@@ -225,56 +225,56 @@ handle_instruction:
     cmp #INSTR_WAIT
     bne +next_instr
     ldx #0
-    lda (STATS_ADDR,x)
+    lda (STATS_ADDR,x)      ; load the number of frames to wait into X
     tax
-    jsr inc_stats_addr
--   jsr exp_wait_for_nmi
-    dex
-    bne -
+    jsr inc_stats_addr      ; increment the stats script pointer
+-   jsr exp_wait_for_nmi    ; wait one frame
+    dex                     ; decrement X
+    bne -                   ; If X is not zero, wait longer
     rts
 
 +next_instr:
     cmp #INSTR_MON_STAT
     bne +next_instr
     ldx #0
-    lda (STATS_ADDR,x)
-    asl
+    lda (STATS_ADDR,x)      ; load the monster index
+    asl                     ; double it (2 bytes per monster)
     clc
-    adc #$70
-    sta TMP_ADDR
+    adc #$70                ; Add @$6670 to this number and store in the
+    sta TMP_ADDR            ; temporary address variable
     lda #$66
     adc #00
     sta TMP_ADDR+1
-    jsr inc_stats_addr
+    jsr inc_stats_addr      ; increment the stats script pointer
 
-    jsr addr_to_bcd
-    jsr print_bcd
-    lda #$5f
-    sta NEXT_TILE
+    jsr addr_to_bcd         ; convert the value at TMP_ADDR to a BCD
+    jsr print_bcd           ; print the result to the screen
+    lda #$5f                ; queue up a blank space
+    sta NEXT_TILE           ; print the blank space
     jsr exp_wait_for_nmi
-    jsr inc_ppu_position
+    jsr inc_ppu_position    ; move the cursor
     lda TMP_ADDR
     clc
-    adc #80
+    adc #80                 ; add 80 to the temporary address
     sta TMP_ADDR
     bcc +
     inc TMP_ADDR+1
 +
-    jsr addr_to_bcd
-    jsr print_bcd
-    lda #$5f
-    sta NEXT_TILE
+    jsr addr_to_bcd         ; convert the value at TMP_ADDR to a BCD
+    jsr print_bcd           ; print the result to the screen
+    lda #$5f                ; queue up a blank space
+    sta NEXT_TILE           ; print the blank space
     jsr exp_wait_for_nmi
     jsr inc_ppu_position
     lda TMP_ADDR
     clc
-    adc #80
+    adc #80                 ; add 80 to the temporary address
     sta TMP_ADDR
     bcc +
     inc TMP_ADDR+1
 +
-    jsr addr_to_bcd
-    jsr print_bcd
+    jsr addr_to_bcd         ; convert the value at TMP_ADDR to a BCD
+    jsr print_bcd           ; print the result to the screen
     rts
 
 +next_instr:
@@ -326,23 +326,28 @@ handle_instruction:
     cmp #INSTR_SHOW_NUMBER
     bne +next_instr
     ldy #0
-    lda (STATS_ADDR),y
+    lda (STATS_ADDR),y      ; copy the data at the stats pointer into TMP_ADDR
     sta TMP_ADDR
     iny
     lda (STATS_ADDR),y
     sta TMP_ADDR + 1
-    jsr addr_to_bcd
+    jsr addr_to_bcd         ; convert the value at the address to BCD
     ldx #4
-    jsr print_bcd
+    jsr print_bcd           ; print the last 4 digits of the BCD to the screen
     lda #2
-    jsr add_stats_addr
+    jsr add_stats_addr      ; Add 2 to the script pointer
     rts
 
 +next_instr:
     cmp #INSTR_SET_PPU
     bne +next_instr
     ldy #0
-    jsr stats_set_ppu
+    lda (STATS_ADDR),y      ; move the cursor to the indicated position
+    sta PPU_POSITION
+    iny
+    lda (STATS_ADDR),y
+    sta PPU_POSITION+1
+    iny
     tya
     jsr add_stats_addr
     rts
@@ -350,13 +355,13 @@ handle_instruction:
 +next_instr:
     cmp #INSTR_FINISH 
     bne +
-    lda #<stats_data
-    sta STATS_ADDR
+    lda #<stats_data        ; we've reached the end of the script, so return
+    sta STATS_ADDR          ; to the beginning
     lda #>stats_data
     sta STATS_ADDR+1
 +   rts
 
-addr_to_bcd:
+addr_to_bcd:                ; converts a 2 byte value at TMP_ADDR to a BCD
     pha
     ldy #0
     lda (TMP_ADDR),y
@@ -370,9 +375,9 @@ addr_to_bcd:
     tay
     rts
 
-print_bcd:
+print_bcd:                  ; prints 4 characters of the BCD to the screen
     ldx #4
-print_bcd_x:
+print_bcd_x:                ; prints X characters of the BCD to the screen
     dex
 -   lda BCD_RESULT,x
     sta NEXT_TILE
@@ -382,9 +387,9 @@ print_bcd_x:
     bpl -
     rts
 
-inc_ppu_position:
+inc_ppu_position:           ; increments the position of the cursor
     lda #1
-add_ppu_position:
+add_ppu_position:           ; adds A to the position of the cursor
     clc
     adc PPU_POSITION
     sta PPU_POSITION
@@ -393,24 +398,15 @@ add_ppu_position:
     sta PPU_POSITION+1
     rts
 
-inc_stats_addr:
+inc_stats_addr:             ; increments the script pointer
     lda #1
-add_stats_addr:
+add_stats_addr:             ; adds A to the script pointer
     clc
     adc STATS_ADDR
     sta STATS_ADDR
     lda STATS_ADDR+1
     adc #0
     sta STATS_ADDR+1
-    rts
-
-stats_set_ppu:
-    lda (STATS_ADDR),y
-    sta PPU_POSITION
-    iny
-    lda (STATS_ADDR),y
-    sta PPU_POSITION+1
-    iny
     rts
 
 credits_data:

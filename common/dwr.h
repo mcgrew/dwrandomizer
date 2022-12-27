@@ -54,6 +54,7 @@
 #define OPEN_CHARLOCK(x)          (x->flags[ 7] & 0x0c)
 #define SHORT_CHARLOCK(x)         (x->flags[ 7] & 0x03)
 #define NO_KEYS(x)                (x->flags[ 8] & 0xc0)
+#define NO_ARMOR_IN_CHARLOCK(x)   (x->flags[ 8] & 0x30)
 #define SUMMER_SALE(x)            (x->flags[13] & 0x0c)
 #define FAST_XP(x)                (x->flags[13] & 0x10)
 #define VERY_FAST_XP(x)           (x->flags[13] & 0x20)

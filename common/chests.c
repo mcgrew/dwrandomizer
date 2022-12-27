@@ -47,6 +47,28 @@ BOOL is_quest_item(uint8_t item)
 }
 
 /**
+ * Determines whether or not the chest item is a quest item. This function is
+ * for use when "No Armor in Charlock" is on.
+ *
+ * @param item The item member of a chest
+ * @return A boolean indicated whether or not the item is crucial for the quest
+ *      to obtain the rainbow drop.
+ */
+static BOOL is_quest_item_incl_armor(uint8_t item)
+{
+    switch(item) {
+        case TOKEN:
+        case STONES:
+        case HARP:
+        case STAFF:
+        case ARMOR:
+            return TRUE;
+        default:
+            return FALSE;
+    }
+}
+
+/**
  * Determines if a chest should be left alone when randomizing
  *
  * @param chest The chest to be checked
@@ -71,15 +93,23 @@ void check_quest_items(dw_rom *rom)
 {
     int i, tmp_index;
     uint8_t tmp_item;
+    BOOL (*quest_item_check)(uint8_t item);
 
     printf("Checking quest item placement...\n");
 
+    quest_item_check = &is_quest_item;
+
+    if (NO_ARMOR_IN_CHARLOCK(rom)) {
+        printf("Disallowing Armor in Charlock...\n");
+        quest_item_check = &is_quest_item_incl_armor;
+    }
+
     for (i=0; i < CHEST_COUNT; i++) {
         if (rom->chest_access[i] & 0x88) {
-            if (is_quest_item(rom->chests[i].item)) {
+            if ((*quest_item_check)(rom->chests[i].item)) {
                 do {
                     tmp_index = non_charlock_chest(rom);
-                } while (is_quest_item(rom->chests[tmp_index].item) 
+                } while ((*quest_item_check)(rom->chests[tmp_index].item) 
                         || is_static_chest(&rom->chests[tmp_index]));
                 tmp_item = rom->chests[tmp_index].item;
                 rom->chests[tmp_index].item = rom->chests[i].item;

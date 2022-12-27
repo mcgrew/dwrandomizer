@@ -35,10 +35,10 @@ let error = ''
 function stdout(asciiCode) {
     new_char = String.fromCharCode(asciiCode);
     log += new_char
-//     if (new_char.endsWith('\n')) {
-//         console.log(log);
-//         log = '';
-//     }
+    if (new_char.endsWith('\n')) {
+        console.log(log);
+        log = '';
+    }
 }
 
 /**
@@ -211,7 +211,7 @@ function setup_ui() {
     });
 
     ui.addTriOption('Challenge',  0,  9, 6, 'No Hurtmore',
-        'You will never learn HURTMORE. Monsters will still have it.');
+        'You will never learn HURTMORE. Monsters can still have it.');
     ui.addTriOption('Challenge',  2,  9, 4, 'No Numbers',
         'No numbers will be visible until the Dragonlord fight.');
     ui.addTriOption('Challenge',  4,  9, 2, 'Invisible Hero',
@@ -224,6 +224,8 @@ function setup_ui() {
         'Approximately 60% of the overworld will be poisonous swamp.');
     ui.addTriOption('Challenge',  5, 10, 2, 'Randomly Rotate/Mirror Dungeons',
         'All dungeons will be rotated at random angles and/or mirrored.');
+    ui.addTriOption('Challenge',  7,  8, 4, "No Armor in Charlock",
+        "Prevent Erdrick's Armor from being in a chest in Charlock Castle.");
 
     ui.addTriOption('Cosmetic',  4, 11, 6, 'Modern Spell Names',
         'Use spell names from more recent DQ releases.');

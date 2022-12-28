@@ -54,7 +54,6 @@
 #define OPEN_CHARLOCK(x)          (x->flags[ 7] & 0x0c)
 #define SHORT_CHARLOCK(x)         (x->flags[ 7] & 0x03)
 #define NO_KEYS(x)                (x->flags[ 8] & 0xc0)
-#define NO_ARMOR_IN_CHARLOCK(x)   (x->flags[ 8] & 0x30)
 #define SUMMER_SALE(x)            (x->flags[13] & 0x0c)
 #define FAST_XP(x)                (x->flags[13] & 0x10)
 #define VERY_FAST_XP(x)           (x->flags[13] & 0x20)
@@ -69,6 +68,8 @@
 #define TREASURE_GUARDS(x)        (x->flags[13] & 0x03)
 #define BIG_SWAMP(x)              (x->flags[10] & 0x03)
 #define ROTATE_DUNGEONS(x)        (x->flags[10] & 0x0c)
+#define NO_ARMOR_IN_CHARLOCK(x)   (x->flags[10] & 0x30)
+#define EASY_CHARLOCK(x)          (x->flags[10] & 0xc0)
 
 #define CURSED_PRINCESS(x)        (x->flags[ 8] & 0x0c)
 #define THREES_COMPANY(x)         (x->flags[ 8] & 0x03)

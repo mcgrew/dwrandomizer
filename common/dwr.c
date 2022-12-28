@@ -319,6 +319,18 @@ static void torch_in_battle(dw_rom *rom) {
             "\xff\xff\xff\xff\xff\xff\xff");
 }
 
+static void modify_run_rate(dw_rom *rom) {
+    if (!EASY_CHARLOCK(rom))
+        return;
+
+    printf("Modifying run rate for high level monsters...\n");
+    if (RANDOM_ENEMY_STATS(rom) || ALTERNATE_RUNNING(rom)) {
+        add_hook(rom, JMP, 0xeea7, MODIFY_RUN_RATE);
+    } else {
+        add_hook(rom, JMP, 0xee9c, MODIFY_RUN_RATE);
+    }
+}
+
 /**
  * Generates a new monster attack pattern with constraints:
  *
@@ -2146,6 +2158,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     treasure_guards(&rom);
     sorted_inventory(&rom);
     summer_sale(&rom);
+    modify_run_rate(&rom);
     dwr_token_dialogue(&rom);
 
     modern_spell_names(&rom);

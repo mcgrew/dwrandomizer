@@ -2129,6 +2129,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     skip_vanilla_credits(&rom);
     setup_expansion(&rom);
     sprite(&rom, sprite_name);
+    invisible_npcs(&rom); // in case the custom sprite also changed NPCS.
     noir_mode(&rom);
 
     printf("Checksum: %016"PRIx64"\n", crc);

@@ -237,8 +237,15 @@ snapshot_timer:
     dex
     bpl -
     jmp do_dialog_hi
-    
 
+modify_run_rate:
+    and #$7f       ; limit the value in reg A to 0-127
+    sta $3e        ; save to $3E
+    jsr cycle_rng  ; generate a new random number
+    lda RANDOM_H   ; load the random number
+    and #$3f       ; limit to 0-63
+    adc $3e        ; add to the previous number
+    jmp $eec7
 
 .org $c4f5
 

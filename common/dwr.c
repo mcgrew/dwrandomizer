@@ -83,7 +83,7 @@ static void update_flags(dw_rom *rom)
     uint8_t tmp;
 
     /* The last 2 bytes do not contain maybe flags. */
-    for (i=0; i < 13; i++) {
+    for (i=0; i < 12; i++) {
         rom->flags[i] |= (rom->flags[i] >> 1) & 0x55 & mt_rand(0, 0xff);
         rom->flags[i] &= 0x55;
     }
@@ -1329,7 +1329,6 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0x90f,  1, 0x6f); /* quit ignoring the customers */
     vpatch(rom, 0x93c,  1, 0x6f); /* quit ignoring the customers */
     vpatch(rom, 0x17a2, 3, 0, 0, 0); /* delete roaming throne room guard */
-    vpatch(rom, 0xf131, 2, 0x69, 0x03); /* Lock the stat build modifier at 3 */
 
     /* I always hated this wording */
 //     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");
@@ -1957,6 +1956,275 @@ static void skip_vanilla_credits(dw_rom *rom)
     }
 }
 
+
+static void text_scroller_extras(dw_rom *rom)
+{
+    /* Hard code fast message speed for text scroller */
+    vpatch(rom, 0x7a31, 2, 0xa2, 0x00);
+
+    /* Xarnax42, "I can't wait til we get Crump's feature that separates name from build and I can be ."
+       Well, we can't have that now can we? I'm affectionately calling this the Xarnax42 patch. 
+       It makes sure a 0 length name still prints 1 character in the dialog box. */
+    vpatch(rom, 0x7881, 19,
+    0xa5, 0xb5,        // lda 0xb5
+    0xc9, 0x60,        // cmp 0x60
+    0xd0, 0x02,        // bne ##
+    0xa9, 0x49,        // lda 0x49
+    0x99, 0x54, 0x65,  // sta 6554
+    0xc8,              // iny
+    0xc0, 0x08,        // cmp 08
+    0xd0, 0xf8,        // bne -8
+    0xe8, 0xe8, 0xe8   // inx inx inx (this is the only way I know to eat up space in a benign way)
+    );
+  
+    /* Tells the text scroller to only ever print the first letter of the character name. */
+    vpatch(rom, 0x7895, 1, 0x01);
+
+    /* Defaults stat menu selection to the 0 option.*/
+    vpatch(rom, 0xf8d5, 1, 0x00);  
+ 
+}
+
+
+
+static void build_extras(dw_rom *rom)
+{
+    int stat_modifier;
+    stat_modifier = 3;
+
+    /* Lock the stat build modifier at the selected value */
+    /* This could be a user selectable and/or a random value and piped in during rando option selections */
+    vpatch(rom, 0xf131, 2, 0x69, stat_modifier);       
+
+    //replaces the "msg speed window" window data address
+    //the new address is 0xc816.
+    vpatch(rom, 0x6f84, 2, 0x16, 0xc8);
+
+    /* jmp to experience check for saved game stats change*/
+    vpatch(rom, 0xf909, 3,
+    0x4c, 0xe6, 0xc8);     /*   jmp c8e6  */
+
+    /* Checks if the selected save slot exp is 0 and saves the new stat build if it is. */
+    vpatch(rom, 0xc8e6, 25, // -> 0xc8ff
+    0x08,                  /*   php          */
+    0x48,                  /*   pha          */
+    0xa5, 0xbb,            /*   lda $bb      */ 
+    0xd0, 0x0f,            /*   bne 0f       */
+
+    0xa5, 0xba,            /*   lda $ba      */ 
+    0xd0, 0x0b,            /*   bne 0b       */
+
+    0x68,                  /*   pla          */
+    0x28,                  /*   plp          */
+    0x85, 0xe5,            /*   sta $e5      */
+    0x20, 0xdf, 0xf9,      /*   jsr $f9df    */
+    0x4c, 0x6a, 0xf9,      /*   jmp $f96a    */
+
+    0x68,                  /*   pla          */
+    0x28,                  /*   plp          */
+    0x4c, 0x6a, 0xf9);     /*   jmp $f96a    */
+
+
+    //Alters main menu
+    set_text(rom, 0x7224, " CHG BUILD IF EXP 0  ");
+    set_text(rom, 0x7262, " CHG BUILD IF EXP 0  ");
+
+
+
+    //head over to our new stats calcuations for all builds
+    vpatch(rom, 0xf09e, 3,
+    0x4c, 0x64, 0xc8); //jmp $c864
+
+    //New logic for determing stats with vanilla and all build options.
+    vpatch(rom, 0xc864, 129, //-> 0xc8e5
+    //19
+    0xa6, 0xe5,        //ldx 0xe5
+    0xf0, 0x0f,        //beq hp-mp, 15
+    0xca,              //dex
+    0xf0, 0x1d,        //beq str-hp, 29
+    0xca,              //dex
+    0xf0, 0x2d,        //beq agi-mp, 45
+    0xca,              //dex
+    0xf0, 0x3b,        //beq str-agi, 59
+    0xca,              //dex
+    0xf0, 0x4b,        //beq str-mp, 75
+    0xca,              //dex
+    0xf0, 0x59,        //beq agi-hp, 89
+
+    //hp-mp, 17
+    0xa5, 0xc8,        //LDA str
+    0x20, 0x0c, 0xf1,  //JSR F10C  //JSR ReduceStat
+    0x85, 0xc8,        //STA str
+    0xa5, 0xc9,        //LDA agi
+    0x20, 0x0c, 0xf1,  //JSR F10C  //JSR ReduceStat
+    0x85, 0xc9,        //STA agi
+    0x4c, 0xcd, 0xf0,  //jmp 0xf0cd
+
+    //str-hp, 19
+    0xa5, 0xc9,        //LDA agi
+    0x20, 0x0c, 0xf1,  //JSR F10C  //JSR ReduceStat
+    0x85, 0xc9,        //STA agi
+    0xa5, 0xcb,        //LDA mp
+    0xf0, 0x05,        //beq skip if mp is 0
+    0x20, 0x0c, 0xf1,  //JSR F10C  //JSR ReduceStat
+    0x85, 0xcb,        //STA mp
+    0x4c, 0xcd, 0xf0,  //jmp 0xf0cd
+
+    //agi-mp, 17
+    0xa5, 0xc8,        //LDA str
+    0x20, 0x0c, 0xf1,  //JSR F10C  //JSR ReduceStat
+    0x85, 0xc8,        //STA str
+    0xa5, 0xca,        //LDA hp
+    0x20, 0x0c, 0xf1,  //JSR F10C  //JSR ReduceStat
+    0x85, 0xca,        //STA hp
+    0x4c, 0xcd, 0xf0,  //jmp 0xf0cd
+
+    //str-agi, 19
+    0xa5, 0xca,        //LDA hp
+    0x20, 0x0c, 0xf1,  //JSR F10C  //JSR ReduceStat
+    0x85, 0xca,        //STA hp
+    0xa5, 0xcb,        //LDA mp
+    0xf0, 0x05,        //beq skip if mp is 0
+    0x20, 0x0c, 0xf1,  //JSR F10C  //JSR ReduceStat
+    0x85, 0xcb,        //STA mp
+    0x4c, 0xcd, 0xf0,  //jmp 0xf0cd
+
+    //str-mp, 17
+    0xa5, 0xc9,        //LDA agi
+    0x20, 0x0c, 0xf1,  //JSR F10C  //JSR ReduceStat
+    0x85, 0xc9,        //STA agi
+    0xa5, 0xca,        //LDA hp
+    0x20, 0x0c, 0xf1,  //JSR F10C  //JSR ReduceStat
+    0x85, 0xca,        //STA hp
+    0x4c, 0xcd, 0xf0,  //jmp 0xf0cd
+
+    //agi-hp, 19
+    0xa5, 0xc8,        //LDA str
+    0x20, 0x0c, 0xf1,  //JSR F10C  //JSR ReduceStat
+    0x85, 0xc8,        //STA str
+    0xa5, 0xcb,        //LDA mp
+    0xf0, 0x05,        //beq skip if mp is 0
+    0x20, 0x0c, 0xf1,  //JSR F10C  //JSR ReduceStat
+    0x85, 0xcb,        //STA mp
+    0x4c, 0xcd, 0xf0   //jmp 0xf0cd
+    );
+
+
+
+    text_scroller_extras(rom);
+}
+
+
+static void no_builds(dw_rom *rom)
+{
+
+    //Window Data for the no build options.
+    vpatch(rom, 0x7194, 64,  
+    0xa1, //Window Options.  Selection window. 
+    0x05, //Window Height.   5 blocks.
+    0x18, //Window Width.    24 tiles.
+    0x73, //Window Position. Y = 7 blocks, X = 3 blocks.
+    0x00, //Window columns.  1 column.
+    0x66, //Cursor home.     Y = 6 tiles, X = 6 tiles.
+    0x88, //Horizontal border, remainder of row.
+
+    0x81, 0x3c, 0x18, 0x1e, 0x81, 0x11, 0x0a, 0x1f, 0x0e, 0x81, 0x1e, 0x17, 0x15, 0x18, 0x0c, 0x14, 0x0e, 0x0d, 0x80, 0x80,             /* You have unlocked    */ //20
+    0x81, 0x22, 0x18, 0x1e, 0x1b, 0x81, 0x1d, 0x1b, 0x1e, 0x0e, 0x81, 0x19, 0x18, 0x1d, 0x0e, 0x17, 0x1d, 0x12, 0x0a, 0x15, 0x47, 0x80, /* your true potential. */ //22
+    0x80, 0x80,                                                                                                                         /*                      */ //2
+    0x86, 0x2f, 0x28, 0x37, 0x40, 0x36, 0x81, 0x2a, 0x32, 0x4c, 0x80,                                                                   /*      LET'S GO!       */ //11
+    0x80, 0x80);                                                                                                                        /*                      */ //2
+
+    /* Sets a new cursor bottom row. Let's the cursor cycle 0 positions instead of the original 3. */ 
+    vpatch(rom, 0x6a19, 1, 0x00);
+
+
+    //skips stat penalty checks
+    vpatch(rom, 0xf09e, 3,
+    0x4c, 0xcd, 0xf0);     // jmp $f0cd
+
+
+    text_scroller_extras(rom);
+}
+
+
+
+static void vanilla_builds(dw_rom *rom)
+{
+    //Window Data for the new build options.
+    vpatch(rom, 0xc816, 63,  
+    0xa1, //Window Options.  Selection window. 
+    0x07, //Window Height.   7 blocks.
+    0x12, //Window Width.    18 tiles.
+    0x74, //Window Position. Y = 7 blocks, X = 4 blocks.
+    0x00, //Window columns.  1 column.
+    0x46, //Cursor home.     Y = 4 tiles, X = 6 tiles.
+    0x88, //Horizontal border, remainder of row.
+
+    0x81, 0x33, 0x12, 0x0C, 0x14, 0x81, 0x24, 0x81, 0x25, 0x1E, 0x12, 0x15, 0x0D, 0x80, 0x80, 0x80,         /* Pick A Build   */ //16
+    0x86, 0x2B, 0x33, 0x49, 0x30, 0x33, 0x80, 0x80,                                                         /*      HP-MP     */ //8
+    0x86, 0x36, 0x1D, 0x1B, 0x49, 0x2B, 0x33, 0x80, 0x80,                                                   /*      Str-HP    */ //9
+    0x86, 0x24, 0x10, 0x12, 0x49, 0x30, 0x33, 0x80, 0x80,                                                   /*      Agi-MP    */ //9
+    0x86, 0x36, 0x1D, 0x1B, 0x49, 0x24, 0x10, 0x12, 0x80, 0x80,                                             /*      Str-Agi   */ //10
+    0x80, 0x80);                                                                                            /*                */ //2
+
+
+    /* Sets a new cursor bottom row. Let's the cursor cycle 4 positions instead of the original 3. */ 
+    vpatch(rom, 0x6a19, 1, 0x03);
+
+
+    build_extras(rom);
+}
+
+
+static void all_builds(dw_rom *rom)
+{
+    //Window Data for the new build options.
+    vpatch(rom, 0xc816, 77,  
+    0xa1, //Window Options.  Selection window. 
+    0x08, //Window Height.   8 blocks.
+    0x12, //Window Width.    18 tiles.
+    0x54, //Window Position. Y = 5 blocks, X = 4 blocks.
+    0x00, //Window columns.  1 column.
+    0x46, //Cursor home.     Y = 4 tiles, X = 6 tiles.
+    0x88, //Horizontal border, remainder of row.
+
+    0x81, 0x33, 0x12, 0x0C, 0x14, 0x81, 0x24, 0x81, 0x25, 0x1E, 0x12, 0x15, 0x0D, 0x80, 0x80, 0x80,         /* Pick A Build   */ //16
+    0x86, 0x2B, 0x33, 0x49, 0x30, 0x33, 0x80, 0x80,                                                         /*      HP-MP     */ //8
+    0x86, 0x36, 0x1D, 0x1B, 0x49, 0x2B, 0x33, 0x80, 0x80,                                                   /*      Str-HP    */ //9
+    0x86, 0x24, 0x10, 0x12, 0x49, 0x30, 0x33, 0x80, 0x80,                                                   /*      Agi-MP    */ //9
+    0x86, 0x36, 0x1D, 0x1B, 0x49, 0x24, 0x10, 0x12, 0x80, 0x80,                                             /*      Str-Agi   */ //10
+    0x86, 0x36, 0x1D, 0x1B, 0x49, 0x30, 0x33, 0x80, 0x80,                                                   /*      Str-MP    */ //9
+    0x86, 0x24, 0x10, 0x12, 0x49, 0x2B, 0x33, 0x80, 0x80);                                                  /*      Agi-HP    */ //9
+
+
+    /* Sets a new cursor bottom row. Let's the cursor cycle 6 positions instead of the original 3. */ 
+    vpatch(rom, 0x6a19, 1, 0x05);
+
+
+
+    build_extras(rom);
+}
+
+
+
+
+static void stat_build_choices(dw_rom *rom)
+{
+    if (NO_BUILDS(rom)) {
+        no_builds(rom);
+
+    } else if (ALL_BUILDS(rom)) {
+        all_builds(rom);
+
+    } else {
+        vanilla_builds(rom);
+    }
+}
+
+
+
+
+
 /**
  * Sets up the extra expansion banks
  *
@@ -2117,6 +2385,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     invisible_hero(&rom);
     invisible_npcs(&rom);
     death_counter(&rom);
+    stat_build_choices(&rom);
 
     crc = crc64(0, rom.content, 0x10000);
 

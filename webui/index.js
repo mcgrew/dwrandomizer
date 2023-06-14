@@ -151,6 +151,11 @@ function setup_ui() {
         'HEAL must come before HEALMORE; HURT before HURTMORE.');
     ui.addTriOption('Gameplay', 10,  2, 2, 'Stair Shuffle',
         'Where stairs take you inside dungeons will be randomized.');
+    ui.addDropDown ('Gameplay',  11, 12, 4, 'Build Options', {
+        'Vanilla' : 0,
+        'No Builds' : 1,
+        'All Builds': 2
+    });
 
     ui.addTriOption('Features',  0,  3, 6, 'Enable Menu Wrapping',
         'This enables cursor wrapping in menus.');

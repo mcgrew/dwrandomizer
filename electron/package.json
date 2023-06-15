@@ -1,6 +1,6 @@
 {
   "name": "dwrandomizer",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "Dragon Warrior Randomizer",
   "main": "main.js",
   "scripts": {

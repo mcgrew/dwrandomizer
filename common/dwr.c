@@ -24,24 +24,6 @@
 #include "expansion.h"
 #include "credit_music.h"
 
-/** Pretty sure these aren't used any more.  */
-const char *prg0sums[8] = {
-      "6a50ce57097332393e0e8751924fd56456ef083c", /* Dragon Warrior (U) (PRG0) [!].nes      */
-      "66330df6fe3e3c85adb8183721e5f88c149e52eb", /* Dragon Warrior (U) (PRG0) [b1].nes     */
-      "49974889619f1d8c39b6c20fa208c62a0a73ecce", /* Dragon Warrior (U) (PRG0) [b1][o1].nes */
-      "d98b8a3fc93bb2f1f5016326556b68998dd5f85d", /* Dragon Warrior (U) (PRG0) [b2].nes     */
-      "e81a693efe322be9584c97b55c6d7ae38ae44a66", /* Dragon Warrior (U) (PRG0) [o1].nes     */
-      "6e1a52b7b3a13494536bbab7248690861665001a", /* Dragon Warrior (U) (PRG0) [o2].nes     */
-      "3077d5bd5c5c3744398b122d5ee1bba7055c8d45", /* Dragon Warrior (U) (PRG0) [o3].nes     */
-      NULL
-};
-/** Pretty sure these aren't used any more.  */
-const char *prg1sums[2] = {
-      "1ecc63aaac50a9612eaa8b69143858c3e48dd0ae", /* Dragon Warrior (U) (PRG1) [!].nes      */
-      NULL
-};
-
-
 /* The [ and ] are actually opening/closing quotes. The / is .'. = is .. */
 const char alphabet[] = "0123456789abcdefghijklmnopqrstuvwxyz"
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ[]'*>_:=_.,-_?!;)(``/'___________ \n";
@@ -961,20 +943,20 @@ static void dwr_fighters_ring(dw_rom *rom)
     vpatch(rom, 0xf0fc, 4, 0x20, 0x7d, 0xff, 0xea);
     vpatch(rom, 0xff7d, 17,
         /* ff7d: */
-        0x85, 0xcd,      /* STA $00CD  ; replaces code removed from $F00C     */
-        0xa5, 0xcf,      /* LDA $00CF  ; load status bits                     */
-        0x29, 0x20,      /* AND #$20   ; check bit 6 (fighter's ring)         */
-        0xf0, 0x06,      /* BEQ $FF8B                                         */
-        0xa5, 0xcc,      /* LDA $00CC  ; load attack power                    */
-        0x69, 2,         /* ADC #$02   ; add fighter's ring power.            */
-        0x85, 0xcc,      /* STA $00CC  ; store new attack power               */
+        0x85, 0xcd,      /* STA $00CD  ; replaces code removed from $F00C    */
+        0xa5, 0xcf,      /* LDA $00CF  ; load status bits                    */
+        0x29, 0x20,      /* AND #$20   ; check bit 6 (fighter's ring)        */
+        0xf0, 0x06,      /* BEQ $FF8B                                        */
+        0xa5, 0xcc,      /* LDA $00CC  ; load attack power                   */
+        0x69, 2,         /* ADC #$02   ; add fighter's ring power.           */
+        0x85, 0xcc,      /* STA $00CC  ; store new attack power              */
         /* ff8b: */
-        0x4c, 0x54, 0xff /* JMP $FF54  ; jump to next section                 */
+        0x4c, 0x54, 0xff /* JMP $FF54  ; jump to next section                */
     );
     vpatch(rom, 0xff54, 3,
         /* ff54: */
-        0xa5, 0xcf,      /* LDA $00CF   ; replaces code removed from $F00E    */
-        0x60             /* RTS                                               */
+        0xa5, 0xcf,      /* LDA $00CF   ; replaces code removed from $F00E   */
+        0x60             /* RTS                                              */
     );
 }
 
@@ -1136,11 +1118,11 @@ static void threes_company(dw_rom *rom)
             "\xfd\xfbI was thinking of putting in some new curtains, maybe a "
             "hot tub, a disco ball over here=/ ");
     vpatch(rom, 0x0d509,    8,
-            0xea,               /* NOP       ; Don't reset the quest byte     */
-            0xea,               /* NOP       ; So we know if Gwaelin is here  */
-            0x85,  0xe4,        /* STA $E4   ; Original Code                  */
-            0x20,  0xbc,  0xc4, /* JSR $C4C0 ; Jump to three's company code   */
-            0xea                /* NOP                                        */
+            0xea,               /* NOP       ; Don't reset the quest byte    */
+            0xea,               /* NOP       ; So we know if Gwaelin is here */
+            0x85,  0xe4,        /* STA $E4   ; Original Code                 */
+            0x20,  0xbc,  0xc4, /* JSR $C4C0 ; Jump to three's company code  */
+            0xea                /* NOP                                       */
     );
     add_hook(rom, JSR, 0xd50d, THREES_COMPANY_CHECK);
 }
@@ -1159,7 +1141,7 @@ static void permanent_torch(dw_rom *rom)
 
     vpatch(rom, 0x2f18,    2,
             0xa9,  0x03         /* LDA #$03  ; Set light radius to 3 instead */
-                                /*           ; of 1 when loading map          */
+                                /*           ; of 1 when loading map         */
     );
     vpatch(rom, 0xca60,    2,
             0xc9, 0x03          /* CMP #$03  ; Don't decrease the light */
@@ -1902,34 +1884,13 @@ static void noir_mode(dw_rom *rom)
 //     noir_replace(&rom->content[0x3d41], &rom->content[0x3d4c]); // DL
 }
 
-// static void noir_mode(dw_rom *rom)
-// {
-// 
-//     if (!NOIR_MODE(rom))
-//         return;
-// 
-//     printf("Enabling noir mode...\n");
-//     /* Change the PPUMASK writes to disable color */
-//     vpatch(rom, 0x030b9,    1,  0x19);
-//     vpatch(rom, 0x03b5e,    1,  0x19);
-//     vpatch(rom, 0x0535d,    1,  0x19);
-//     vpatch(rom, 0x0c9e9,    1,  0x19);
-//     vpatch(rom, 0x0d39b,    1,  0x19);
-//     vpatch(rom, 0x0db4e,    1,  0x19);
-//     vpatch(rom, 0x0f84c,    1,  0x19);
-//     if (NO_SCREEN_FLASH(rom)) {
-//         vpatch(rom, 0x0d38e,    1,  0x19);
-//         vpatch(rom, 0x0db40,    1,  0x19);
-//     } else {
-//         vpatch(rom, 0x0d38e,    1,  0x00);
-//         vpatch(rom, 0x0db40,    1,  0x00);
-//     }
-// }
-
-
-
-
-
+/**
+ * Creates a new "BEGIN A NEW QUEST" window which will contain the ROM
+ * checksum
+ *
+ * @param rom The rom struct
+ * @param crc The rom checksum
+ */
 static void begin_quest_checksum(dw_rom *rom, uint64_t crc)
 {
 

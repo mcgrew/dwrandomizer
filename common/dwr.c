@@ -1933,17 +1933,10 @@ static void noir_mode(dw_rom *rom)
 static void begin_quest_checksum(dw_rom *rom, uint64_t crc)
 {
 
-    char full_crc[18];
-    char insert_crc[14];
+    char crc_text[] = " CRC: XXXXXX";
 
     // This grabs the checksum
-    sprintf(full_crc, "%016"PRIx64"\n", crc);
-
-    //formatting tidbits of the crc string for insertion in to the window data.
-    sprintf(insert_crc, "%c%c%c%c%c%c%c%c%c%c%c%c%c",  
-            ' ', full_crc[0],  ' ', full_crc[1], ' ',  full_crc[2], ' ', 
-                 full_crc[13], ' ', full_crc[14], ' ', full_crc[15], ' ');
-
+    snprintf(crc_text+6, 7, "%016"PRIX64, crc);
 
     //replaces the "begin new quest" window data address
     //the old address was 0x72a8. the new address is 0xc7ec.
@@ -1951,32 +1944,28 @@ static void begin_quest_checksum(dw_rom *rom, uint64_t crc)
 
     //our brand new "begin new quest" window
     vpatch(rom, 0xc7ec, 7,  
-    0x81, //Window Options.  Selection window. 
-    0x02, //Window Height.   2 blocks.
-    0x18, //Window Width.    24 tiles.
-    0x12, //Window Position. Y = 1 blocks, X = 2 blocks.
-    0x00, //Window columns.  1 column.
-    0x21, //Cursor home.     Y = 2 tiles, X = 1 tiles.
-    0x8d  //Horizontal border, 5 spaces.
+        0x81, //Window Options.  Selection window. 
+        0x02, //Window Height.   2 blocks.
+        0x18, //Window Width.    24 tiles.
+        0x12, //Window Position. Y = 1 blocks, X = 2 blocks.
+        0x00, //Window columns.  1 column.
+        0x21, //Cursor home.     Y = 2 tiles, X = 1 tiles.
+        0x8d  //Horizontal border, 5 spaces.
     );
 
     //Continues from above and fills out the checksum in the window
-    set_text(rom, 0xc7f3, strupr(insert_crc));
+    set_text(rom, 0xc7f3, crc_text);
 
-    //Continues after the checksum and fills in the remainder of the window data.
+    //Continues after the checksum and fills in the remainder of window data.
     vpatch(rom, 0xc800, 21,
-    0x88, //Horizontal border, remainder of row. (this is still on the checksum row)
-    // " BEGIN A NEW QUEST"
-    0x81, 0x25, 0x28, 0x2A, 0x2C, 0x31, 0x81, 0x24, 0x81, 0x31, 0x28, 0x3a, 0x81, 0x34, 0x38, 0x28, 0x36, 0x37,
-
-    0x80 //Blank Space, remainder of row.
+        0x88, //Horizontal border, remainder of row. (still checksum row)
+        // " BEGIN A NEW QUEST"
+        0x81, 0x25, 0x28, 0x2A, 0x2C, 0x31, 0x81, 0x24,
+        0x81, 0x31, 0x28, 0x3a, 0x81, 0x34, 0x38, 0x28,
+        0x36, 0x37,
+        0x80 //Blank Space, remainder of row.
     );
-
-
 }
-
-
-
 
 /**
  * Disables the screen flash when spells are cast by modifying ppu calls such

@@ -470,49 +470,55 @@ credits_data:
 
     .db INSTR_SET_PPU
     .word $2148
-    .db "gameboyf9    "
+    .db "gameboyf9     "
     .db INSTR_SET_PPU
     .word $2188
-    .db "CaitSith2    "
+    .db "CaitSith2     "
     .db INSTR_SET_PPU
     .word $21c8
-    .db "dvj          "
+    .db "dvj           "
     .db INSTR_SET_PPU
     .word $2208
-    .db "bunder2015   "
+    .db "bunder2015    "
     .db INSTR_SET_PPU
     .word $2248
-    .db "Dwedit       "
+    .db "Dwedit        "
     .db INSTR_SET_PPU
     .word $2288
-    .db "ArchfieldMonk"
+    .db "ArchfieldMonk "
+    .db INSTR_SET_PPU
+    .word $22c8
+    .db "Crumps Brother"
 
     .db INSTR_WAIT, 240
 
     .db INSTR_SET_PPU
     .word $20e8
-    .db "SPRITE WORK  "
+    .db "SPRITE WORK   "
     .db INSTR_SET_PPU
     .word $2148
-    .db "Xarnax42     "
+    .db "Xarnax42      "
     .db INSTR_SET_PPU
     .word $2188
-    .db "Ryuseishin   "
+    .db "Ryuseishin    "
     .db INSTR_SET_PPU
     .word $21c8
-    .db "mcgrew       "
+    .db "mcgrew        "
     .db INSTR_SET_PPU
     .word $2208
-    .db "MisterHomes  "
+    .db "MisterHomes   "
     .db INSTR_SET_PPU
     .word $2248
-    .db "Invenerable  "
+    .db "Invenerable   "
     .db INSTR_SET_PPU
     .word $2288
-    .db "EdgeTalvaron "
+    .db "EdgeTalvaron  "
     .db INSTR_SET_PPU
     .word $22c8
-    .db "shMike       "
+    .db "shMike        "
+    .db INSTR_SET_PPU
+    .word $2308
+    .db "bunder2015    "
 
 stats_data:
     .db INSTR_WAIT, 240

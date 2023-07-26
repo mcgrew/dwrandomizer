@@ -1316,6 +1316,52 @@ static void other_patches(dw_rom *rom)
     /* I always hated this wording */
 //     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");
     set_text(rom, 0xad85,  "The spell had no effect");
+
+
+    /* Remove Numbers from all "Adventure Log" combinations.
+       This prevents a tri-stated no numbers flag from getting spoiled before a run starts.
+       You could get pretty adventurous with easter eggs for all the various options. Food for thought. */
+    set_text(rom, 0x72c9, " ADVENTURE LOG A");
+
+    set_text(rom, 0x72e1, " ADVENTURE LOG B");
+
+    set_text(rom, 0x72f9, " ADVENTURE LOG A");
+    set_text(rom, 0x730a, " ADVENTURE LOG B");
+
+    set_text(rom, 0x7322, " ADVENTURE LOG C");
+
+    set_text(rom, 0x733a, " ADVENTURE LOG A");
+    set_text(rom, 0x734b, " ADVENTURE LOG C");
+
+    set_text(rom, 0x7363, " ADVENTURE LOG B");
+    set_text(rom, 0x7374, " ADVENTURE LOG C");
+
+    set_text(rom, 0x738c, " ADVENTURE LOG A");
+    set_text(rom, 0x739d, " ADVENTURE LOG B");
+    set_text(rom, 0x73ae, " ADVENTURE LOG C");
+
+    set_text(rom, 0x73c6, " ADVENTURE LOG A");
+
+    set_text(rom, 0x73e0, " ADVENTURE LOG B");
+
+    set_text(rom, 0x73fa, " ADVENTURE LOG A");
+    set_text(rom, 0x740d, " ADVENTURE LOG B");
+
+    set_text(rom, 0x7427, " ADVENTURE LOG C");
+
+    set_text(rom, 0x7441, " ADVENTURE LOG A");
+    set_text(rom, 0x7454, " ADVENTURE LOG C");
+
+    set_text(rom, 0x746e, " ADVENTURE LOG B");
+    set_text(rom, 0x7481, " ADVENTURE LOG C");
+
+    set_text(rom, 0x749b, " ADVENTURE LOG A");
+    set_text(rom, 0x74ae, " ADVENTURE LOG B");
+    set_text(rom, 0x74c1, " ADVENTURE LOG C");
+
+
+
+
 }
 
 /**

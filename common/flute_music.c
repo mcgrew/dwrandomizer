@@ -160,6 +160,12 @@ void randomize_flute_song(dw_rom *rom)
     }
 }
 
+/**
+ * Applies speedup to the flute music.
+ * This has been tested with the original song as well as the above ones, but I'm not familiar enough with the DW music engine to guarantee this will work with every possible song.
+ *
+ * @param rom The rom struct
+ */
 void speed_up_flute_song(dw_rom *rom)
 {
     BOOL song_ended = FALSE;

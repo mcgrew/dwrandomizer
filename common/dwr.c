@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -1693,18 +1692,7 @@ static void dwr_speed_hacks(dw_rom *rom)
     vpatch(rom, 0x471c, 1, 1);
     vpatch(rom, 0x471e, 1, 1);
     /* speed up the fairy flute */
-    vpatch(rom, 0x4ca1, 1, 1);
-    vpatch(rom, 0x4ca3, 1, 1);
-    vpatch(rom, 0x4cb5, 1, 1);
-    vpatch(rom, 0x4cb7, 1, 1);
-    vpatch(rom, 0x4cb9, 1, 1);
-    vpatch(rom, 0x4cbd, 1, 1);
-    vpatch(rom, 0x4cd2, 1, 1);
-    vpatch(rom, 0x4cd4, 1, 1);
-    vpatch(rom, 0x4cd6, 1, 1);
-    vpatch(rom, 0x4cd8, 1, 1);
-    vpatch(rom, 0x4cda, 1, 1);
-    vpatch(rom, 0x4cdc, 1, 1);
+    speed_up_flute_song(rom);
     /* speed up the inn music */
     vpatch(rom, 0x46d4, 1, 1);
     vpatch(rom, 0x46d6, 1, 1);
@@ -2094,6 +2082,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     dwr_fighters_ring(&rom);
     dwr_death_necklace(&rom);
     dwr_menu_wrap(&rom);
+    randomize_flute_song(&rom);
     dwr_speed_hacks(&rom);
     open_charlock(&rom);
     chaos_mode(&rom);
@@ -2114,7 +2103,6 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
 
     modern_spell_names(&rom);
     randomize_music(&rom);
-    randomize_flute_song(&rom);
     disable_music(&rom);
 
     no_numbers(&rom);

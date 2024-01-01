@@ -641,7 +641,7 @@ static void shuffle_vendors(dw_rom *rom)
     mt_shuffle(vendor_dialog, sizeof(vendor_dialog), sizeof(uint8_t));
 
     for(i = 0; i<17; i++) {
-        if(NO_KEYS(rom) && vendor_dialog[i] == 0x4f || vendor_dialog[i] == 0x0e || vendor_dialog[i] == 0x0c)
+        if(NO_KEYS(rom) && (vendor_dialog[i] == 0x4f || vendor_dialog[i] == 0x0e || vendor_dialog[i] == 0x0c))
             vpatch(rom, vendor_address[i], 3, 0, 0, 0);
         else
             vpatch(rom, vendor_address[i]+2, 1, vendor_dialog[i]);

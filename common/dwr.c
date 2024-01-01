@@ -1173,6 +1173,43 @@ static void summer_sale(dw_rom *rom)
 }
 
 /**
+ * Shuffles prices from all inns
+ *
+ * @param rom The rom struct
+ */
+static void shuffle_inn_prices(dw_rom *rom)
+{
+    uint8_t prices[5] = {6, 20, 25, 100, 55};
+    int i;
+
+    if (!SHUFFLE_INN_PRICES(rom))
+        return;
+
+    mt_shuffle(prices, sizeof(prices), sizeof(uint8_t));
+    for(i = 0; i < sizeof(prices) / sizeof(uint8_t); i++)
+        vpatch(rom, 0x198c + i, 1, prices[i]);
+}
+
+/**
+ * Shuffles prices from all key vendors (affects key resale value as well)
+ *
+ * @param rom The rom struct
+ */
+static void shuffle_key_prices(dw_rom *rom)
+{
+    uint8_t prices[3] = {53, 85, 98};
+    int i;
+
+    if (!SHUFFLE_KEY_PRICES(rom))
+        return;
+
+    mt_shuffle(prices, sizeof(prices), sizeof(uint8_t));
+    vpatch(rom, 0x196b, 1, prices[1]);
+    for(i = 0; i < sizeof(prices) / sizeof(uint8_t); i++)
+        vpatch(rom, 0x1989 + i, 1, prices[i]);
+}
+
+/**
  * Modifies the status window to show a death counter
  *
  * @param rom The rom struct
@@ -2089,6 +2126,8 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     update_drops(&rom);
     update_mp_reqs(&rom);
     lower_xp_reqs(&rom);
+    shuffle_inn_prices(&rom);
+    shuffle_key_prices(&rom);
     update_enemy_hp(&rom);
     dwr_fighters_ring(&rom);
     dwr_death_necklace(&rom);

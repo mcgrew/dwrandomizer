@@ -60,6 +60,8 @@
 #define SMALL_MAP(x)              (x->flags[13] & 0x40)
 #define VERY_SMALL_MAP(x)         (x->flags[13] & 0x80)
 #define RANDOM_MAP_SIZE(x)        (x->flags[13] & 0xc0)
+#define SHUFFLE_INN_PRICES(x)     (1 > 0)
+#define SHUFFLE_KEY_PRICES(x)     (1 > 0)
 
 #define NO_HURTMORE(x)            (x->flags[ 9] & 0xc0)
 #define NO_NUMBERS(x)             (x->flags[ 9] & 0x30)

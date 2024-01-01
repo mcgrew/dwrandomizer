@@ -1204,7 +1204,7 @@ static void shuffle_key_prices(dw_rom *rom)
         return;
 
     mt_shuffle(prices, sizeof(prices), sizeof(uint8_t));
-    vpatch(rom, 0x196b, 1, prices[0]);
+    vpatch(rom, 0x196b, 1, prices[1]);
     for(i = 0; i < sizeof(prices) / sizeof(uint8_t); i++)
         vpatch(rom, 0x1989 + i, 1, prices[i]);
 }

@@ -28,6 +28,7 @@
 #define RANDOM_MAP(x)             (x->flags[ 0] & 0x03)
 #define RANDOMIZE_SPELLS(x)       (x->flags[ 1] & 0xc0)
 #define RANDOMIZE_SHOPS(x)        (x->flags[ 1] & 0x30)
+#define SHUFFLE_VENDORS(x)        (1 > 0)
 #define RANDOM_PRICES(x)          (x->flags[ 1] & 0x0c)
 #define RANDOM_XP_REQS(x)         (x->flags[ 1] & 0x03)
 #define HEAL_HURT_B4_MORE(x)      (x->flags[ 2] & 0xc0)

@@ -575,6 +575,80 @@ static void randomize_shops(dw_rom *rom)
 }
 
 /**
+ * Shuffles the item, weapon/armor and key vendors (except Rimuldar key vendor)
+ *
+ * @param rom The rom struct
+ */
+static void shuffle_vendors(dw_rom *rom)
+{
+    int i;
+
+    // Rimuldar key vendor isn't included so we can have the same key logic
+    uint32_t vendor_address[17] = {
+        0x18ac, // Brecconary items
+        0x1894, // Brecconary weapons
+        0x1884, // Brecconary fairy water
+        0x18d8, // Kol weapons
+        0x18de, // Kol items
+        0x1907, // Garinham items
+        0x1910, // Garinham weapons
+        0x185f, // Rimuldar weapons
+        0x1805, // Cantlin weapon 1
+        0x1827, // Cantlin weapon 2
+        0x1833, // Cantlin weapon 3
+        0x182a, // Cantlin fairy water
+        0x181e, // Cantlin item 1
+        0x1824, // Cantlin item 2
+        0x1821, // Cantlin radishes
+        //0x185c, // Rimuldar keys
+        0x1783, // Tantegel keys
+        0x181b  // Cantlin keys
+    };
+
+    uint8_t vendor_dialog[17] = {
+        0x08, // Brecconary items
+        0x01, // Brecconary weapons
+        0x0f, // Brecconary fairy water
+        0x00, // Kol weapons
+        0x07, // Kol items
+        0x09, // Garinham items
+        0x02, // Garinham weapons
+        0x06, // Rimuldar weapons
+        0x03, // Cantlin weapon 1
+        0x05, // Cantlin weapon 2
+        0x04, // Cantlin weapon 3
+        0x10, // Cantlin fairy water
+        0x0a, // Cantlin item 1
+        0x0b, // Cantlin item 2
+        0x45, // Cantlin radishes
+        //0x0d, // Rimuldar keys
+        0x0e, // Tantegel keys
+        0x0c  // Cantlin keys
+    };
+
+    if (!SHUFFLE_VENDORS(rom))
+        return;
+
+    printf("Shuffling vendors across Alefgard...\n");
+
+    if (NO_KEYS(rom)) {
+        // Put default key vendor data back, we'll remove them wherever they end up being after the shuffle
+        vpatch(rom, 0x1783, 3, 0x78, 0x41, 0x0e); // Tantegel
+        // vpatch(rom, 0x185c, 3, 0xa4, 0x07, 0x0d); // Rimuldar
+        vpatch(rom, 0x181b, 3, 0xbb, 0x46, 0x0c); // Cantlin
+    }
+
+    mt_shuffle(vendor_dialog, sizeof(vendor_dialog), sizeof(uint8_t));
+
+    for(i = 0; i<sizeof(vendor_dialog) / sizeof(uint8_t); i++) {
+        if(NO_KEYS(rom) && (vendor_dialog[i] == 0x0d || vendor_dialog[i] == 0x0e || vendor_dialog[i] == 0x0c))
+            vpatch(rom, vendor_address[i], 3, 0, 0, 0);
+        else
+            vpatch(rom, vendor_address[i]+2, 1, vendor_dialog[i]);
+    }
+}
+
+/**
  * Randomizes the player's stat growth
  *
  * @param rom The rom struct
@@ -2097,6 +2171,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     open_charlock(&rom);
     chaos_mode(&rom);
     no_keys(&rom);
+    shuffle_vendors(&rom);
     cursed_princess(&rom);
     threes_company(&rom);
     scared_metal_slimes(&rom);

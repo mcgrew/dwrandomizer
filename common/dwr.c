@@ -634,13 +634,13 @@ static void shuffle_vendors(dw_rom *rom)
     if (NO_KEYS(rom)) {
         // Put default key vendor data back, we'll remove them wherever they end up being after the shuffle
         vpatch(rom, 0x1783, 3, 0x78, 0x41, 0x0e); // Tantegel
-        vpatch(rom, 0x185c, 3, 0x62, 0x04, 0x0d); // Rimuldar
+        // vpatch(rom, 0x185c, 3, 0xa4, 0x07, 0x0d); // Rimuldar
         vpatch(rom, 0x181b, 3, 0xbb, 0x46, 0x0c); // Cantlin
     }
 
     mt_shuffle(vendor_dialog, sizeof(vendor_dialog), sizeof(uint8_t));
 
-    for(i = 0; i<17; i++) {
+    for(i = 0; i<sizeof(vendor_dialog) / sizeof(uint8_t); i++) {
         if(NO_KEYS(rom) && (vendor_dialog[i] == 0x0d || vendor_dialog[i] == 0x0e || vendor_dialog[i] == 0x0c))
             vpatch(rom, vendor_address[i], 3, 0, 0, 0);
         else
@@ -2158,7 +2158,6 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     randomize_zone_layout(&rom);
     randomize_zones(&rom);
     randomize_shops(&rom);
-    shuffle_vendors(&rom);
     randomize_growth(&rom);
     randomize_spells(&rom);
     update_drops(&rom);
@@ -2172,6 +2171,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     open_charlock(&rom);
     chaos_mode(&rom);
     no_keys(&rom);
+    shuffle_vendors(&rom);
     cursed_princess(&rom);
     threes_company(&rom);
     scared_metal_slimes(&rom);

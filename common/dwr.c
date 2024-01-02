@@ -621,7 +621,7 @@ static void shuffle_vendors(dw_rom *rom)
         0x0a, // Cantlin item 1
         0x0b, // Cantlin item 2
         0x45, // Cantlin radishes
-        //0x4f, // Rimuldar keys
+        //0x0d, // Rimuldar keys
         0x0e, // Tantegel keys
         0x0c  // Cantlin keys
     };
@@ -634,14 +634,14 @@ static void shuffle_vendors(dw_rom *rom)
     if (NO_KEYS(rom)) {
         // Put default key vendor data back, we'll remove them wherever they end up being after the shuffle
         vpatch(rom, 0x1783, 3, 0x78, 0x41, 0x0e); // Tantegel
-        //vpatch(rom, 0x185c, 3, 0x62, 0x04, 0x4f); // Rimuldar
+        vpatch(rom, 0x185c, 3, 0x62, 0x04, 0x0d); // Rimuldar
         vpatch(rom, 0x181b, 3, 0xbb, 0x46, 0x0c); // Cantlin
     }
 
     mt_shuffle(vendor_dialog, sizeof(vendor_dialog), sizeof(uint8_t));
 
     for(i = 0; i<17; i++) {
-        if(NO_KEYS(rom) && (vendor_dialog[i] == 0x4f || vendor_dialog[i] == 0x0e || vendor_dialog[i] == 0x0c))
+        if(NO_KEYS(rom) && (vendor_dialog[i] == 0x0d || vendor_dialog[i] == 0x0e || vendor_dialog[i] == 0x0c))
             vpatch(rom, vendor_address[i], 3, 0, 0, 0);
         else
             vpatch(rom, vendor_address[i]+2, 1, vendor_dialog[i]);

@@ -10,6 +10,7 @@ extern "C" {
 void invisible_hero(dw_rom *rom);
 void invisible_npcs(dw_rom *rom);
 void no_numbers(dw_rom *rom);
+void damage_bonks(dw_rom *rom);
 
 #ifdef __cplusplus
 }

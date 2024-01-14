@@ -1128,6 +1128,401 @@ static void threes_company(dw_rom *rom)
 }
 
 /**
+ * Makes a random NPC the Dragonlord
+ * TODO: Make this coherent with other_patches
+ *
+ * @param rom The rom struct
+ */
+static void disguised_dragonlord(dw_rom *rom)
+{
+    const uint16_t NPCPointerTableStart = 0x1734;
+    uint8_t chosen_NPC, u = 0;
+    uint8_t swappable_check;
+    int i, j, k;
+
+    // Mobile NPC pointer table, then static NPC pointer table
+    uint16_t NPCsPointerTables[12][2] = {
+        {0x9764, 0x9783}, // Tantegel
+        {0x97a2, 0x97a6}, // Throne room
+        {0x97ea, 0x97eb}, // Charlock basement
+        {0x98b3, 0x98cf}, // Kol
+        {0x9875, 0x9894}, // Brecconary
+        {0x98e5, 0x98fb}, // Garinham
+        {0x97f9, 0x9818}, // Cantlin
+        {0x9837, 0x9856}, // Rimuldar
+        {0x97b3, 0x97b4}, // Stones of sunlight cave
+        {0x97ef, 0x97f0}, // Staff of rain cave
+        {0x97f4, 0x97f5}, // Rainbow drop cave
+        {0x97b8, 0x97ce}  // Post-win Tantegel
+    };
+
+    // NOTE: In the vanilla ROM, the pointer table areas are not in the same order as in the ROM, so to make things simpler, we're gonna reorder them according to the pointer table order of areas (but keep mobile first, then static)
+
+    // Number of NPCs of each type in each area.
+    uint8_t NPCsCountTables[12][2] = {
+        {10, 10}, // Tantegel
+        {1, 4}, // Throne room
+        {0, 1}, // Charlock basement
+        {9, 7}, // Kol
+        {10, 10}, // Brecconary
+        {7, 8}, // Garinham
+        {10, 10}, // Cantlin
+        {10, 10}, // Rimuldar
+        {0, 1}, // Stones of sunlight cave
+        {0, 1}, // Staff of rain cave
+        {0, 1}, // Rainbow drop cave
+        {7, 9}  // Post-win Tantegel
+    };
+
+    /*
+    The 3 bytes of original data + 1 byte (abcdefgh) for randomization possibilities
+    a: Swappable with dragonlord
+    b: Swappable with dragonlord if open charlock
+    c: Weapon shop vendor
+    d: Item shop vendor
+    e: Fairy water vendor
+    f: Key vendor
+    g: Non-Rimuldar key vendor
+    h: Innkeeper
+    */
+    uint8_t NPCData[][4] = {
+        // Tantegel mobile
+        {0xc8, 0x4d, 0x62, 0xc0}, // Female villager at  8,13   — 0
+        {0x53, 0x42, 0x17, 0xc0}, // Guard at           19, 2
+        {0x0b, 0x4b, 0x1c, 0xc0}, // Male villager at   11,11
+        {0xb1, 0x4b, 0x1d, 0xc0}, // Wizard at          17,11
+        {0x64, 0x55, 0x1f, 0xc0}, // Shopkeeper at       4,21
+        {0x39, 0x4b, 0x16, 0xc0}, // Fighter at         25,11
+        {0x52, 0x52, 0x72, 0xc0}, // Guard at           18,18
+        {0x42, 0x4c, 0x1b, 0xc0}, // Guard at            2,12
+        {0x66, 0x59, 0x20, 0xc0}, // Shopkeeper at       6,25 <-- hijacked for hint
+        {0x38, 0x55, 0x22, 0xc0}, // Fighter at         24,21
+        // Tantegel static
+        {0x78, 0x41, 0x0e, 0xc6}, // Shopkeeper at      24, 1   — 10
+        {0xdb, 0x45, 0x1a, 0xc0}, // Female villager at 27, 5
+        {0x48, 0x46, 0x19, 0xc0}, // Guard at            8, 6
+        {0x02, 0x48, 0x18, 0xc0}, // Male villager at    2, 8
+        {0x48, 0x08, 0x71, 0xc0}, // Guard at            8, 8
+        {0x5a, 0x0f, 0x1e, 0xc0}, // Guard at           26,15
+        {0x4f, 0x34, 0x63, 0xc0}, // Guard at           15,20
+        {0xb4, 0x7a, 0x6a, 0xc0}, // Wizard at          20,26
+        {0x49, 0x3b, 0x21, 0xc0}, // Guard at            9,27
+        {0x4c, 0x7b, 0x21, 0xc0}, // Guard at           12,27
+        // Throne room mobile
+        {0x47, 0x45, 0x24, 0xc0}, // Guard at            7, 5   — 20 — control byte is usually 0x65 but that is now used for cursed princess
+        // Throne room static
+        {0x83, 0x43, 0x6e, 0x00}, // King Lorik at       3, 3
+        {0x43, 0x26, 0x23, 0xc0}, // Guard at            3, 6
+        {0x45, 0x66, 0x24, 0xc0}, // Guard at            5, 6
+        {0xc6, 0x43, 0x6f, 0xc0}, // Princess Gwaelin at 6, 3
+        // Charlock basement, no mobile there
+        {0xb0, 0x58, 0x70, 0xc0}, // Dragonlord at      16,24 <-- Dragonlord
+        // Kol mobile
+        {0x0e, 0x4d, 0x36, 0xc0}, // Male villager at   14,13
+        {0x05, 0x4c, 0x30, 0xc0}, // Male villager at    5,12
+        {0x4c, 0x4a, 0x37, 0xc0}, // Guard at           12,10
+        {0xa2, 0x4c, 0x5e, 0xc0}, // Wizard at           2,12
+        {0xb4, 0x53, 0x38, 0xc0}, // Wizard at          20,19   — 30
+        {0x26, 0x47, 0x35, 0xc0}, // Fighter at          6, 7
+        {0xcb, 0x4e, 0x2e, 0xc0}, // Female villager    11,14
+        {0x67, 0x53, 0x5f, 0xc0}, // Shopkeeper at       7,19
+        {0xb4, 0x48, 0x39, 0xc0}, // Wizard at          20, 8
+        // Kol static
+        {0xa1, 0x41, 0x68, 0xc0}, // Wizard at           1, 1
+        {0xcc, 0x41, 0x32, 0xc0}, // Female villager    12, 1
+        {0x73, 0x04, 0x11, 0xc1}, // Shopkeeper at      19, 4
+        {0x76, 0x6c, 0x00, 0xe0}, // Shopkeeper at      22,12
+        {0x34, 0x4d, 0x33, 0xc0}, // Fighter at         20,13
+        {0x6e, 0x75, 0x07, 0xd0}, // Shopkeeper at      14,21   — 40
+        {0x41, 0x57, 0x34, 0xc0}, // Guard at            1,23
+        // Brecconary mobile
+        {0xa9, 0x44, 0x2b, 0xc0}, // Wizard at           9, 4
+        {0x2c, 0x53, 0x5d, 0xc0}, // Fighter at         12,19
+        {0x6f, 0x49, 0x2e, 0xc0}, // Shopkeeper at      15, 9
+        {0x19, 0x56, 0x31, 0xc0}, // Male villager at   25,22
+        {0x0a, 0x4e, 0x2c, 0xc0}, // Male villager at   10,14
+        {0xd8, 0x44, 0x0f, 0xc8}, // Female villager at 24, 4
+        {0x5a, 0x4f, 0x2f, 0xc0}, // Guard at           26,15
+        {0xcf, 0x58, 0x2d, 0xc0}, // Female villager at 15,24
+        {0x33, 0x52, 0x30, 0xc0}, // Fighter at         19,18   — 50
+        {0x23, 0x5a, 0x27, 0xc0}, // Fighter at          3,26
+        // Brecconary static
+        {0x65, 0x44, 0x01, 0xe0}, // Shopkeeper at       5, 4
+        {0x3c, 0x41, 0x25, 0xc0}, // Fighter at         28, 1
+        {0xc4, 0x47, 0x29, 0xc0}, // Female villager     4, 7
+        {0x14, 0x4a, 0x26, 0xc0}, // Male villager at   20,10
+        {0xb8, 0x4a, 0x67, 0x00}, // Wizard at          24,10
+        {0x01, 0x4d, 0x2a, 0xc0}, // Male villager at    1,13
+        {0x6a, 0x75, 0x12, 0xc1}, // Shopkeeper at      10,21
+        {0x14, 0x17, 0x28, 0xc0}, // Male villager at   20,23
+        {0x79, 0x79, 0x08, 0xd0}, // Shopkeeper at      25,25   — 60
+        {0x4a, 0x1a, 0x64, 0xc0}, // Guard at           10,26
+        // Garinham mobile
+        {0xcc, 0x44, 0x3e, 0xc0}, // Female villager at 12, 4
+        {0xcc, 0x4c, 0x43, 0xc0}, // Female villager at 12,12
+        {0xac, 0x48, 0x3f, 0xc0}, // Wizard at          12, 8
+        {0xa2, 0x4a, 0x42, 0xc0}, // Wizard at           2,10
+        {0x0b, 0x47, 0x3d, 0xc0}, // Male villager at   11, 7
+        {0x12, 0x4c, 0x44, 0xc0}, // Male villager at   18,12
+        {0x27, 0x51, 0x41, 0xc0}, // Fighter at          7,17
+        // Garinham static
+        {0xae, 0x41, 0x3a, 0xc0}, // Wizard at          14, 1
+        {0x43, 0x25, 0x3b, 0xc0}, // Guard at            3, 5   — 70
+        {0x45, 0x65, 0x3b, 0xc0}, // Guard at            5, 5
+        {0x69, 0x46, 0x3c, 0xc0}, // Shopkeeper at       9, 6
+        {0x65, 0x6b, 0x09, 0xd0}, // Shopkeeper at       5,11
+        {0x71, 0x6f, 0x13, 0xc1}, // Shopkeeper at      17,15
+        {0xa2, 0x31, 0x40, 0xc0}, // Wizard at           2,17
+        {0x6a, 0x12, 0x02, 0xe0}, // Shopkeeper at      10,18
+        // Cantlin mobile
+        {0x14, 0x4f, 0x4b, 0xc0}, // Male villager at   20,15
+        {0x45, 0x46, 0x60, 0xc0}, // Guard at            5, 6
+        {0x79, 0x51, 0x4c, 0xc0}, // Shopkeeper at      25,17
+        {0xc4, 0x4e, 0x49, 0xc0}, // Female villager at  4,14   — 80
+        {0x76, 0x45, 0x03, 0xe0}, // Shopkeeper at      22, 5
+        {0xc9, 0x50, 0x4a, 0xc0}, // Female villager at  9,16
+        {0xae, 0x5c, 0x6b, 0x00}, // Wizard at          14,28
+        {0x4f, 0x46, 0x48, 0xc0}, // Guard at           15, 6
+        {0x63, 0x5a, 0x4e, 0xc0}, // Shopkeeper at       3,26
+        {0x56, 0x49, 0x4d, 0xc0}, // Guard at           22, 9
+        // Cantlin static
+        {0x68, 0x43, 0x14, 0xc1}, // Shopkeeper at       8, 3
+        {0xbb, 0x46, 0x0c, 0xc6}, // Wizard at          27, 6
+        {0x02, 0x27, 0x0a, 0xd0}, // Male villager at    2, 7
+        {0x62, 0x2c, 0x45, 0xc0}, // Shopkeeper at       2,12   — 90
+        {0x67, 0x6c, 0x0b, 0xd0}, // Shopkeeper at       7,12
+        {0x58, 0x2c, 0x05, 0xe0}, // Guard at           24,12
+        {0xd6, 0x6d, 0x10, 0xc8}, // Female villager at 22,13
+        {0xaf, 0x50, 0x46, 0xc0}, // Wizard at          15,16
+        {0xb6, 0x56, 0x47, 0xc0}, // Wizard at          22,22
+        {0x7b, 0x7a, 0x04, 0xe0}, // Shopkeeper at      27,26
+        // Rimuldar mobile
+        {0xc6, 0x55, 0x59, 0xc0}, // Female villager at  6,21
+        {0x0b, 0x48, 0x30, 0xc0}, // Male villager at   11, 8
+        {0x06, 0x57, 0x5a, 0xc0}, // Male villager at    6,23
+        {0xd6, 0x4e, 0x56, 0xc0}, // Female villager at 22,14   — 100
+        {0x25, 0x59, 0x5b, 0xc0}, // Fighter at          5,25
+        {0x37, 0x4b, 0x52, 0xc0}, // Fighter at         23,11
+        {0x0e, 0x4b, 0x55, 0xc0}, // Male villager at   14,11
+        {0x30, 0x5a, 0x69, 0xc0}, // Fighter at         16,26
+        {0x48, 0x50, 0x54, 0xc0}, // Guard at            8,16
+        {0x38, 0x53, 0x57, 0xc0}, // Fighter at         24,19
+        // Rimuldar static
+        {0x1b, 0x40, 0x51, 0xc0}, // Male villager at   27, 0
+        {0x62, 0x04, 0x4f, 0xc0}, // Shopkeeper at       2, 4
+        {0xa4, 0x07, 0x0d, 0x04}, // Wizard at           4, 7
+        {0x77, 0x47, 0x06, 0xe0}, // Shopkeeper at      23, 7   — 110
+        {0xcf, 0x08, 0x50, 0xc0}, // Female villager at 15, 8
+        {0xa6, 0x6d, 0x53, 0xc0}, // Wizard at           6,13
+        {0x70, 0x32, 0x15, 0xc1}, // Shopkeeper at      16,18
+        {0xa3, 0x37, 0x61, 0xc0}, // Wizard at           3,23
+        {0xb4, 0x57, 0x58, 0xc0}, // Wizard at          20,23
+        {0xc0, 0x5a, 0x5c, 0xc0}, // Female villager at  0,26
+        // Stones of sunlight static (no mobile there)
+        {0xa4, 0x46, 0x66, 0xc0}, // Wizard at           4, 6
+        // Staff of rain cave, no mobile there
+        {0xa4, 0x24, 0x6c, 0x40}, // Wizard at           4, 4
+        // Rainbow drop cave, no mobile there
+        {0xa4, 0x65, 0x6d, 0x40}, // Wizard at           4, 5
+        // Post-win Tantegel mobile
+        {0x53, 0x42, 0x17, 0x00}, // Guard at           19, 2   — 120
+        {0x0e, 0x57, 0x1c, 0x00}, // Male villager at   14,23
+        {0x39, 0x4b, 0x16, 0x00}, // Fighter at         25,11
+        {0x52, 0x52, 0x72, 0x00}, // Guard at           18,18
+        {0x42, 0x4c, 0x1b, 0x00}, // Guard at            2,12
+        {0x66, 0x59, 0x20, 0x00}, // Shopkeeper at       6,25
+        {0x38, 0x55, 0x22, 0x00}, // Fighter at         24,21
+        // Post-win Tantegel static
+        {0x8b, 0x47, 0xfe, 0x00}, // King Lorik at      11, 7
+        {0xe9, 0x49, 0xfd, 0x00}, // Trumpet guard at    9, 9
+        {0xe9, 0x4b, 0xfd, 0x00}, // Trumpet guard at    9,11
+        {0xe9, 0x4d, 0xfd, 0x00}, // Trumpet guard at    9,13   — 130
+        {0xac, 0x49, 0xfd, 0x00}, // Trumpet guard at   12, 9
+        {0xac, 0x4b, 0xfd, 0x00}, // Trumpet guard at   12,11
+        {0xac, 0x4d, 0xfd, 0x00}, // Trumpet guard at   12,13
+        {0x49, 0x3b, 0xfd, 0x00}, // Guard at            9,11
+        {0x4c, 0x7b, 0xfd, 0x00}  // Guard at           12,11
+    };
+
+    char disguise[18], location[11], hint[83] = "                                                                                  ";
+
+    if (!DISGUISED_DRAGONLORD(rom))
+        return;
+
+    printf("The Dragonlord is among us...\n");
+
+    // Let's not make the key vendors swappable if there's no key vendor, shall we?
+    if(NO_KEYS(rom))
+    {
+        for(i=0; i<3; i++) {
+            NPCData[10][i] &= 0;
+            NPCData[88][i] &= 0;
+            NPCData[109][i] &= 0;
+        }
+        NPCData[10][3] &= 0x3f;
+        NPCData[88][3] &= 0x3f;
+        NPCData[109][3] &= 0x3f;
+    }
+
+    if(OPEN_CHARLOCK(rom))
+        swappable_check = 0x40;
+    else
+        swappable_check = 0x80;
+
+    do
+    {
+        chosen_NPC = mt_rand(0, sizeof(NPCData) / 4);
+    } while(!(NPCData[chosen_NPC][3] & swappable_check));
+
+    // Vanilla Dragonlord, no need for hint shenanigans
+    // Maybe we want to keep going if the NPC reordering ends up being used with other flags, or useful for something else?
+    if(chosen_NPC == 25)
+        return;
+
+    switch((0xe0 & NPCData[chosen_NPC][0]) >> 5)
+    {
+        case 0:
+            strcpy(disguise, "a male villager");
+            break;
+        case 1:
+            // I know the source says 'fighter' but it shouldn't be confused with the fists guys from DW3
+            strcpy(disguise, "a soldier");
+            break;
+        case 2:
+        case 7: // stationnary/trumpet guard, whatever
+            strcpy(disguise, "a guard");
+            break;
+        case 3:
+            strcpy(disguise, "a shopkeeper");
+            break;
+        case 4:
+            strcpy(disguise, "King Lorik"); // Shouldn't happen
+            break;
+        case 5:
+            strcpy(disguise, "an old man");
+            break;
+        case 6:
+            if(chosen_NPC == 24)
+                strcpy(disguise, "princess Gwaelin");
+            else
+                strcpy(disguise, "a female villager");
+            break;
+        default:
+            strcpy(disguise, "a bug");
+    }
+
+    // Unless chosen NPC is the one we're stealing the dialogue for the hint from, let's hide them
+    // Otherwise, we'd have to do massive changes to make sure the NPC dialogue is long enough for the hint
+    if(chosen_NPC != 8) {
+        NPCData[8][0] = 0;
+        NPCData[8][1] = 0;
+        NPCData[8][2] = 0;
+    }
+
+    // Make the NPc have the Dragonlord dialogue
+    NPCData[chosen_NPC][2] = 0x70;
+
+    // Have the vanilla dragonlord give an hint to the location of the actual dragonlord
+    // Hint is constructed below, after rebuilding the pointer tables
+    NPCData[25][2] = 0x20;
+
+    // For every area
+    for(i = 0; i<12; i++) {
+        // For every type of NPC
+        for(j = 0; j<2; j++) {
+            // For every NPC in that area
+            for(k = 0; k < NPCsCountTables[i][j]; k++) {
+                vpatch(rom, NPCsPointerTables[i][j] - 0x8000 + 3*k, 1, NPCData[u][0]);
+                vpatch(rom, NPCsPointerTables[i][j] - 0x8000 + 3*k+1, 1, NPCData[u][1]);
+                vpatch(rom, NPCsPointerTables[i][j] - 0x8000 + 3*k+2, 1, NPCData[u][2]);
+                if(u == chosen_NPC)
+                {
+                    if(i < 2 || i == 11) {
+                        strcpy(location, "Tantegel"); // 0 is main floor, 1 is throne room, 11 is post-win tantegel (which shouldn't happen)
+                        vpatch(rom, 0xea04, 1, 0x0c);
+                    }
+                    else if(i == 2) {
+                        strcpy(location, "Charlock"); // leave the warp alone then
+                    }
+                    else if(i == 3) {
+                        strcpy(location, "Kol");
+                        vpatch(rom, 0xea04, 1, 0x06);
+                    }
+                    else if(i == 4) {
+                        strcpy(location, "Brecconary");
+                        vpatch(rom, 0xea04, 1, 0x09);
+                    }
+                    else if(i == 5) {
+                        strcpy(location, "Garinham");
+                        vpatch(rom, 0xea04, 1, 0x00);
+                    }
+                    else if(i == 6) {
+                        strcpy(location, "Cantlin");
+                        vpatch(rom, 0xea04, 1, 0x21);
+                    }
+                    else if(i == 7) {
+                        strcpy(location, "Rimuldar");
+                        vpatch(rom, 0xea04, 1, 0x1b);
+                    }
+                    else if(i == 8) {
+                        strcpy(location, "a cave");
+                        vpatch(rom, 0xea04, 1, 0x33);
+                    }
+                    else if(i == 9) {
+                        strcpy(location, "a cave");
+                        vpatch(rom, 0xea04, 1, 0x03);
+                    }
+                    else if(i == 10) {
+                        strcpy(location, "a cave");
+                        vpatch(rom, 0xea04, 1, 0x24);
+                    }
+                    else strcpy(location, "this ROM");
+                    /* Other places:
+                        0f = Swamp cave north
+                        15 = Swamp cave south
+                        18 = Mountain cave
+                        1e = Hawksness
+                        27 = Tablet cave
+                        39 = Grave
+                    */
+                }
+                u++;
+            }
+            vpatch(rom, NPCsPointerTables[i][j] - 0x8000 + 3*k, 1, 0xff);
+
+            // Update the NPC pointer tables. NPCsPointerTables[0][0] always stays the same (0x9764)
+            if(!j)
+                NPCsPointerTables[i][1] = NPCsPointerTables[i][j] + (uint16_t)(3*NPCsCountTables[i][j] + 1);
+            else if(i+1 < 12)
+                NPCsPointerTables[i+1][0] = NPCsPointerTables[i][j] + (uint16_t)(3*NPCsCountTables[i][j] + 1);
+        }
+    }
+
+    // In the pointer table, all mobile tables come first; then, static
+    for(j = 0; j<2; j++)
+        for(i = 0; i<12; i++)
+            vpatch(rom, NPCPointerTableStart + 2*(12*j + i), 2, (uint8_t)(NPCsPointerTables[i][j] & 0x00ff), (uint8_t)((NPCsPointerTables[i][j] & 0xff00) >> 8));
+
+    strcpy(hint, "`The Dragonlord is rumored to be in ");
+    strcat(hint, location);
+    strcat(hint, " disguised as ");
+    strcat(hint, disguise);
+    strcat(hint, ".'\xfc");
+    set_text(rom, 0x8cc0, hint);
+
+    // If Gwaelin was the Dragonlord...
+    if(chosen_NPC == 24)
+    {
+        // Let's not have her come down the stairs at the end by NOPing that section
+        for(i = 0; i<142; i++)
+            vpatch(rom, 0xcc2a + i, 1, 0xea);
+
+        // Make the king react a bit differently
+        set_text(rom, 0xb8c8, "`Well, that was unfortunate...'");
+    }
+}
+
+/**
  * Makes all caves visible without using radiant or a torch.
  *
  * @param rom The rom struct
@@ -2099,6 +2494,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     no_keys(&rom);
     cursed_princess(&rom);
     threes_company(&rom);
+    disguised_dragonlord(&rom);
     scared_metal_slimes(&rom);
     support_2_byte_xp_gold(&rom);
     torch_in_battle(&rom);

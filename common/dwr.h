@@ -73,6 +73,7 @@
 
 #define CURSED_PRINCESS(x)        (x->flags[ 8] & 0x0c)
 #define THREES_COMPANY(x)         (x->flags[ 8] & 0x03)
+#define DISGUISED_DRAGONLORD(x)   (1 > 0)
 
 #define MODERN_SPELLS(x)          (x->flags[11] & 0xc0)
 #define NOIR_MODE(x)              (x->flags[11] & 0x30)

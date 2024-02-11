@@ -77,6 +77,7 @@
 #define MODERN_SPELLS(x)          (x->flags[11] & 0xc0)
 #define NOIR_MODE(x)              (x->flags[11] & 0x30)
 #define RANDOMIZE_MUSIC(x)        (x->flags[14] & 0x80)
+#define RANDOMIZE_FLUTE_MUSIC(x)  (1 > 0)
 #define DISABLE_MUSIC(x)          (x->flags[14] & 0x40)
 #define NO_SCREEN_FLASH(x)        (x->flags[14] & 0x20)
 #define DEATH_COUNTER(x)          (x->flags[14] & 0x10)
@@ -105,4 +106,3 @@ uint16_t set_text(dw_rom *rom, const size_t address, char *text);
 }
 #endif
 #endif
-

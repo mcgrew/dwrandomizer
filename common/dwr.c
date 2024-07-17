@@ -575,6 +575,34 @@ static void randomize_shops(dw_rom *rom)
 }
 
 /**
+ * Promotes Cantlin's bottom-left NPC to Charlock innkeeper
+ *
+ * @param rom The rom struct
+ */
+static void inn_in_charlock(dw_rom *rom)
+{
+    if (!INN_IN_CHARLOCK(rom))
+        return;
+
+    printf("Putting a bed & breakfast in Charlock...\n");
+
+    // Update the appropriate NPC tables locations
+    vpatch(rom, 0x1746, 1, 0x97ef + 3);
+    vpatch(rom, 0x175e, 1, 0x97f0 + 3);
+    vpatch(rom, 0x1748, 1, 0x97f4 + 3);
+    vpatch(rom, 0x1760, 1, 0x97f5 + 3);
+
+    // Update NPC data from Charlock basement to Cantlin.
+    // It would be more elegant to move rather than rewrite most of this,
+    // but I don't know of an easy way to do this.
+
+    // 011 for shopkeeper, 10101 for X, 011 for left-facing, 01000 for Y, 0x14 for inn dialogue
+    vpatch(rom, 0x17ee, 3, 0x75, 0x68, 0x14); // This is the guy.
+
+    vpatch(rom, 0x17ee + 3, 35, 0xff, 0xff, 0xa4, 0x24, 0x6c, 0xff, 0xff, 0xa4, 0x65, 0x6d, 0xff, 0x14, 0x4f, 0x4b, 0x45, 0x46, 0x60, 0x79, 0x51, 0x4c, 0xc4, 0x4e, 0x49, 0x76, 0x45, 0x03, 0xc9, 0x50, 0x4a, 0xae, 0x5c, 0x6b, 0x4f, 0x46, 0x48);
+}
+
+/**
  * Randomizes the player's stat growth
  *
  * @param rom The rom struct
@@ -2084,6 +2112,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     randomize_zone_layout(&rom);
     randomize_zones(&rom);
     randomize_shops(&rom);
+    inn_in_charlock(&rom);
     randomize_growth(&rom);
     randomize_spells(&rom);
     update_drops(&rom);

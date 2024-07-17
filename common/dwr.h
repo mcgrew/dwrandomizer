@@ -70,6 +70,7 @@
 #define ROTATE_DUNGEONS(x)        (x->flags[10] & 0x0c)
 #define NO_ARMOR_IN_CHARLOCK(x)   (x->flags[10] & 0x30)
 #define EASY_CHARLOCK(x)          (x->flags[10] & 0xc0)
+#define INN_IN_CHARLOCK(x)        (1 > 0)
 
 #define CURSED_PRINCESS(x)        (x->flags[ 8] & 0x0c)
 #define THREES_COMPANY(x)         (x->flags[ 8] & 0x03)

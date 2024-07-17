@@ -51,6 +51,8 @@
 
 #define FAST_TEXT(x)              (x->flags[ 7] & 0xc0)
 #define SPEED_HACKS(x)            (x->flags[ 7] & 0x30)
+#define MEDIUM_TEXT(x)            (x->flags[10] & 0x30)
+#define DOUBLE_WALKING(x)         (x->flags[10] & 0xc0)
 #define OPEN_CHARLOCK(x)          (x->flags[ 7] & 0x0c)
 #define SHORT_CHARLOCK(x)         (x->flags[ 7] & 0x03)
 #define NO_KEYS(x)                (x->flags[ 8] & 0xc0)

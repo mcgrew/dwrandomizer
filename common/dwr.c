@@ -1936,13 +1936,20 @@ static void begin_quest_checksum(dw_rom *rom, uint64_t crc)
  */
 static void no_screen_flash(dw_rom *rom)
 {
+    int i;
+
     if (!NO_SCREEN_FLASH(rom))
         return;
 
     printf("Disabling screen flash for spells...\n");
+    
     /* Change the PPUMASK writes to disable flashing during spells */
     vpatch(rom, 0x0d38e,    1,  0x18);
     vpatch(rom, 0x0db40,    1,  0x18);
+
+    // NOP the whole red flash routine for deaths, swamp tiles and barrier tiles
+    for(i = 0; i<17; i++)
+        vpatch(rom, 0xee17 + i, 1, 0xea);
 }
 
 /**

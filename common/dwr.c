@@ -1969,7 +1969,7 @@ void setup_expansion(dw_rom *rom)
     rom->header[4] = 8; /* set to 8 PRG banks */
 
     /* patching various routines to keep track of statistics */
-    add_hook(rom, JSR, 0x31eb, INC_BONK_CTR);
+    //add_hook(rom, JSR, 0x31eb, INC_BONK_CTR);
     add_hook(rom, JMP, 0xccf0, START_DWR_CREDITS);
     add_hook(rom, JSR, 0xdbb2, COUNT_SPELL_USE);
     add_hook(rom, JSR, 0xccb8, SNAPSHOT_TIMER);
@@ -2118,6 +2118,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     no_numbers(&rom);
     invisible_hero(&rom);
     invisible_npcs(&rom);
+    damage_bonks(&rom);
     death_counter(&rom);
 
     crc = crc64(0, rom.content, 0x10000);

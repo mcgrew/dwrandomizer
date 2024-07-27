@@ -1,5 +1,6 @@
 
 .org $c288
+patch_free_3a_start:
 
 start_dwr_credits:
     lda #$a9        ; lda
@@ -302,21 +303,88 @@ modify_run_rate:
     adc $3e        ; add to the previous number
     jmp $eec7
 
+scale_mslime_xp:
+    lda $e0        ; load the enemy index
+    cmp #16        ; is it a metal slime?
+    bne +
+    lda $c7        ; load the player level
+    cmp #8         ; is it less than 8?
+    bcs +
+    asl            ; multiply the level by 32 and use that for xp
+    asl
+    asl
+    asl
+    asl
+    sta $00
+    lda #0
+    sta $01
++   rts
+
 .org $c4f5
+patch_free_3a_end:
 
 .org $c4f5
     ; potentially unused data
 .org $c529
 
 .org $c6c9
-    ; potentially unused data
+patch_free_3b_start:
+    ; unused data
 .org $c6f0
+patch_free_3b_end:
 
 .org $c7ec
-    ; potentially unused data
+patch_free_3c_start:
+    ; unused data
 .org $c9b5
+patch_free_3c_end:
+
+.org $ea0a
+patch_handle_2_byte_xp_gold_start:
+    lda $106       ; load the low byte of xp from this fight
+    sta $00        ; store in tmp0 for display
+    lda $0107      ; load the high byte of xp
+    sta $01        ; store at tmp1 for display
+scaled_mslime_hook_point:
+    nop            ; make room for a jsr hook here for scaled slimes
+    nop
+    nop
++   jsr $c7cb      ; print xp gained
+    hex ef         ; message $EF
+    lda $00        ; load low byte of xp from this fight
+    clc
+    adc $ba        ; add low byte of xp to total
+    sta $ba
+    lda $01        ; load high byte of xp from this fight
+    adc $bb        ; add high byte of xp to total
+    sta $bb
+    bcc +          ; if xp rolled over, set to 65535
+    lda #$ff
+    sta $ba
+    sta $bb
++   lda $0108      ; load low byte of gold from this fight
+    sta $00        ; store at tmp0 for display
+    lda $0109      ; load hight byte of gold from this fight
+    sta $01        ; store at tmp1 for display
+    jsr $c7cb      ; print gold gained
+    hex f0         ; message $F0
+    lda $00        ; load low byte of gold from this fight
+    clc
+    adc $bc        ; add low byte of gold to total
+    sta $bc
+    lda $01        ; load high byte of gold from this fight
+    adc $bd        ; add high byte of gold to total
+    sta $bd
+    lda #$ff
+    bcc +          ; if gold rolled over, set to 65535
+    sta $bc
+    sta $bd
++   bne $ea63      ; branch back to original code (always)
+patch_handle_2_byte_xp_gold_end:
 
 .org $f232
-    ; potentially unused data
+patch_free_3d_start:
+    ; unused data
 .org $f35b
+patch_free_3d_end:
 

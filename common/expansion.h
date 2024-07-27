@@ -11,37 +11,43 @@ enum hooktype {
 };
 
 enum subroutine {
-  BLOCKED_IN_FRONT = 0xC2DE,
-  COUNT_ENCOUNTER = 0xC31C,
-  COUNT_FRAME = 0xC426,
-  COUNT_SPELL_USE = 0xC331,
-  COUNT_WIN = 0xC314,
-  CURSED_PRINCESS_CHECK = 0xC3D9,
-  DISPLAY_DEATHS = 0xC405,
-  INC_ATTACK_CTR = 0xC2BB,
-  INC_BONK_CTR = 0xC2D7,
-  INC_COUNTER = 0xC2EC,
-  INC_CRIT_CTR = 0xC2C2,
-  INC_DEATH_CTR = 0xC309,
-  INC_DODGE_CTR = 0xC2D0,
-  INC_ENEMY_DEATH_CTR = 0xC2FB,
-  INC_MISS_CTR = 0xC2C9,
-  INC_MON_COUNTER = 0xC322,
-  INIT_SAVE_RAM = 0xC3FB,
-  MODIFY_RUN_RATE = 0xC45B,
-  PLAYER_AMBUSHED = 0xC2E6,
-  SCARED_SLIMES = 0xC3EE,
-  SNAPSHOT_TIMER = 0xC44D,
-  SORT_INVENTORY = 0xC33D,
   START_DWR_CREDITS = 0xC288,
-  STORE_PRINCESS_ITEM = 0xC3D4,
-  THREES_COMPANY_CHECK = 0xC3C2,
+  INC_ATTACK_CTR = 0xC2BB,
+  INC_CRIT_CTR = 0xC2C2,
+  INC_MISS_CTR = 0xC2C9,
+  INC_DODGE_CTR = 0xC2D0,
+  INC_BONK_CTR = 0xC2D7,
+  BLOCKED_IN_FRONT = 0xC2DE,
+  PLAYER_AMBUSHED = 0xC2E6,
+  INC_COUNTER = 0xC2EC,
+  INC_ENEMY_DEATH_CTR = 0xC2FB,
+  INC_DEATH_CTR = 0xC309,
+  COUNT_WIN = 0xC314,
+  COUNT_ENCOUNTER = 0xC31C,
+  INC_MON_COUNTER = 0xC322,
+  COUNT_SPELL_USE = 0xC331,
+  SORT_INVENTORY = 0xC33D,
   TORCH_IN_BATTLE = 0xC37A,
+  THREES_COMPANY_CHECK = 0xC3C2,
+  STORE_PRINCESS_ITEM = 0xC3D4,
+  CURSED_PRINCESS_CHECK = 0xC3D9,
+  SCARED_SLIMES = 0xC3EE,
+  INIT_SAVE_RAM = 0xC3FB,
+  DISPLAY_DEATHS = 0xC405,
+  COUNT_FRAME = 0xC426,
+  SNAPSHOT_TIMER = 0xC44D,
+  MODIFY_RUN_RATE = 0xC45B,
+  SCALE_MSLIME_XP = 0xC46B,
+  SCALED_MSLIME_HOOK_POINT = 0xEA14,
 };
 
 void add_hook(dw_rom *rom, enum hooktype type, uint16_t address,
         enum subroutine to_addr);
-void bank_3_patch(dw_rom *rom);
+void patch_free_3a(dw_rom *rom);
+void patch_free_3b(dw_rom *rom);
+void patch_free_3c(dw_rom *rom);
+void patch_handle_2_byte_xp_gold(dw_rom *rom);
+void patch_free_3d(dw_rom *rom);
 void fill_expansion(dw_rom *rom);
 
 #endif

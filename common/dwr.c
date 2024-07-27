@@ -1009,60 +1009,63 @@ static void support_2_byte_xp_gold(dw_rom *rom)
 {
     int ss_lvl = 1; /* level to not scale metal slime xp */
 
+    patch_handle_2_byte_xp_gold(rom);
+
     if (SCALED_SLIMES(rom)) {
         printf("Reducing early metal rewards...\n");
-        if (rom->enemies[METAL_SLIME].xp > 255)
-            rom->enemies[METAL_SLIME].xp = 255; /* make sure xp <= 255 */
-        ss_lvl = 8;
+        add_hook(rom, JSR, SCALED_MSLIME_HOOK_POINT, SCALE_MSLIME_XP);
+//         if (rom->enemies[METAL_SLIME].xp > 255)
+//             rom->enemies[METAL_SLIME].xp = 255; /* make sure xp <= 255 */
+//         ss_lvl = 8;
     }
 
     /* Note that this code won't work properly if scaled slimes is on and
      * metal slimes are set to give more than 255XP. If that is changed then
      * this code will need to be reworked.
      */
-    vpatch(rom, 0x0ea0f,   77,
-        0xad,  0x07,  0x01,  /*     lda $0107                                */
-        0x85,  0x01,         /*     sta $01                                  */
-        0xa5,  0xe0,         /*     lda $e0  ;                               */
-        0xc9,  0x10,         /*     cmp #16  ;                               */
-        0xd0,  0x0d,         /*     bne +                                    */
-        0xa5,  0xc7,         /*     lda $c7                                  */
-        0xc9,  ss_lvl,       /*     cmp ss_lvl                               */
-        0xb0,  0x07,         /*     bcs +                                    */
-        0x0a,                /*     asl                                      */
-        0x0a,                /*     asl                                      */
-        0x0a,                /*     asl                                      */
-        0x0a,                /*     asl                                      */
-        0x0a,                /*     asl                                      */
-        0x85,  0x00,         /*     sta $00                                  */
-        0x20,  0xcb,  0xc7,  /* +   jsr b3_c7cb                              */
-        0xef,                /*     hex ef                                   */
-        0xa5,  0x00,         /*     lda $00                                  */
-        0x18,                /*     clc                                      */
-        0x65,  0xba,         /*     adc $ba                                  */
-        0x85,  0xba,         /*     sta $ba                                  */
-        0xa5,  0x01,         /*     lda $01                                  */
-        0x65,  0xbb,         /*     adc $bb                                  */
-        0x85,  0xbb,         /*     sta $bb                                  */
-        0x90,  0x06,         /*     bcc +                                    */
-        0xa9,  0xff,         /*     lda #$ff                                 */
-        0x85,  0xba,         /*     sta $ba                                  */
-        0x85,  0xbb,         /*     sta $bb                                  */
-        0xad,  0x08,  0x01,  /* +   lda $0108                                */
-        0x85,  0x00,         /*     sta $00                                  */
-        0xad,  0x09,  0x01,  /*     lda $0109                                */
-        0x85,  0x01,         /*     sta $01                                  */
-        0x20,  0xcb,  0xc7,  /*     jsr b3_c7cb                              */
-        0xf0,                /*     hex f0                                   */
-        0xa5,  0x00,         /*     lda $00                                  */
-        0x18,                /*     clc                                      */
-        0x65,  0xbc,         /*     adc $bc                                  */
-        0x85,  0xbc,         /*     sta $bc                                  */
-        0xa5,  0x01,         /*     lda $01                                  */
-        0x65,  0xbd,         /*     adc $bd                                  */
-        0x85,  0xbd,         /*     sta $bd                                  */
-        0x90                 /*     bcc b3_ea63                              */
-    );
+//     vpatch(rom, 0x0ea0f,   77,
+//         0xad,  0x07,  0x01,  /*     lda $0107                                */
+//         0x85,  0x01,         /*     sta $01                                  */
+//         0xa5,  0xe0,         /*     lda $e0  ;                               */
+//         0xc9,  0x10,         /*     cmp #16  ;                               */
+//         0xd0,  0x0d,         /*     bne +                                    */
+//         0xa5,  0xc7,         /*     lda $c7                                  */
+//         0xc9,  ss_lvl,       /*     cmp ss_lvl                               */
+//         0xb0,  0x07,         /*     bcs +                                    */
+//         0x0a,                /*     asl                                      */
+//         0x0a,                /*     asl                                      */
+//         0x0a,                /*     asl                                      */
+//         0x0a,                /*     asl                                      */
+//         0x0a,                /*     asl                                      */
+//         0x85,  0x00,         /*     sta $00                                  */
+//         0x20,  0xcb,  0xc7,  /* +   jsr b3_c7cb                              */
+//         0xef,                /*     hex ef                                   */
+//         0xa5,  0x00,         /*     lda $00                                  */
+//         0x18,                /*     clc                                      */
+//         0x65,  0xba,         /*     adc $ba                                  */
+//         0x85,  0xba,         /*     sta $ba                                  */
+//         0xa5,  0x01,         /*     lda $01                                  */
+//         0x65,  0xbb,         /*     adc $bb                                  */
+//         0x85,  0xbb,         /*     sta $bb                                  */
+//         0x90,  0x06,         /*     bcc +                                    */
+//         0xa9,  0xff,         /*     lda #$ff                                 */
+//         0x85,  0xba,         /*     sta $ba                                  */
+//         0x85,  0xbb,         /*     sta $bb                                  */
+//         0xad,  0x08,  0x01,  /* +   lda $0108                                */
+//         0x85,  0x00,         /*     sta $00                                  */
+//         0xad,  0x09,  0x01,  /*     lda $0109                                */
+//         0x85,  0x01,         /*     sta $01                                  */
+//         0x20,  0xcb,  0xc7,  /*     jsr b3_c7cb                              */
+//         0xf0,                /*     hex f0                                   */
+//         0xa5,  0x00,         /*     lda $00                                  */
+//         0x18,                /*     clc                                      */
+//         0x65,  0xbc,         /*     adc $bc                                  */
+//         0x85,  0xbc,         /*     sta $bc                                  */
+//         0xa5,  0x01,         /*     lda $01                                  */
+//         0x65,  0xbd,         /*     adc $bd                                  */
+//         0x85,  0xbd,         /*     sta $bd                                  */
+//         0x90                 /*     bcc b3_ea63                              */
+//     );
 }
 
 /**
@@ -1986,7 +1989,10 @@ void setup_expansion(dw_rom *rom)
     add_hook(rom, JSR, 0xf720, INIT_SAVE_RAM);
     add_hook(rom, JSR, 0xfee0, COUNT_FRAME);
 
-    bank_3_patch(rom);
+    patch_free_3a(rom);
+    patch_free_3b(rom);
+    patch_free_3c(rom);
+    patch_free_3d(rom);
     fill_expansion(rom);
 
     int track = mt_rand(0, track_count - 1);

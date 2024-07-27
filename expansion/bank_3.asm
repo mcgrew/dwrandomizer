@@ -1,73 +1,51 @@
 
+.base $c000
 .org $c288
 patch_free_3a_start:
 
 start_dwr_credits:
-    lda #$a9        ; lda
-    sta $200
-    lda #%00000010  ; Change banking mode
-    sta $201
-    ldx #$12
--   lda b3_fe09+3, x
-    sta $202,x
-    dex
-    bpl -
-
-    lda #$a9
-    sta $215
-    lda #5         ; load bank 5
-    sta $216
-    ldx #$15
--   lda b3_ff96, x
-    sta $217,x
-    dex
-    bpl -
-    lda #>(credit_start-1)
-    pha
-    lda #<(credit_start-1)
-    pha
-    jmp $200
+.include credit_start.asm
 
 inc_attack_ctr:
     brk
     hex 04 17
     lda #2
-    bne inc_counter ; always branch
+    bne inc_counter  ; always branch
 
 inc_crit_ctr:
     brk
     hex 04 17
     lda #4
-    bne inc_counter ; always branch
+    bne inc_counter  ; always branch
 
 inc_miss_ctr:
     brk
     hex 04 17
     lda #6
-    bne inc_counter ; always branch
+    bne inc_counter  ; always branch
 
 inc_dodge_ctr:
     brk
     hex 04 17
     lda #8
-    bne inc_counter ; always branch
+    bne inc_counter  ; always branch
 
 inc_bonk_ctr:
     brk
     hex 04 17
     lda #10
-    bne inc_counter ; always branch
+    bne inc_counter  ; always branch
 
 blocked_in_front:
     jsr do_dialog_lo  ; but was blocked in front
-    hex f6
+    hex f6            ; subroutine argument
     lda #12
-    bne inc_counter ; always branch
+    bne inc_counter   ; always branch
 
 player_ambushed:
     jsr do_dialog_lo  ; attacked before ready
-    hex e4
-    lda #14         ; fall through to next subroutine
+    hex e4            ; subroutine argument
+    lda #14           ; fall through to next subroutine
 
 inc_counter:
     tax
@@ -387,4 +365,6 @@ patch_free_3d_start:
     ; unused data
 .org $f35b
 patch_free_3d_end:
+
+.org $10000
 

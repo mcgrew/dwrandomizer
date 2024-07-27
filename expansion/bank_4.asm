@@ -48,7 +48,7 @@ IFNDEF DWR_BUILD
 ENDIF
 
 
-.org $a000
+.org $a800
 
 
 ; game_start:

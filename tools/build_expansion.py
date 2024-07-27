@@ -31,9 +31,8 @@ def generate_header(patch_headers: dict[str, list[tuple[str, int]]]):
                 h.write(f'  {name.upper()} = 0x{addr:X},\n')
         h.write('};\n')
         h.write('\n')
-        h.write('void add_hook'
-                '(dw_rom *rom, enum hooktype type, uint16_t address,\n')
-        h.write('        enum subroutine to_addr);\n')
+        h.write('void add_hook(dw_rom *rom, enum hooktype type, uint16_t address,\n')
+        h.write('              enum subroutine to_addr);\n')
         for name in patch_headers.keys():
             h.write(f'void {name}(dw_rom *rom);\n')
         h.write('void fill_expansion(dw_rom *rom);\n')
@@ -53,18 +52,16 @@ def generate_c_file(patches: dict[str, list[tuple[int, bytes]]], expansion: byte
         c.write('#include "dwr_types.h"\n')
         c.write('#include "patch.h"\n')
         c.write('\n')
-        c.write(
-            'void add_hook(dw_rom *rom, enum hooktype type, uint16_t address,\n')
-        c.write('        enum subroutine to_addr)\n')
+        c.write('void add_hook(dw_rom *rom, enum hooktype type, uint16_t address,\n')
+        c.write('              enum subroutine to_addr)\n')
         c.write('{\n')
         c.write('    switch(type) {\n')
         c.write('        case DIALOGUE:\n')
-        c.write('            vpatch(rom, address, 4, 0x20, to_addr & 0xff, to_addr >> 8, 0xea);\n')
+        c.write('            vpatch(rom, address, 4, JSR, to_addr & 0xff, to_addr >> 8, 0xea);\n')
         c.write('            break;\n')
         c.write('        case JSR:\n')
         c.write('        case JMP:\n')
         c.write('            vpatch(rom, address, 3, type, to_addr & 0xff, to_addr >> 8);\n')
-        c.write('            break;\n')
         c.write('        default:\n')
         c.write('            break;\n')
         c.write('    }\n')
@@ -97,7 +94,7 @@ def generate_c_file(patches: dict[str, list[tuple[int, bytes]]], expansion: byte
         for r in p.records:
             if r.address == 0x4000:
                 continue  # single byte placeholder for music, ignore it
-            c.write(f'    pvpatch(&rom->expansion[0x{r.address:04x}],'
+            c.write(f'    pvpatch(&rom->expansion[0x{r.address:04x}], '
                     f'{len(r.content):4d},')
             for i, b in enumerate(r.content):
                 if i:
@@ -112,23 +109,22 @@ def generate_c_file(patches: dict[str, list[tuple[int, bytes]]], expansion: byte
 def main():
     chdir(join(dirname(realpath(__file__)), '..', 'expansion'))
     asm6 = which('asm6f') or which('asm6')
-    if run([asm6, '-q', '-m', '-dDWR_BUILD',
-            'credits.asm', 'credits.nes']).returncode:
+    if run([asm6, '-q', '-m', '-dDWR_BUILD', 'credits.asm', 'credits.nes']).returncode:
         return -1
 
     patches = defaultdict(list)
     patch_headers = {}
     patch_start = None
     with open('credits.mlb', 'r') as labels, open('credits.nes', 'rb') as asm:
-        asm.seek(0xc000 + 16, 0)
-        expansion = asm.read(0x10000)
+        asm.seek(0x10000 + 16, 0)
+        expansion = (b'\xff' * 0x4000) + asm.read(0xc000)
         for entry in labels:
             typ, addr, name = [x.lower() for x in entry.strip().split(':')]
             # the address in mesen mlb files is offset by 219 for reasons?
             addr = int(addr, 16) - 219
             if typ != 'p':
                 continue
-            if addr not in range(0, 0xc000) and addr not in range(0x1c000, 0x20000):
+            if addr > 0x10000:
                 continue
             if re.match('patch_.*_start', name):
                 patch_name = name[:-6]
@@ -143,7 +139,7 @@ def main():
                 patches[patch_name].append((patch_start & 0xffff, asm.read(addr - patch_start)))
                 patch_start = None
             elif patch_start is not None:
-                patch_headers[patch_name].append((name, (addr & 0xffff) | 0x8000))
+                patch_headers[patch_name].append((name, (addr | 0x8000) & 0xffff))
 
     generate_header(patch_headers)
     generate_c_file(patches, expansion)

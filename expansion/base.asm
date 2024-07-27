@@ -94,26 +94,26 @@ wait_for_nmi:
     beq -
     rts
 
-cycle_rng:
-    pha
-    tya
-    pha
-    ldy #8     ; iteration count (8 bits)
-    lda RANDOM
-
--   asl        ; shift the register
-    rol RANDOM+1
-    bcc +
-    eor #$39   ; apply XOR feedback whenever a 1 bit is shifted out
-
-+   dey
-    bne -
-    sta RANDOM
-    pla
-    tay
-    pla
-    rts
-
+;  cycle_rng:
+;      pha
+;      tya
+;      pha
+;      ldy #8     ; iteration count (8 bits)
+;      lda RANDOM
+;  
+;  -   asl        ; shift the register
+;      rol RANDOM+1
+;      bcc +
+;      eor #$39   ; apply XOR feedback whenever a 1 bit is shifted out
+;  
+;  +   dey
+;      bne -
+;      sta RANDOM
+;      pla
+;      tay
+;      pla
+;      rts
+;  
 ; read_joy:
 ;     lda BUTTONS
 ;     sta TMP

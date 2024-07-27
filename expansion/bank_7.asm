@@ -100,11 +100,74 @@ the_end:
     .hex 4a 4b 4c 4d 4e 4f 50 51 52 53 54 55 fc
     .hex fd
 
-.include base.asm
+reset:
+    sei
+    cld
+    ldx #$40
+    stx $4017
+    ldx #$ff
+    txs            ; set up the stack
+    inx
+    stx PPUCTRL   ; disable NMI
+    stx DMC_FREQ  ; disable DMC IRQs
+    lda #$06
+    sta PPUMASK   ; disable rendering
 
-game_start:
-    jmp start_dwr_credits
-.include bank_3_patch.asm
+    ; Optional (omitted):
+    ; Set up mapper and jmp to further init code here.
+
+    ; The vblank flag is in an unknown state after reset,
+    ; so it is cleared here to make sure that vblankwait1
+    ; does not exit immediately.
+    bit PPUSTATUS
+
+    ; First of two waits for vertical blank to make sure that the
+    ; PPU has stabilized
+
+; vblankwait1
+-   bit PPUSTATUS
+    bpl -
+
+    ; We now have about 30,000 cycles to burn before the PPU stabilizes.
+    ; One thing we can do with this time is put RAM in a known state.
+    ; Here we fill it with $00, which matches what (say) a C compiler
+    ; expects for BSS.  Conveniently, X is still 0.
+    txa
+
+@clrmem:
+    sta $00,x
+    sta $100,x
+    sta $200,x
+    sta $300,x
+    sta $400,x
+    sta $500,x
+    sta $600,x
+    sta $700,x
+    inx
+    bne @clrmem
+
+    ; Other things you can do between vblank waits are set up audio
+    ; or set up other mapper registers.
+
+IFDEF game_init ; If this subroutine exists, jump to it here.
+    jsr game_init
+ENDIF
+
+   ; wait for vblank
+-   bit $2002
+    bpl -
+
+IFDEF first_vblank
+    jsr first_vblank
+ENDIF
+
+    lda #%10000000
+    sta PPUCTRL     ; enable NMI
+    lda #%00011010
+    sta PPUMASK    ; enable rendering
+
+
+.include credit_start.asm
 
 
 .org $fe09

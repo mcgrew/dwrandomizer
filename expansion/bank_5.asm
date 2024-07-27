@@ -6,5 +6,5 @@ FAMISTUDIO_DPCM_OFF:
 .org $fffa
 
 .word nmi
-.word $200
+.word $200 ; reset vector
 .word irq

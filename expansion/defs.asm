@@ -80,7 +80,7 @@ RANDOM_L EQU $94
 ; b3_nmi                  EQU $FE67
 ; b3_reset                EQU $FFD8
 ; buy_sell_win            EQU $B0FB
-; calc_stats              EQU $F050
+calc_stats              EQU $F050
 ; cave_zones              EQU $F542
 ; combat_cmd_win          EQU $B095
 ; command_win             EQU $B054
@@ -109,9 +109,9 @@ do_dialog_lo            EQU $C7CB
 ; hero_used_healmore      EQU $DBD7
 ; hurt_spell              EQU $DA51
 ; input_name_win          EQU $B1E0
-; inv_add_item            EQU $E01B
+inv_add_item            EQU $E01B
 ; inv_check               EQU $E055
-; inv_del_item            EQU $E04B
+inv_del_item            EQU $E04B
 ; item_names_1_1          EQU $BAB7
 ; item_names_1_2          EQU $BBB7
 ; item_names_2_1          EQU $BB8F
@@ -149,7 +149,7 @@ do_dialog_lo            EQU $C7CB
 ; return_spell            EQU $DAED
 ; save_game               EQU $F6F4
 ; shop_inv_win            EQU $B0DA
-; show_window             EQU $C6F0
+show_window             EQU $C6F0
 ; sleep_spell             EQU $DA5C
 ; spell_names             EQU $BE56
 ; spell_win               EQU $B0BA

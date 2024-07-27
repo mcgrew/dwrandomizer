@@ -104,23 +104,10 @@ count_spell_use:
     clc
     adc #$2c
     jsr inc_counter
-    jmp $c6f0   ; show window
+    jmp show_window
 
-; exec_expansion_sub:
-;     pha
-;     lda $c288,y
-;     sta $7f01
-;     lda $c289,y
-;     sta $7f02
-;     lda $6004
-;     sta $7004
-;     lda #3
-;     jsr store_and_load_prg_bank
-;     pla
-;     jmp ($7f01)
-; 
 sort_inventory:
-    jsr b3_e01b ; add the new item
+    jsr inv_add_item ; add the new item
     cpx #$04
     beq ++
     ldx #$03
@@ -147,7 +134,7 @@ sort_inventory:
     bpl -
     cmp #$00
     beq ++
-    jsr b3_e01b ; add the next item
+    jsr inv_add_item ; add the next item
     ldx $a7
     lda #$00
     sta $a8,x
@@ -160,18 +147,18 @@ torch_in_battle:
     bne +++             ; no, go to next check
     lda #$01
     jsr $e04b           ; remove the item from inventory
-    jsr $c7c5           ; show the "hurled a torch" message
+    jsr do_dialog_hi    ; show the "hurled a torch" message
     hex 29
     lda $e0
     cmp #$10            ; are we fighting a metal slime?
     bne ++              ; no, go to higher damage
--   jsr $c55b           ; run the rng cycle routine
+-   jsr cycle_rng       ; run the rng cycle routine
     lda $95             ; load a random number
     and #$01            ; limit to 0-1
     bne +               ; did we hit it?
     jmp $e658           ; A miss!
 +   jmp $e694           ; yes, go to damage routine
-++  jsr $c55b           ; run the rng cycle routine
+++  jsr cycle_rng       ; run the rng cycle routine
     lda $95             ; load a random number
     and #$03            ; limit to 0-3
     clc
@@ -180,8 +167,8 @@ torch_in_battle:
 +++ cmp #$05            ; c9 04      ; Fairy Water
     bne +
     lda #$02
-    jsr $e04b           ; remove the item from inventory
-    jsr $c7c5           ; show the "sprinked fairy water" message
+    jsr inv_del_item    ; remove the item from inventory
+    jsr do_dialog_hi    ; show the "sprinked fairy water" message
     hex 2a
     lda $e0
     cmp #$10            ; metal slime
@@ -190,15 +177,15 @@ torch_in_battle:
 +   jmp $e6fd           ; 4c fd e6
 
 threes_company_check:
-    lda $df   ; Load the status bits
-    and #$01  ; Are we carrying Gwaelin?
-    beq +     ; No, back to original code
-    jsr $c7cb ; Show dialogue
-    .db $a1   ; I have some great ideas
-    jmp $ccb8 ; Jump to the ending credits
+    lda $df          ; Load the status bits
+    and #$01         ; Are we carrying Gwaelin?
+    beq +            ; No, back to original code
+    jsr $c7cb        ; Show dialogue
+    .db $a1          ; I have some great ideas
+    jmp $ccb8        ; Jump to the ending credits
 
-+   jsr $c7cb ; Show dialoge
-    .db $a1   ; Now take a long rest
++   jsr do_dialog_lo ; Show dialoge
+    .db $a1          ; Now take a long rest
     rts
 
 store_princess_item:
@@ -249,7 +236,7 @@ display_deaths:
 count_frame:
     ldx MAP_INDEX  ; Start the timer once the map is no longer zero
     bne +
-    lda $662c      ; continue counting if the timer is greater than zero.
+    lda $662c      ; continue counting if the timer has already started
     ora $662d
     ora $662e
     beq ++
@@ -297,6 +284,13 @@ scale_mslime_xp:
     lda #0
     sta $01
 +   rts
+
+save_current_spells:
+  lda $ce        ; load current spells (lo)
+  sta $dc        ; store at $dc
+  lda $cf        ; load current spells (hi)
+  sta $dd        ; store at $dd
+  jmp calc_stats ; update to new level stats
 
 .org $c4f5
 patch_free_3a_end:
@@ -359,6 +353,39 @@ scaled_mslime_hook_point:
     sta $bd
 +   bne $ea63      ; branch back to original code (always)
 patch_handle_2_byte_xp_gold_end:
+
+.org $eae6
+patch_print_new_spells_start:
+
+  ldy #$10         ; Start at 16
+  lda $dc          ; load old spells known
+  eor $ce          ; xor with new spells known
+- pha              ; push on the stack
+  and #1           ; is the current spell new?
+  beq +            ; no, go to next spell
+  tya              ; transfer the index to A
+  pha              ; push to the stack
+  jsr $dbf0        ; prepare spell name
+  jsr do_dialog_lo ; print new spell text
+  hex f2
+  pla              ; pull the Y value
+  tay              ; transfer to Y
++ pla              ; pull stored new spells
+  lsr              ; shift right
+  iny              ; increment spell index
+  cpy #$1a         ; if Y is 26, we're done
+  beq +
+  cpy #$18         ; if Y is 24, continue to next spell byte
+  bne -
+  lda $dd          ; load second spell byte
+  eor $cf          ; xor with new spells
+  and #$3          ; we only need 2 bits here
+  bne -            ; if it's not empty, continue
++
+
+.org $eb14, $ea
+
+patch_print_new_spells_end:
 
 .org $f232
 patch_free_3d_start:

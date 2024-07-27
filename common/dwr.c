@@ -1158,49 +1158,49 @@ static void show_spells_learned(dw_rom *rom)
     vpatch(rom, 0x0ae97,    1,  0xfb); /* replace CR with wait arrow */
     set_text(rom, 0xaeab, "the spell \xf6"); /* F6 = spell name */
 
-    vpatch(rom, 0x03fe0,   14,
-                                /* save_spells:                              */
-            0xa5,  0xce,        /*   lda $ce     ; load current spells (lo)  */
-            0x85,  0xdc,        /*   sta $dc     ; store at $dc              */
-            0xa5,  0xcf,        /*   lda $cf     ; load current spells (hi)  */
-            0x85,  0xdd,        /*   sta $dd     ; store at $dd              */
-            0x4c,  0x50,  0xf0, /*   jmp b3_f050 ; update to new level stats */
-            0xff,  0xff,  0xff);
-    vpatch(rom, 0x0ea76,    3,
-            0x20, 0xe0,  0xbf   /*   jsr save_spells                         */
-            );
-    vpatch(rom, 0x0eae6,   46,
-            0xa0,  0x10,        /*   ldy #$10    ; Start at 16               */
-            0xa5,  0xdc,        /*   lda $dc     ; load old spells known     */
-            0x45,  0xce,        /*   eor $ce     ; xor with new spells known */
-            0x48,               /* - pha         ; push on the stack         */
-            0x29,  0x01,        /*   and #1      ; is the current spell new? */
-            0xf0, 0x0b,         /*   beq +       ; no, go to next spell      */
-            0x98,               /*   tya         ; transfer the index to A   */
-            0x48,               /*   pha         ; push to the stack         */
-            0x20,  0xf0,  0xdb, /*   jsr b3_dbf0 ; prepare spell name        */
-            0x20,  0xcb,  0xc7, /*   jsr b3_c7cb ; print new spell text      */
-            0xf2,               /*   hex f2                                  */
-            0x68,               /*   pla         ; pull the Y value          */
-            0xa8,               /*   tay         ; transfer to Y             */
-            0x68,               /* + pla         ; pull stored new spells    */
-            0x4a,               /*   lsr         ; shift right               */
-            0xc8,               /*   iny         ; increment spell index     */
-            0xc0,  0x1a,        /*   cpy #$1a    ; if Y is 26, we're done    */
-            0xf0,  0x11,        /*   beq +                                   */
-            0xc0,  0x18,        /*   cpy #$18    ; if Y is 18,               */
-            0xd0,  0xe5,        /*   bne -       ;                           */
-            0xa5,  0xdd,        /*   lda $dd     ; load second spell byte    */
-            0x45,  0xcf,        /*   eor $cf     ; xor with new spells       */
-            0x29,  0x03,        /*   and #$3     ; we only need 2 bits here  */
-            0xd0,  0xdd,        /*   bne -       ; if it's not empty,        */
-            0xea,               /*   nop         ;    continue               */
-            0xea,               /*   nop                                     */
-            0xea,               /*   nop                                     */
-            0xea,               /*   nop                                     */
-            0xea                /*   nop                                     */
-                                /*   +                                       */
-        );
+    add_hook(rom, JSR, 0xea76, SAVE_CURRENT_SPELLS);
+    patch_print_new_spells(rom);
+
+//     vpatch(rom, 0x03fe0,   14,
+//                                 /* save_spells:                              */
+//             0xa5,  0xce,        /*   lda $ce     ; load current spells (lo)  */
+//             0x85,  0xdc,        /*   sta $dc     ; store at $dc              */
+//             0xa5,  0xcf,        /*   lda $cf     ; load current spells (hi)  */
+//             0x85,  0xdd,        /*   sta $dd     ; store at $dd              */
+//             0x4c,  0x50,  0xf0, /*   jmp b3_f050 ; update to new level stats */
+//             0xff,  0xff,  0xff);
+//     vpatch(rom, 0x0eae6,   46,
+//             0xa0,  0x10,        /*   ldy #$10    ; Start at 16               */
+//             0xa5,  0xdc,        /*   lda $dc     ; load old spells known     */
+//             0x45,  0xce,        /*   eor $ce     ; xor with new spells known */
+//             0x48,               /* - pha         ; push on the stack         */
+//             0x29,  0x01,        /*   and #1      ; is the current spell new? */
+//             0xf0, 0x0b,         /*   beq +       ; no, go to next spell      */
+//             0x98,               /*   tya         ; transfer the index to A   */
+//             0x48,               /*   pha         ; push to the stack         */
+//             0x20,  0xf0,  0xdb, /*   jsr b3_dbf0 ; prepare spell name        */
+//             0x20,  0xcb,  0xc7, /*   jsr b3_c7cb ; print new spell text      */
+//             0xf2,               /*   hex f2                                  */
+//             0x68,               /*   pla         ; pull the Y value          */
+//             0xa8,               /*   tay         ; transfer to Y             */
+//             0x68,               /* + pla         ; pull stored new spells    */
+//             0x4a,               /*   lsr         ; shift right               */
+//             0xc8,               /*   iny         ; increment spell index     */
+//             0xc0,  0x1a,        /*   cpy #$1a    ; if Y is 26, we're done    */
+//             0xf0,  0x11,        /*   beq +                                   */
+//             0xc0,  0x18,        /*   cpy #$18    ; if Y is 18,               */
+//             0xd0,  0xe5,        /*   bne -       ;                           */
+//             0xa5,  0xdd,        /*   lda $dd     ; load second spell byte    */
+//             0x45,  0xcf,        /*   eor $cf     ; xor with new spells       */
+//             0x29,  0x03,        /*   and #$3     ; we only need 2 bits here  */
+//             0xd0,  0xdd,        /*   bne -       ; if it's not empty,        */
+//             0xea,               /*   nop         ;    continue               */
+//             0xea,               /*   nop                                     */
+//             0xea,               /*   nop                                     */
+//             0xea,               /*   nop                                     */
+//             0xea                /*   nop                                     */
+//                                 /*   +                                       */
+//         );
 }
 
 /**

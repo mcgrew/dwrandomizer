@@ -9,7 +9,7 @@
 #include "build.h"
 #include "dwr_types.h"
 
-#define DWR_VERSION "3.0.3"
+#define DWR_VERSION "3.1.0"
 
 #ifdef  DWR_RELEASE
 #define VERSION DWR_VERSION

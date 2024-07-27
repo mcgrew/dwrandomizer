@@ -1,127 +1,182 @@
 
 .org $c288
 
-.word exp_start_dwr_credits    ;  0
-.word exp_inc_counter          ;  2
-.word exp_inc_enemy_death_ctr  ;  4
-.word exp_count_win            ;  6
-.word exp_count_encounter      ;  8
-.word exp_inc_mon_counter      ; 10
-.word exp_count_spell_use      ; 12
-.word exp_load_last_bank       ; 14
-.word exp_sort_inventory       ; 16
-; .word exp_torch_in_battle      ; 18
-
 start_dwr_credits:
-    ldy #0
-    beq exec_expansion_sub
+    lda #$a9        ; lda
+    sta $200
+    lda #%00000010  ; Change banking mode
+    sta $201
+    ldx #$12
+-   lda b3_fe09+3, x
+    sta $202,x
+    dex
+    bpl -
+
+    lda #$a9
+    sta $215
+    lda #5         ; load bank 5
+    sta $216
+    ldx #$15
+-   lda b3_ff96, x
+    sta $217,x
+    dex
+    bpl -
+    lda #>(credit_start-1)
+    pha
+    lda #<(credit_start-1)
+    pha
+    jmp $200
 
 inc_attack_ctr:
     brk
     hex 04 17
     lda #2
-    tay
-    jsr exec_expansion_sub
-    rts
+    bne inc_counter ; always branch
 
 inc_crit_ctr:
     brk
     hex 04 17
     lda #4
-    ldy #2
-    bne exec_expansion_sub
+    bne inc_counter ; always branch
 
 inc_miss_ctr:
     brk
     hex 04 17
     lda #6
-    ldy #2
-    bne exec_expansion_sub
+    bne inc_counter ; always branch
 
 inc_dodge_ctr:
     brk
     hex 04 17
     lda #8
-    ldy #2
-    bne exec_expansion_sub
+    bne inc_counter ; always branch
 
 inc_bonk_ctr:
     brk
     hex 04 17
     lda #10
-    ldy #2
-    bne exec_expansion_sub
-
-inc_death_ctr:
-    brk
-    hex 04 17
-    lda #0
-    ldy #2
-    bne exec_expansion_sub
+    bne inc_counter ; always branch
 
 blocked_in_front:
     jsr do_dialog_lo  ; but was blocked in front
     hex f6
-    ldy #2
     lda #12
-    bne exec_expansion_sub
+    bne inc_counter ; always branch
 
 player_ambushed:
     jsr do_dialog_lo  ; attacked before ready
     hex e4
-    lda #14
-    ldy #2
-;     bne exec_expansion_sub
+    lda #14         ; fall through to next subroutine
 
-exec_expansion_sub:
-    pha
-;     lda #$4c
-;     sta $7f00
-    lda $c288,y
-    sta $7f01
-    lda $c289,y
-    sta $7f02
-    lda $6004
-    sta $7004
-    lda #3
-    jsr store_and_load_prg_bank
-    pla
-    jmp ($7f01)
+inc_counter:
+    tax
+    ldy $6630,x
+    iny
+    bne +
+    inc $6631,x
++   tya
+    sta $6630,x
+    rts
 
 inc_enemy_death_ctr:
     brk
     hex 04 17
-    ldy #4
-    bne exec_expansion_sub
+    lda CURRENT_TILE
+    asl
+    clc
+    adc #160
+    jsr inc_mon_counter
+    beq inc_counter  ; is this needed?:
+
+inc_death_ctr:
+    lda #0
+    jsr inc_counter
+    lda #$14
+    brk
+    hex 04 17
+    rts
+
+count_win:
+    lda CURRENT_TILE
+    asl
+    clc
+    adc #80
+    bne inc_mon_counter
 
 count_encounter:
     brk
     hex 04 17
-    ldy #8
-    jsr exec_expansion_sub
-    jmp exp_load_last_bank
+    lda CURRENT_TILE
+    asl
 
-count_win:
-    ldy #6
-    jsr exec_expansion_sub
-    jmp exp_load_last_bank
+inc_mon_counter:
+    tax
+    ldy $6670,x
+    iny
+    bne +
+    inc $6671,x
++   tya
+    sta $6670,x
+    rts
 
 count_spell_use:
-    ldy #12
-    jsr exec_expansion_sub
+    lda SELECTED_ITEM
+    asl
+    clc
+    adc #$2c
+    jsr inc_counter
     jmp $c6f0   ; show window
 
+; exec_expansion_sub:
+;     pha
+;     lda $c288,y
+;     sta $7f01
+;     lda $c289,y
+;     sta $7f02
+;     lda $6004
+;     sta $7004
+;     lda #3
+;     jsr store_and_load_prg_bank
+;     pla
+;     jmp ($7f01)
+; 
 sort_inventory:
     jsr b3_e01b ; add the new item
     cpx #$04
-    bne + 
-    rts
-+   ldy #16
-    bne exec_expansion_sub
+    beq ++
+    ldx #$03
+-   lda ITEMS,x
+    and #$0f
+    sta $a8,x
+    lda ITEMS,x
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    sta $ac,x
+    lda #$00
+    sta ITEMS,x
+    dex
+    bpl -
+    lda #$00
+--  ldx #$07
+-   cmp $a8,x
+    bcs +
+    lda $a8,x
+    stx $a7
++   dex
+    bpl -
+    cmp #$00
+    beq ++
+    jsr b3_e01b ; add the next item
+    ldx $a7
+    lda #$00
+    sta $a8,x
+    beq --
+++  rts
+
 
 torch_in_battle:
-;     ldy #18
-;     bne exec_expansion_sub
     cmp #$04            ; is this a torch?
     bne +++             ; no, go to next check
     lda #$01

@@ -4,7 +4,7 @@ from glob import glob
 from subprocess import run
 from os.path import dirname, basename, realpath, join, exists
 from os import chdir, remove, getcwd
-from distutils.spawn import find_executable
+from shutil import which
 
 from ips import Patch
 
@@ -105,7 +105,7 @@ def generate_c_file(b3_patch:bytes, expansion:bytes):
 
 def main():
     chdir(join(dirname(realpath(__file__)), '..', 'expansion'))
-    asm6 = find_executable('asm6f') or find_executable('asm6')
+    asm6 = which('asm6f') or which('asm6')
     if run([asm6, '-q', '-f', '-dDWR_BUILD', 'credits.asm', 'credits.nes']
             ).returncode:
         return -1

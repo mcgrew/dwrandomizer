@@ -133,7 +133,7 @@ static BOOL dwr_init(dw_rom *rom, const char *input_file, char *flags)
     rom->zones = &rom->content[0xf54f];
     rom->zone_layout = &rom->content[0xf522];
     rom->chests = (dw_chest*)&rom->content[0x5dcd];
-    rom->spike_table = (dwr_spike_table*)&rom->content[0xcd7a];
+    rom->spike_table = (dwr_spike_table*)&rom->content[SPIKE_TABLE];
     rom->search_table = (dwr_search_table*)&rom->content[0xe136];
     rom->repel_table = &rom->content[0xf4fa];
     rom->weapon_shops = &rom->content[0x1991];
@@ -1390,123 +1390,133 @@ static void spike_rewrite(dw_rom *rom)
         }
     }
 
-    /* patch some jump addresses */
-    vpatch(rom, 0x03263,    2,  0xca,  0xbf);
-    vpatch(rom, 0x0335d,    2,  0xca,  0xbf);
-    vpatch(rom, 0x033e9,    2,  0xca,  0xbf);
-    vpatch(rom, 0x03515,    2,  0xca,  0xbf);
+//     vpatch(rom, 0x03263,    2,  0xca,  0xbf);
+//     vpatch(rom, 0x0335d,    2,  0xca,  0xbf);
+//     vpatch(rom, 0x033e9,    2,  0xca,  0xbf);
+//     vpatch(rom, 0x03515,    2,  0xca,  0xbf);
+    add_hook(rom, JSR, 0x3262, SAVE_PREVIOUS_COORDS);
+    add_hook(rom, JSR, 0x335c, SAVE_PREVIOUS_COORDS);
+    add_hook(rom, JSR, 0x33e8, SAVE_PREVIOUS_COORDS);
+    add_hook(rom, JSR, 0x3514, SAVE_PREVIOUS_COORDS);
+    patch_save_previous_coords(rom);
 
     /* save the previous tile you were on */
-    vpatch(rom, 0x03fca,   11,
-            0xa5,  0x3a,       /*   lda X_POS                                */
-            0x85,  0xdc,       /*   sta _UNUSED_DC                           */
-            0xa5,  0x3b,       /*   lda Y_POS                                */
-            0x85,  0xdd,       /*   sta _UNUSED_DD                           */
-            0x4c,  0xcc,  0xb1 /*   jmp $b1cc                                */
-    );
+//     vpatch(rom, 0x03fca,   11,
+//             0xa5,  0x3a,       /*   lda X_POS                                */
+//             0x85,  0xdc,       /*   sta _UNUSED_DC                           */
+//             0xa5,  0x3b,       /*   lda Y_POS                                */
+//             0x85,  0xdd,       /*   sta _UNUSED_DD                           */
+//             0x4c,  0xcc,  0xb1 /*   jmp $b1cc                                */
+//     );
+// 
+    ppatch(rom->spike_table->monster, 8, (const uint8_t*)spike_enemies);
+    patch_spike_begin(rom);
+    patch_spike_run(rom);
+    patch_spike_defeat(rom);
+    
 
-    /* spike encounter table */
-    vpatch(rom, 0x0cd7a, 40,
-        /* MAP */
-        HAUKSNESS, SWAMP_CAVE, CHARLOCK_THRONE_ROOM, NO_MAP, NO_MAP, NO_MAP, NO_MAP, NO_MAP,
-        /* X */
-               18,          4,                   25,      0,      0,      0,      0,      0,
-        /* Y */
-               12,         14,                   22,      0,      0,      0,      0,      0,
-        /* FLAGS */
-             0x00,       0x00,                 0x00,   0x80,   0x40,   0x20,   0x10,   0x08,
-        /* MONSTER */
-        spikes[0], spikes[1], spikes[2], spikes[3], spikes[4], spikes[5], spikes[6], spikes[7]
-    );
-
-    /* start of a spike encounter */
-    vpatch(rom, 0x0cd51, 41,
-            0xa2, 0x07,       /*   ldx #7                                  */
-            0xa5, 0x45,       /* - lda MAP_INDEX                           */
-            0xdd, 0x7a, 0xcd, /*   cmp spike_map,x                         */
-            0xd0, 0x1b,       /*   bne +                                   */
-            0xa5, 0x3a,       /*   lda X_POS                               */
-            0xdd, 0x82, 0xcd, /*   cmp spike_x,x                           */
-            0xd0, 0x14,       /*   bne +                                   */
-            0xa5, 0x3b,       /*   lda Y_POS                               */
-            0xdd, 0x8a, 0xcd, /*   cmp spike_y,x                           */
-            0xd0, 0x0d,       /*   bne +                                   */
-            0xbd, 0x92, 0xcd, /*   lda spike_flags,x                       */
-            0x25, 0xe4,       /*   and QUEST_PROGRESS                      */
-            0xd0, 0x33,       /*   bne +done                               */
-            0xbd, 0x9a, 0xcd, /*   lda spike_monster,x                     */
-            0x4c, 0xdf, 0xe4, /*   jmp start_combat                        */
-            0xca,             /* + dex                                     */
-            0x10, 0xdb,       /*   bpl -                                   */
-            0x30, 0x28        /*   bmi +done                               */
-      );
-
-    /* ran away from a spike encounter */
-    vpatch(rom, 0x0e8d4, 108,
-            0xa2, 0x07,       /*    ldx #7                                   */
-            0xa5, 0x45,       /* -- lda MAP_INDEX                            */
-            0xdd, 0x7a, 0xcd, /*    cmp spike_map,x                          */
-            0xd0, 0x43,       /*    bne +                                    */
-            0xa5, 0x3a,       /*    lda X_POS                                */
-            0xdd, 0x82, 0xcd, /*    cmp spike_x,x                            */
-            0xd0, 0x3c,       /*    bne +                                    */
-            0xa5, 0x3b,       /*    lda Y_POS                                */
-            0xdd, 0x8a, 0xcd, /*    cmp spike_y,x                            */
-            0xd0, 0x35,       /*    bne +                                    */
-            0xbd, 0x92, 0xcd, /*    lda spike_flags,x                        */
-            0x25, 0xe4,       /*    and QUEST_PROGRESS                       */
-            0xd0, 0x4e,       /*    bne +done                                */
-            0x20, 0xbb, 0xc6, /*    jsr b3_c6bb                              */
-            0xa5, 0xdc,       /*    lda _UNUSED_DC                           */
-            0x85, 0x3a,       /*    sta X_POS                                */
-            0x85, 0x8e,       /*    sta X_POS_2                              */
-            0x85, 0x90,       /*    sta $90                                  */
-            0xa5, 0xdd,       /*    lda _UNUSED_DD                           */
-            0x85, 0x3b,       /*    sta Y_POS                                */
-            0x85, 0x8f,       /*    sta Y_POS_2                              */
-            0x85, 0x92,       /*    sta $92                                  */
-            0xa9, 0x00,       /*    lda #$00      ; No idea what this does   */
-            0x85, 0x91,       /*    sta $91       ; but things can break     */
-            0x85, 0x93,       /*    sta $93       ; without it. I got it     */
-            0xa2, 0x04,       /*    ldx #$04      ; from the return spell    */
-            0x06, 0x90,       /* -  asl $90       ; routine.                 */
-            0x26, 0x91,       /*    rol $91       ;                          */
-            0x06, 0x92,       /*    asl $92       ;                          */
-            0x26, 0x93,       /*    rol $93       ;                          */
-            0xca,             /*    dex           ;                          */
-            0xd0, 0xf5,       /*    bne -         ;                          */
-            0xa9, 0x02,       /*    lda #$02      ;                          */
-            0x8d, 0x2f, 0x60, /*    sta $602f     ;                          */
-            0x4c, 0x97, 0xb0, /*    jmp $b097                                */
-            0xca,             /* +  dex                                      */
-            0x10, 0xb3,       /*    bpl --                                   */
-            0x30, 0x1b,       /*    bmi +done                                */
-
-            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-            0xff, 0xff, 0xff, 0xff, 0xff);
-
-    /* defeated a spike encounter */
-    vpatch(rom, 0x0e96b, 36,
-            0xa2, 0x07,       /*   ldx #7                                    */
-            0xa5, 0x45,       /* - lda MAP_INDEX                             */
-            0xdd, 0x7a, 0xcd, /*   cmp spike_map,x                           */
-            0xd0, 0x15,       /*   bne +                                     */
-            0xa5, 0x3a,       /*   lda X_POS                                 */
-            0xdd, 0x82, 0xcd, /*   cmp spike_x,x                             */
-            0xd0, 0x0e,       /*   bne +                                     */
-            0xa5, 0x3b,       /*   lda Y_POS                                 */
-            0xdd, 0x8a, 0xcd, /*   cmp spike_y,x                             */
-            0xd0, 0x07,       /*   bne +                                     */
-            0xbd, 0x92, 0xcd, /*   lda spike_flags,x                         */
-            0x05, 0xe4,       /*   ora QUEST_PROGRESS                        */
-            0x85, 0xe4,       /*   sta QUEST_PROGRESS                        */
-            0xca,             /* + dex                                       */
-            0x10, 0xe1,       /*   bpl -                                     */
-            0xea,             /*   nop                                       */
-            0xea,             /*   nop                                       */
-            0xea              /*   nop                                       */
-        );
+//    /* spike encounter table */
+//    vpatch(rom, 0x0cd7a, 40,
+//        /* MAP */
+//        HAUKSNESS, SWAMP_CAVE, CHARLOCK_THRONE_ROOM, NO_MAP, NO_MAP, NO_MAP, NO_MAP, NO_MAP,
+//        /* X */
+//               18,          4,                   25,      0,      0,      0,      0,      0,
+//        /* Y */
+//               12,         14,                   22,      0,      0,      0,      0,      0,
+//        /* FLAGS */
+//             0x00,       0x00,                 0x00,   0x80,   0x40,   0x20,   0x10,   0x08,
+//        /* MONSTER */
+//        spikes[0], spikes[1], spikes[2], spikes[3], spikes[4], spikes[5], spikes[6], spikes[7]
+//    );
+//
+//    /* start of a spike encounter */
+//    vpatch(rom, 0x0cd51, 41,
+//            0xa2, 0x07,       /*   ldx #7                                  */
+//            0xa5, 0x45,       /* - lda MAP_INDEX                           */
+//            0xdd, 0x7a, 0xcd, /*   cmp spike_map,x                         */
+//            0xd0, 0x1b,       /*   bne +                                   */
+//            0xa5, 0x3a,       /*   lda X_POS                               */
+//            0xdd, 0x82, 0xcd, /*   cmp spike_x,x                           */
+//            0xd0, 0x14,       /*   bne +                                   */
+//            0xa5, 0x3b,       /*   lda Y_POS                               */
+//            0xdd, 0x8a, 0xcd, /*   cmp spike_y,x                           */
+//            0xd0, 0x0d,       /*   bne +                                   */
+//            0xbd, 0x92, 0xcd, /*   lda spike_flags,x                       */
+//            0x25, 0xe4,       /*   and QUEST_PROGRESS                      */
+//            0xd0, 0x33,       /*   bne +done                               */
+//            0xbd, 0x9a, 0xcd, /*   lda spike_monster,x                     */
+//            0x4c, 0xdf, 0xe4, /*   jmp start_combat                        */
+//            0xca,             /* + dex                                     */
+//            0x10, 0xdb,       /*   bpl -                                   */
+//            0x30, 0x28        /*   bmi +done                               */
+//      );
+//
+//    /* ran away from a spike encounter */
+//    vpatch(rom, 0x0e8d4, 108,
+//            0xa2, 0x07,       /*    ldx #7                                   */
+//            0xa5, 0x45,       /* -- lda MAP_INDEX                            */
+//            0xdd, 0x7a, 0xcd, /*    cmp spike_map,x                          */
+//            0xd0, 0x43,       /*    bne +                                    */
+//            0xa5, 0x3a,       /*    lda X_POS                                */
+//            0xdd, 0x82, 0xcd, /*    cmp spike_x,x                            */
+//            0xd0, 0x3c,       /*    bne +                                    */
+//            0xa5, 0x3b,       /*    lda Y_POS                                */
+//            0xdd, 0x8a, 0xcd, /*    cmp spike_y,x                            */
+//            0xd0, 0x35,       /*    bne +                                    */
+//            0xbd, 0x92, 0xcd, /*    lda spike_flags,x                        */
+//            0x25, 0xe4,       /*    and QUEST_PROGRESS                       */
+//            0xd0, 0x4e,       /*    bne +done                                */
+//            0x20, 0xbb, 0xc6, /*    jsr b3_c6bb                              */
+//            0xa5, 0xdc,       /*    lda _UNUSED_DC                           */
+//            0x85, 0x3a,       /*    sta X_POS                                */
+//            0x85, 0x8e,       /*    sta X_POS_2                              */
+//            0x85, 0x90,       /*    sta $90                                  */
+//            0xa5, 0xdd,       /*    lda _UNUSED_DD                           */
+//            0x85, 0x3b,       /*    sta Y_POS                                */
+//            0x85, 0x8f,       /*    sta Y_POS_2                              */
+//            0x85, 0x92,       /*    sta $92                                  */
+//            0xa9, 0x00,       /*    lda #$00      ; No idea what this does   */
+//            0x85, 0x91,       /*    sta $91       ; but things can break     */
+//            0x85, 0x93,       /*    sta $93       ; without it. I got it     */
+//            0xa2, 0x04,       /*    ldx #$04      ; from the return spell    */
+//            0x06, 0x90,       /* -  asl $90       ; routine.                 */
+//            0x26, 0x91,       /*    rol $91       ;                          */
+//            0x06, 0x92,       /*    asl $92       ;                          */
+//            0x26, 0x93,       /*    rol $93       ;                          */
+//            0xca,             /*    dex           ;                          */
+//            0xd0, 0xf5,       /*    bne -         ;                          */
+//            0xa9, 0x02,       /*    lda #$02      ;                          */
+//            0x8d, 0x2f, 0x60, /*    sta $602f     ;                          */
+//            0x4c, 0x97, 0xb0, /*    jmp $b097                                */
+//            0xca,             /* +  dex                                      */
+//            0x10, 0xb3,       /*    bpl --                                   */
+//            0x30, 0x1b,       /*    bmi +done                                */
+//
+//            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+//            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+//            0xff, 0xff, 0xff, 0xff, 0xff);
+//
+//    /* defeated a spike encounter */
+//    vpatch(rom, 0x0e96b, 36,
+//            0xa2, 0x07,       /*   ldx #7                                    */
+//            0xa5, 0x45,       /* - lda MAP_INDEX                             */
+//            0xdd, 0x7a, 0xcd, /*   cmp spike_map,x                           */
+//            0xd0, 0x15,       /*   bne +                                     */
+//            0xa5, 0x3a,       /*   lda X_POS                                 */
+//            0xdd, 0x82, 0xcd, /*   cmp spike_x,x                             */
+//            0xd0, 0x0e,       /*   bne +                                     */
+//            0xa5, 0x3b,       /*   lda Y_POS                                 */
+//            0xdd, 0x8a, 0xcd, /*   cmp spike_y,x                             */
+//            0xd0, 0x07,       /*   bne +                                     */
+//            0xbd, 0x92, 0xcd, /*   lda spike_flags,x                         */
+//            0x05, 0xe4,       /*   ora QUEST_PROGRESS                        */
+//            0x85, 0xe4,       /*   sta QUEST_PROGRESS                        */
+//            0xca,             /* + dex                                       */
+//            0x10, 0xe1,       /*   bpl -                                     */
+//            0xea,             /*   nop                                       */
+//            0xea,             /*   nop                                       */
+//            0xea              /*   nop                                       */
+//        );
 }
 
 /**

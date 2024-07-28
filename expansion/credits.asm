@@ -19,7 +19,7 @@ TIMERS_ADDR  EQU $d0
 
 ; *** PRG ROM ***
 .include defs.asm
-.include empty.asm
+.include bank_0.asm
 .include empty.asm
 .include empty.asm
 .include bank_3.asm

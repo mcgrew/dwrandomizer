@@ -60,15 +60,97 @@ BTN_A      EQU #$80
 
 ; DW labels
 
-b3_e01b EQU $e01b
+; maps
+ALEFGARD        EQU  1
+CHARLOCK        EQU  2
+HAUKSNESS       EQU  3
+TANTEGEL        EQU  4
+TANTEGEL_THRONE EQU  5
+CHARLOCK_THRONE EQU  6
+KOL             EQU  7
+BRECCONARY      EQU  8
+GARINHAM        EQU  9
+CANTLIN         EQU 10
+RIMULDAR        EQU 11
+TANTEGEL_BSMT   EQU 12
+NORTHERN_SHRINE EQU 13
+SOUTHERN_SHRINE EQU 14
+CHARLOCK_1      EQU 15
+CHARLOCK_2      EQU 16
+CHARLOCK_3      EQU 17
+CHARLOCK_4      EQU 18
+CHARLOCK_5      EQU 19
+CHARLOCK_6      EQU 20
+SWAMP_CAVE      EQU 21
+MOUNTAIN        EQU 22
+MOUNTAIN_2      EQU 23
+GRAVE_1         EQU 24
+GRAVE_2         EQU 25
+GRAVE_3         EQU 26
+GRAVE_4         EQU 27
+TABLET          EQU 28
+TABLET_2        EQU 29
 
-X_POS EQU $3A
-X_POS_2 EQU $8E
-Y_POS EQU $3B
-Y_POS_2 EQU $8F
-MAP_INDEX EQU $45
-RANDOM_H EQU $95
-RANDOM_L EQU $94
+; monsters
+SLIME          EQU 0
+RED_SLIME      EQU 1
+DRAKEE         EQU 2
+GHOST          EQU 3
+MAGICIAN       EQU 4
+MAGIDRAKEE     EQU 5
+SCORPION       EQU 6
+DRUIN          EQU 7
+POLTERGEIST    EQU 8
+DROLL          EQU 9
+DRAKEEMA       EQU 10
+SKELETON       EQU 11
+WARLOCK        EQU 12
+METAL_SCORPION EQU 13
+WOLF           EQU 14
+WRAITH         EQU 15
+METAL_SLIME    EQU 16
+SPECTER        EQU 17
+WOLFLORD       EQU 18
+DRUINLORD      EQU 19
+DROLLMAGI      EQU 20
+WYVERN         EQU 21
+ROGUE_SCORPION EQU 22
+WRAITH_KNIGHT  EQU 23
+GOLEM          EQU 24
+GOLDMAN        EQU 25
+KNIGHT         EQU 26
+MAGIWYVERN     EQU 27
+DEMON_KNIGHT   EQU 28
+WEREWOLF       EQU 29
+GREEN_DRAGON   EQU 30
+STARWYVERN     EQU 31
+WIZARD         EQU 32
+AXE_KNIGHT     EQU 33
+BLUE_DRAGON    EQU 34
+STONEMAN       EQU 35
+ARMORED_KNIGHT EQU 36
+RED_DRAGON     EQU 37
+DRAGONLORD_1   EQU 38
+DRAGONLORD_2   EQU 39
+
+; zero page ram
+TMP0           EQU $00 ; used for displaying values
+TMP1           EQU $01 ; used for displaying values
+TMP2           EQU $0E ; unused in the base game
+SPELLS_KNOWN   EQU $CE ; low spells known
+SPELLS_STATUS  EQU $D0 ; high spells known and status (see ram notes)
+LIGHT_RADIUS   EQU $D0 ; the light radius for radiant/torch
+TMP3           EQU $D5 ; unused in the base game
+TMP4           EQU $DC ; unused in the base game
+TMP5           EQU $DD ; unused in the base game
+X_POS          EQU $3A ; 2 spots for the player's X position (?)
+X_POS_2        EQU $8E
+Y_POS          EQU $3B ; 2 spots for the player's Y position (?)
+Y_POS_2        EQU $8F
+MAP_INDEX      EQU $45 ; the map we're on
+RANDOM_H       EQU $95 ; rng_output (high)
+RANDOM_L       EQU $94 ; rng_output (low)
+QUEST_PROGRESS EQU $E4 ; bits for quest progress (see ram notes)
 ; _UNUSED_D5 EQU $00D5
 ; _UNUSED_DC EQU $00DC
 ; _UNUSED_DD EQU $00DD
@@ -153,7 +235,7 @@ show_window             EQU $C6F0
 ; sleep_spell             EQU $DA5C
 ; spell_names             EQU $BE56
 ; spell_win               EQU $B0BA
-; start_combat            EQU $E4DF
+start_combat            EQU $E4DF
 ; stats_win               EQU $AFB0
 ; status_win              EQU $AFC7
 ; 

@@ -11,6 +11,7 @@ enum hooktype {
 };
 
 enum subroutine {
+  SAVE_PREVIOUS_COORDS = 0xBFCA,
   START_DWR_CREDITS = 0xC288,
   INC_ATTACK_CTR = 0xC2BB,
   INC_CRIT_CTR = 0xC2C2,
@@ -39,14 +40,24 @@ enum subroutine {
   MODIFY_RUN_RATE = 0xC45B,
   SCALE_MSLIME_XP = 0xC46B,
   SAVE_CURRENT_SPELLS = 0xC483,
+  SPIKE_MAP = 0xCD7A,
+  SPIKE_TABLE = 0xCD7A,
+  SPIKE_X = 0xCD82,
+  SPIKE_Y = 0xCD8A,
+  SPIKE_FLAGS = 0xCD92,
+  SPIKE_MONSTER = 0xCD9A,
   SCALED_MSLIME_HOOK_POINT = 0xEA14,
 };
 
 void add_hook(dw_rom *rom, enum hooktype type, uint16_t address,
               enum subroutine to_addr);
+void patch_save_previous_coords(dw_rom *rom);
 void patch_free_3a(dw_rom *rom);
 void patch_free_3b(dw_rom *rom);
 void patch_free_3c(dw_rom *rom);
+void patch_spike_begin(dw_rom *rom);
+void patch_spike_run(dw_rom *rom);
+void patch_spike_defeat(dw_rom *rom);
 void patch_handle_2_byte_xp_gold(dw_rom *rom);
 void patch_print_new_spells(dw_rom *rom);
 void patch_free_3d(dw_rom *rom);

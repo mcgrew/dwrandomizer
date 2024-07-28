@@ -311,6 +311,108 @@ patch_free_3c_start:
 .org $c9b5
 patch_free_3c_end:
 
+.org $cd51
+patch_spike_begin_start:
+  ldx #7
+- lda MAP_INDEX
+  cmp spike_map,x
+  bne +
+  lda X_POS
+  cmp spike_x,x
+  bne +
+  lda Y_POS
+  cmp spike_y,x
+  bne +
+  lda spike_flags,x
+  and QUEST_PROGRESS
+  bne $CDA2 ; we already beat it, so we're done here, continue
+  lda spike_monster,x
+  jmp start_combat
++ dex
+  bpl -
+  bmi $CDA2 ; no spike here, continue
+
+spike_table:
+spike_map:
+  .db HAUKSNESS, SWAMP_CAVE, CHARLOCK_THRONE, 0, 0, 0, 0, 0
+spike_x:
+  .db 18, 4, 25, 0, 0, 0, 0, 0
+spike_y:
+  .db 12, 14, 22, 0, 0, 0, 0, 0
+spike_flags:
+  .db $00, $00, $00, $80, $40, $20, $10, $08
+spike_monster:
+  .db AXE_KNIGHT, GREEN_DRAGON, GOLEM,  SLIME,  SLIME,  SLIME,  SLIME, SLIME
+
+patch_spike_begin_end:
+
+.org $E8D4
+patch_spike_run_start:
+   ldx #7
+-- lda MAP_INDEX
+   cmp spike_map,x
+   bne +
+   lda X_POS
+   cmp spike_x,x
+   bne +
+   lda Y_POS
+   cmp spike_y,x
+   bne +
+   lda spike_flags,x
+   and QUEST_PROGRESS
+   bne $e940    ; we're done here, continue
+   jsr $C6BB    ; wait for nmi and set bytes $200-$2FF to $F0 (?)
+   lda $DC
+   sta X_POS
+   sta X_POS_2
+   sta $90
+   lda $DD
+   sta Y_POS
+   sta Y_POS_2
+   sta $92
+   lda #$00      ; I'm not sure what this does but things break without it.
+   sta $91       ; I got this from the return spell routine.
+   sta $93       ;
+   ldx #$04      ;
+-  asl $90       ;
+   rol $91       ;
+   asl $92       ;
+   rol $93       ;
+   dex           ;
+   bne -         ;
+   lda #$02      ;
+   sta $602f     ;
+   jmp $b097
++  dex
+   bpl --
+   bmi $e940     ; we're done here, continue
+   ; 27 bytes of unused code here now.
+
+.org $E940
+patch_spike_run_end:
+
+.org $E96B
+patch_spike_defeat_start:
+   ldx #7
+-  lda MAP_INDEX
+   cmp spike_map,x
+   bne +
+   lda X_POS
+   cmp spike_x,x
+   bne +
+   lda Y_POS
+   cmp spike_y,x
+   bne +
+   lda spike_flags,x
+   ora QUEST_PROGRESS
+   sta QUEST_PROGRESS
++  dex
+   bpl -
+   nop
+   nop
+   nop
+patch_spike_defeat_end:
+
 .org $ea0a
 patch_handle_2_byte_xp_gold_start:
     lda $106       ; load the low byte of xp from this fight

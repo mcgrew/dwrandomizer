@@ -247,42 +247,6 @@ uint16_t set_text(dw_rom *rom, const size_t address, char *text)
     return patch_end;
 }
 
-
-/**
- * Searches for a string inside the rom and replaces it with the new string
- *
- * @param rom The rom struct
- * @param text An ASCII version of the string to be replaced
- * @param replacement An ASCII version of the replacement string
- * @return returns a pointer to the beginning of the string that was replaced,
- *      or NULL if the string is not found.
- */
-// static uint8_t *dwr_str_replace(dw_rom *rom, const char *text,
-//                                 const char *replacement)
-// {
-//     int len;
-//     uint8_t *start, *end;
-//     char dw_text[256], dw_repl[256];
-// 
-//     len = strlen(text);
-//     if (!len)
-//         return NULL;
-//     end = &rom->content[ROM_SIZE - len - 0x10];
-// 
-//     strncpy(dw_text, text, 256);
-//     strncpy(dw_repl, replacement, 256);
-//     ascii2dw((unsigned char *)dw_text);
-//     ascii2dw((unsigned char *)dw_repl);
-// 
-//     for (start = rom->content; start < end; start++) {
-//         if (!memcmp(start, dw_text, len)) {
-//             memcpy(start, dw_repl, len);
-//             return start;
-//         }
-//     }
-//     return NULL;
-// }
-// 
 /**
  * Patches the game to allow the use of torches and fairy water in battle
  *
@@ -1160,47 +1124,6 @@ static void show_spells_learned(dw_rom *rom)
 
     add_hook(rom, JSR, 0xea76, SAVE_CURRENT_SPELLS);
     patch_print_new_spells(rom);
-
-//     vpatch(rom, 0x03fe0,   14,
-//                                 /* save_spells:                              */
-//             0xa5,  0xce,        /*   lda $ce     ; load current spells (lo)  */
-//             0x85,  0xdc,        /*   sta $dc     ; store at $dc              */
-//             0xa5,  0xcf,        /*   lda $cf     ; load current spells (hi)  */
-//             0x85,  0xdd,        /*   sta $dd     ; store at $dd              */
-//             0x4c,  0x50,  0xf0, /*   jmp b3_f050 ; update to new level stats */
-//             0xff,  0xff,  0xff);
-//     vpatch(rom, 0x0eae6,   46,
-//             0xa0,  0x10,        /*   ldy #$10    ; Start at 16               */
-//             0xa5,  0xdc,        /*   lda $dc     ; load old spells known     */
-//             0x45,  0xce,        /*   eor $ce     ; xor with new spells known */
-//             0x48,               /* - pha         ; push on the stack         */
-//             0x29,  0x01,        /*   and #1      ; is the current spell new? */
-//             0xf0, 0x0b,         /*   beq +       ; no, go to next spell      */
-//             0x98,               /*   tya         ; transfer the index to A   */
-//             0x48,               /*   pha         ; push to the stack         */
-//             0x20,  0xf0,  0xdb, /*   jsr b3_dbf0 ; prepare spell name        */
-//             0x20,  0xcb,  0xc7, /*   jsr b3_c7cb ; print new spell text      */
-//             0xf2,               /*   hex f2                                  */
-//             0x68,               /*   pla         ; pull the Y value          */
-//             0xa8,               /*   tay         ; transfer to Y             */
-//             0x68,               /* + pla         ; pull stored new spells    */
-//             0x4a,               /*   lsr         ; shift right               */
-//             0xc8,               /*   iny         ; increment spell index     */
-//             0xc0,  0x1a,        /*   cpy #$1a    ; if Y is 26, we're done    */
-//             0xf0,  0x11,        /*   beq +                                   */
-//             0xc0,  0x18,        /*   cpy #$18    ; if Y is 18,               */
-//             0xd0,  0xe5,        /*   bne -       ;                           */
-//             0xa5,  0xdd,        /*   lda $dd     ; load second spell byte    */
-//             0x45,  0xcf,        /*   eor $cf     ; xor with new spells       */
-//             0x29,  0x03,        /*   and #$3     ; we only need 2 bits here  */
-//             0xd0,  0xdd,        /*   bne -       ; if it's not empty,        */
-//             0xea,               /*   nop         ;    continue               */
-//             0xea,               /*   nop                                     */
-//             0xea,               /*   nop                                     */
-//             0xea,               /*   nop                                     */
-//             0xea                /*   nop                                     */
-//                                 /*   +                                       */
-//         );
 }
 
 /**
@@ -1390,133 +1313,16 @@ static void spike_rewrite(dw_rom *rom)
         }
     }
 
-//     vpatch(rom, 0x03263,    2,  0xca,  0xbf);
-//     vpatch(rom, 0x0335d,    2,  0xca,  0xbf);
-//     vpatch(rom, 0x033e9,    2,  0xca,  0xbf);
-//     vpatch(rom, 0x03515,    2,  0xca,  0xbf);
     add_hook(rom, JSR, 0x3262, SAVE_PREVIOUS_COORDS);
     add_hook(rom, JSR, 0x335c, SAVE_PREVIOUS_COORDS);
     add_hook(rom, JSR, 0x33e8, SAVE_PREVIOUS_COORDS);
     add_hook(rom, JSR, 0x3514, SAVE_PREVIOUS_COORDS);
     patch_save_previous_coords(rom);
 
-    /* save the previous tile you were on */
-//     vpatch(rom, 0x03fca,   11,
-//             0xa5,  0x3a,       /*   lda X_POS                                */
-//             0x85,  0xdc,       /*   sta _UNUSED_DC                           */
-//             0xa5,  0x3b,       /*   lda Y_POS                                */
-//             0x85,  0xdd,       /*   sta _UNUSED_DD                           */
-//             0x4c,  0xcc,  0xb1 /*   jmp $b1cc                                */
-//     );
-// 
     ppatch(rom->spike_table->monster, 8, (const uint8_t*)spike_enemies);
     patch_spike_begin(rom);
     patch_spike_run(rom);
     patch_spike_defeat(rom);
-    
-
-//    /* spike encounter table */
-//    vpatch(rom, 0x0cd7a, 40,
-//        /* MAP */
-//        HAUKSNESS, SWAMP_CAVE, CHARLOCK_THRONE_ROOM, NO_MAP, NO_MAP, NO_MAP, NO_MAP, NO_MAP,
-//        /* X */
-//               18,          4,                   25,      0,      0,      0,      0,      0,
-//        /* Y */
-//               12,         14,                   22,      0,      0,      0,      0,      0,
-//        /* FLAGS */
-//             0x00,       0x00,                 0x00,   0x80,   0x40,   0x20,   0x10,   0x08,
-//        /* MONSTER */
-//        spikes[0], spikes[1], spikes[2], spikes[3], spikes[4], spikes[5], spikes[6], spikes[7]
-//    );
-//
-//    /* start of a spike encounter */
-//    vpatch(rom, 0x0cd51, 41,
-//            0xa2, 0x07,       /*   ldx #7                                  */
-//            0xa5, 0x45,       /* - lda MAP_INDEX                           */
-//            0xdd, 0x7a, 0xcd, /*   cmp spike_map,x                         */
-//            0xd0, 0x1b,       /*   bne +                                   */
-//            0xa5, 0x3a,       /*   lda X_POS                               */
-//            0xdd, 0x82, 0xcd, /*   cmp spike_x,x                           */
-//            0xd0, 0x14,       /*   bne +                                   */
-//            0xa5, 0x3b,       /*   lda Y_POS                               */
-//            0xdd, 0x8a, 0xcd, /*   cmp spike_y,x                           */
-//            0xd0, 0x0d,       /*   bne +                                   */
-//            0xbd, 0x92, 0xcd, /*   lda spike_flags,x                       */
-//            0x25, 0xe4,       /*   and QUEST_PROGRESS                      */
-//            0xd0, 0x33,       /*   bne +done                               */
-//            0xbd, 0x9a, 0xcd, /*   lda spike_monster,x                     */
-//            0x4c, 0xdf, 0xe4, /*   jmp start_combat                        */
-//            0xca,             /* + dex                                     */
-//            0x10, 0xdb,       /*   bpl -                                   */
-//            0x30, 0x28        /*   bmi +done                               */
-//      );
-//
-//    /* ran away from a spike encounter */
-//    vpatch(rom, 0x0e8d4, 108,
-//            0xa2, 0x07,       /*    ldx #7                                   */
-//            0xa5, 0x45,       /* -- lda MAP_INDEX                            */
-//            0xdd, 0x7a, 0xcd, /*    cmp spike_map,x                          */
-//            0xd0, 0x43,       /*    bne +                                    */
-//            0xa5, 0x3a,       /*    lda X_POS                                */
-//            0xdd, 0x82, 0xcd, /*    cmp spike_x,x                            */
-//            0xd0, 0x3c,       /*    bne +                                    */
-//            0xa5, 0x3b,       /*    lda Y_POS                                */
-//            0xdd, 0x8a, 0xcd, /*    cmp spike_y,x                            */
-//            0xd0, 0x35,       /*    bne +                                    */
-//            0xbd, 0x92, 0xcd, /*    lda spike_flags,x                        */
-//            0x25, 0xe4,       /*    and QUEST_PROGRESS                       */
-//            0xd0, 0x4e,       /*    bne +done                                */
-//            0x20, 0xbb, 0xc6, /*    jsr b3_c6bb                              */
-//            0xa5, 0xdc,       /*    lda _UNUSED_DC                           */
-//            0x85, 0x3a,       /*    sta X_POS                                */
-//            0x85, 0x8e,       /*    sta X_POS_2                              */
-//            0x85, 0x90,       /*    sta $90                                  */
-//            0xa5, 0xdd,       /*    lda _UNUSED_DD                           */
-//            0x85, 0x3b,       /*    sta Y_POS                                */
-//            0x85, 0x8f,       /*    sta Y_POS_2                              */
-//            0x85, 0x92,       /*    sta $92                                  */
-//            0xa9, 0x00,       /*    lda #$00      ; No idea what this does   */
-//            0x85, 0x91,       /*    sta $91       ; but things can break     */
-//            0x85, 0x93,       /*    sta $93       ; without it. I got it     */
-//            0xa2, 0x04,       /*    ldx #$04      ; from the return spell    */
-//            0x06, 0x90,       /* -  asl $90       ; routine.                 */
-//            0x26, 0x91,       /*    rol $91       ;                          */
-//            0x06, 0x92,       /*    asl $92       ;                          */
-//            0x26, 0x93,       /*    rol $93       ;                          */
-//            0xca,             /*    dex           ;                          */
-//            0xd0, 0xf5,       /*    bne -         ;                          */
-//            0xa9, 0x02,       /*    lda #$02      ;                          */
-//            0x8d, 0x2f, 0x60, /*    sta $602f     ;                          */
-//            0x4c, 0x97, 0xb0, /*    jmp $b097                                */
-//            0xca,             /* +  dex                                      */
-//            0x10, 0xb3,       /*    bpl --                                   */
-//            0x30, 0x1b,       /*    bmi +done                                */
-//
-//            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-//            0xff, 0xff, 0xff, 0xff, 0xff);
-//
-//    /* defeated a spike encounter */
-//    vpatch(rom, 0x0e96b, 36,
-//            0xa2, 0x07,       /*   ldx #7                                    */
-//            0xa5, 0x45,       /* - lda MAP_INDEX                             */
-//            0xdd, 0x7a, 0xcd, /*   cmp spike_map,x                           */
-//            0xd0, 0x15,       /*   bne +                                     */
-//            0xa5, 0x3a,       /*   lda X_POS                                 */
-//            0xdd, 0x82, 0xcd, /*   cmp spike_x,x                             */
-//            0xd0, 0x0e,       /*   bne +                                     */
-//            0xa5, 0x3b,       /*   lda Y_POS                                 */
-//            0xdd, 0x8a, 0xcd, /*   cmp spike_y,x                             */
-//            0xd0, 0x07,       /*   bne +                                     */
-//            0xbd, 0x92, 0xcd, /*   lda spike_flags,x                         */
-//            0x05, 0xe4,       /*   ora QUEST_PROGRESS                        */
-//            0x85, 0xe4,       /*   sta QUEST_PROGRESS                        */
-//            0xca,             /* + dex                                       */
-//            0x10, 0xe1,       /*   bpl -                                     */
-//            0xea,             /*   nop                                       */
-//            0xea,             /*   nop                                       */
-//            0xea              /*   nop                                       */
-//        );
 }
 
 /**

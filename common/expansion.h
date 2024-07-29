@@ -47,6 +47,7 @@ enum subroutine {
   SPIKE_FLAGS = 0xCD92,
   SPIKE_MONSTER = 0xCD9A,
   SCALED_MSLIME_HOOK_POINT = 0xEA14,
+  CREDIT_MUSIC_ATTRIBUTION = 0x6C11,
 };
 
 void add_hook(dw_rom *rom, enum hooktype type, uint16_t address,

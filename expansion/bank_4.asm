@@ -42,7 +42,7 @@ INSTR_WAIT         EQU $fe
 INSTR_FINISH       EQU $ff
 
 music_data:
-; .include music.asm
+;  .include music.asm
 IFNDEF DWR_BUILD
     .db 0 ; so famistudio won't choke if there's no music
 ENDIF
@@ -236,6 +236,12 @@ handle_instruction:
 +next_instr:
     cmp #INSTR_MON_STAT
     bne +next_instr
+    lda #$5f                ; queue up a blank space
+    sta NEXT_TILE           ; print the blank space
+    jsr exp_wait_for_nmi
+    lda #$5f                ; queue up a blank space
+    sta NEXT_TILE           ; print the blank space
+    jsr exp_wait_for_nmi
     ldx #0
     lda (STATS_ADDR,x)      ; load the monster index
     asl                     ; double it (2 bytes per monster)
@@ -520,6 +526,37 @@ credits_data:
     .word $2308
     .db "bunder2015    "
 
+    .db INSTR_WAIT, 240
+
+credit_music_attribution:
+    .db INSTR_SET_PPU
+    .word $20e8
+    .db "              "
+    .db INSTR_SET_PPU
+    .word $2141
+    .db "                            "
+    .db INSTR_SET_PPU
+    .word $2181
+    .db "                            "
+    .db INSTR_SET_PPU
+    .word $21c8
+    .db "              "
+    .db INSTR_SET_PPU
+    .word $2201
+    .db "                            "
+    .db INSTR_SET_PPU
+    .word $2248
+    .db "              "
+    .db INSTR_SET_PPU
+    .word $2281
+    .db "                            "
+    .db INSTR_SET_PPU
+    .word $22c8
+    .db "              "
+    .db INSTR_SET_PPU
+    .word $2301
+    .db "                            "
+
 stats_data:
     .db INSTR_WAIT, 240
 
@@ -529,288 +566,288 @@ stats_data:
     .db INSTR_REPEAT_CHAR, 12, " "
 
     .db INSTR_SET_PPU
-    .word $20c2
-    .db "MONSTER     FOUGHT  WON DIED"
+    .word $20c1
+    .db " MONSTER     FOUGHT  WON DIED"
 
     .db INSTR_SET_PPU
-    .word $2102 ; PPU address
-    .db "Slime         "      ; /* 0 */
+    .word $2101 ; PPU address
+    .db " Slime         "      ; /* 0 */
     .db INSTR_MON_STAT, 0
 
     .db INSTR_SET_PPU
-    .word $2142 ; PPU address
-    .db "Red Slime     "
+    .word $2141 ; PPU address
+    .db " Red Slime     "
     .db INSTR_MON_STAT, 1
 
     .db INSTR_SET_PPU
-    .word $2182 ; PPU address
-    .db "Drakee        "
+    .word $2181 ; PPU address
+    .db " Drakee        "
     .db INSTR_MON_STAT, 2
 
     .db INSTR_SET_PPU
-    .word $21c2 ; PPU address
-    .db "Ghost         "
+    .word $21c1 ; PPU address
+    .db " Ghost         "
     .db INSTR_MON_STAT, 3
 
     .db INSTR_SET_PPU
-    .word $2202 ; PPU address
-    .db "Magician      "
+    .word $2201 ; PPU address
+    .db " Magician      "
     .db INSTR_MON_STAT, 4
 
     .db INSTR_SET_PPU
-    .word $2242 ; PPU address
-    .db "Magidrakee    "
+    .word $2241 ; PPU address
+    .db " Magidrakee    "
     .db INSTR_MON_STAT, 5
 
     .db INSTR_SET_PPU
-    .word $2282 ; PPU address
-    .db "Scorpion      "
+    .word $2281 ; PPU address
+    .db " Scorpion      "
     .db INSTR_MON_STAT, 6
 
     .db INSTR_SET_PPU
-    .word $22c2 ; PPU address
-    .db "Druin         "
+    .word $22c1 ; PPU address
+    .db " Druin         "
     .db INSTR_MON_STAT, 7
 
     .db INSTR_SET_PPU
-    .word $2302 ; PPU address
-    .db "Poltergeist   "
+    .word $2301 ; PPU address
+    .db " Poltergeist   "
     .db INSTR_MON_STAT, 8
 
     .db INSTR_SET_PPU
-    .word $2342 ; PPU address
-    .db "Droll         "
+    .word $2341 ; PPU address
+    .db " Droll         "
     .db INSTR_MON_STAT, 9
 
     .db INSTR_WAIT, 240
 
     .db INSTR_SET_PPU
-    .word $2102 ; PPU address
-    .db "Drakeema      "  ;  /* 10 */
+    .word $2101 ; PPU address
+    .db " Drakeema      "  ;  /* 10 */
     .db INSTR_MON_STAT, 10
 
     .db INSTR_SET_PPU
-    .word $2142 ; PPU address
-    .db "Skeleton      "
+    .word $2141 ; PPU address
+    .db " Skeleton      "
     .db INSTR_MON_STAT, 11
 
     .db INSTR_SET_PPU
-    .word $2182 ; PPU address
-    .db "Warlock       "
+    .word $2181 ; PPU address
+    .db " Warlock       "
     .db INSTR_MON_STAT, 12
 
     .db INSTR_SET_PPU
-    .word $21c2 ; PPU address
-    .db "Metal Scorpion"
+    .word $21c1 ; PPU address
+    .db " Metal Scorpion"
     .db INSTR_MON_STAT, 13
 
     .db INSTR_SET_PPU
-    .word $2202 ; PPU address
-    .db "Wolf          "
+    .word $2201 ; PPU address
+    .db " Wolf          "
     .db INSTR_MON_STAT, 14
 
     .db INSTR_SET_PPU
-    .word $2242 ; PPU address
-    .db "Wraith        "
+    .word $2241 ; PPU address
+    .db " Wraith        "
     .db INSTR_MON_STAT, 15
 
     .db INSTR_SET_PPU
-    .word $2282 ; PPU address
-    .db "Metal Slime   "
+    .word $2281 ; PPU address
+    .db " Metal Slime   "
     .db INSTR_MON_STAT, 16
 
     .db INSTR_SET_PPU
-    .word $22c2 ; PPU address
-    .db "Specter       "
+    .word $22c1 ; PPU address
+    .db " Specter       "
     .db INSTR_MON_STAT, 17
 
     .db INSTR_SET_PPU
-    .word $2302 ; PPU address
-    .db "Wolflord      "
+    .word $2301 ; PPU address
+    .db " Wolflord      "
     .db INSTR_MON_STAT, 18
 
     .db INSTR_SET_PPU
-    .word $2342 ; PPU address
-    .db "Druinlord     "
+    .word $2341 ; PPU address
+    .db " Druinlord     "
     .db INSTR_MON_STAT, 19
 
     .db INSTR_WAIT, 240
 
     .db INSTR_SET_PPU
-    .word $2102 ; PPU address
-    .db "Drollmagi     "  ; /* 20 */
+    .word $2101 ; PPU address
+    .db " Drollmagi     "  ; /* 20 */
     .db INSTR_MON_STAT, 20
 
     .db INSTR_SET_PPU
-    .word $2142 ; PPU address
-    .db "Wyvern        "
+    .word $2141 ; PPU address
+    .db " Wyvern        "
     .db INSTR_MON_STAT, 21
 
     .db INSTR_SET_PPU
-    .word $2182 ; PPU address
-    .db "Rogue Scorpion"
+    .word $2181 ; PPU address
+    .db " Rogue Scorpion"
     .db INSTR_MON_STAT, 22
 
     .db INSTR_SET_PPU
-    .word $21c2 ; PPU address
-    .db "Wraith Knight "
+    .word $21c1 ; PPU address
+    .db " Wraith Knight "
     .db INSTR_MON_STAT, 23
 
     .db INSTR_SET_PPU
-    .word $2202 ; PPU address
-    .db "Golem         "
+    .word $2201 ; PPU address
+    .db " Golem         "
     .db INSTR_MON_STAT, 24
 
     .db INSTR_SET_PPU
-    .word $2242 ; PPU address
-    .db "Goldman       "
+    .word $2241 ; PPU address
+    .db " Goldman       "
     .db INSTR_MON_STAT, 25
 
     .db INSTR_SET_PPU
-    .word $2282 ; PPU address
-    .db "Knight        "
+    .word $2281 ; PPU address
+    .db " Knight        "
     .db INSTR_MON_STAT, 26
 
     .db INSTR_SET_PPU
-    .word $22c2 ; PPU address
-    .db "Magiwyvern    "
+    .word $22c1 ; PPU address
+    .db " Magiwyvern    "
     .db INSTR_MON_STAT, 27
 
     .db INSTR_SET_PPU
-    .word $2302 ; PPU address
-    .db "Demon Knight  "
+    .word $2301 ; PPU address
+    .db " Demon Knight  "
     .db INSTR_MON_STAT, 28
 
     .db INSTR_SET_PPU
-    .word $2342 ; PPU address
-    .db "Werewolf      "
+    .word $2341 ; PPU address
+    .db " Werewolf      "
     .db INSTR_MON_STAT, 29
 
     .db INSTR_WAIT, 240
 
     .db INSTR_SET_PPU
-    .word $2102 ; PPU address
-    .db "Green Dragon  " ; /* 30 */
+    .word $2101 ; PPU address
+    .db " Green Dragon  " ; /* 30 */
     .db INSTR_MON_STAT, 30
 
     .db INSTR_SET_PPU
-    .word $2142 ; PPU address
-    .db "Starwyvern    "
+    .word $2141 ; PPU address
+    .db " Starwyvern    "
     .db INSTR_MON_STAT, 31
 
     .db INSTR_SET_PPU
-    .word $2182 ; PPU address
-    .db "Wizard        "
+    .word $2181 ; PPU address
+    .db " Wizard        "
     .db INSTR_MON_STAT, 32
 
     .db INSTR_SET_PPU
-    .word $21c2 ; PPU address
-    .db "Axe Knight    "
+    .word $21c1 ; PPU address
+    .db " Axe Knight    "
     .db INSTR_MON_STAT, 33
 
     .db INSTR_SET_PPU
-    .word $2202 ; PPU address
-    .db "Blue Dragon   "
+    .word $2201 ; PPU address
+    .db " Blue Dragon   "
     .db INSTR_MON_STAT, 34
 
     .db INSTR_SET_PPU
-    .word $2242 ; PPU address
-    .db "Stoneman      "
+    .word $2241 ; PPU address
+    .db " Stoneman      "
     .db INSTR_MON_STAT, 35
 
     .db INSTR_SET_PPU
-    .word $2282 ; PPU address
-    .db "Armored Knight"
+    .word $2281 ; PPU address
+    .db " Armored Knight"
     .db INSTR_MON_STAT, 36
 
     .db INSTR_SET_PPU
-    .word $22c2 ; PPU address
-    .db "Red Dragon    "
+    .word $22c1 ; PPU address
+    .db " Red Dragon    "
     .db INSTR_MON_STAT, 37
 
     .db INSTR_SET_PPU
-    .word $2302 ; PPU address
-    .db "Dragonlord 1  "
+    .word $2301 ; PPU address
+    .db " Dragonlord 1  "
     .db INSTR_MON_STAT, 38
 
     .db INSTR_SET_PPU
-    .word $2342 ; PPU address
-    .db "Dragonlord 2  "
+    .word $2341 ; PPU address
+    .db " Dragonlord 2  "
     .db INSTR_MON_STAT, 39
 
     .db INSTR_WAIT, 240
 
     .db INSTR_SET_PPU
-    .word $20c2
+    .word $20c1
     .db " SPELL USAGE"
     .db INSTR_REPEAT_CHAR, 19, " "
 
     .db INSTR_SET_PPU
-    .word $2102 ; PPU address
-    .db "HEAL     "
+    .word $2101 ; PPU address
+    .db " HEAL     "
     .db INSTR_SHOW_NUMBER
     .word $665c ; Data address
     .db INSTR_REPEAT_CHAR, 16, " "
 
     .db INSTR_SET_PPU
-    .word $2142
-    .db "HURT     "
+    .word $2141
+    .db " HURT     "
     .db INSTR_SHOW_NUMBER
     .word $665e ; Data address
     .db INSTR_REPEAT_CHAR, 16, " "
 
     .db INSTR_SET_PPU
-    .word $2182 ; PPU address
-    .db "SLEEP    "
+    .word $2181 ; PPU address
+    .db " SLEEP    "
     .db INSTR_SHOW_NUMBER
     .word $6660 ; Data address
     .db INSTR_REPEAT_CHAR, 16, " "
 
     .db INSTR_SET_PPU
-    .word $21c2 ; PPU address
-    .db "RADIANT  "
+    .word $21c1 ; PPU address
+    .db " RADIANT  "
     .db INSTR_SHOW_NUMBER
-    .word $6662 ; Data address
+    .word $6661 ; Data address
     .db INSTR_REPEAT_CHAR, 16, " "
 
     .db INSTR_SET_PPU
-    .word $2202 ; PPU address
-    .db "STOPSPELL"
+    .word $2201 ; PPU address
+    .db " STOPSPELL"
     .db INSTR_SHOW_NUMBER
     .word $6664 ; Data address
     .db INSTR_REPEAT_CHAR, 16, " "
 
     .db INSTR_SET_PPU
-    .word $2242
-    .db "OUTSIDE  "
+    .word $2241
+    .db " OUTSIDE  "
     .db INSTR_SHOW_NUMBER
     .word $6666 ; Data address
     .db INSTR_REPEAT_CHAR, 16, " "
 
     .db INSTR_SET_PPU
-    .word $2282 ; PPU address
-    .db "RETURN   "
+    .word $2281 ; PPU address
+    .db " RETURN   "
     .db INSTR_SHOW_NUMBER
     .word $6668 ; Data address
     .db INSTR_REPEAT_CHAR, 16, " "
 
     .db INSTR_SET_PPU
-    .word $22c2 ; PPU address
-    .db "REPEL    "
+    .word $22c1 ; PPU address
+    .db " REPEL    "
     .db INSTR_SHOW_NUMBER
     .word $666a ; Data address
     .db INSTR_REPEAT_CHAR, 16, " "
 
     .db INSTR_SET_PPU
-    .word $2302 ; PPU address
-    .db "HEALMORE "
+    .word $2301 ; PPU address
+    .db " HEALMORE "
     .db INSTR_SHOW_NUMBER
     .word $666c ; Data address
     .db INSTR_REPEAT_CHAR, 16, " "
 
     .db INSTR_SET_PPU
-    .word $2342 ; PPU address
-    .db "HURTMORE "
+    .word $2341 ; PPU address
+    .db " HURTMORE "
     .db INSTR_SHOW_NUMBER
     .word $666e ; Data address
     .db INSTR_REPEAT_CHAR, 16, " "
@@ -1195,6 +1232,7 @@ exp_wait_for_nmi:
     beq -
     rts
 
+;  .include famistudio_conf.asm
 .include famistudio_conf.asm
 .include famistudio_asm6.asm
 

@@ -12,6 +12,13 @@ struct music_data {
     const size_t size;
 };
 
+struct music_attr {
+    const char* title;
+    const char* game;
+    const char* artist;
+    const char* arrange;
+};
+
 void add_music(dw_rom* rom, int track);
 const extern size_t track_count;
 

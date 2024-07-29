@@ -1,7 +1,7 @@
 .base $c000
 
 FAMISTUDIO_DPCM_OFF:
-; .incbin music/music.dmc
+;  .incbin music.dmc
 
 .org $fffa
 

@@ -2,7 +2,7 @@
 
 .enum $00
     PPU_POSITION   .dsb 2
-    INTRPTR_ADDR   .dsb 2
+    INTPTR_ADDR     .dsb 2
     TMP_ADDR       .dsb 2
     BCD_RESULT     .dsb 5
     BCD_INPUT      .dsb 2
@@ -12,8 +12,7 @@
     NMI_FLAGS      .dsb 1
     RAW_CHAR_FLAG  .dsb 1
     PPUATTR_LEN    .dsb 1
-.ende
-.enum $40
+
     PRODUCT
     REMAINDER      .dsb 3
     MULTIPLIER
@@ -30,9 +29,9 @@
 NMI_INIT_PPU       EQU %00010000
 NMI_SKIP_TILE      EQU #$f7
 
-INSTR_PLAY_TIME    EQU $f6
-INSTR_MON_STAT     EQU $f7
-INSTR_LOAD_CHR     EQU $f8
+;  INSTR_LOAD_CHR     EQU $f8
+INSTR_PLAY_TIME    EQU $f7
+INSTR_MON_STAT     EQU $f8
 INSTR_WRITE_ZP     EQU $f9
 INSTR_SET_PPUATTR  EQU $fa
 INSTR_REPEAT_CHAR  EQU $fb
@@ -117,14 +116,14 @@ start_music:
 ;     jsr exp_wait_for_nmi
 
     lda #<credits_data
-    sta INTRPTR_ADDR
+    sta INTPTR_ADDR
     lda #>credits_data
-    sta INTRPTR_ADDR+1
+    sta INTPTR_ADDR+1
 
 -   ldx #0
-    lda (INTRPTR_ADDR,x)
+    lda (INTPTR_ADDR,x)
     pha
-    jsr inc_intrptr_addr
+    jsr inc_intptr_addr
     pla
     cmp #$f0
     bcc + 
@@ -136,39 +135,45 @@ start_music:
     jsr inc_ppu_position
     jmp - 
 
+table_char_conv:
+    .db $5f, $4c, $5f, $5f, $5f, $5f, $5f, $53
+    .db $4f, $4e, $41, $5f, $48, $49, $47, $52
+    .db $00, $01, $02, $03, $04, $05, $06, $07
+    .db $08, $09, $44, $4d, $5f, $45, $42, $4b
+    .db $5f, $24, $25, $26, $27, $28, $29, $2a
+    .db $2b, $2c, $2d, $2e, $2f, $30, $31, $32
+    .db $33, $34, $35, $36, $37, $38, $39, $3a
+    .db $3b, $3c, $3d, $3e, $5f, $3f, $5f, $5f
+    .db $51, $0a, $0b, $0c, $0d, $0e, $0f, $10
+    .db $11, $12, $13, $14, $15, $16, $17, $18
+    .db $19, $1a, $1b, $1c, $1d, $1e, $1f, $20
+    .db $21, $22, $23, $5f, $5f, $5f, $46, $5f
+
 convert_character:
     pha
+    cmp #32
+    bcc +
+    cmp #129
+    bcs +
     lda RAW_CHAR_FLAG
-    beq +
+    bne +
+    stx PZTEMP
     pla
+    tax
+    lda table_char_conv-32, x
+    ldx PZTEMP
     rts
 +   pla
-    cmp #32
-    bne +
-    lda #$5f
-    rts
-+   cmp #97
-    bcc +
-    sec
-    sbc #87
-    rts
-+   cmp #65
-    bcc +
-    sec
-    sbc #29
-    rts
-+   sec
-    sbc #48
     rts
 
 handle_instruction:
     cmp #INSTR_REPEAT_CHAR
     bne +next_instr
     ldy #0
-    lda (INTRPTR_ADDR),y
+    lda (INTPTR_ADDR),y
     tax
     iny
--   lda (INTRPTR_ADDR),y
+-   lda (INTPTR_ADDR),y
     jsr convert_character
     sta NEXT_TILE
     jsr exp_wait_for_nmi
@@ -177,45 +182,64 @@ handle_instruction:
     bpl -
     iny
     tya
-    jsr add_intrptr_addr
+    jsr add_intptr_addr
     rts
 
-+next_instr:
-    cmp #INSTR_LOAD_CHR
-    bne +next_instr
-    ldy #0
-    lda (INTRPTR_ADDR),y
-    jsr load_chr_bank_0
-    jsr inc_intrptr_addr
-    rts
+;  +next_instr:
+;      cmp #INSTR_LOAD_CHR
+;      bne +next_instr
+;      ldy #0
+;      lda (INTPTR_ADDR),y
+;      jsr load_chr_bank_0
+;      jsr inc_intptr_addr
+;      rts
 
 +next_instr:
     cmp #INSTR_WRITE_ZP
     bne +next_instr
     ldy #0
-    lda (INTRPTR_ADDR),y
+    lda (INTPTR_ADDR),y
     tax
     iny
-    lda (INTRPTR_ADDR),y
+    lda (INTPTR_ADDR),y
     sta $00,x
     iny
     tya
-    jsr add_intrptr_addr
+    jsr add_intptr_addr
     rts
 
 +next_instr:
     cmp #INSTR_SET_PPUATTR
     bne +next_instr
     ldy #0
-    lda (INTRPTR_ADDR),y
+    lda (INTPTR_ADDR),y
+    pha
+    and #$7
+    asl
+    asl
+    asl
+    sta PZTEMP
+    pla
+    and #$70
+    lsr
+    lsr
+    lsr
+    lsr
+    ora PZTEMP
+    ora #$c0
+    sta PPU_POSITION
+    lda #$23
+    sta PPU_POSITION+1
+    iny
+    lda (INTPTR_ADDR),y
     sta PPUATTR_LEN
     pha
     iny
-    lda (INTRPTR_ADDR),y
+    lda (INTPTR_ADDR),y
     sta NEXT_TILE
     iny
     tya
-    jsr add_intrptr_addr
+    jsr add_intptr_addr
     jsr exp_wait_for_nmi
     pla
     jsr add_ppu_position
@@ -225,9 +249,9 @@ handle_instruction:
     cmp #INSTR_WAIT
     bne +next_instr
     ldx #0
-    lda (INTRPTR_ADDR,x)    ; load the number of frames to wait into X
+    lda (INTPTR_ADDR,x)      ; load the number of frames to wait into X
     tax
-    jsr inc_intrptr_addr    ; increment the stats script pointer
+    jsr inc_intptr_addr      ; increment the stats script pointer
 -   jsr exp_wait_for_nmi    ; wait one frame
     dex                     ; decrement X
     bne -                   ; If X is not zero, wait longer
@@ -243,7 +267,7 @@ handle_instruction:
     sta NEXT_TILE           ; print the blank space
     jsr exp_wait_for_nmi
     ldx #0
-    lda (INTRPTR_ADDR,x)      ; load the monster index
+    lda (INTPTR_ADDR,x)      ; load the monster index
     asl                     ; double it (2 bytes per monster)
     clc
     adc #$70                ; Add @$6670 to this number and store in the
@@ -251,7 +275,7 @@ handle_instruction:
     lda #$66
     adc #00
     sta TMP_ADDR+1
-    jsr inc_intrptr_addr    ; increment the stats script pointer
+    jsr inc_intptr_addr      ; increment the stats script pointer
 
     jsr addr_to_bcd         ; convert the value at TMP_ADDR to a BCD
     jsr print_bcd           ; print the result to the screen
@@ -332,23 +356,23 @@ handle_instruction:
     cmp #INSTR_SHOW_NUMBER
     bne +next_instr
     ldy #0
-    lda (INTRPTR_ADDR),y      ; copy the data at the stats pointer into TMP_ADDR
+    lda (INTPTR_ADDR),y      ; copy the data at the stats pointer into TMP_ADDR
     sta TMP_ADDR
     iny
-    lda (INTRPTR_ADDR),y
+    lda (INTPTR_ADDR),y
     sta TMP_ADDR + 1
     jsr addr_to_bcd         ; convert the value at the address to BCD
     ldx #4
     jsr print_bcd           ; print the last 4 digits of the BCD to the screen
     lda #2
-    jsr add_intrptr_addr    ; Add 2 to the script pointer
+    jsr add_intptr_addr      ; Add 2 to the script pointer
     rts
 
 +next_instr:
     cmp #INSTR_SET_CURSOR
     bne +next_instr
     ldy #1
-    lda (INTRPTR_ADDR),y      ; move the cursor to the indicated position
+    lda (INTPTR_ADDR),y      ; move the cursor to the indicated position
     dey
     pha
     asl                     ; set the low byte of ppu addr to h * 32 + l
@@ -356,7 +380,7 @@ handle_instruction:
     asl
     asl
     asl
-    ora (INTRPTR_ADDR),y
+    ora (INTPTR_ADDR),y
     sta PPU_POSITION
     pla
     lsr                     ; set the high ppu addr to $20 + (h/32)
@@ -364,17 +388,19 @@ handle_instruction:
     lsr
     ora #$20
     sta PPU_POSITION+1
-    lda 2
-    jsr add_intrptr_addr
+    iny
+    iny
+    tya
+    jsr add_intptr_addr
     rts
 
 +next_instr:
     cmp #INSTR_FINISH 
     bne +
     lda #<stats_data        ; we've reached the end of the script, so return
-    sta INTRPTR_ADDR          ; to the beginning
+    sta INTPTR_ADDR          ; to the beginning
     lda #>stats_data
-    sta INTRPTR_ADDR+1
+    sta INTPTR_ADDR+1
 +   rts
 
 addr_to_bcd:                ; converts a 2 byte value at TMP_ADDR to a BCD
@@ -414,15 +440,15 @@ add_ppu_position:           ; adds A to the position of the cursor
     sta PPU_POSITION+1
     rts
 
-inc_intrptr_addr:           ; increments the script pointer
+inc_intptr_addr:             ; increments the script pointer
     lda #1
-add_intrptr_addr:           ; adds A to the script pointer
+add_intptr_addr:             ; adds A to the script pointer
     clc
-    adc INTRPTR_ADDR
-    sta INTRPTR_ADDR
-    lda INTRPTR_ADDR+1
+    adc INTPTR_ADDR
+    sta INTPTR_ADDR
+    lda INTPTR_ADDR+1
     adc #0
-    sta INTRPTR_ADDR+1
+    sta INTPTR_ADDR+1
     rts
 
 credits_data:
@@ -434,11 +460,10 @@ credits_data:
 
     .db INSTR_WRITE_ZP, NMI_FLAGS, NMI_INIT_PPU
 
-    .db INSTR_SET_CURSOR, 0, 30  ; ppu attribute table
-    .db INSTR_SET_PPUATTR, 8, $55
-    .db INSTR_SET_PPUATTR, 4, $f5
-    .db INSTR_SET_PPUATTR, 1, $f9
-    .db INSTR_SET_PPUATTR, 3, $fa
+    .db INSTR_SET_PPUATTR, $00, 8, $55
+    .db INSTR_SET_PPUATTR, $01, 4, $f5
+    .db INSTR_SET_PPUATTR, $41, 1, $f9
+    .db INSTR_SET_PPUATTR, $51, 3, $fa
 
     .db INSTR_WRITE_ZP, RAW_CHAR_FLAG, 1
     .db INSTR_SET_CURSOR, 3, 2
@@ -455,8 +480,7 @@ credits_data:
 
     .db "RANDOMIZER"
 
-    .db INSTR_SET_CURSOR, 18, 30  ; ppu attribute table
-    .db INSTR_SET_PPUATTR, 4, $ff
+    .db INSTR_SET_PPUATTR, $22, 4, $ff
 
     .db INSTR_SET_CURSOR, 8, 10
     .db " DEVELOPED BY"
@@ -467,8 +491,7 @@ credits_data:
 
     .db INSTR_SET_CURSOR, 8, 7
     .db "CONTRIBUTORS "
-    .db INSTR_SET_CURSOR, 18, 30  ; ppu attribute table
-    .db INSTR_SET_PPUATTR, 4, $0
+    .db INSTR_SET_PPUATTR, $22, 4, $0
 
     .db INSTR_SET_CURSOR, 8, 10
     .db "gameboyf9     "

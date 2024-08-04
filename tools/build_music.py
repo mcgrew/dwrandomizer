@@ -5,8 +5,7 @@ from os.path import dirname, basename, realpath, join, exists
 from os import chdir, remove
 from distutils.spawn import find_executable
 from glob import glob
-
-import json
+from json import load as json_load
 
 MUSIC_ADDR = 0x8000
 
@@ -69,26 +68,14 @@ class Music:
     def total_size(self):
         return len(self.music) + len(self.dmc)
 
-    def music_constant(self):
-        if self.addr is None:
-            raise ValueError(f"No address set for {self.name}")
-        return (f"const uint8_t *music_{self.name}_start = "
-                f"&music_bytes[{self.addr}];\n")
-
-    def dmc_constant(self):
-        if self.dmc:
-            return (f"const uint8_t *dmc_{self.name}_start = "
-                    f"&music_bytes[{self.addr+self.music_size()}];\n")
-        return ''
-
     def music_struct(self):
-        return ("{ .start = music_%s_start, .size = 0x%x }"
-                % (self.name, len(self.music)))
+        return (f"{{ .start = &music_bytes[{self.addr}], "
+                f".size = 0x{len(self.music):x} }}")
 
     def dmc_struct(self):
         if self.dmc:
-            return ("{ .start = dmc_%s_start, .size = 0x%x }"
-                    % (self.name, len(self.dmc)))
+            return (f"{{ .start = &music_bytes[{self.addr+self.music_size()}], "
+                    f".size = 0x{len(self.dmc):x} }}")
         else:
             return "{ .start = NULL, .size = 0 }"
 
@@ -96,7 +83,7 @@ class Music:
         return (('{ .title =   %s,\n' + ' ' * (indent+2)
                  + '.game =    %s,\n' + ' ' * (indent+2)
                  + '.artist =  %s,\n' + ' ' * (indent+2)
-                 + '.arrange = %s}')
+                 + '.arrange = %s\n' + ' ' * indent + '}')
                 % (f'"{self.title.center(28)}"' if self.title else "NULL",
                    f'"{self.game.center(28)}"' if self.game else "NULL",
                    f'"{self.artist.center(28)}"' if self.artist else "NULL",
@@ -160,7 +147,7 @@ def create_c_file(music: list[Music], music_data):
         c.write('\n')
         c.write('    };\n')
         c.write('    const struct music_attr *attr = &attr_choice[track];\n')
-        c.write('    uint8_t *ptr = &rom->expansion[CREDIT_MUSIC_ATTRIBUTION+3];\n')
+        c.write('    uint8_t *ptr = &rom->expansion[CREDIT_MUSIC_ATTRIBUTION - 0xC0000 + 3];\n')
         c.write('    if (attr->title) {\n')
         c.write('        ptr = ppatch(ptr, 14, (const uint8_t*)"  SONG TITLE  ")+3;\n')
         c.write('        ptr = ppatch(ptr, 28, (const uint8_t*)attr->title)+3;\n')
@@ -180,11 +167,7 @@ def create_c_file(music: list[Music], music_data):
         c.write('    }\n')
         c.write('}\n\n')
 
-        c.write('static void add_dpcm(dw_rom *rom, int track)\n')
-        c.write('{\n    ')
-        consts = [m.dmc_constant() for m in music if m.dmc_constant()]
-        c.write('    '.join([const for const in consts if const]))
-        c.write('\n')
+        c.write('static void add_dpcm(dw_rom *rom, int track) {\n')
         c.write('    struct music_data dmc_choice[] = {\n')
         c.write('        ')
         c.write(',\n        '.join([m.dmc_struct() for m in music]))
@@ -194,10 +177,7 @@ def create_c_file(music: list[Music], music_data):
         c.write('        ppatch(&rom->expansion[0x8000], dmc->size, dmc->start);\n')
         c.write('}\n\n')
 
-        c.write('void add_music(dw_rom *rom, int track)\n')
-        c.write('{\n    ')
-        c.write('    '.join([m.music_constant() for m in music]))
-        c.write('\n')
+        c.write('void add_music(dw_rom *rom, int track) {\n')
         c.write('    struct music_data music_choice[] = {\n')
         c.write('        ')
         c.write(',\n        '.join([m.music_struct() for m in music]))
@@ -224,7 +204,7 @@ def check_missing_files(music: list[Music]):
 def main():
     chdir(join(dirname(realpath(__file__)), '..', 'expansion', 'music'))
     with open('music.json', 'r') as music_meta:
-        music_list = json.load(music_meta)
+        music_list = json_load(music_meta)
     music = [Music(**m) for m in music_list]
     check_missing_files(music)
     music_data = b''.join([bytes(m) for m in music])

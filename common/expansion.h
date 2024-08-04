@@ -40,6 +40,8 @@ enum subroutine {
   MODIFY_RUN_RATE = 0xC45B,
   SCALE_MSLIME_XP = 0xC46B,
   SAVE_CURRENT_SPELLS = 0xC483,
+  CHECK_FLUTE_ENEMY = 0xC48E,
+  FLUTE_ENEMY_TABLE = 0xC49D,
   SPIKE_MAP = 0xCD7A,
   SPIKE_TABLE = 0xCD7A,
   SPIKE_X = 0xCD82,
@@ -47,11 +49,13 @@ enum subroutine {
   SPIKE_FLAGS = 0xCD92,
   SPIKE_MONSTER = 0xCD9A,
   SCALED_MSLIME_HOOK_POINT = 0xEA14,
-  CREDIT_MUSIC_ATTRIBUTION = 0x6C11,
+  CREDIT_MUSIC_ATTRIBUTION = 0x12C18,
 };
 
 void add_hook(dw_rom *rom, enum hooktype type, uint16_t address,
               enum subroutine to_addr);
+void add_long_hook(dw_rom *rom, enum hooktype type, uint16_t address,
+                    enum subroutine to_addr, size_t size);
 void patch_save_previous_coords(dw_rom *rom);
 void patch_free_3a(dw_rom *rom);
 void patch_free_3b(dw_rom *rom);

@@ -1,157 +1,124 @@
 [ 
     {
         "filename": "1943.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Stage 4",
+        "game": "1943",
+        "artist": "Kumi Yamaga"
     },
     {
         "filename": "batman.fms",
-        "title": null,
+        "title": "Stage 1",
         "game": "Batman",
-        "artist": null,
-        "arrangement": null
+        "artist": "Naoki Kodaka",
+        "artist2": "Noboyuki Hara"
     },
     {
         "filename": "bayou.fms",
-        "title": "Mad City Stage 1",
-        "game": "Mad City",
-        "artist": null,
-        "arrangement": null
+        "title": "Stage 1",
+        "game": "The Adventures of Bayou Billy"
     },
     {
         "filename": "bloody_tears.fms",
-        "title": null,
+        "title": "Bloody Tears",
         "game": "Castlevania II",
-        "artist": null,
-        "arrangement": null
+        "artist": "Kenichi Matsubara",
+        "artist2": "Satoe Terashima",
+        "artist3": "Kouji Murata"
     },
     {
         "filename": "bubble_man.fms",
-        "title": null,
+        "title": "Bubble Man",
         "game": "Mega Man 2",
-        "artist": null,
-        "arrangement": null
+        "artist": "Takashi Tateishi"
     },
     {
         "filename": "danger_and_determination.fms",
-        "title": null,
-        "game": "Original",
-        "artist": "mcgrew",
-        "arrangement": null
+        "title": "Danger and Determination",
+        "artist": "mcgrew"
     },
     {
         "filename": "flash_man.fms",
-        "title": null,
+        "title": "Flash Man",
         "game": "Mega Man 2",
-        "artist": null,
-        "arrangement": null
+        "artist": "Takashi Tateishi"
     },
     {
         "filename": "gimmick_2A03.fms",
-        "title": null,
         "game": "Gimmick",
-        "artist": null,
+        "artist": "Masashi Kageyama",
         "arrangement": "mcgrew"
     },
     {
         "filename": "guardian_legend.fms",
-        "title": null,
         "game": "The Guardian Legend",
-        "artist": null,
+        "artist": "Masatomo Miyamoto",
+        "artist2": "Takeshi Santo",
         "arrangement": "mcgrew"
     },
     {
         "filename": "journey_to_silius.fms",
-        "title": null,
         "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "artist": "Naoki Kodaka"
     },
     {
         "filename": "moving_forward.fms",
-        "title": null,
         "game": "Original",
-        "artist": "mcgrew",
-        "arrangement": null
+        "artist": "mcgrew"
     },
     {
         "filename": "ninja_gaiden.fms",
-        "title": null,
         "game": "Ninja Gaiden",
-        "artist": null,
-        "arrangement": null
+        "artist": "Kenichiro Nakajo"
     },
     {
         "filename": "on_the_hunt.fms",
-        "title": null,
-        "game": "Original",
-        "artist": "mcgrew",
-        "arrangement": null
+        "title": "On The Hunt",
+        "artist": "mcgrew"
     },
     {
         "filename": "shadow_of_the_ninja.fms",
-        "title": null,
         "game": "Shadow of the Ninja",
-        "artist": null,
-        "arrangement": null
+        "artist": "	Iku Mizutani",
+        "artist2": "Kouichi Yamanishi"
     },
     {
         "filename": "shatterhand.fms",
-        "title": null,
         "game": "Shatterhand",
-        "artist": null,
-        "arrangement": null
-    },
-    {
-        "filename": "shovel_knight_2A03.fms",
-        "title": null,
-        "game": "Shovel Knight",
-        "artist": "Jake Kaufman",
-        "arrangement": "mcgrew"
+        "artist": "Iku Mizutani",
+        "artist2": "Hiroyuki Iwatsuki"
     },
     {
         "filename": "silver_surfer.fms",
-        "title": null,
         "game": "The Silver Surfer",
-        "artist": null,
-        "arrangement": null
+        "artist": "Tim Follin",
+        "artist2": "Geoff Follin"
     },
     {
         "filename": "tecmo_world_wrestling.fms",
-        "title": null,
-        "game": "Tecmo World Wrestling",
-        "artist": null,
-        "arrangement": null
+        "game": "Tecmo World Wrestling"
     },
     {
         "filename": "the_end.fms",
-        "title": null,
-        "game": "Original",
-        "artist": "mcgrew",
-        "arrangement": null
+        "title": "The End",
+        "artist": "mcgrew"
     },
     {
         "filename": "wood_man.fms",
-        "title": null,
+        "title": "Wood Man",
         "game": "Mega Man 2",
-        "artist": null,
-        "arrangement": null
+        "artist": "Takashi Tateishi"
     },
     {
         "filename": "All_Hail_The_Sea_Cucumber.fms",
-        "title": null,
+        "title": "All Hail The Sea Cucumber",
         "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "artist": "juef"
     },
     {
         "filename": "A_Rock_Show_on_Elm_Street.fms",
-        "title": null,
-        "game": "Original",
-        "artist": "juef",
-        "arrangement": null
+        "title": "A Rock Show on Elm Street",
+        "artist": "David Wise",
+        "arrangement": "juef"
     },
     {
         "filename": "BoF2_Fishing.fms",
@@ -162,170 +129,144 @@
     },
     {
         "filename": "Cave_Story_Running_Hell.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Running Hell",
+        "game": "Cave Story",
+        "arrangement": "juef"
     },
     {
         "filename": "Cave_Story_-_The_Way_Back_Home.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "The Way Back Home",
+        "game": "Cave Story",
+        "artist": "Daisuke Amaya",
+        "arrangement": "juef"
     },
     {
         "filename": "Chrono_Cross_Another_Guldove.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Another Guldove",
+        "game": "Chrono Cross",
+        "arrangement": "juef"
     },
     {
         "filename": "Chrono_Trigger_Corridors_of_Time.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Corridors of Time",
+        "game": "Chrono Trigger",
+        "arrangement": "bran"
     },
     {
         "filename": "Excellent_Dance_Move.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Excellent (Dance) Move",
+        "artist": "juef"
     },
     {
         "filename": "FFMQ_Lava_Dome.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Lava Dome",
+        "game": "Final Fantasy Mystic Quest",
+        "arrangement": "juef"
     },
     {
         "filename": "FFV_The_Dragon_Spreads_its_Wings.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "The Dragon Spreads Its Wings",
+        "game": "Final Fantasy V",
+        "arrangement": "juef ~ kigalas"
     },
     {
         "filename": "Final_Fantasy_6_Devil_s_Lab.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Devil's Lab",
+        "game": "Final Fantasy VI",
+        "artist": "Nobuo Uematsu",
+        "arrangement": "juef"
     },
     {
         "filename": "Guard_Daos.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
+        "title": "Guard Daos",
+        "game": "Lufia: The Legend Returns",
+        "artist": "Yasunori Shiono",
+        "artist2": "Akiko Ishibashi",
+        "artist3": "Tomoko Morita",
+        "artist4": "Yukio Nakajima",
         "arrangement": null
     },
     {
         "filename": "Kero_Blaster_It_s_My_Blaster.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "It's My Blaster",
+        "game": "Kero Blaster",
+        "arrangement": "juef"
     },
     {
         "filename": "Mario_Kart_64_Royal_Raceway.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Royal Raceway",
+        "game": "Mario Kart 64",
+        "arrangement": "bran"
     },
     {
         "filename": "Mr_Big_Daddy_Brother_Lover_Little_boy_The_Electric_Drill_Song.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Daddy, brother, lover, little boy",
+        "artist": "Mr. Big",
+        "arrangement": "juef"
     },
     {
         "filename": "Pourquoi_noix.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Pourquoi noix?",
+        "artist": "juef"
     },
     {
         "filename": "Rainbow_Road.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Rainbow Road",
+        "game": "Mario Kart 64",
+        "artist": "nicetas c",
+        "arrangement": "juef"
     },
     {
         "filename": "Sated.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Sated",
+        "artist": "juef"
     },
     {
         "filename": "Sea_of_Stars_-_Dance_of_1000_Suns.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Dance of 1000 Suns",
+        "game": "Sea of Stars",
+        "artist": "Eric W. Brown",
+        "artist2": "Yasunori Mitsuda",
+        "arrangement": "juef"
     },
     {
         "filename": "Sea_of_Stars_Trials_in_the_Mist.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
-    },
-    {
-        "filename": "Shovel_Knight_A_Thousand_Leagues_Below.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Trials in the Mist",
+        "game": "Sea of Stars",
+        "artist": "Eric W. Brown",
+        "artist2": "Yasunori Mitsuda",
+        "arrangement": "juef"
     },
     {
         "filename": "Snailiad_Ending_Part_2.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Ending Part 2",
+        "game": "Snailad",
+        "artist": "auriplane"
     },
     {
         "filename": "Spark_Woman.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Spark Woman",
+        "artist": "juef"
     },
     {
         "filename": "Suspicious_Arpeggios.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Suspicious Arpeggios",
+        "artist": "juef"
     },
     {
         "filename": "Uncertain_But_Positive.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Uncertain But Positive",
+        "artist": "juef"
     },
     {
         "filename": "Undertale_Another_Medium.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "Another Medium",
+        "game": "Undertale",
+        "arrangement": "bran"
     },
     {
         "filename": "You_and_Your_Frog_Are_Dead.fms",
-        "title": null,
-        "game": "Original",
-        "artist": null,
-        "arrangement": null
+        "title": "You and Your Frog Are Dead",
+        "artist": "juef"
     }
 ]

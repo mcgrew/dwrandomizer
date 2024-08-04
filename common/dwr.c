@@ -26,7 +26,7 @@
 
 /* The [ and ] are actually opening/closing quotes. The / is .'. = is .. */
 const char alphabet[] = "0123456789abcdefghijklmnopqrstuvwxyz"
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ[]'*>_:=_.,-_?!;)(``/'___________ \n";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ[]'*>_:=~.,-_?!;)(``/'___________ \n";
 
 const char title_alphabet[] = "0123456789__________________________"
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ__________________________________!.c-     ";
@@ -1186,6 +1186,8 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0x17a2, 3, 0, 0, 0); /* delete roaming throne room guard */
     vpatch(rom, 0xf131, 2, 0x69, 0x03); /* Lock the stat build modifier at 3 */
 
+    vpatch(rom, 0x1975, 2, 0xc8, 0x00); /* Make the flute sellable (100G) */
+
     /* I always hated this wording */
 //     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");
     set_text(rom, 0xad85,  "The spell had no effect");
@@ -1412,6 +1414,55 @@ static void sorted_inventory(dw_rom *rom)
 //     add_hook(rom, JSR, 0xe13b, SORT_INVENTORY);
     add_hook(rom, JSR, 0xe279, SORT_INVENTORY);
 
+}
+
+static void random_flute_enemies(dw_rom *rom)
+{
+    uint8_t group;
+    size_t group_len;
+    char *groups[] = {
+        "Slime",
+        "Drakee",
+        "Ghost",
+        "Wizard",
+        "Scorpion",
+        "Drollin",
+        "Skeleton",
+        "Wolf",
+        "Wyvern",
+        "Golem",
+        "Knight",
+        "Dragon",
+    };
+    uint8_t group_indexes[] = {
+        SLIME, RED_SLIME, METAL_SLIME, 255,
+        DRAKEE, MAGIDRAKEE, DRAKEEMA, 255,
+        GHOST, POLTERGEIST, SPECTER, 255,
+        MAGICIAN, WARLOCK, WIZARD, 255,
+        SCORPION, METAL_SCORPION, ROGUE_SCORPION, 255, 
+        DRUIN, DRUINLORD, DROLL, DROLLMAGI,
+        SKELETON, WRAITH, WRAITH_KNIGHT, DEMON_KNIGHT,
+        WOLF, WOLFLORD, WEREWOLF, 255,
+        WYVERN, MAGIWYVERN, STARWYVERN, 255,
+        GOLEM, GOLDMAN, STONEMAN, 255, 
+        KNIGHT, AXE_KNIGHT, ARMORED_KNIGHT, 255,
+        GREEN_DRAGON, BLUE_DRAGON, RED_DRAGON, 255
+    };
+    add_long_hook(rom, JSR, 0xe806, CHECK_FLUTE_ENEMY, 4);
+    rom->content[0xe80f] = 0xec; /* Change the sleep text for the flute */
+
+    group = mt_rand(0, sizeof(groups) / sizeof(char**) - 1);
+    group_len = strlen(groups[group]);
+    /* set the item name */
+    rom->content[0x7b5c] = 0x5f;
+    rom->content[0x7b61 - group_len] = 0xff;
+    set_text(rom, 0x7b62 - group_len, groups[group]);
+    /* set the played text */
+    set_text(rom, 0x88c5, groups[group]);
+/*      set_text(rom, 0x88c5 + group_len, " Flute."); */
+    patch(rom, 0x88c5 + group_len, 8 - group_len,
+          (const uint8_t*)"\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f");
+    patch(rom, FLUTE_ENEMY_TABLE, 4, &group_indexes[group * 4]);
 }
 
 /**
@@ -1879,6 +1930,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     summer_sale(&rom);
     modify_run_rate(&rom);
     dwr_token_dialogue(&rom);
+    random_flute_enemies(&rom);
 
     modern_spell_names(&rom);
     randomize_music(&rom);

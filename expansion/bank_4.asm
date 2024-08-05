@@ -30,6 +30,7 @@ NMI_INIT_PPU       EQU %00010000
 NMI_SKIP_TILE      EQU #$f7
 
 ;  INSTR_LOAD_CHR     EQU $f8
+;  INSTR_CLEAR_SCREEN EQU $f6
 INSTR_PLAY_TIME    EQU $f7
 INSTR_MON_STAT     EQU $f8
 INSTR_WRITE_ZP     EQU $f9
@@ -167,6 +168,11 @@ convert_character:
     rts
 
 handle_instruction:
+;      cmp #INSTR_CLEAR_SCREEN
+;      bne +next_instr
+;      jmp clear_screen
+;  
++next_instr:
     cmp #INSTR_REPEAT_CHAR
     bne +next_instr
     ldy #0
@@ -531,29 +537,83 @@ credits_data:
 
     .db INSTR_WAIT, 240
 
-export_credit_music_attribution:
+    ; clear some lines before setting ppu attributes
     .db INSTR_SET_CURSOR, 8, 7
-    .db "              "
-    .db INSTR_SET_CURSOR, 1, 10
-    .db "                            "
+    .db INSTR_REPEAT_CHAR, 14, " "
+    .db INSTR_SET_CURSOR, 8, 10
+    .db INSTR_REPEAT_CHAR, 14, " "
     .db INSTR_SET_CURSOR, 8, 12
-    .db "              "
-    .db INSTR_SET_CURSOR, 1, 14
-    .db "                            "
+    .db INSTR_REPEAT_CHAR, 14, " "
+    .db INSTR_SET_CURSOR, 8, 14
+    .db INSTR_REPEAT_CHAR, 14, " "
     .db INSTR_SET_CURSOR, 8, 16
-    .db "              "
-    .db INSTR_SET_CURSOR, 1, 18
-    .db "                            "
+    .db INSTR_REPEAT_CHAR, 14, " "
+    .db INSTR_SET_CURSOR, 8, 18
+    .db INSTR_REPEAT_CHAR, 14, " "
     .db INSTR_SET_CURSOR, 8, 20
-    .db "              "
+    .db INSTR_REPEAT_CHAR, 14, " "
+    .db INSTR_SET_CURSOR, 8, 22
+    .db INSTR_REPEAT_CHAR, 14, " "
+    .db INSTR_SET_CURSOR, 8, 24
+    .db INSTR_REPEAT_CHAR, 14, " "
+
+    .db INSTR_SET_PPUATTR, $23, 5
+export_credit_music_ppu_1:
+    .db $00
+    .db INSTR_SET_PPUATTR, $24, 5
+export_credit_music_ppu_2:
+    .db $00
+    .db INSTR_SET_PPUATTR, $25, 5
+export_credit_music_ppu_3:
+    .db $00
+
+    .db INSTR_SET_CURSOR, 8, 7
+    .db "CURRENT TRACK"
+
+    .db INSTR_SET_CURSOR, 1, 10
+export_credit_music_slot_1
+    .db "                            "
+
+    .db INSTR_SET_CURSOR, 1, 12
+export_credit_music_slot_2
+    .db "                            "
+
+    .db INSTR_SET_CURSOR, 1, 14
+export_credit_music_slot_3
+    .db "                            "
+
+    .db INSTR_SET_CURSOR, 1, 16
+export_credit_music_slot_4
+    .db "                            "
+
+    .db INSTR_SET_CURSOR, 1, 18
+export_credit_music_slot_5
+    .db "                            "
+
+    .db INSTR_SET_CURSOR, 1, 20
+export_credit_music_slot_6
+    .db "                            "
+
     .db INSTR_SET_CURSOR, 1, 22
+export_credit_music_slot_7
     .db "                            "
+
     .db INSTR_SET_CURSOR, 1, 24
+export_credit_music_slot_8
     .db "                            "
+
+    .db INSTR_SET_CURSOR, 1, 26
+export_credit_music_slot_9
+    .db "                            "
+
+    .db INSTR_WAIT, 240
+    .db INSTR_WAIT, 120
+
+    .db INSTR_SET_PPUATTR, $23, 5, $00
+    .db INSTR_SET_PPUATTR, $24, 5, $00
+    .db INSTR_SET_PPUATTR, $25, 5, $00
 
 stats_data:
-    .db INSTR_WAIT, 240
-
     ; The follwing is for stat display
     .db INSTR_SET_CURSOR, 8, 7
     .db INSTR_REPEAT_CHAR, 12, " "
@@ -836,12 +896,15 @@ stats_data:
     .db INSTR_SHOW_NUMBER
     .word $663a ; Data address
 
-    .db INSTR_SET_CURSOR, 17, 24
-    .db "Play Time"
+    .db INSTR_SET_PPUATTR, $46, 3, $0f
+    .db INSTR_SET_CURSOR, 18, 24
+    .db "PLAY TIME"
     .db INSTR_SET_CURSOR, 19, 26
     .db INSTR_PLAY_TIME
 
     .db INSTR_WAIT, 240
+    .db INSTR_WAIT, 240
+    .db INSTR_SET_PPUATTR, $46, 3, $00
     .db INSTR_FINISH
 
 stats_done:
@@ -1056,23 +1119,26 @@ stats_palette:
     .hex 0f 10 0f 10
     .hex 0f 0f 27 27
 
-; clear_screen:
-;     lda #$00
-;     sta PPUMASK     ; disable rendering
-;     lda #$20
-;     sta PPUADDR
-;     lda #$00
-;     sta PPUADDR
-;     ldx #$c0
-;     ldy #3
-;     lda #$5f
-; -   sta PPUDATA
-;     dex
-;     bpl -
-;     dey
-;     bpl -
-;     lda #%00011010
-;     rts
+;  clear_screen:
+;      jsr exp_wait_for_nmi
+;      lda #$00
+;      sta PPUMASK     ; disable rendering
+;      lda #$20
+;      sta PPUADDR
+;      lda #$A0
+;      sta PPUADDR
+;      ldx #$20
+;      ldy #3
+;      lda #$5f
+;      sta PPUDATA
+;      dex
+;      bpl -
+;      dey
+;      bpl -
+;      lda #%00011010
+;      sta PPUMASK     ; enable rendering
+;      jsr exp_wait_for_nmi
+;      rts
 
 init_ppu:
     ; load the palette

@@ -57,12 +57,12 @@
     },
     {
         "filename": "journey_to_silius.fms",
-        "game": "Original",
+        "game": "Journey to Silius",
         "artist": "Naoki Kodaka"
     },
     {
         "filename": "moving_forward.fms",
-        "game": "Original",
+        "title": "Moving Forward",
         "artist": "mcgrew"
     },
     {
@@ -78,7 +78,7 @@
     {
         "filename": "shadow_of_the_ninja.fms",
         "game": "Shadow of the Ninja",
-        "artist": "	Iku Mizutani",
+        "artist": "Iku Mizutani",
         "artist2": "Kouichi Yamanishi"
     },
     {
@@ -111,7 +111,6 @@
     {
         "filename": "All_Hail_The_Sea_Cucumber.fms",
         "title": "All Hail The Sea Cucumber",
-        "game": "Original",
         "artist": "juef"
     },
     {
@@ -122,8 +121,8 @@
     },
     {
         "filename": "BoF2_Fishing.fms",
-        "title": null,
-        "game": "Original",
+        "title": "fishing",
+        "game": "Breath of Fire II",
         "artist": null,
         "arrangement": null
     },
@@ -183,8 +182,7 @@
         "artist": "Yasunori Shiono",
         "artist2": "Akiko Ishibashi",
         "artist3": "Tomoko Morita",
-        "artist4": "Yukio Nakajima",
-        "arrangement": null
+        "artist4": "Yukio Nakajima"
     },
     {
         "filename": "Kero_Blaster_It_s_My_Blaster.fms",

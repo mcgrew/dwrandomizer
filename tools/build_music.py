@@ -8,15 +8,20 @@ from glob import glob
 from json import load as json_load
 
 MUSIC_ADDR = 0x8000
+STRING_SIZE = 28
 
 
 class Music:
     def __init__(self, filename, title=None, game=None, artist=None,
+                 artist2=None, artist3=None, artist4=None,
                  arrangement=None):
         self.filename = filename
         self.title = title
         self.game = game
         self.artist = artist
+        self.artist2 = artist2
+        self.artist3 = artist3
+        self.artist4 = artist4
         self.arrangement = arrangement
         self.name = self.filename[:self.filename.rfind('.')]
         print(f'Adding music {self.name}...')
@@ -83,11 +88,17 @@ class Music:
         return (('{ .title =   %s,\n' + ' ' * (indent+2)
                  + '.game =    %s,\n' + ' ' * (indent+2)
                  + '.artist =  %s,\n' + ' ' * (indent+2)
+                 + '.artist2 =  %s,\n' + ' ' * (indent+2)
+                 + '.artist3 =  %s,\n' + ' ' * (indent+2)
+                 + '.artist4 =  %s,\n' + ' ' * (indent+2)
                  + '.arrange = %s\n' + ' ' * indent + '}')
-                % (f'"{self.title.center(28)}"' if self.title else "NULL",
-                   f'"{self.game.center(28)}"' if self.game else "NULL",
-                   f'"{self.artist.center(28)}"' if self.artist else "NULL",
-                   f'"{self.arrangement.center(28)}"' if self.arrangement else "NULL"))
+                % (f'"{self.title.center(STRING_SIZE)}"' if self.title else "NULL",
+                   f'"{self.game.center(STRING_SIZE)}"' if self.game else "NULL",
+                   f'"{self.artist.center(STRING_SIZE)}"' if self.artist else "NULL",
+                   f'"{self.artist2.center(STRING_SIZE)}"' if self.artist2 else "NULL",
+                   f'"{self.artist3.center(STRING_SIZE)}"' if self.artist3 else "NULL",
+                   f'"{self.artist4.center(STRING_SIZE)}"' if self.artist4 else "NULL",
+                   f'"{self.arrangement.center(STRING_SIZE)}"' if self.arrangement else "NULL"))
 
     def __bytes__(self):
         return self.music + (self.dmc or b'')
@@ -110,6 +121,9 @@ def create_header(music: list[Music]):
         h.write('    const char* title;\n')
         h.write('    const char* game;\n')
         h.write('    const char* artist;\n')
+        h.write('    const char* artist2;\n')
+        h.write('    const char* artist3;\n')
+        h.write('    const char* artist4;\n')
         h.write('    const char* arrange;\n')
         h.write('};\n\n')
         h.write('void add_music(dw_rom* rom, int track);\n')
@@ -139,6 +153,15 @@ def create_c_file(music: list[Music], music_data):
         c.write('\n};\n\n')
         c.write(f'const size_t track_count = {len(music)};\n\n')
 
+        c.write('static uint8_t *get_slot(dw_rom *rom, size_t slot) {\n')
+        c.write('    const enum subroutine pos[] = {\n')
+        for i in range(9):
+            c.write(f'        CREDIT_MUSIC_SLOT_{i+1},\n')
+        c.write('    };\n')
+        c.write('    return (uint8_t*)&rom->expansion[pos[slot]];\n')
+        c.write('}\n')
+        c.write('\n')
+
         c.write('static void add_attr(dw_rom *rom, int track)\n')
         c.write('{\n')
         c.write('    struct music_attr attr_choice[] = {\n')
@@ -146,24 +169,43 @@ def create_c_file(music: list[Music], music_data):
         c.write(',\n        '.join([m.attr_struct() for m in music]))
         c.write('\n')
         c.write('    };\n')
+        c.write('    const size_t ppu_color_slot[] = {\n')
+        for i in range(3):
+            c.write(f'        CREDIT_MUSIC_PPU_{i+1},\n')
+        c.write('    };\n')
         c.write('    const struct music_attr *attr = &attr_choice[track];\n')
-        c.write('    uint8_t *ptr = &rom->expansion[CREDIT_MUSIC_ATTRIBUTION - 0xC0000 + 3];\n')
+        c.write('    int slot = 0;\n')
+        c.write('\n')
         c.write('    if (attr->title) {\n')
-        c.write('        ptr = ppatch(ptr, 14, (const uint8_t*)"  SONG TITLE  ")+3;\n')
-        c.write('        ptr = ppatch(ptr, 28, (const uint8_t*)attr->title)+3;\n')
-        c.write('        ptr += 31; /* blank line here (for now) */\n')
+        c.write(f'        ppatch(get_slot(rom, slot), {STRING_SIZE}, (const uint8_t*)attr->title);\n')
         c.write('    }\n')
+        c.write('    slot++;\n')
         c.write('    if (attr->game) {\n')
-        c.write('        ptr = ppatch(ptr, 14, (const uint8_t*)"     GAME     ")+3;\n')
-        c.write('        ptr = ppatch(ptr, 28, (const uint8_t*)attr->game)+3;\n')
-        c.write('    }\n')
-        c.write('    if (attr->artist) {\n')
-        c.write('        ptr = ppatch(ptr, 14, (const uint8_t*)"  COMPOSED BY  ")+3;\n')
-        c.write('        ptr = ppatch(ptr, 28, (const uint8_t*)attr->artist)+3;\n')
+        c.write('        rom->expansion[ppu_color_slot[slot/2]] = 0x0f;\n')
+        c.write(f'        ppatch(get_slot(rom, slot++), {STRING_SIZE},\n')
+        c.write(f'                (const uint8_t*)"{"GAME".center(STRING_SIZE)}");\n')
+        c.write(f'        ppatch(get_slot(rom, slot++), {STRING_SIZE}, (const uint8_t*)attr->game);\n')
         c.write('    }\n')
         c.write('    if (attr->arrange) {\n')
-        c.write('        ptr = ppatch(ptr, 14, (const uint8_t*)"  ARRANGED BY  ")+3;\n')
-        c.write('        ptr = ppatch(ptr, 28, (const uint8_t*)attr->arrange)+3;\n')
+        c.write('        rom->expansion[ppu_color_slot[slot/2]] = 0x0f;\n')
+        c.write(f'        ppatch(get_slot(rom, slot++), {STRING_SIZE},\n')
+        c.write(f'                (const uint8_t*)"{"ARRANGED BY".center(STRING_SIZE)}");\n')
+        c.write(f'        ppatch(get_slot(rom, slot++), {STRING_SIZE}, (const uint8_t*)attr->arrange);\n')
+        c.write('    }\n')
+        c.write('    if (attr->artist) {\n')
+        c.write('        rom->expansion[ppu_color_slot[slot/2]] = 0x0f;\n')
+        c.write(f'        ppatch(get_slot(rom, slot++), {STRING_SIZE},\n')
+        c.write(f'                (const uint8_t*)"{"COMPOSED BY".center(STRING_SIZE)}");\n')
+        c.write(f'        ppatch(get_slot(rom, slot++), {STRING_SIZE}, (const uint8_t*)attr->artist);\n')
+        c.write('    }\n')
+        c.write('    if (attr->artist2) {\n')
+        c.write(f'        ppatch(get_slot(rom, slot++), {STRING_SIZE}, (const uint8_t*)attr->artist2);\n')
+        c.write('    }\n')
+        c.write('    if (attr->artist3) {\n')
+        c.write(f'        ppatch(get_slot(rom, slot++), {STRING_SIZE}, (const uint8_t*)attr->artist3);\n')
+        c.write('    }\n')
+        c.write('    if (attr->artist4 && slot < 9) {\n')
+        c.write(f'        ppatch(get_slot(rom, slot++), {STRING_SIZE}, (const uint8_t*)attr->artist4);\n')
         c.write('    }\n')
         c.write('}\n\n')
 

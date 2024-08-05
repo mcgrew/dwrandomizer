@@ -296,13 +296,13 @@ check_flute_enemy:
     lda CURRENT_ENEMY
     sta TMP0     ; to display the enemy name
     ldx #3
--   cmp rom_flute_enemy_table, x
+-   cmp export_flute_enemy_table, x
     beq +
     dex
     bpl -
 +   rts
   
-rom_flute_enemy_table:
+export_flute_enemy_table:
     hex ff ff ff ff
 
 .org $c4f5
@@ -328,33 +328,33 @@ patch_free_3c_end:
 patch_spike_begin_start:
   ldx #7
 - lda MAP_INDEX
-  cmp rom_spike_map,x
+  cmp export_spike_map,x
   bne +
   lda X_POS
-  cmp rom_spike_x,x
+  cmp export_spike_x,x
   bne +
   lda Y_POS
-  cmp rom_spike_y,x
+  cmp export_spike_y,x
   bne +
-  lda rom_spike_flags,x
+  lda export_spike_flags,x
   and QUEST_PROGRESS
   bne $CDA2 ; we already beat it, so we're done here, continue
-  lda rom_spike_monster,x
+  lda export_spike_monster,x
   jmp start_combat
 + dex
   bpl -
   bmi $CDA2 ; no spike here, continue
 
-rom_spike_table:
-rom_spike_map:
+export_spike_table:
+export_spike_map:
   .db HAUKSNESS, SWAMP_CAVE, CHARLOCK_THRONE, 0, 0, 0, 0, 0
-rom_spike_x:
+export_spike_x:
   .db 18, 4, 25, 0, 0, 0, 0, 0
-rom_spike_y:
+export_spike_y:
   .db 12, 14, 22, 0, 0, 0, 0, 0
-rom_spike_flags:
+export_spike_flags:
   .db $00, $00, $00, $80, $40, $20, $10, $08
-rom_spike_monster:
+export_spike_monster:
   .db AXE_KNIGHT, GREEN_DRAGON, GOLEM,  SLIME,  SLIME,  SLIME,  SLIME, SLIME
 
 patch_spike_begin_end:
@@ -363,15 +363,15 @@ patch_spike_begin_end:
 patch_spike_run_start:
    ldx #7
 -- lda MAP_INDEX
-   cmp rom_spike_map,x
+   cmp export_spike_map,x
    bne +
    lda X_POS
-   cmp rom_spike_x,x
+   cmp export_spike_x,x
    bne +
    lda Y_POS
-   cmp rom_spike_y,x
+   cmp export_spike_y,x
    bne +
-   lda rom_spike_flags,x
+   lda export_spike_flags,x
    and QUEST_PROGRESS
    bne $e940    ; we're done here, continue
    jsr $C6BB    ; wait for nmi and set bytes $200-$2FF to $F0 (?)
@@ -408,15 +408,15 @@ patch_spike_run_end:
 patch_spike_defeat_start:
    ldx #7
 -  lda MAP_INDEX
-   cmp rom_spike_map,x
+   cmp export_spike_map,x
    bne +
    lda X_POS
-   cmp rom_spike_x,x
+   cmp export_spike_x,x
    bne +
    lda Y_POS
-   cmp rom_spike_y,x
+   cmp export_spike_y,x
    bne +
-   lda rom_spike_flags,x
+   lda export_spike_flags,x
    ora QUEST_PROGRESS
    sta QUEST_PROGRESS
 +  dex
@@ -432,7 +432,7 @@ patch_handle_2_byte_xp_gold_start:
     sta $00        ; store in tmp0 for display
     lda $0107      ; load the high byte of xp
     sta $01        ; store at tmp1 for display
-rom_scaled_mslime_hook_point:
+export_scaled_mslime_hook_point:
     nop            ; make room for a jsr hook here for scaled slimes
     nop
     nop

@@ -160,8 +160,11 @@ def main():
                     patches[patch_name].append((patch_start & 0xffff,
                                                 asm.read(addr - patch_start)))
                     patch_start = None
-                elif name.startswith('rom_'):  # use ROM address
-                    enums[name[4:]] = (addr & 0x3fff) | (bank * 0x4000)
+                elif name.startswith('export_'):  # use ROM address
+                    if bank > 3:
+                        enums[name[7:]] = (addr & 0x3fff) | ((bank - 3) * 0x4000)
+                    else:
+                        enums[name[7:]] = (addr & 0x3fff) | (bank * 0x4000)
                 elif patch_start is not None:
                     enums[name] = addr
 

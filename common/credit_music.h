@@ -16,6 +16,9 @@ struct music_attr {
     const char* title;
     const char* game;
     const char* artist;
+    const char* artist2;
+    const char* artist3;
+    const char* artist4;
     const char* arrange;
 };
 

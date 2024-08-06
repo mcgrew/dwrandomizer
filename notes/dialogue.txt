@@ -1,0 +1,321 @@
+
+========================= Low Dialogue =======================
+
+00 {ENEMY} hath woken up.{END}
+01 {CRLF}{NEWLINE}Thou art dead.{END}
+02 `Thou art strong enough!{NEWLINE}Why can thou not defeat the Dragonlord?'{WAIT}{END}
+03 `If thou art planning to take a rest, first see King Lorik.'{END}
+04 {NAME} held the Rainbow Drop toward the sky.{NEWLINE}{CRLF}{WAIT}{END}
+05 But no rainbow appeared here.{END}
+06 `Good morning.{NEWLINE}Thou hast had a good night's sleep I hope.'{WAIT}{END}
+07 `I shall see thee again.'{END}
+08 `Good morning.{NEWLINE}Thou seems to have spent a good night.'{WAIT}{END}
+09 `Good night.'{NEWLINE}{END}
+0A `Okay.{NEWLINE}Good-bye, traveler.'{END}
+0B `Welcome to the traveler's Inn.{NEWLINE}Room and board is {NUMBER} GOLD per night.{NEWLINE}Dost thou want a room?'{NEWLINE}{END}
+0C `All the best to thee.'{END}
+0D `There are no stairs here.'{END}
+0E `Thou cannot enter here.'{END}
+0F `There is no one there.'{END}
+
+10 `I thank thee.{NEWLINE}Won't thou buy one more bottle?'{NEWLINE}{END}
+11 `Will thou buy some Fairy Water for 38 GOLD to keep the Dragonlord's minions away?'{NEWLINE}{END}
+12 `I will see thee later.'{END}
+13 `Thou hast not enough money.'{WAIT}{END}
+14 `I am sorry, but I cannot sell thee anymore.'{END}
+15 `Here,take this key.{NEWLINE}Dost thou wish to purchase more?'{NEWLINE}{END}
+16 `Magic keys!{NEWLINE}They will unlock any door.{NEWLINE}Dost thou wish to purchase one for {NUMBER} GOLD?'{NEWLINE}{END}
+17 `I am sorry.'{WAIT}{END}
+18 A curse is upon thy body.{WAIT}{END}
+19 `Thou hast no possessions.'{END}
+1A `Wilt thou sell anything else?'{NEWLINE}{END}
+1B `I cannot buy it.'{END}
+1C `Thou said the {ITEM}.{NEWLINE}I will buy thy {ITEM} for {NUMBER} GOLD.{NEWLINE}Is that all right?'{NEWLINE}{END}
+1D `What art thou selling?'{NEWLINE}{END}
+1E `I will be waiting for thy next visit.'{END}
+1F `Dost thou want anything else?'{NEWLINE}{END}
+
+20 `Thou cannot hold more Herbs.'{WAIT}{END}
+21 `Thou cannot carry anymore.'{WAIT}{END}
+22 `Thou hast not enough money.'{WAIT}{END}
+23 `The {ITEM}?{NEWLINE}Thank you very much.'{WAIT}{END}
+24 `What dost thou want?'{NEWLINE}{END}
+25 `Welcome.{NEWLINE}We deal in tools.{NEWLINE}What can I do for thee?'{NEWLINE}{END}
+26 `Oh, yes?{NEWLINE}That's too bad.'{WAIT}{END}
+27 `Is that Okay.?'{NEWLINE}{INDENT}{END}
+28 `We deal in weapons and armor.{NEWLINE}Dost thou wish to buy anything today?'{NEWLINE}{END}
+29 `The {ITEM}?'{WAIT}{END}
+2A `Then I will buy thy {ITEM} for {NUMBER} GOLD.'{WAIT}{END}
+2B `Sorry.{NEWLINE}Thou hast not enough money.'{WAIT}{END}
+2C `Dost thou wish to buy anything more?'{NEWLINE}{END}
+2D `What dost thou wish to buy?'{NEWLINE}{END}
+2E `I thank thee.'{NEWLINE}{END}
+2F `Please, come again.'{END}
+
+30 {NAME} chanted the spell of {SPELL}.{END}
+31 {NAME} cannot yet use the spell.{END}
+32 Thy MP is too low.{END}
+33 {CRLF}{NEWLINE}But nothing happened.{END}
+34 REPEL has lost its effect.{END}
+35 A torch can be used only in dark places.{END}
+36 {NAME} sprinkled the Fairy Water over his body.{END}
+37 The Fairy Water has lost its effect.{END}
+38 The Wings of the Wyvern cannot be used here.{END}
+39 {NAME} threw The Wings of the Wyvern up into the sky.{END}
+3A {NAME} donned the scale of the dragon.{END}
+3B Thou art already wearing the scale of the dragon.{END}
+3C {NAME} blew the Fairies' Flute.{END}
+3D Nothing of use has yet been given to thee.{END}
+3E {NAME} put on the Fighter's Ring.{END}
+3F {NAME} adjusted the position of the Fighter's Ring.{END}
+
+40 {NAME} held the {ITEM} tightly.{END}
+41 {NAME} played a sweet melody on the harp.{END}
+42 {NAME} put on the {ITEM} and was cursed!.{WAIT}{NEWLINE}Thy body is being squeezed.{END}
+43 The {ITEM} is squeezing thy body.{END}
+44 `Cursed one,be gone!'{END}
+45 `I am looking for the castle cellar.{NEWLINE}I heard it is not easily found.'{END}
+46 `Thou must have a key to open a door.'{END}
+47 `To become strong enough to face future trials thou must first battle many foes.'{END}
+48 `King Lorik will record thy deeds in his Imperial Scroll so thou may return to thy quest later.'{END}
+49 `When the sun and rain meet, a Rainbow Bridge shall appear.'{END}
+4A `Never does a brave person steal.'{END}
+4B `There was a time when Brecconary was a paradise.{NEWLINE}Then the Dragonlord's minions came.'{END}
+4C `Let us wish the warrior well!'{WAIT}{NEWLINE}`May the light be thy strength!'{END}
+4D `If thy Hit Points are high enough, by all means, enter.'{END}
+4E `We are merchants who have traveled much in this land.{NEWLINE}Many of our colleagues have been killed by servants of the Dragonlord.'{END}
+4F `Rumor has it that entire towns have been destroyed by the Dragonlord's servants.'{END}
+
+50 `Welcome to Tantegel Castle.'{END}
+51 `In Garinham,look for the grave of Garin.{NEWLINE}Thou must push on a wall of darkness there.'{END}
+52 `A word of advice.'{WAIT}{NEWLINE}`Save thy money for more expensive armor.'{END}
+53 `Listen to what people say.{NEWLINE}It can be of great help.'{END}
+54 `Beware the bridges!'{WAIT}{NEWLINE}`Danger grows when thou crosses.'{END}
+55 `There is a town where magic keys can be purchased.'{END}
+56 `Some say that Garin's grave is home to a Silver Harp.'{END}
+57 `Enter where thou can.'{END}
+58 `Welcome!{NEWLINE}Enter the shop and speak to its keeper across the desk.'{END}
+59 `Thou art most welcome in Brecconary.'{END}
+5A `Watch thy Hit Points when in the Poisonous Marsh.'{END}
+5B `Go north to the seashore, then follow the coastline west until thou hath reached Garinham.'{END}
+5C `No,I am not Princess Gwaelin.'{END}
+5D `Please,save us from the minions of the Dragonlord.'{END}
+5E `See King Lorik when thy experience levels are raised.'{END}
+5F `Art thou the descendant of Erdrick?{NEWLINE}Hast thou any proof?'{END}
+
+60 `Within sight of Tantegel Castle to the south is Charlock,'{WAIT}{NEWLINE}`The fortress of the Dragonlord.'{END}
+61 `This bath cures rheumatism.'{END}
+62 `East of Hauksness there is a town, _tis said, where one may purchase weapons of extraordinary quality.'{END}
+63 `Rimuldar is the place to buy keys.'{END}
+64 `Hast thou seen Nester?{NEWLINE}I think he may need help.'{END}
+65 `Dreadful is the South Island.'{WAIT}{NEWLINE}`Great strength and skill and wit only will bring thee back from that place.'{END}
+66 `Golem is afraid of the music of the flute, so _tis said.'{END}
+67 `This is the village of Kol.'{END}
+68 `In legends it is said that fairies know how to put Golem to sleep.'{END}
+69 `The harp attracts enemies.{NEWLINE}Stay away from the grave in Garinham.'{END}
+6A `I'm too busy.{NEWLINE}Ask the other guard.'{END}
+6B `I suggest making a map if thy path leads into the darkness.'{END}
+6C `Once there was a town called Hauksness far to the south,but I do not know if it still exists.'{END}
+6D `I hate people!{NEWLINE}Go! Leave me!'{END}
+6E `They say that Erdrick's armor was hidden long ago.'{END}
+6F `Many believe that Princess Gwaelin is hidden away in a cave.'{END}
+
+70 `I have heard of one named Nester.{NEWLINE}Dost thou know such a one?'{END}
+71 `Garin, a wandering minstrel of legendary fame, is said to have built this town.'{END}
+72 `Welcome to Garinham.{NEWLINE}May thy stay be a peaceful one.'{END}
+73 `It is said that the Princess was kidnapped and taken eastward.'{END}
+74 `Come buy my radishes! They are fresh and cheap.{NEWLINE}Buy thy radishes today!'{END}
+75 `To learn how proof may be obtained that thy ancestor was the great Erdrick, see a man in this very town.'{END}
+76 `_Tis said that Erdrick's sword could cleave steel.'{END}
+77 `Welcome to Cantlin, the castle town.'{END}
+78 `What shall I get for thy dinner?'{END}
+79 `I know nothing.'{END}
+7A `I'm Nester.{NEWLINE}Hey, where am I? No, don't tell me!'{END}
+7B `Grandfather used to say that his friend, Wynn, had buried something of great value at the foot of a tree behind his shop.'{END}
+7C `It is said that many have held Erdrick's armor.'{WAIT}{NEWLINE}`The last to have it was a fellow named Wynn.'{END}
+7D `My Grandfather Wynn once had a shop on the east side of Hauksness.'{END}
+7E `Welcome!'{END}
+7F `Who art thou?{NEWLINE}Leave at once or I will call my friends.'{END}
+
+80 `I am Orwick, and I am waiting for my girl friend.'{END}
+81 `The scales of the Dragonlord are as hard as steel.'{END}
+82 `Over the western part of this island Erdrick created a rainbow.'{WAIT}{NEWLINE}`_Tis also said that he entered the darkness from a hidden entrance in the room of the Dragonlord.'{END}
+83 `Thou shalt find the Stones of Sunlight in Tantegel Castle,{NEWLINE}if thou has not found them yet.'{END}
+84 `Welcome to the town of Rimuldar.'{END}
+85 `No, I have no tomatoes.{NEWLINE}I have no tomatoes today.'{END}
+86 `You are {NAME}?{NEWLINE}It has been long since last we met.'{END}
+87 `Good day,I am Howard. Four steps south of the bath in Kol thou shalt find a magic item.'{END}
+88 `Before long the enemy will arrive.'{END}
+89 `Heed my warning! Travel not to the south for there the monsters are fierce and terrible.'{END}
+8A `In this world is there any sword that can pierce the scales of the Dragonlord?'{END}
+8B `Orwick is late again. I'm starving.'{END}
+8C `Many have been the warriors who have perished on this quest.'{WAIT}{NEWLINE}`But for thee I wish success, {NAME}.'{END}
+8D `Hast thou found the flute?'{NEWLINE}{END}
+8E `Hast thou been to the southern island?'{NEWLINE}{END}
+8F `_Tis said that the Dragonlord hath claws that can cleave iron and fiery breath that can melt stone.'{WAIT}{NEWLINE}`Dost thou still wish to go on?'{NEWLINE}{END}
+
+90 `This is a magic place.{NEWLINE}Hast thou found a magic temple?'{NEWLINE}{END}
+91 `When entering the cave, take with thee a torch.'{END}
+92 `Go to the town of Cantlin.'{END}
+93 `I have heard that powerful enemies live there.'{END}
+94 `Thou art truly brave.'{END}
+95 `In this temple do the sun and rain meet.'{END}
+96 {END}
+97 `Howard had it, but he went to Rimuldar and never returned.'{END}
+98 `To the south, I believe, there is a town called Rimuldar.'{END}
+99 `That is good.'{NEWLINE}`No one will say thou art afraid.'{END}
+9A `Go to the south.'{END}
+9B `Where oh where can I find Princess Gwaelin?'{END}
+9C `Thank you for saving the Princess.'{END}
+9D `Oh, my dearest Gwaelin!'{NEWLINE}`I hate thee, {NAME}.'{END}
+9E `Tell King Lorik that the search for his daughter hath failed.'{WAIT}{NEWLINE}`I am almost gone....'{END}
+9F `Who touches me?'{NEWLINE}`I see nothing, nor can I hear.'{END}
+
+A0 `Dost thou know about Princess Gwaelin?'{NEWLINE}{END}
+A1 `Half a year now hath passed since the Princess was kidnapped by the enemy.'{WAIT}{NEWLINE}`Never does the King speak of it, but he must be suffering much.'{WAIT}{END}
+A2 `{NAME}, please save the Princess.'{END}
+A3 `Oh, brave {NAME}.'{END}
+A4 `I have been waiting long for one such as thee.'{WAIT}{END}
+A5 `Thou hast no business here.{NEWLINE}Go away.'{END}
+A6 `If thou art cursed, come again.'{END}
+A7 `I will free thee from thy curse.'{WAIT}{END}
+A8 `Now, go.'{END}
+A9 `Though thou art as brave as thy ancestor, {NAME}, thou cannot defeat the great Dragonlord with such weapons.'{WAIT}{NEWLINE}`Thou shouldst come here again.'{END}
+AA `Finally thou hast obtained it, {NAME}.'{END}
+AB `Is that a wedding ring?'{NEWLINE}`Thou seems too young to be married.'{END}
+AC `All true warriors wear a ring.'{END}
+AD `{NAME}'s coming was foretold by legend.{NEWLINE}May the light shine upon this brave warrior.'{END}
+AE {WAIT}`Thou may go and search.'{END}
+AF {WAIT}`From Tantegel Castle travel 70 leagues to the south and 40 to the east.'{END}
+
+B0 {WAIT}`It's a legend.'{END}
+B1 `Thy bravery must be proven.'{WAIT}{NEWLINE}`Thus, I propose a test.'{WAIT}{NEWLINE}`There is a Silver Harp that beckons to the creatures of the Dragonlord.'{WAIT}{NEWLINE}`Bring this to me and I will reward thee with the Staff of Rain.'{END}
+B2 `Thou hast brought the harp. Good.'{WAIT}{END}
+B3 `In thy task thou hast failed. Alas, I fear thou art not the one Erdrick predicted would save us.'{WAIT}{NEWLINE}`Go now!'{END}
+B4 `Now the sun and rain shall meet and the Rainbow Drop passes to thy keeping.'{END}
+B5 `Thou art brave indeed to rescue me, {NAME}.'{WAIT}{NEWLINE}`I am Gwaelin, daughter of Lorik.'{WAIT}{END}
+B6 `But thou must.'{WAIT}{END}
+B7 Princess Gwaelin embraces thee.{NEWLINE}{CRLF}{END}
+B8 `I'm so happy!'{END}
+B9 `Forever shall I be grateful for the gift of my daughter returned to her home, {NAME}.{NEWLINE}Accept my thanks.'{WAIT}{NEWLINE}`Now, Gwaelin, come to my side.'{WAIT}{NEWLINE}Gwaelin then whispers:{NEWLINE}`Wait a moment,please.{NEWLINE}I would give a present to {NAME}.'{WAIT}{NEWLINE}`Please accept my love, {NAME}.'{WAIT}{END}
+BA `And I would like to have something of thine--a token.'{WAIT}{NEWLINE}`Please give me thy {ITEM}.'{END}
+BB `Even when we two are parted by great distances, I shall be with thee.'{END}
+BC {WAIT}`Farewell, {NAME}.'{WAIT}{END}
+BD `I love thee, {NAME}.'{NEWLINE}{END}
+BE `Dost thou love me, {NAME}?'{NEWLINE}{END}
+BF `When thou art finished preparing for thy departure, please see me.{NEWLINE}I shall wait.'{END}
+
+C0 `I am greatly pleased that thou hast returned, {NAME}.'{WAIT}{END}
+C1 `Before reaching thy next level of experience thou must gain {NUM_POINTS}.'{WAIT}{END}
+C2 `If thou dies I can bring thee back for another attempt without loss of thy deeds to date.'{WAIT}{END}
+C3 {END}
+C4 `Goodbye now, {NAME}.{NEWLINE}Take care and tempt not the Fates.'{END}
+C5 `Will thou take me to the castle?'{NEWLINE}{END}
+C6 `Take the Treasure Chest.'{END}
+C7 `Welcome, {NAME}.{NEWLINE}I am the Dragonlord--King of Kings.'{WAIT}{END}
+C8 `I give thee now a chance to share this world and to rule half of it if thou will now stand beside me.'{WAIT}{NEWLINE}`What sayest thou?{NEWLINE}Will the great warrior stand with me?'{NEWLINE}{END}
+C9 `Thou art a fool!{END}
+CA {INDENT}{NEWLINE}`Then half of this world is thine, half of the darkness, and....'{WAIT}{END}
+CB Thy journey is over.{NEWLINE}Take now a long, long rest.{NEWLINE}Hahahaha....{END}
+CC {WAIT}If thou would take the {ITEM}, thou must now discard some other item.{NEWLINE}Dost thou wish to have the {ITEM}?{END}
+CD Thou hast given up thy {ITEM}.{END}
+CE What shall thou drop?{END}
+CF Thou hast dropped thy {ITEM}.{END}
+
+D0 And obtained the {ITEM}.{END}
+D1 That is much too important to throw away.{END}
+D2 {NAME} searched the ground all about.{WAIT}{NEWLINE}{END}
+D3 But there found nothing.{END}
+D4 There is a treasure box.{END}
+D5 {NAME} discovers the {ITEM}.{END}
+D6 Feel the wind blowing from behind the throne.{END}
+D7 There is nothing to take here, {NAME}.{END}
+D8 Of GOLD thou hast gained {NUMBER}{END}
+D9 Fortune smiles upon thee, {NAME}.{NEWLINE}Thou hast found the {ITEM}.{END}
+DA Unfortunately, it is empty.{END}
+DB Heed my voice,{NEWLINE}`{NAME}, for this is Gwaelin.{NEWLINE}To reach the next level thou must raise thy Experience{POINTS} by {NUMBER}.{NEWLINE}My hope is with thee.'{WAIT}{END}
+DC `From where thou art now, my castle lies..{END}
+DD {END}
+DE {INDENT}{NUMBER} to the north and..{END}
+DF {INDENT}{NUMBER} to the south and..{END}
+
+E0 {INDENT}{NUMBER} to the east.'{WAIT}{END}
+E1 {INDENT}{NUMBER} to the west.'{WAIT}{END}
+E2 A{ENEMY2} draws near!{END}
+E3 {CRLF}{NEWLINE}The {ENEMY} is running away.{END}
+E4 {CRLF}{NEWLINE}The {ENEMY} attacked before {NAME} was ready.{END}
+E5 {NAME} attacks!{END}
+E6 The {ENEMY}'s Hit{POINTS} have been reduced by {NUMBER}.{END}
+E7 The attack failed and there was no loss of Hit Points!{END}
+E8 {CRLF}{NEWLINE}Command?{END}
+E9 That cannot be used in battle.{END}
+EA {CRLF}{NEWLINE}But that spell hath been blocked.{END}
+EB The spell will not work.{END}
+EC Thou hast put the {ENEMY} to sleep.{END}
+ED The {ENEMY}'s spell hath been blocked.{END}
+EE {CRLF}{NEWLINE}Thou hast done well in defeating the {ENEMY}.{NEWLINE}{CRLF}{END}
+EF Thy Experience{NEWLINE}increases by {NUMBER}.{END}
+
+F0 Thy GOLD{NEWLINE}increases by {NUMBER}.{END}
+F1 {CRLF}{WAIT}{NEWLINE}Courage and wit have served thee well.{NEWLINE}Thou hast been promoted to the next level.{WAIT}{END}
+F2 {CRLF}{NEWLINE}Thou hast learned a new spell.{END}
+F3 Quietly Golem closes his eyes and settles into sleep.{END}
+F4 {ENEMY} looks happy.{END}
+F5 {CRLF}{NEWLINE}{NAME} started to run away.{END}
+F6 But was blocked in front.{END}
+F7 {NAME} used the Herb.{END}
+F8 {CRLF}{NEWLINE}The {ENEMY} is asleep.{END}
+F9 {CRLF}{NEWLINE}The {ENEMY} attacks!{END}
+FA Thy Hit{PLURAL} decreased by {NUMBER}.{END}
+FB A miss! No damage hath been scored!{END}
+FC {CRLF}{NEWLINE}{ENEMY}{END}
+FD chants the spell of {SPELL}.{END}
+FE {NAME}'s spell is blocked.{END}
+FF {CRLF}{NEWLINE}The {ENEMY} is breathing fire.{END}
+
+========================= High Dialogue ======================
+
+00 `If thou hast collected all the Treasure Chests,{NEWLINE}a key will be found.'{WAIT}{NEWLINE}`Once used, the key will disappear, but the door will be open and thou may pass through.'{END}
+01 `East of this castle is a town where armor, weapons, and many other items may be purchased.'{WAIT}{NEWLINE}`Return to the Inn for a rest if thou art wounded in battle, {NAME}.'{WAIT}{NEWLINE}`Sleep heals all.'{END}
+02 `Descendant of Erdrick, listen now to my words.'{WAIT}{NEWLINE}`It is told that in ages past Erdrick fought demons with a Ball of Light.'{WAIT}{NEWLINE}`Then came the Dragonlord who stole the precious globe and hid it in the darkness.'{WAIT}{NEWLINE}`Now, {NAME}, thou must help us recover the Ball of Light and restore peace to our land.'{WAIT}{NEWLINE}`The Dragonlord must be defeated.'{WAIT}{NEWLINE}`Take now whatever thou may find in these Treasure Chests to aid thee in thy quest.'{WAIT}{NEWLINE}`Then speak with the guards, for they have much knowledge that may aid thee.'{WAIT}{NEWLINE}`May the light shine upon thee, {NAME}.'{END}
+03 {WAIT}The tablet reads as follows:{WAIT}{NEWLINE}{CRLF}{NEWLINE} `I am Erdrick and thou art my descendant.'{WAIT}{NEWLINE} `Three items were needed to reach the Isle of Dragons, which is south of Brecconary.'{WAIT}{NEWLINE} `I gathered these items, reached the island, and there defeated a creature of great evil.'{WAIT}{NEWLINE} `Now I have entrusted the three items to three worthy keepers.'{WAIT}{NEWLINE} `Their descendants will protect the items until thy quest leads thee to seek them out.'{WAIT}{NEWLINE} `When a new evil arises, find the three items, then fight!'{END}
+04 Excellent move!{END}
+05 `{NAME}?{NEWLINE}This is Gwaelin.{NEWLINE}Know that thou hath reached the final level.'{WAIT}{END}
+06 Thou art asleep.{END}
+07 {CRLF}{NEWLINE}Thou art still asleep.{END}
+08 {CRLF}{NEWLINE}{NAME} awakes.{END}
+09 The {ENEMY} hath recovered.{END}
+0A It is dodging!{END}
+0B There is no door here.{END}
+0C Thou hast not a key to use.{END}
+0D `Death should not have taken thee, {NAME}.'{WAIT}{NEWLINE}`I will give thee another chance.'{WAIT}{END}
+0E Thy power increases by {NUMBER}.{END}
+0F Thy Response Speed increases by {NUMBER}.{END}
+
+10 {WAIT} Thy Maximum Hit{POINTS} increase by {NUMBER}.{END}
+11 {WAIT} Thy Maximum Magic{POINTS} increase by {NUMBER}.{END}
+12 `To reach the next level, thy Experience{POINTS} must increase by {NUMBER}.'{WAIT}{END}
+13 `Now, go, {NAME}!'{END}
+14 `Thou hast failed and thou art cursed.'{WAIT}{NEWLINE}`Leave at once!'{END}
+15 `....'{END}
+16 `Really?'{NEWLINE}{END}
+17 `I am glad thou hast returned.{NEWLINE}All our hopes are riding on thee.'{WAIT}{END}
+18 `See me again when thy level has increased.'{WAIT}{END}
+19 The Dragonlord revealed his true self!{END}
+1A {WAIT}Thou hast found the Ball of Light.{WAIT}{NEWLINE}Radiance streams forth as thy hands touch the object and hold it aloft.{WAIT}{NEWLINE}Across the land spreads the brilliance until all shadows are banished and peace is restored.{END}
+1B `The legends have proven true.'{WAIT}{NEWLINE}`Thou art indeed of the line of Erdrick.'{WAIT}{NEWLINE}`It is thy right to rule over this land.'{WAIT}{NEWLINE}`Will thou take my place?'{WAIT}{NEWLINE}{NAME} thought carefully before answering.{WAIT}{NEWLINE}`I cannot,'{NEWLINE}said {NAME}.{WAIT}{NEWLINE}`If ever I am to rule a country, it must be a land that I myself find.'{END}
+1C {WAIT}Gwaelin said:{NEWLINE}`Please, wait.'{NEWLINE}{END}
+1D `I wish to go with thee on thy journey.'{WAIT}{END}
+1E `May I travel as thy companion?'{NEWLINE}{END}
+1F `Hurrah!{NEWLINE}Hurrah!{NEWLINE}Long live {NAME}!'{NEWLINE}{END}
+
+20 `Thou hast brought us peace, again.'{END}
+21 `Come now, King Lorik awaits.'{END}
+22 {WAIT}{NEWLINE}{CRLF}{NEWLINE}{CRLF}{NEWLINE}{CRLF}{NEWLINE}{CRLF}{NEWLINE}{CRLF}{NEWLINE}{CRLF}{NEWLINE}And thus the tale comes to an end....{NEWLINE}unless the dragons return again.{NEWLINE}{CRLF}{NEWLINE}{CRLF}{NEWLINE}{CRLF}{NEWLINE}{END}
+23 `Will thou tell me now of thy deeds so they won't be forgotten?'{NEWLINE}{END}
+24 `Thy deeds have been recorded on the Imperial Scrolls of Honor.'{WAIT}{END}
+25 `Dost thou wish to continue thy quest?'{NEWLINE}{END}
+26 `Rest then for awhile.'{WAIT}{END}
+27 `Go {NAME}!'{END}
+28 Please push RESET, hold it in, then turn off the POWER.{WAIT}{NEWLINE}If you turn the power off first, the Imperial Scroll of Honor containing your deeds may be lost.{NEWLINE}{CRLF}{NEWLINE}{CRLF}{NEWLINE}{END}
+

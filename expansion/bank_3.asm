@@ -245,7 +245,11 @@ count_frame:
     stx $662c
     bne ++
     ldx $662d
-    inx
+    txa
+    and #$3f
+    bne +
+    jsr do_autosave
++   inx
     stx $662d
     bne ++
     inc $662e
@@ -258,6 +262,28 @@ snapshot_timer:
     dex
     bpl -
     jmp do_dialog_hi
+
+load_autosave:
+    lda $6039
+    cmp #2
+    bne +
+    lda $6780      ; which game slot was autosaved?
+    and #1         ; Make sure it's 0 or 1
+    sta $6039
++   jmp $fb0c
+
+do_autosave:
+    lda MAP_INDEX
+    beq ++         ; don't save if we're not in a game.
+    lda $6039
+    pha
+    lda #2
+    sta $6039      ; set the current slot to slot 3
+    jsr $f148      ; save the game
+    pla
+    sta $6780      ; save the slot number
+    sta $6039      ; reset current slot
+++  rts
 
 modify_run_rate:
     and #$7f       ; limit the value in reg A to 0-127

@@ -1191,6 +1191,10 @@ static void other_patches(dw_rom *rom)
     /* I always hated this wording */
 //     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");
     set_text(rom, 0xad85,  "The spell had no effect");
+
+    /* Disable the continue thy quest? dialogue */
+    nop(rom, 0xD446, 0x19);
+    
 }
 
 /**

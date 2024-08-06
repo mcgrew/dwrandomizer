@@ -92,3 +92,23 @@ uint8_t *pvpatch(uint8_t *p, const uint32_t size, ...)
     return p;
 
 }
+
+/**
+ * Replaces code with noops
+ *
+ * @param p A pointer to the rom data to be patched
+ * @param size The size of the patch.
+ * @return A pointer to the end of the patch
+ */
+uint8_t *nop(const dw_rom *rom, uint32_t address, const uint32_t size)
+{
+    uint32_t i;
+    uint8_t *p;
+
+    p = &rom->content[address];
+
+    for (i=0; i < size; i++) {
+        *(p++) = 0xea;
+    }
+    return p;
+}

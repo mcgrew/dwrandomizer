@@ -720,6 +720,9 @@ static BOOL need_rimuldar(dw_map *map)
     warp = map->warps_from[WARP_GARINHAM];
     garinham_lm = map->walkable[warp.x][warp.y];
 
+    if NO_KEYS(map)
+        return FALSE;
+
     /* Is swap cave in tantegel? */
     if (!swamp_cave_in(map, WARP_TANTEGEL)) {
         /* Is Garinhamp on the same mass? If so, does it have swamp cave? */

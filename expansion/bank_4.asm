@@ -814,7 +814,7 @@ stats_data:
     .db INSTR_SET_CURSOR, 1, 14
     .db " RADIANT  "
     .db INSTR_SHOW_NUMBER
-    .word $6661 ; Data address
+    .word $6662 ; Data address
     .db INSTR_REPEAT_CHAR, 16, " "
 
     .db INSTR_SET_CURSOR, 1, 16

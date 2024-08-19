@@ -654,6 +654,7 @@ static void randomize_spells(dw_rom *rom)
 static void short_charlock(dw_rom *rom)
 {
     dw_warp tmp;
+
     if (!SHORT_CHARLOCK(rom))
         return;
 
@@ -1757,7 +1758,7 @@ static void begin_quest_checksum(dw_rom *rom, uint64_t crc)
     set_text(rom, 0xc7f3, crc_text);
 
     //Continues after the checksum and fills in the remainder of window data.
-    vpatch(rom, 0xc800, 21,
+    vpatch(rom, 0xc800, 20,
         0x88, //Horizontal border, remainder of row. (still checksum row)
         // " BEGIN A NEW QUEST"
         0x81, 0x25, 0x28, 0x2A, 0x2C, 0x31, 0x81, 0x24,

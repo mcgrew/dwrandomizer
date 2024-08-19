@@ -25,13 +25,14 @@ static dungeon_map *maps;
 static dw_warp *warps_from;
 static dw_warp *warps_to;
 static dw_map_index indexes[] = {
-    CHARLOCK_CAVE_1, CHARLOCK_CAVE_2, CHARLOCK_CAVE_3, CHARLOCK_CAVE_4,
-    CHARLOCK_CAVE_5, CHARLOCK_CAVE_6, MOUNTAIN_CAVE, MOUNTAIN_CAVE_2,
-    GARINS_GRAVE_1, GARINS_GRAVE_2, GARINS_GRAVE_3, GARINS_GRAVE_4,
-    ERDRICKS_CAVE, ERDRICKS_CAVE_2, CHARLOCK_THRONE_ROOM, NO_MAP
+    CHARLOCK_THRONE_ROOM, CHARLOCK_CAVE_1, CHARLOCK_CAVE_2, CHARLOCK_CAVE_3,
+    CHARLOCK_CAVE_4, CHARLOCK_CAVE_5, CHARLOCK_CAVE_6, MOUNTAIN_CAVE,
+    MOUNTAIN_CAVE_2, GARINS_GRAVE_1, GARINS_GRAVE_2, GARINS_GRAVE_3,
+    GARINS_GRAVE_4, ERDRICKS_CAVE, ERDRICKS_CAVE_2, NO_MAP
 };
 
 static void print_all_maps();
+static void print_warps();
 
 /**
  * Patches the stair handling routine and the OUTSIDE spell routine for stair
@@ -235,6 +236,8 @@ static void unpack_map(dw_rom *rom, dungeon_map *map)
     size_t start_addr = ((*(uint16_t*)(&rom->map.meta[map->index].pointer))
             & 0x7fff);
     uint8_t *start = &rom->content[start_addr];
+    map->width = rom->map.meta[map->index].width + 1;
+    map->height = rom->map.meta[map->index].height + 1;
 
     for(y=0; y < map->height; y++) {
         for(x=0; x < map->width; x+=2) {
@@ -292,6 +295,8 @@ static void unpack_town_map(dw_rom *rom, dungeon_map *map)
     size_t start_addr = ((*(uint16_t*)(&rom->map.meta[map->index].pointer))
             & 0x7fff);
     uint8_t *start = &rom->content[start_addr];
+    map->width = rom->map.meta[map->index].width + 1;
+    map->height = rom->map.meta[map->index].height + 1;
 
     for(y=0; y < map->height; y++) {
         for(x=0; x < map->width; x+=2) {
@@ -359,7 +364,7 @@ static void stair_shuffle_init(dw_rom *rom)
     size_t map_count = sizeof(indexes) / sizeof(dw_map_index) - 1;
 
     if (SHORT_CHARLOCK(rom)) {
-        indexes[map_count-1] = CHARLOCK;
+        indexes[0] = CHARLOCK;
     }
 
     maps = calloc(map_count+1, sizeof(dungeon_map));
@@ -393,15 +398,20 @@ static void stair_shuffle_init(dw_rom *rom)
         }
     }
     for (i=0, j=0; indexes[i]; i++) {
-        map = &maps[j++];
-        map->index = (uint8_t)indexes[i];
-        map->width = rom->map.meta[indexes[i]].width + 1;
-        map->height = rom->map.meta[indexes[i]].height + 1;
         if (indexes[i] == CHARLOCK || indexes[i] == CHARLOCK_THRONE_ROOM)
-            unpack_town_map(rom, map);
-        else
-            unpack_map(rom, map);
+            continue;
+        map = &maps[j++];
+        map->index = indexes[i];
+        unpack_map(rom, map);
     }
+    /* unpack top & bottom of charlock separately */
+    map = &maps[j++];
+    map->index = CHARLOCK;
+    unpack_town_map(rom, map);
+    map = &maps[j++];
+    map->index = CHARLOCK_THRONE_ROOM;
+    unpack_town_map(rom, map);
+
     memset(rom->chest_access, 0, 31);
     rom->map.key_access = 0;
 }
@@ -442,12 +452,7 @@ static void do_shuffle(dw_rom *rom)
     size_t i;
     dw_map_index from_map, to_map;
     dw_warp *warp, tmp;
-
-// for (int k=0; k < warps_to - warps_from; k++) {
-//     printf("Warp %d: %d, %d, %d -> %d, %d, %d\n", k,
-//             warps_from[k].map, warps_from[k].x, warps_from[k].y,
-//             warps_to[k].map, warps_to[k].x, warps_to[k].y);
-// }
+// print_warps();
 // print_all_maps();
 // exit(0);
     while (TRUE) {
@@ -527,12 +532,11 @@ static void mark_chests(dw_rom *rom, uint8_t flag)
  */
 static void chest_paths(dw_rom *rom)
 {
-    dungeon_map *map;
     dw_warp *warp;
 
     printf("Mapping Dungeons...\n");
 
-    map = get_map(ERDRICKS_CAVE);
+    /* find chests accessible from erdrick's cave entrance */
     clear_all_flags();
     warp = &warps_to[ERDRICKS_CAVE];
     map_dungeon(get_map(warp->map), warp->x, warp->y, FALSE);
@@ -541,6 +545,7 @@ static void chest_paths(dw_rom *rom)
     map_dungeon(get_map(warp->map), warp->x, warp->y, TRUE);
     mark_chests(rom, 0x10);
 
+    /* find chests accessible from mountain cave entrance */
     clear_all_flags();
     warp = &warps_to[WARP_MOUNTAIN_CAVE];
     map_dungeon(get_map(warp->map), warp->x, warp->y, FALSE);
@@ -549,6 +554,7 @@ static void chest_paths(dw_rom *rom)
     map_dungeon(get_map(warp->map), warp->x, warp->y, TRUE);
     mark_chests(rom, 0x20);
 
+    /* find chests accessible from garin's grave entrance */
     clear_all_flags();
     warp = &warps_to[WARP_GARINS_GRAVE];
     map_dungeon(get_map(warp->map), warp->x, warp->y, FALSE);
@@ -557,6 +563,7 @@ static void chest_paths(dw_rom *rom)
     map_dungeon(get_map(warp->map), warp->x, warp->y, TRUE);
     mark_chests(rom, 0x40);
 
+    /* find chests accessible from charlock throne room */
     clear_all_flags();
     map_dungeon(get_map(CHARLOCK_THRONE_ROOM), 10, 19, FALSE);
     mark_chests(rom, 0x8);
@@ -626,6 +633,15 @@ static void print_map(dungeon_map *map)
                 printf(" ");
         }
         printf("\n");
+    }
+}
+
+static void print_warps()
+{
+    for (int k=0; k < warps_to - warps_from; k++) {
+        printf("Warp %2d: %2d, %2d, %2d -> %2d, %2d, %2d\n", k,
+                warps_from[k].map, warps_from[k].x, warps_from[k].y,
+                warps_to[k].map, warps_to[k].x, warps_to[k].y);
     }
 }
 

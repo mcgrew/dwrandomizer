@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -23,6 +22,7 @@
 #include "sprites.h"
 #include "expansion.h"
 #include "credit_music.h"
+#include "flute_music.h"
 
 /* The [ and ] are actually opening/closing quotes. The / is .'. = is .. */
 const char alphabet[] = "0123456789abcdefghijklmnopqrstuvwxyz"
@@ -32,7 +32,7 @@ const char title_alphabet[] = "0123456789__________________________"
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ__________________________________!.c-     ";
 
 /**
- * Returns the version number. Mosltly for use with emscripten.
+ * Returns the version number. Mostly for use with emscripten.
  *
  * @return The version number
  */
@@ -263,17 +263,17 @@ uint16_t set_text(dw_rom *rom, const size_t address, char *text)
 //     int len;
 //     uint8_t *start, *end;
 //     char dw_text[256], dw_repl[256];
-// 
+//
 //     len = strlen(text);
 //     if (!len)
 //         return NULL;
 //     end = &rom->content[ROM_SIZE - len - 0x10];
-// 
+//
 //     strncpy(dw_text, text, 256);
 //     strncpy(dw_repl, replacement, 256);
 //     ascii2dw((unsigned char *)dw_text);
 //     ascii2dw((unsigned char *)dw_repl);
-// 
+//
 //     for (start = rom->content; start < end; start++) {
 //         if (!memcmp(start, dw_text, len)) {
 //             memcpy(start, dw_repl, len);
@@ -282,7 +282,7 @@ uint16_t set_text(dw_rom *rom, const size_t address, char *text)
 //     }
 //     return NULL;
 // }
-// 
+//
 /**
  * Patches the game to allow the use of torches and fairy water in battle
  *
@@ -1197,7 +1197,7 @@ static void death_counter(dw_rom *rom)
 }
 
 /**
- * Modifies the level up routine to display the spells learned rather than 
+ * Modifies the level up routine to display the spells learned rather than
  * just indicating that you have learned a spell
  *
  * @param rom The rom struct
@@ -1418,7 +1418,7 @@ static void dwr_menu_wrap(dw_rom *rom)
 }
 
 /**
- * Rewrites the forced encounter routines to read from a table rather than 
+ * Rewrites the forced encounter routines to read from a table rather than
  * being hard-coded. This clears enough space to allow for 8 "spikes" rather
  * than the normal 3.
  *
@@ -1692,18 +1692,7 @@ static void dwr_speed_hacks(dw_rom *rom)
     vpatch(rom, 0x471c, 1, 1);
     vpatch(rom, 0x471e, 1, 1);
     /* speed up the fairy flute */
-    vpatch(rom, 0x4ca1, 1, 1);
-    vpatch(rom, 0x4ca3, 1, 1);
-    vpatch(rom, 0x4cb5, 1, 1);
-    vpatch(rom, 0x4cb7, 1, 1);
-    vpatch(rom, 0x4cb9, 1, 1);
-    vpatch(rom, 0x4cbd, 1, 1);
-    vpatch(rom, 0x4cd2, 1, 1);
-    vpatch(rom, 0x4cd4, 1, 1);
-    vpatch(rom, 0x4cd6, 1, 1);
-    vpatch(rom, 0x4cd8, 1, 1);
-    vpatch(rom, 0x4cda, 1, 1);
-    vpatch(rom, 0x4cdc, 1, 1);
+    speed_up_flute_song(rom);
     /* speed up the inn music */
     vpatch(rom, 0x46d4, 1, 1);
     vpatch(rom, 0x46d6, 1, 1);
@@ -1904,8 +1893,8 @@ static void begin_quest_checksum(dw_rom *rom, uint64_t crc)
     vpatch(rom, 0x6f8e, 2, 0xec, 0xc7);
 
     //our brand new "begin new quest" window
-    vpatch(rom, 0xc7ec, 7,  
-        0x81, //Window Options.  Selection window. 
+    vpatch(rom, 0xc7ec, 7,
+        0x81, //Window Options.  Selection window.
         0x02, //Window Height.   2 blocks.
         0x18, //Window Width.    24 tiles.
         0x12, //Window Position. Y = 1 blocks, X = 2 blocks.
@@ -2093,6 +2082,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     dwr_fighters_ring(&rom);
     dwr_death_necklace(&rom);
     dwr_menu_wrap(&rom);
+    randomize_flute_song(&rom);
     dwr_speed_hacks(&rom);
     open_charlock(&rom);
     chaos_mode(&rom);

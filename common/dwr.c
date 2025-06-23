@@ -306,7 +306,8 @@ static void modify_run_rate(dw_rom *rom) {
         return;
 
     printf("Modifying run rate for high level monsters...\n");
-    if (RANDOM_ENEMY_STATS(rom) || ALTERNATE_RUNNING(rom)) {
+//     if (RANDOM_ENEMY_STATS(rom) || ALTERNATE_RUNNING(rom)) {
+    if (RANDOM_ENEMY_STATS(rom)) {
         add_hook(rom, JMP, 0xeea7, MODIFY_RUN_RATE);
     } else {
         add_hook(rom, JMP, 0xee9c, MODIFY_RUN_RATE);
@@ -1314,8 +1315,44 @@ static void other_patches(dw_rom *rom)
     vpatch(rom, 0xf131, 2, 0x69, 0x03); /* Lock the stat build modifier at 3 */
 
     /* I always hated this wording */
-//     dwr_str_replace(rom, "The spell will not work", "The spell had no effect");
     set_text(rom, 0xad85,  "The spell had no effect");
+}
+
+/**
+ * This is a temporary place for the new dw4 style running code
+ *
+ * This makes sure the player succeeds in running after x attempts
+ */
+static void new_run_code(dw_rom *rom)
+{
+    printf("Enabling alternate running algorithm...\n");
+
+//     add_hook(rom, JSR, 0xe4ed, 0xe142);
+    vpatch(rom, 0xe50b, 3,
+        JSR, 0x42, 0xe1   /*    jsr $e14b  ; battle start                   */
+    );
+    /* Just sticking this code in some cleared up space for now */
+    vpatch(rom, 0xe142, 9,
+        0xa9, 0x03,       /*   ; lda #$03                                   */
+        0x8d, 0x08, 0x71, /*   ; sta $7108                                  */
+        0x00, 0x0c, 0x17, /*   ; replace the break call that was removed    */
+        0x60              /*   ; rts                                        */
+    );
+    vpatch(rom, 0xee91, 3,
+        JSR, 0x4b, 0xe1   /*    jsr $e14b  ; jump to 4th run attempt chk  */
+    );
+
+    /* $7108 is a random byte that shouldn't be in use.
+     * TODO: I'll move it somewhere better later. */
+    vpatch(rom, 0xe14b, 15,
+        0xad, 0x08, 0x71, /*    lda $7108                                  */
+        0xd0, 0x04,       /*    bne +                                      */
+        0x38,             /*    sec        ; 4th attmept, yatta!           */
+        0x68, 0x68,       /*    pla x2, pull return address from the stack */
+        0x60,             /*    rts                                        */
+        0xce, 0x08, 0x71, /*    dec $7108                                  */
+        JMP , 0x5b, 0xc5  /*    jmp $C55B  ; call rng and proceed          */
+    );
 }
 
 /**
@@ -2119,6 +2156,7 @@ uint64_t dwr_randomize(const char* input_file, uint64_t seed, char *flags,
     invisible_hero(&rom);
     invisible_npcs(&rom);
     death_counter(&rom);
+    new_run_code(&rom);
 
     crc = crc64(0, rom.content, 0x10000);
 

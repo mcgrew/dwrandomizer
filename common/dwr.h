@@ -9,15 +9,15 @@
 #include "build.h"
 #include "dwr_types.h"
 
-#define DWR_VERSION "3.0.3"
+#define DWR_VERSION "2025-TE"
 
-#ifdef  DWR_RELEASE
+// #ifdef  DWR_RELEASE
 #define VERSION DWR_VERSION
-#elif DWR_ALPHA
-#define VERSION DWR_VERSION " alpha " BUILD
-#else
-#define VERSION DWR_VERSION " beta " BUILD
-#endif
+// #elif DWR_ALPHA
+// #define VERSION DWR_VERSION " alpha " BUILD
+// #else
+// #define VERSION DWR_VERSION " beta " BUILD
+// #endif
 
 #define DEFAULT_FLAGS "IVIAAVCAKACAAAAAAAAAAEAA"
 #define CHEST_COUNT 31

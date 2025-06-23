@@ -214,9 +214,9 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
                             /*                                               */
         0xa9,  0xff,        /* +   lda #$ff                                  */
         0x85,  0x3e,        /*     sta $3e                                   */
-        0xa9,  0xf4,        /*     lda #$f4                                  */
+        0xa9,  0x30,        /*     lda #$30    ; load base amount for gold   */
         0x85,  0x00,        /*     sta $00                                   */
-        0xa9,  0x01,        /*     lda #$01                                  */
+        0xa9,  0x02,        /*     lda #$02                                  */
         0x85,  0x01,        /*     sta $01                                   */
         0xd0,  0x20,        /*     bne b3_e365                               */
         0xa5,  0x0e,        /* ++  lda $0e                                   */

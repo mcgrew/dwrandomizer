@@ -49,4 +49,33 @@ uint8_t *ppatch(uint8_t *p, const uint32_t size, const uint8_t *data);
  */
 uint8_t *pvpatch(uint8_t *p, const uint32_t size, ...);
 
+/**
+ * Replaces code with the specified byte
+ *
+ * @param p A pointer to the rom data to be patched
+ * @param size The size of the patch.
+ * @param byte The byte value to overwrite data with
+ * @return A pointer to the end of the patch
+ */
+uint8_t *rom_set(const dw_rom *rom, const uint32_t address,
+        const uint32_t size, const uint8_t byte);
+
+/**
+ * Replaces code with noops
+ *
+ * @param p A pointer to the rom data to be patched
+ * @param size The size of the patch.
+ * @return A pointer to the end of the patch
+ */
+uint8_t *nop(const dw_rom *rom, const uint32_t address, const uint32_t size);
+
+/**
+ * Replaces code with 0xff
+ *
+ * @param p A pointer to the rom data to be patched
+ * @param size The size of the patch.
+ * @return A pointer to the end of the patch
+ */
+uint8_t *rom_clear(const dw_rom *rom, const uint32_t address, const uint32_t size);
+
 #endif

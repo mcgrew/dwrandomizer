@@ -170,8 +170,8 @@ static void rewrite_search_take_code(dw_rom *rom, uint8_t *items)
     /* search_item: */
          items[0], items[1],  items[2]
     );
-    /* This is freed up space. Mark it with ff so we can find it later. */
-    memset((void*)&rom->content[0xe142], 0xff, 72);
+    /* This is freed up space. Mark it so we can find it later. */
+    rom_clear(rom, 0xe142, 72);
 
     /* new "TAKE" code */
     vpatch(rom, 0x0e2ea,  123,

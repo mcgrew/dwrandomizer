@@ -2,7 +2,7 @@
 # not Windows, so I will be using qmake instead. Keeping this around for
 # a bit, just in case.
 
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.10)
 set( CMAKE_C_COMPILER "gcc" )
 set( CMAKE_CXX_COMPILER "g++" )
 project(dwrandomizer)

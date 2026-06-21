@@ -164,8 +164,8 @@ function setup_ui() {
         'REPEL will always be active.');
     ui.addTriOption('Features',  5,  4, 2, 'Permanent Torch',
         'At least a 3x3 area will always be lit in dungeons.');
-    ui.addTriOption('Features',  6,  4, 0, 'Alternate Running Algorithm',
-        'The run blocking multiplier will depend on where you are.');
+    ui.addTriOption('Features',  6,  4, 0, 'Fourth Run Success',
+        'The fourth run attempt in any battle will always succeed.');
     ui.addTriOption('Monsters',  0,  5, 6, 'Random Monster Abilities',
         'Monster spells and abilities will be randomized.');
     ui.addTriOption('Monsters',  2,  5, 4, 'Random Monster Zones',

@@ -306,7 +306,6 @@ static void modify_run_rate(dw_rom *rom) {
         return;
 
     printf("Modifying run rate for high level monsters...\n");
-//     if (RANDOM_ENEMY_STATS(rom) || ALTERNATE_RUNNING(rom)) {
     if (RANDOM_ENEMY_STATS(rom)) {
         add_hook(rom, JMP, 0xeea7, MODIFY_RUN_RATE);
     } else {
@@ -1327,13 +1326,18 @@ static void other_patches(dw_rom *rom)
  */
 static void new_run_code(dw_rom *rom)
 {
+
+    if (!ALTERNATE_RUNNING(rom))
+        return;
+
     printf("Enabling alternate running algorithm...\n");
 
-//     add_hook(rom, JSR, 0xe4ed, 0xe142);
+    add_hook(rom, JSR, 0xe4ed, 0xe142);
     vpatch(rom, 0xe50b, 3,
         JSR, 0x42, 0xe1   /*    jsr $e14b  ; battle start                   */
     );
     /* Just sticking this code in some cleared up space for now */
+    /* Loads 3 to the run attempt countdown */
     vpatch(rom, 0xe142, 9,
         0xa9, 0x03,       /*   ; lda #$03                                   */
         0x8d, 0x08, 0x71, /*   ; sta $7108                                  */
@@ -1345,14 +1349,14 @@ static void new_run_code(dw_rom *rom)
     );
 
     /* $7108 is a random byte that shouldn't be in use.
-     * TODO: I'll move it somewhere better later. */
+     * TODO: move it somewhere better later. */
     vpatch(rom, 0xe14b, 15,
         0xad, 0x08, 0x71, /*    lda $7108                                  */
         0xd0, 0x04,       /*    bne +                                      */
         0x38,             /*    sec        ; 4th attmept, yatta!           */
         0x68, 0x68,       /*    pla x2, pull return address from the stack */
         0x60,             /*    rts                                        */
-        0xce, 0x08, 0x71, /*    dec $7108                                  */
+        0xce, 0x08, 0x71, /*  + dec $7108                                  */
         JMP , 0x5b, 0xc5  /*    jmp $C55B  ; call rng and proceed          */
     );
 }
@@ -1731,18 +1735,18 @@ static void dwr_speed_hacks(dw_rom *rom)
     vpatch(rom, 0x471c, 1, 1);
     vpatch(rom, 0x471e, 1, 1);
     /* speed up the fairy flute */
-    vpatch(rom, 0x4ca1, 1, 1);
-    vpatch(rom, 0x4ca3, 1, 1);
-    vpatch(rom, 0x4cb5, 1, 1);
-    vpatch(rom, 0x4cb7, 1, 1);
-    vpatch(rom, 0x4cb9, 1, 1);
-    vpatch(rom, 0x4cbd, 1, 1);
-    vpatch(rom, 0x4cd2, 1, 1);
-    vpatch(rom, 0x4cd4, 1, 1);
-    vpatch(rom, 0x4cd6, 1, 1);
-    vpatch(rom, 0x4cd8, 1, 1);
-    vpatch(rom, 0x4cda, 1, 1);
-    vpatch(rom, 0x4cdc, 1, 1);
+//     vpatch(rom, 0x4ca1, 1, 1);
+//     vpatch(rom, 0x4ca3, 1, 1);
+//     vpatch(rom, 0x4cb5, 1, 1);
+//     vpatch(rom, 0x4cb7, 1, 1);
+//     vpatch(rom, 0x4cb9, 1, 1);
+//     vpatch(rom, 0x4cbd, 1, 1);
+//     vpatch(rom, 0x4cd2, 1, 1);
+//     vpatch(rom, 0x4cd4, 1, 1);
+//     vpatch(rom, 0x4cd6, 1, 1);
+//     vpatch(rom, 0x4cd8, 1, 1);
+//     vpatch(rom, 0x4cda, 1, 1);
+//     vpatch(rom, 0x4cdc, 1, 1);
     /* speed up the inn music */
     vpatch(rom, 0x46d4, 1, 1);
     vpatch(rom, 0x46d6, 1, 1);

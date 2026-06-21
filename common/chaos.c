@@ -293,7 +293,6 @@ static void chaos_xp(dw_rom *rom)
 static void chaos_running(dw_rom *rom)
 {
 
-//     if (!RANDOM_ENEMY_STATS(rom) && !ALTERNATE_RUNNING(rom))
     if (!RANDOM_ENEMY_STATS(rom))
         return;
 
